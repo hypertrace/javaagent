@@ -5,11 +5,11 @@ plugins {
 
 description = "Traceable OpenTelemetry Java agent"
 group = "io.traceable.opentelemetry"
-
+version = "0.0.1"
 
 allprojects {
     apply(plugin="java-library")
-    group = "ai.traceable.agent.javaagent"
+    group = rootProject.group
     java {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -19,9 +19,9 @@ allprojects {
 subprojects {
     version = rootProject.version
 
-  //  apply<JavaPlugin>()
-  //  apply(plugin = "com.diffplug.spotless")
-  //  apply(from = "$rootDir/gradle/spotless.gradle")
+    apply<JavaPlugin>()
+    apply(plugin = "com.diffplug.spotless")
+    apply(from = "$rootDir/gradle/spotless.gradle")
 
     repositories {
         jcenter()
