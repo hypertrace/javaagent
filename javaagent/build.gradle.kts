@@ -14,15 +14,15 @@ tasks {
         options.release.set(8)
     }
 
-//    processResources {
-//        val customizationShadowTask = project(":instrumentation:servlet:servlet-3.0").tasks.named<Jar>("shadowJar")
-//        val providerArchive = customizationShadowTask.get().archiveFile
-//        from(zipTree(providerArchive)) {
-//            into("inst")
-//            rename("(^.*)\\.class$", "$1.classdata")
-//        }
-//        dependsOn(customizationShadowTask)
-//    }
+    processResources {
+        val customizationShadowTask = project(":instrumentation:servlet:servlet-3.0").tasks.named<Jar>("shadowJar")
+        val providerArchive = customizationShadowTask.get().archiveFile
+        from(zipTree(providerArchive)) {
+            into("inst")
+            rename("(^.*)\\.class$", "$1.classdata")
+        }
+        dependsOn(customizationShadowTask)
+    }
 
     shadowJar {
         mergeServiceFiles {
