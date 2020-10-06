@@ -30,13 +30,12 @@ tasks {
         }
         exclude("**/module-info.class")
         manifest {
-            // TODO why title is not added?
             attributes.put("Implementation-Title", "javaagent")
             attributes.put("Implementation-Version", project.version)
             // TODO set version from a property
-            // TODO set to Github repository URL
             attributes.put("OpenTelemetry-Instrumentation-Version", "0.8.0")
             attributes.put("Implementation-Vendor", "Traceable.ai")
+            // TODO set to Github repository URL
             attributes.put("Implementation-Url", "https://traceable.ai")
             attributes.put("Main-Class",    "io.opentelemetry.javaagent.OpenTelemetryAgent")
             attributes.put("Agent-Class",   "io.opentelemetry.javaagent.OpenTelemetryAgent")
