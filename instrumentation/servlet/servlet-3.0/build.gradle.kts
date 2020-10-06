@@ -7,8 +7,8 @@ dependencies {
     compileOnly("javax.servlet:javax.servlet-api:3.0.1")
     compile("org.slf4j:slf4j-api:1.7.30")
     compile("net.bytebuddy:byte-buddy:1.10.10")
-    compile("com.google.auto.service:auto-service:1.0-rc3")
-    annotationProcessor("com.google.auto.service:auto-service:1.0-rc3")
+    compile("com.google.auto.service:auto-service:1.0-rc7")
+    annotationProcessor("com.google.auto.service:auto-service:1.0-rc7")
 
     compile("io.opentelemetry.instrumentation.auto:opentelemetry-auto-servlet-3.0:0.8.0")
 
