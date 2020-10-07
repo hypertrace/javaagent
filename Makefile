@@ -3,6 +3,10 @@
 build:
 	./gradlew build
 
+.PHONY: test
+test:
+	./gradlew check
+
 .PHONY: format
 format:
 	./gradlew spotlessApply
