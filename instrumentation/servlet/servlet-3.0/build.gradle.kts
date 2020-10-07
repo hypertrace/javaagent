@@ -11,7 +11,7 @@ dependencies {
     implementation("com.google.auto.service:auto-service:1.0-rc7")
     annotationProcessor("com.google.auto.service:auto-service:1.0-rc7")
 
-    //compileOnly("io.opentelemetry.instrumentation.auto:opentelemetry-auto-servlet-3.0:0.8.0")
+    implementation("io.opentelemetry.instrumentation.auto:opentelemetry-auto-servlet-3.0:0.8.0")
 
     implementation("io.opentelemetry:opentelemetry-sdk:0.8.0")
     implementation("io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-exporters-otlp:0.8.0")
@@ -48,6 +48,11 @@ tasks {
         relocate("io.opentelemetry.internal", "io.opentelemetry.javaagent.shaded.io.opentelemetry.internal")
         relocate("io.opentelemetry.metrics", "io.opentelemetry.javaagent.shaded.io.opentelemetry.metrics")
         relocate("io.opentelemetry.trace", "io.opentelemetry.javaagent.shaded.io.opentelemetry.trace")
+
+        // rewrite library instrumentation dependencies
+        relocate("io.opentelemetry.instrumentation", "io.opentelemetry.javaagent.shaded.instrumentation") {
+            exclude("io.opentelemetry.instrumentation.auto.**")
+        }
 
         // relocate OpenTelemetry API dependency
         relocate("io.grpc", "io.opentelemetry.javaagent.shaded.io.grpc")
