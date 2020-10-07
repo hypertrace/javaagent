@@ -95,17 +95,24 @@ public class Servlet3BodyInstrumentation extends Instrumenter.Default {
     // request attribute key injected at first filerChain.doFilter
     private static final String ALREADY_LOADED = "__root_body_advice_already_executed";
 
-    @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static void start(
+    @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = ExecutionBlocked.class)
+    public static Object start(
         @Advice.Argument(value = 0, readOnly = false) ServletRequest request,
         @Advice.Argument(value = 1, readOnly = false) ServletResponse response,
         @Advice.Local("rootStart") Boolean rootStart) {
       if (!(request instanceof HttpServletRequest) || !(response instanceof HttpServletResponse)) {
-        return;
+        return null;
       }
+      // TODO run on every doFilter and check if user removed wrapper
+      // if (request instanceof HttpServletRequestWrapper) {
+      //   get to root
+      //  HttpServletRequestWrapper wrapper = (HttpServletRequestWrapper) request;
+      // }
+      // TODO what if user unwraps request and reads the body?
+
       // run the instrumentation only for the root FilterChain.doFilter()
       if (request.getAttribute(ALREADY_LOADED) != null) {
-        return;
+        return null;
       }
       HttpServletRequest httpRequest = (HttpServletRequest) request;
       HttpServletResponse httpResponse = (HttpServletResponse) response;
@@ -113,19 +120,24 @@ public class Servlet3BodyInstrumentation extends Instrumenter.Default {
 
       request.setAttribute(ALREADY_LOADED, true);
       System.out.println("---> BodyAdvice start");
-      // System.out.println(currentSpan);
+      System.out.println(currentSpan);
 
+      rootStart = true;
+      response = new BufferingHttpServletResponse(httpResponse);
+      request = new BufferingHttpServletRequest(httpRequest, (HttpServletResponse) response);
       // set request headers
       Enumeration<String> headerNames = httpRequest.getHeaderNames();
       while (headerNames.hasMoreElements()) {
         String headerName = headerNames.nextElement();
         String headerValue = httpRequest.getHeader(headerName);
         currentSpan.setAttribute("request.header." + headerName, headerValue);
+        // Mock example blocking
+        if ("block".equals(headerName)) {
+          httpResponse.setStatus(403);
+          return new ExecutionBlocked();
+        }
       }
-
-      rootStart = true;
-      response = new BufferingHttpServletResponse(httpResponse);
-      request = new BufferingHttpServletRequest(httpRequest, (HttpServletResponse) response);
+      return null;
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)

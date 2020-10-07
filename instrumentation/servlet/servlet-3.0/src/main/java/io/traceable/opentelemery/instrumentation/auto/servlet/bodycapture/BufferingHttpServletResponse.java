@@ -16,10 +16,7 @@
 
 package io.traceable.opentelemery.instrumentation.auto.servlet.bodycapture;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.HttpCookie;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -196,10 +193,11 @@ public class BufferingHttpServletResponse extends HttpServletResponseWrapper {
     private static final Logger logger =
         LoggerFactory.getLogger(BufferingServletOutputStream.class);
 
-    private final OutputStream outputStream;
+    private final ServletOutputStream outputStream;
     private final ByteBufferData byteBufferData;
 
-    public BufferingServletOutputStream(OutputStream outputStream, ByteBufferData byteBufferData) {
+    public BufferingServletOutputStream(
+        ServletOutputStream outputStream, ByteBufferData byteBufferData) {
       this.outputStream = outputStream;
       this.byteBufferData = byteBufferData;
     }
@@ -240,11 +238,13 @@ public class BufferingHttpServletResponse extends HttpServletResponseWrapper {
 
     @Override
     public boolean isReady() {
-      return true;
+      return outputStream.isReady();
     }
 
     @Override
-    public void setWriteListener(WriteListener writeListener) {}
+    public void setWriteListener(WriteListener writeListener) {
+      outputStream.setWriteListener(writeListener);
+    }
   }
 
   public static class BufferedWriterWrapper extends BufferedWriter {
