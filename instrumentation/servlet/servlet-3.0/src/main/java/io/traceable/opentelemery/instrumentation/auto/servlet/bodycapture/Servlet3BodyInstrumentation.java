@@ -16,7 +16,7 @@
 
 package io.traceable.opentelemery.instrumentation.auto.servlet.bodycapture;
 
-import static io.opentelemetry.instrumentation.auto.servlet.v3_0.Servlet3HttpServerTracer.TRACER;
+// import static io.opentelemetry.instrumentation.auto.servlet.v3_0.Servlet3HttpServerTracer.TRACER;
 import static io.opentelemetry.javaagent.tooling.ClassLoaderMatcher.hasClassesNamed;
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.safeHasSuperType;
 import static io.opentelemetry.javaagent.tooling.matcher.NameMatchers.namedOneOf;
@@ -27,7 +27,6 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
 import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.tooling.Instrumenter;
-import io.opentelemetry.trace.Span;
 import java.util.Enumeration;
 import java.util.Map;
 import javax.servlet.ServletRequest;
@@ -67,9 +66,9 @@ public class Servlet3BodyInstrumentation extends Instrumenter.Default {
   @Override
   public String[] helperClassNames() {
     return new String[] {
-      "io.opentelemetry.instrumentation.servlet.HttpServletRequestGetter",
-      "io.opentelemetry.instrumentation.servlet.ServletHttpServerTracer",
-      "io.opentelemetry.instrumentation.auto.servlet.v3_0.Servlet3HttpServerTracer",
+      //      "io.opentelemetry.instrumentation.servlet.HttpServletRequestGetter",
+      //      "io.opentelemetry.instrumentation.servlet.ServletHttpServerTracer",
+      //      "io.opentelemetry.instrumentation.auto.servlet.v3_0.Servlet3HttpServerTracer",
       packageName + ".BufferingHttpServletResponse",
       packageName + ".BufferingHttpServletResponse$BufferingServletOutputStream",
       packageName + ".BufferingHttpServletResponse$BufferedWriterWrapper",
@@ -109,18 +108,18 @@ public class Servlet3BodyInstrumentation extends Instrumenter.Default {
       }
       HttpServletRequest httpRequest = (HttpServletRequest) request;
       HttpServletResponse httpResponse = (HttpServletResponse) response;
-      Span currentSpan = TRACER.getCurrentSpan();
+      //   Span currentSpan = TRACER.getCurrentSpan();
 
       request.setAttribute(ALREADY_LOADED, true);
       System.out.println("---> BodyAdvice start");
-      System.out.println(currentSpan);
+      // System.out.println(currentSpan);
 
       // set request headers
       Enumeration<String> headerNames = httpRequest.getHeaderNames();
       while (headerNames.hasMoreElements()) {
         String headerName = headerNames.nextElement();
         String headerValue = httpRequest.getHeader(headerName);
-        currentSpan.setAttribute("request.header." + headerName, headerValue);
+        // currentSpan.setAttribute("request.header." + headerName, headerValue);
       }
 
       rootStart = true;
@@ -141,10 +140,10 @@ public class Servlet3BodyInstrumentation extends Instrumenter.Default {
         }
 
         request.removeAttribute(ALREADY_LOADED);
-        Span currentSpan = TRACER.getCurrentSpan();
+        //     Span currentSpan = TRACER.getCurrentSpan();
         System.out.println("---> BodyAdvice stop");
         System.out.println(response.getClass().getName());
-        System.out.println(currentSpan);
+        //      System.out.println(currentSpan);
 
         BufferingHttpServletResponse bufferingResponse = (BufferingHttpServletResponse) response;
         BufferingHttpServletRequest bufferingRequest = (BufferingHttpServletRequest) request;
@@ -153,15 +152,15 @@ public class Servlet3BodyInstrumentation extends Instrumenter.Default {
         bufferingResponse.getHeaderNames();
         for (String headerName : bufferingResponse.getHeaderNames()) {
           String headerValue = bufferingResponse.getHeader(headerName);
-          currentSpan.setAttribute("response.header." + headerName, headerValue);
+          //         currentSpan.setAttribute("response.header." + headerName, headerValue);
         }
 
         // Bodies are set at the end of processing once frameworks finished reading/writing.
         // The bodies cannot be read at the start because we don't know whether framework will call
         // gerReader or getInputStream.
-        currentSpan.setAttribute("response.body", bufferingResponse.getBufferAsString());
-        currentSpan.setAttribute(
-            "request.body", bufferingRequest.getByteBuffer().getBufferAsString());
+        //       currentSpan.setAttribute("response.body", bufferingResponse.getBufferAsString());
+        //       currentSpan.setAttribute(
+        // "request.body", bufferingRequest.getByteBuffer().getBufferAsString());
       }
     }
   }

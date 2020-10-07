@@ -28,6 +28,8 @@ tasks {
         mergeServiceFiles {
             include("inst/META-INF/services/*")
         }
+        // TODO we could order the Instrumenter services to guarantee that traceable instrumentation runs after OTEL
+//        transform(com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer())
         exclude("**/module-info.class")
         manifest {
             attributes.put("Implementation-Title", "javaagent")

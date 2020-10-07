@@ -4,16 +4,16 @@ plugins {
 }
 
 dependencies {
-    compileOnly("javax.servlet:javax.servlet-api:3.0.1")
-    compile("org.slf4j:slf4j-api:1.7.30")
-    compile("net.bytebuddy:byte-buddy:1.10.10")
-    compile("com.google.auto.service:auto-service:1.0-rc7")
+    compileOnly("javax.servlet:javax.servlet-api:3.1.0")
+    implementation("org.slf4j:slf4j-api:1.7.30")
+    implementation("net.bytebuddy:byte-buddy:1.10.10")
+
+    implementation("com.google.auto.service:auto-service:1.0-rc7")
     annotationProcessor("com.google.auto.service:auto-service:1.0-rc7")
 
-    compile("io.opentelemetry.instrumentation.auto:opentelemetry-auto-servlet-3.0:0.8.0")
+    //compileOnly("io.opentelemetry.instrumentation.auto:opentelemetry-auto-servlet-3.0:0.8.0")
 
     implementation("io.opentelemetry:opentelemetry-sdk:0.8.0")
-    //io/opentelemetry/instrumentation/auto/opentelemetry-auto-javaagent-exporters-otlp
     implementation("io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-exporters-otlp:0.8.0")
     implementation("io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-exporters-jaeger:0.8.0")
     implementation("io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-exporters-zipkin:0.8.0")

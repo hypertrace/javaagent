@@ -28,6 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
@@ -236,6 +237,14 @@ public class BufferingHttpServletResponse extends HttpServletResponseWrapper {
     public void close() throws IOException {
       outputStream.close();
     }
+
+    @Override
+    public boolean isReady() {
+      return true;
+    }
+
+    @Override
+    public void setWriteListener(WriteListener writeListener) {}
   }
 
   public static class BufferedWriterWrapper extends BufferedWriter {
