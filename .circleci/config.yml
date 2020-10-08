@@ -15,19 +15,21 @@ jobs:
     steps:
       - checkout
 
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "build.gradle.kts" }}
-            # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-
-
-      - run: ./gradlew downloadDependencies
-
-      - save_cache:
-          paths:
-            - ~/.gradle
-          key: v1-dependencies-{{ checksum "build.gradle.kts" }}
+# TODO Task 'downloadDependencies' not found in root project 'traceable-otel-agent'.
+#      # Download and cache dependencies
+#      - restore_cache:
+#          keys:
+#            - v1-dependencies-{{ checksum "build.gradle.kts" }}
+#            # fallback to using the latest cache if no exact match is found
+#            - v1-dependencies-
+#
+#
+#      - run: ./gradlew downloadDependencies
+#
+#      - save_cache:
+#          paths:
+#            - ~/.gradle
+#          key: v1-dependencies-{{ checksum "build.gradle.kts" }}
 
       - run: make build
 
