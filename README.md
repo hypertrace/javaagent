@@ -1,4 +1,4 @@
-[![codecov](https://codecov.io/gh/Traceableai/goagent/branch/master/graph/badge.svg?token=MM5BVNGPKE)](https://codecov.io/gh/Traceableai/opentelemetry-javaagent)
+[![codecov](https://codecov.io/gh/Traceableai/opentelemetry-javaagent/branch/main/graph/badge.svg?token=MM5BVNGPKE)](https://codecov.io/gh/Traceableai/opentelemetry-javaagent)
 [![CircleCI](https://circleci.com/gh/Traceableai/opentelemetry-javaagent.svg?style=svg)](https://circleci.com/gh/Traceableai/opentelemetry-javaagent)
 
 # Traceable OpenTelemetry Java agent
