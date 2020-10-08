@@ -1,6 +1,11 @@
 # Traceable OpenTelemetry Java agent
 
-A custom build of OpenTelemetry Java agent.
+Traceable distribution of [OpenTelemetry Java agent](https://github.com/open-telemetry/opentelemetry-java-instrumentation).
+
+In addition to the upstream this project adds these capabilities:
+* capture request and response headers
+* capture request and response bodies
+* execution blocking based on Open Policy Agent
 
 ## Build
 
