@@ -55,10 +55,7 @@ public abstract class AbstractSmokeTest {
   private static final String OTEL_EXPORTER_ENDPOINT =
       String.format("http://%s:9411/api/v2/spans", NETWORK_ALIAS_OTEL_COLLECTOR);
 
-  public static final String agentPath =
-      System.getProperty(
-          "smoketest.javaagent.path",
-          "/Users/ploffay/projects/hypertrace/opentelemetry-java-agent/javaagent/build/libs/traceable-otel-javaagent-0.0.1-all.jar");
+  public static final String agentPath = getPropertyOrEnv("smoketest.javaagent.path");
 
   private static final Network network = Network.newNetwork();
   private static OpenTelemetryCollector collector;
@@ -156,8 +153,7 @@ public abstract class AbstractSmokeTest {
         .flatMap(it -> it.getSpansList().stream());
   }
 
-  protected Collection<ExportTraceServiceRequest> waitForTraces()
-      throws IOException, InterruptedException {
+  protected Collection<ExportTraceServiceRequest> waitForTraces() throws IOException {
     String content = waitForContent();
 
     return StreamSupport.stream(OBJECT_MAPPER.readTree(content).spliterator(), false)
@@ -187,17 +183,17 @@ public abstract class AbstractSmokeTest {
               try (ResponseBody body = client.newCall(request).execute().body()) {
                 String content = body.string();
                 if (content.length() > "[]".length() && content.length() == previousSize.get()) {
-                  return false;
+                  return true;
                 }
                 previousSize.set(content.length());
                 log.debug("Current content size {}", previousSize.get());
               }
-              return true;
+              return false;
             });
     return client.newCall(request).execute().body().string();
   }
 
-  public static String getProperty(String propName) {
+  public static String getPropertyOrEnv(String propName) {
     String property = System.getProperty(propName);
     if (property != null && !property.isEmpty()) {
       return property;
