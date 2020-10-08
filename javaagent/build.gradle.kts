@@ -10,10 +10,6 @@ dependencies {
 base.archivesBaseName = "traceable-otel-javaagent"
 
 tasks {
-    compileJava {
-        options.release.set(8)
-    }
-
     processResources {
         val customizationShadowTask = project(":instrumentation:servlet:servlet-3.0").tasks.named<Jar>("shadowJar")
         val providerArchive = customizationShadowTask.get().archiveFile
