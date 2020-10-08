@@ -7,7 +7,7 @@ dependencies {
     implementation("io.opentelemetry.instrumentation.auto", "opentelemetry-javaagent", version = "0.8.0", classifier = "all")
 }
 
-base.archivesBaseName = "traceable-otel-javaagent"
+base.archivesBaseName = "traceable-agent"
 
 tasks {
     processResources {
