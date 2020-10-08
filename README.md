@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/Traceableai/goagent/branch/master/graph/badge.svg?token=MM5BVNGPKE)](https://codecov.io/gh/Traceableai/opentelemetry-javaagent)
+
 # Traceable OpenTelemetry Java agent
 
 Traceable distribution of [OpenTelemetry Java agent](https://github.com/open-telemetry/opentelemetry-java-instrumentation).

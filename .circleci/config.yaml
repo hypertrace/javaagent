@@ -1,0 +1,39 @@
+version: 2
+jobs:
+  build:
+    docker:
+      # specify the version you desire here
+      - image: circleci/openjdk:8-jdk
+
+    working_directory: ~/repo
+
+    environment:
+      # Customize the JVM maximum heap limit
+      JVM_OPTS: -Xmx1g
+      TERM: dumb
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "build.gradle.kts" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+
+      - run: ./gradlew downloadDependencies
+
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: v1-dependencies-{{ checksum "build.gradle.kts" }}
+
+      - run: make build
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build:
+          context: artifactory-gradle
