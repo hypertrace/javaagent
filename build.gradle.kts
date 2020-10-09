@@ -3,8 +3,8 @@ plugins {
     id("com.diffplug.spotless") version "5.2.0" apply false
 }
 
-description = "Traceable OpenTelemetry Java agent"
-group = "io.traceable.opentelemetry"
+description = "Hypertrace OpenTelemetry Java agent"
+group = "org.hypertrace.agent"
 version = "0.0.1"
 
 allprojects {

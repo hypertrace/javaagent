@@ -1,9 +1,9 @@
 [![codecov](https://codecov.io/gh/Traceableai/opentelemetry-javaagent/branch/main/graph/badge.svg?token=MM5BVNGPKE)](https://codecov.io/gh/Traceableai/opentelemetry-javaagent)
 [![CircleCI](https://circleci.com/gh/Traceableai/opentelemetry-javaagent.svg?style=svg)](https://circleci.com/gh/Traceableai/opentelemetry-javaagent)
 
-# Traceable OpenTelemetry Java agent
+# Hypertrace OpenTelemetry Java agent
 
-Traceable distribution of [OpenTelemetry Java agent](https://github.com/open-telemetry/opentelemetry-java-instrumentation).
+Hypertrace distribution of [OpenTelemetry Java agent](https://github.com/open-telemetry/opentelemetry-java-instrumentation).
 
 In addition to the upstream this project adds these capabilities:
 * capture request and response headers
@@ -25,7 +25,7 @@ make build
 ## Run
 
 ```bash
-OTEL_EXPORTER=otlp java -agentlib:jdwp="transport=dt_socket,server=y,suspend=n,address=5000" -javaagent:${HOME}/projects/hypertrace/opentelemetry-java-agent/javaagent/build/libs/traceable-otel-javaagent-0.0.1-all.jar -jar app.jar
+OTEL_EXPORTER=otlp java -agentlib:jdwp="transport=dt_socket,server=y,suspend=n,address=5000" -javaagent:${HOME}/projects/hypertrace/opentelemetry-java-agent/javaagent/build/libs/hypertrace-agent-0.0.1-all.jar -jar app.jar
 ```
 
 ## Test

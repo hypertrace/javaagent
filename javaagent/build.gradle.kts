@@ -7,7 +7,7 @@ dependencies {
     implementation("io.opentelemetry.instrumentation.auto", "opentelemetry-javaagent", version = "0.8.0", classifier = "all")
 }
 
-base.archivesBaseName = "traceable-agent"
+base.archivesBaseName = "hypertrace-agent"
 
 tasks {
     processResources {
@@ -24,7 +24,7 @@ tasks {
         mergeServiceFiles {
             include("inst/META-INF/services/*")
         }
-        // TODO we could order the Instrumenter services to guarantee that traceable instrumentation runs after OTEL
+        // TODO we could order the Instrumenter services to guarantee that hypertrace instrumentation runs after OTEL
 //        transform(com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer())
         exclude("**/module-info.class")
         manifest {
@@ -32,9 +32,9 @@ tasks {
             attributes.put("Implementation-Version", project.version)
             // TODO set version from a property
             attributes.put("OpenTelemetry-Instrumentation-Version", "0.8.0")
-            attributes.put("Implementation-Vendor", "Traceable.ai")
+            attributes.put("Implementation-Vendor", "Hypertrace.org")
             // TODO set to Github repository URL
-            attributes.put("Implementation-Url", "https://traceable.ai")
+            attributes.put("Implementation-Url", "https://hypertrace.org")
             attributes.put("Main-Class",    "io.opentelemetry.javaagent.OpenTelemetryAgent")
             attributes.put("Agent-Class",   "io.opentelemetry.javaagent.OpenTelemetryAgent")
             attributes.put("Premain-Class", "io.opentelemetry.javaagent.OpenTelemetryAgent")

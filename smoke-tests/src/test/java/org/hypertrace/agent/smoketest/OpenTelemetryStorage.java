@@ -1,5 +1,5 @@
 /*
- * Copyright Traceable.ai Inc.
+ * Copyright The Hypertrace Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.traceable.opentelemetry.instrumentation.smoketest;
+package org.hypertrace.agent.smoketest;
 
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
