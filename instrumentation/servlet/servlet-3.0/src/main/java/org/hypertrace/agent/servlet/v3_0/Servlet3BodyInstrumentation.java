@@ -85,6 +85,7 @@ public class Servlet3BodyInstrumentation extends Instrumenter.Default {
       packageName + ".BufferingHttpServletRequest$ServletInputStreamWrapper",
       packageName + ".BufferingHttpServletRequest$BufferedReaderWrapper",
       packageName + ".BodyCaptureAsyncListener",
+      packageName + ".ExecutionBlocked",
     };
   }
 
