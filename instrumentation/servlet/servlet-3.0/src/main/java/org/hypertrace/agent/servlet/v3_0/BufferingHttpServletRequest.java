@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent;
+package org.hypertrace.agent.servlet.v3_0;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import javax.servlet.AsyncContext;
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -36,7 +35,7 @@ import org.slf4j.LoggerFactory;
 
 public class BufferingHttpServletRequest extends HttpServletRequestWrapper {
 
-  private static final Logger logger = LoggerFactory.getLogger(BufferingHttpServletRequest.class);
+  private static final Logger logger = LoggerFactory.getLogger(BufferingHttpServletResponse.class);
 
   // to pass the wrapped response explicitly in case user invokes the inherent async method..
   protected HttpServletResponse response;
@@ -51,11 +50,6 @@ public class BufferingHttpServletRequest extends HttpServletRequestWrapper {
       HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
     super(httpServletRequest);
     this.response = httpServletResponse;
-  }
-
-  @Override
-  public AsyncContext startAsync() {
-    return getRequest().startAsync(this, response);
   }
 
   @Override
@@ -311,17 +305,14 @@ public class BufferingHttpServletRequest extends HttpServletRequestWrapper {
       return numRead;
     }
 
-    @Override
     public boolean isFinished() {
       return is.isFinished();
     }
 
-    @Override
     public boolean isReady() {
       return is.isReady();
     }
 
-    @Override
     public void setReadListener(ReadListener readListener) {
       is.setReadListener(readListener);
     }

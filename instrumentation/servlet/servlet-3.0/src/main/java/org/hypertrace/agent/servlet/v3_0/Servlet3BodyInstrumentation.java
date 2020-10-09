@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent;
+package org.hypertrace.agent.servlet.v3_0;
 
 import static io.opentelemetry.instrumentation.auto.servlet.v3_0.Servlet3HttpServerTracer.TRACER;
 import static io.opentelemetry.javaagent.tooling.ClassLoaderMatcher.hasClassesNamed;
@@ -30,6 +30,7 @@ import io.opentelemetry.javaagent.tooling.Instrumenter;
 import io.opentelemetry.trace.Span;
 import java.util.Enumeration;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -83,6 +84,7 @@ public class Servlet3BodyInstrumentation extends Instrumenter.Default {
       packageName + ".BufferingHttpServletRequest",
       packageName + ".BufferingHttpServletRequest$ServletInputStreamWrapper",
       packageName + ".BufferingHttpServletRequest$BufferedReaderWrapper",
+      packageName + ".BodyCaptureAsyncListener",
     };
   }
 
@@ -98,7 +100,7 @@ public class Servlet3BodyInstrumentation extends Instrumenter.Default {
 
   public static class FilterAdvice {
     // request attribute key injected at first filerChain.doFilter
-    private static final String ALREADY_LOADED = "__root_body_advice_already_executed";
+    private static final String ALREADY_LOADED = "__org.hypertrace.agent.on_start_executed";
 
     @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = ExecutionBlocked.class)
     public static Object start(
@@ -109,10 +111,6 @@ public class Servlet3BodyInstrumentation extends Instrumenter.Default {
         return null;
       }
       // TODO run on every doFilter and check if user removed wrapper
-      // if (request instanceof HttpServletRequestWrapper) {
-      //   get to root
-      //  HttpServletRequestWrapper wrapper = (HttpServletRequestWrapper) request;
-      // }
       // TODO what if user unwraps request and reads the body?
 
       // run the instrumentation only for the root FilterChain.doFilter()
@@ -136,6 +134,7 @@ public class Servlet3BodyInstrumentation extends Instrumenter.Default {
         String headerName = headerNames.nextElement();
         String headerValue = httpRequest.getHeader(headerName);
         currentSpan.setAttribute("request.header." + headerName, headerValue);
+        // TODO remove
         // Mock example blocking
         if ("block".equals(headerName)) {
           httpResponse.setStatus(403);
@@ -160,25 +159,35 @@ public class Servlet3BodyInstrumentation extends Instrumenter.Default {
         request.removeAttribute(ALREADY_LOADED);
         Span currentSpan = TRACER.getCurrentSpan();
         System.out.println("---> BodyAdvice stop");
-        System.out.println(response.getClass().getName());
         System.out.println(currentSpan);
 
-        BufferingHttpServletResponse bufferingResponse = (BufferingHttpServletResponse) response;
-        BufferingHttpServletRequest bufferingRequest = (BufferingHttpServletRequest) request;
-
-        // set response headers
-        bufferingResponse.getHeaderNames();
-        for (String headerName : bufferingResponse.getHeaderNames()) {
-          String headerValue = bufferingResponse.getHeader(headerName);
-          currentSpan.setAttribute("response.header." + headerName, headerValue);
+        AtomicBoolean responseHandled = new AtomicBoolean(false);
+        if (request.isAsyncStarted()) {
+          try {
+            request
+                .getAsyncContext()
+                .addListener(new BodyCaptureAsyncListener(responseHandled, currentSpan));
+          } catch (IllegalStateException e) {
+            // org.eclipse.jetty.server.Request may throw an exception here if request became
+            // finished after check above. We just ignore that exception and move on.
+          }
         }
 
-        // Bodies are set at the end of processing once frameworks finished reading/writing.
-        // The bodies cannot be read at the start because we don't know whether framework will call
-        // gerReader or getInputStream.
-        currentSpan.setAttribute("response.body", bufferingResponse.getBufferAsString());
-        currentSpan.setAttribute(
-            "request.body", bufferingRequest.getByteBuffer().getBufferAsString());
+        if (!request.isAsyncStarted() && responseHandled.compareAndSet(false, true)) {
+          BufferingHttpServletResponse bufferingResponse = (BufferingHttpServletResponse) response;
+          BufferingHttpServletRequest bufferingRequest = (BufferingHttpServletRequest) request;
+
+          // set response headers
+          bufferingResponse.getHeaderNames();
+          for (String headerName : bufferingResponse.getHeaderNames()) {
+            String headerValue = bufferingResponse.getHeader(headerName);
+            currentSpan.setAttribute("response.header." + headerName, headerValue);
+          }
+          // Bodies are captured at the end after all user processing.
+          currentSpan.setAttribute(
+              "request.body", bufferingRequest.getByteBuffer().getBufferAsString());
+          currentSpan.setAttribute("response.body", bufferingResponse.getBufferAsString());
+        }
       }
     }
   }

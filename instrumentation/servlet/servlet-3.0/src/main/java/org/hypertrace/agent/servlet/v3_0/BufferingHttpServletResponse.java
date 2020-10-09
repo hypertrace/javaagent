@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent;
+package org.hypertrace.agent.servlet.v3_0;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.HttpCookie;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -34,7 +36,7 @@ import org.slf4j.LoggerFactory;
 
 public class BufferingHttpServletResponse extends HttpServletResponseWrapper {
 
-  private static final Logger logger = LoggerFactory.getLogger(BufferingHttpServletResponse.class);
+  private static final Logger logger = LoggerFactory.getLogger(BufferingHttpServletRequest.class);
 
   private CharBufferData charBufferData;
   private ByteBufferData byteBufferData;
@@ -236,12 +238,10 @@ public class BufferingHttpServletResponse extends HttpServletResponseWrapper {
       outputStream.close();
     }
 
-    @Override
     public boolean isReady() {
       return outputStream.isReady();
     }
 
-    @Override
     public void setWriteListener(WriteListener writeListener) {
       outputStream.setWriteListener(writeListener);
     }
