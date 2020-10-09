@@ -19,8 +19,10 @@ package org.hypertrace.agent.smoketest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
+import java.util.stream.Collectors;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.junit.jupiter.api.Assertions;
@@ -61,6 +63,28 @@ public class SpringBootTest extends AbstractSmokeTest {
             .map(a -> a.getValue().getStringValue())
             .filter(s -> s.equals(currentAgentVersion))
             .count());
+    Assertions.assertTrue(
+        getSpanStream(traces)
+                .flatMap(s -> s.getAttributesList().stream())
+                .filter(a -> a.getKey().contains("request.header."))
+                .map(a -> a.getValue().getStringValue())
+                .count()
+            > 0);
+    Assertions.assertTrue(
+        getSpanStream(traces)
+                .flatMap(s -> s.getAttributesList().stream())
+                .filter(a -> a.getKey().contains("response.header."))
+                .map(a -> a.getValue().getStringValue())
+                .count()
+            > 0);
+    List<String> responseBodyAttributes =
+        getSpanStream(traces)
+            .flatMap(s -> s.getAttributesList().stream())
+            .filter(a -> a.getKey().contains("response.body"))
+            .map(a -> a.getValue().getStringValue())
+            .collect(Collectors.toList());
+    Assertions.assertEquals(1, responseBodyAttributes.size());
+    Assertions.assertEquals("Hi!", responseBodyAttributes.get(0));
     stopAppUnderTest();
   }
 }
