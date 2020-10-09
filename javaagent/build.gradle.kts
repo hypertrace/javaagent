@@ -5,6 +5,7 @@ plugins {
 
 dependencies {
     // pin released version or snapshot with pinned version
+    // update the dependencies also in the instrumentations sub-projects
     // https://oss.jfrog.org/artifactory/oss-snapshot-local/io/opentelemetry/instrumentation/auto/
     implementation("io.opentelemetry.instrumentation.auto", "opentelemetry-javaagent", version = "0.9.0-20201008.091003-73", classifier = "all")
 }
@@ -13,7 +14,7 @@ base.archivesBaseName = "hypertrace-agent"
 
 tasks {
     processResources {
-        val customizationShadowTask = project(":instrumentation:servlet:servlet-3.0").tasks.named<Jar>("shadowJar")
+        val customizationShadowTask = project(":instrumentation").tasks.named<Jar>("shadowJar")
         val providerArchive = customizationShadowTask.get().archiveFile
         from(zipTree(providerArchive)) {
             into("inst")
