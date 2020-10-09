@@ -17,7 +17,7 @@ jobs:
     steps:
       - checkout
 
-# TODO Task 'downloadDependencies' not found in root project 'traceable-otel-agent'.
+# TODO Task 'downloadDependencies' not found in root project 'hypertrace-otel-agent'.
 #      # Download and cache dependencies
 #      - restore_cache:
 #          keys:

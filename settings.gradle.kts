@@ -1,4 +1,4 @@
-rootProject.name = "traceable-otel-agent"
+rootProject.name = "hypertrace-otel-agent"
 
 include(":javaagent")
 include("instrumentation")
