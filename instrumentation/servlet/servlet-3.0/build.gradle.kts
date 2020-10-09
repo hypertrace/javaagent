@@ -11,15 +11,15 @@ dependencies {
     implementation("com.google.auto.service:auto-service:1.0-rc7")
     annotationProcessor("com.google.auto.service:auto-service:1.0-rc7")
 
-    implementation("io.opentelemetry.instrumentation.auto:opentelemetry-auto-servlet-3.0:0.8.0")
+    implementation("io.opentelemetry.instrumentation.auto:opentelemetry-auto-servlet-3.0:0.9.0-20201009.101216-80")
 
     implementation("io.opentelemetry:opentelemetry-sdk:0.8.0")
-    implementation("io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-exporters-otlp:0.8.0")
-    implementation("io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-exporters-jaeger:0.8.0")
-    implementation("io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-exporters-zipkin:0.8.0")
-    implementation("io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-exporters-logging:0.8.0")
-    implementation("io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-tooling:0.8.0")
-    implementation("io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-bootstrap:0.8.0")
+    implementation("io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-exporters-otlp:0.9.0-20201009.101149-80")
+    implementation("io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-exporters-jaeger:0.9.0-20201009.101148-80")
+    implementation("io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-exporters-zipkin:0.9.0-20201009.101150-80")
+    implementation("io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-exporters-logging:0.9.0-20201009.101149-80")
+    implementation("io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-tooling:0.9.0-20201009.101126-80")
+    implementation("io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-bootstrap:0.9.0-20201009.101124-80")
 }
 
 tasks {
@@ -40,8 +40,8 @@ tasks {
         // relocate OpenTelemetry API
         relocate("io.opentelemetry.OpenTelemetry", "io.opentelemetry.javaagent.shaded.io.opentelemetry.OpenTelemetry")
         relocate("io.opentelemetry.common", "io.opentelemetry.javaagent.shaded.io.opentelemetry.common")
+        relocate("io.opentelemetry.baggage", "io.opentelemetry.javaagent.shaded.io.opentelemetry.baggage")
         relocate("io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context")
-        relocate("io.opentelemetry.correlationcontext", "io.opentelemetry.javaagent.shaded.io.opentelemetry.correlationcontext")
         relocate("io.opentelemetry.internal", "io.opentelemetry.javaagent.shaded.io.opentelemetry.internal")
         relocate("io.opentelemetry.metrics", "io.opentelemetry.javaagent.shaded.io.opentelemetry.metrics")
         relocate("io.opentelemetry.trace", "io.opentelemetry.javaagent.shaded.io.opentelemetry.trace")

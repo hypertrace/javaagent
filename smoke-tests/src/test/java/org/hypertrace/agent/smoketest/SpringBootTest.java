@@ -57,19 +57,10 @@ public class SpringBootTest extends AbstractSmokeTest {
         3,
         getSpanStream(traces)
             .flatMap(s -> s.getAttributesList().stream())
-            .filter(a -> a.getKey().equals("otel.instrumentation_library.version"))
+            .filter(a -> a.getKey().equals(OTEL_LIBRARY_VERSION_ATTRIBUTE))
             .map(a -> a.getValue().getStringValue())
             .filter(s -> s.equals(currentAgentVersion))
             .count());
-    Assertions.assertEquals(
-        3,
-        getSpanStream(traces)
-            .flatMap(s -> s.getAttributesList().stream())
-            .filter(a -> a.getKey().equals("otel.instrumentation_library.version"))
-            .map(a -> a.getValue().getStringValue())
-            .filter(s -> s.equals(currentAgentVersion))
-            .count());
-
     stopAppUnderTest();
   }
 }

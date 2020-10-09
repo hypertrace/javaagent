@@ -55,6 +55,7 @@ public abstract class AbstractSmokeTest {
   private static final String OTEL_EXPORTER_ENDPOINT =
       String.format("http://%s:9411/api/v2/spans", NETWORK_ALIAS_OTEL_COLLECTOR);
 
+  public static final String OTEL_LIBRARY_VERSION_ATTRIBUTE = "otel.library.version";
   public static final String agentPath = getPropertyOrEnv("smoketest.javaagent.path");
 
   private static final Network network = Network.newNetwork();
@@ -132,7 +133,7 @@ public abstract class AbstractSmokeTest {
             .withEnv("JAVA_TOOL_OPTIONS", "-javaagent:/opentelemetry-javaagent.jar")
             .withEnv("OTEL_BSP_MAX_EXPORT_BATCH", "1")
             .withEnv("OTEL_BSP_SCHEDULE_DELAY", "10")
-            .withEnv("OTEL_ZIPKIN_ENDPOINT", OTEL_EXPORTER_ENDPOINT)
+            .withEnv("OTEL_EXPORTER_ZIPKIN_ENDPOINT", OTEL_EXPORTER_ENDPOINT)
             .withEnv("OTEL_EXPORTER", OTEL_EXPORTER);
     target.start();
   }
