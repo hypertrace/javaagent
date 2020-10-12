@@ -31,6 +31,6 @@ class ExecutionBlocked implements BlockingResult {
 
   @Override
   public String getReason() {
-    return null;
+    return reason;
   }
 }

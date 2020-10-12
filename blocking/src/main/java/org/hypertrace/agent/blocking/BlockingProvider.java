@@ -18,6 +18,8 @@ package org.hypertrace.agent.blocking;
 
 public class BlockingProvider {
 
+  private BlockingProvider() {}
+
   public static BlockingEvaluator getBlockingEvaluator() {
     return MockBlockingEvaluator.INSTANCE;
   }
