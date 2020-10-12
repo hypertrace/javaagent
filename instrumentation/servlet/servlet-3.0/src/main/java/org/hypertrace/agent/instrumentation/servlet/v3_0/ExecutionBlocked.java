@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.servlet.v3_0;
+package org.hypertrace.agent.instrumentation.servlet.v3_0;
 
 import net.bytebuddy.asm.Advice.OnMethodEnter;
 
