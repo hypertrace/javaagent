@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import javax.servlet.AsyncContext;
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -50,6 +51,11 @@ public class BufferingHttpServletRequest extends HttpServletRequestWrapper {
       HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
     super(httpServletRequest);
     this.response = httpServletResponse;
+  }
+
+  @Override
+  public AsyncContext startAsync() {
+    return getRequest().startAsync(this, response);
   }
 
   @Override
