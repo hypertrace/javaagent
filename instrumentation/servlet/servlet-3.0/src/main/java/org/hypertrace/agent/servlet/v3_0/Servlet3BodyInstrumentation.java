@@ -49,7 +49,6 @@ public class Servlet3BodyInstrumentation extends Instrumenter.Default {
 
   public Servlet3BodyInstrumentation() {
     super("servlet", "servlet-3");
-    System.out.println("FilterChain advice");
   }
 
   @Override
@@ -118,13 +117,11 @@ public class Servlet3BodyInstrumentation extends Instrumenter.Default {
       if (request.getAttribute(ALREADY_LOADED) != null) {
         return null;
       }
+      request.setAttribute(ALREADY_LOADED, true);
+
       HttpServletRequest httpRequest = (HttpServletRequest) request;
       HttpServletResponse httpResponse = (HttpServletResponse) response;
       Span currentSpan = TRACER.getCurrentSpan();
-
-      request.setAttribute(ALREADY_LOADED, true);
-      System.out.println("---> BodyAdvice start");
-      System.out.println(currentSpan);
 
       rootStart = true;
       response = new BufferingHttpServletResponse(httpResponse);
@@ -153,14 +150,11 @@ public class Servlet3BodyInstrumentation extends Instrumenter.Default {
       if (rootStart != null) {
         if (!(request instanceof BufferingHttpServletRequest)
             || !(response instanceof BufferingHttpServletResponse)) {
-          System.err.println("Should get buffering request/response");
           return;
         }
 
         request.removeAttribute(ALREADY_LOADED);
         Span currentSpan = TRACER.getCurrentSpan();
-        System.out.println("---> BodyAdvice stop");
-        System.out.println(currentSpan);
 
         AtomicBoolean responseHandled = new AtomicBoolean(false);
         if (request.isAsyncStarted()) {
