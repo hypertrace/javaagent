@@ -29,6 +29,7 @@ import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.tooling.Instrumenter;
 import io.opentelemetry.trace.Span;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.servlet.ServletRequest;
@@ -39,6 +40,8 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
+import org.hypertrace.agent.blocking.BlockingProvider;
+import org.hypertrace.agent.blocking.BlockingResult;
 
 /**
  * This instrumentation adds request, response headers and bodies to the current active span. Hence
@@ -72,6 +75,14 @@ public class Servlet3BodyInstrumentation extends Instrumenter.Default {
   @Override
   public String[] helperClassNames() {
     return new String[] {
+      // TODO Add these to bootstrap classloader so they don't have to referenced in every
+      // instrumentation, see https://github.com/Traceableai/opentelemetry-javaagent/issues/17
+      "org.hypertrace.agent.blocking.BlockingProvider",
+      "org.hypertrace.agent.blocking.BlockingEvaluator",
+      "org.hypertrace.agent.blocking.BlockingResult",
+      "org.hypertrace.agent.blocking.ExecutionBlocked",
+      "org.hypertrace.agent.blocking.ExecutionNotBlocked",
+      "org.hypertrace.agent.blocking.MockBlockingEvaluator",
       "io.opentelemetry.instrumentation.servlet.HttpServletRequestGetter",
       "io.opentelemetry.instrumentation.servlet.ServletHttpServerTracer",
       "io.opentelemetry.instrumentation.auto.servlet.v3_0.Servlet3HttpServerTracer",
@@ -84,7 +95,6 @@ public class Servlet3BodyInstrumentation extends Instrumenter.Default {
       packageName + ".BufferingHttpServletRequest$ServletInputStreamWrapper",
       packageName + ".BufferingHttpServletRequest$BufferedReaderWrapper",
       packageName + ".BodyCaptureAsyncListener",
-      packageName + ".ExecutionBlocked",
     };
   }
 
@@ -102,7 +112,7 @@ public class Servlet3BodyInstrumentation extends Instrumenter.Default {
     // request attribute key injected at first filerChain.doFilter
     private static final String ALREADY_LOADED = "__org.hypertrace.agent.on_start_executed";
 
-    @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = ExecutionBlocked.class)
+    @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = BlockingResult.class)
     public static Object start(
         @Advice.Argument(value = 0, readOnly = false) ServletRequest request,
         @Advice.Argument(value = 1, readOnly = false) ServletResponse response,
@@ -128,16 +138,19 @@ public class Servlet3BodyInstrumentation extends Instrumenter.Default {
       request = new BufferingHttpServletRequest(httpRequest, (HttpServletResponse) response);
       // set request headers
       Enumeration<String> headerNames = httpRequest.getHeaderNames();
+      Map<String, String> headers = new HashMap<>();
       while (headerNames.hasMoreElements()) {
         String headerName = headerNames.nextElement();
         String headerValue = httpRequest.getHeader(headerName);
         currentSpan.setAttribute("request.header." + headerName, headerValue);
-        // TODO remove
-        // Mock example blocking
-        if ("block".equals(headerName)) {
-          httpResponse.setStatus(403);
-          return new ExecutionBlocked();
-        }
+        headers.put(headerName, headerValue);
+      }
+      BlockingResult blockingResult = BlockingProvider.getBlockingEvaluator().evaluate(headers);
+      currentSpan.setAttribute("hypertrace.opa.result", blockingResult.blockExecution());
+      if (blockingResult.blockExecution()) {
+        httpResponse.setStatus(403);
+        currentSpan.setAttribute("hypertrace.opa.reason", blockingResult.getReason());
+        return blockingResult;
       }
       return null;
     }
