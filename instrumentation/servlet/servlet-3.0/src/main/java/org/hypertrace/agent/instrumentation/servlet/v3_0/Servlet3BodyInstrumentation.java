@@ -43,15 +43,11 @@ import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.blocking.BlockingProvider;
 import org.hypertrace.agent.blocking.BlockingResult;
 
-/**
- * This instrumentation adds request, response headers and bodies to the current active span. Hence
- * the Servlet3Instrumentation has to run before to set the current active span.
- */
 @AutoService(Instrumenter.class)
 public class Servlet3BodyInstrumentation extends Instrumenter.Default {
 
   public Servlet3BodyInstrumentation() {
-    super("servlet", "servlet-3");
+    super("servlet", "servlet-3", "body", "servlet-body", "servlet-3-body");
   }
 
   @Override

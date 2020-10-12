@@ -32,7 +32,7 @@ class TraceableConfig {
     Map<String, String> agentArgsMap = parseAgentArgs(agentArgs);
     String configFile = agentArgsMap.get(CONFIG_FILE_ARG);
     if (configFile == null || configFile.isEmpty()) {
-      System.err.println("Config file not specified");
+      System.err.println("Traceable.ai config file not specified");
       return null;
     }
 
@@ -41,7 +41,7 @@ class TraceableConfig {
       ObjectMapper objectMapper = new ObjectMapper();
       config = objectMapper.readValue(reader, InstrumentationAgentConfig.class);
     } catch (Exception e) {
-      System.err.printf("Problem reading config file: %s\n", e);
+      System.err.printf("Problem reading Traceable.ai config file: %s\n", e);
       return null;
     }
     // allow overriding of the service name from the args

@@ -48,6 +48,11 @@ Supported agent arguments:
 * `traceableConfigFile` - path to traceable config file
 * `traceableServiceName` - service name of the monitored process
 
+### Disable request/response body capture
+
+Request and response body capture can be disabled by `-Dotel.integration.body.enabled=false` or
+`-Dotel.integration.<instrumentation>-body.enabled=false`.
+
 ## Test
 
 Tests use docker via Testcontainers.org.
