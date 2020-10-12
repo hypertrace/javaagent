@@ -24,6 +24,7 @@ subprojects {
     apply(from = "$rootDir/gradle/spotless.gradle")
 
     repositories {
+        mavenCentral()
         jcenter()
         maven {
             url = uri("https://dl.bintray.com/open-telemetry/maven")
@@ -31,7 +32,13 @@ subprojects {
         maven {
             url = uri("https://oss.jfrog.org/artifactory/oss-snapshot-local")
         }
-        mavenCentral()
+        maven {
+            url = uri(extra.properties["artifactory_contextUrl"] as String + "/gradle")
+            credentials {
+                username = extra.properties["artifactory_user"] as String
+                password = extra.properties["artifactory_password"] as String
+            }
+        }
     }
 
     dependencies {
