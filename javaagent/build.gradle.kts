@@ -8,6 +8,7 @@ dependencies {
     // update the dependencies also in the instrumentations sub-projects
     // https://oss.jfrog.org/artifactory/oss-snapshot-local/io/opentelemetry/instrumentation/auto/
     implementation("io.opentelemetry.instrumentation.auto", "opentelemetry-javaagent", version = "0.9.0-20201008.091003-73", classifier = "all")
+    implementation("ai.traceable.agent", "agent-config", version = "0.2.4")
 }
 
 base.archivesBaseName = "hypertrace-agent"
@@ -24,6 +25,7 @@ tasks {
     }
 
     shadowJar {
+        relocate("com.fasterxml.jackson", "org.hypertrace.shaded.com.fasterxml.jackson")
         mergeServiceFiles {
             include("inst/META-INF/services/*")
         }
@@ -36,9 +38,9 @@ tasks {
             attributes.put("Implementation-Vendor", "Hypertrace.org")
             // TODO set to Github repository URL
             attributes.put("Implementation-Url", "https://hypertrace.org")
-            attributes.put("Main-Class",    "io.opentelemetry.javaagent.OpenTelemetryAgent")
-            attributes.put("Agent-Class",   "io.opentelemetry.javaagent.OpenTelemetryAgent")
-            attributes.put("Premain-Class", "io.opentelemetry.javaagent.OpenTelemetryAgent")
+            attributes.put("Main-Class", "io.opentelemetry.javaagent.OpenTelemetryAgent")
+            attributes.put("Agent-Class",   "org.hypertrace.agent.HypertraceAgent")
+            attributes.put("Premain-Class", "org.hypertrace.agent.HypertraceAgent")
             attributes.put("Can-Redefine-Classes", true)
             attributes.put("Can-Retransform-Classes", true)
         }

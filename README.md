@@ -22,11 +22,31 @@ List of supported frameworks with additional capabilities:
 make build
 ```
 
+The final artifact is in `javaagent/build/libs/hypertrace-agent-<version>-all.jar`
+
 ## Run
 
 ```bash
-OTEL_EXPORTER=otlp java -agentlib:jdwp="transport=dt_socket,server=y,suspend=n,address=5000" -javaagent:${HOME}/projects/hypertrace/opentelemetry-java-agent/javaagent/build/libs/hypertrace-agent-0.0.1-all.jar -jar app.jar
+OTEL_EXPORTER=zipkin java -javaagent:javaagent/build/libs/hypertrace-agent-0.0.1-all.jar -jar app.jar
 ```
+
+### Run with Traceable.ai config
+
+The precedence order of different configuration 
+1. OpenTelemetry Agent's trace config file `OTEL_TRACE_CONFIG`/`otel.trace.config`
+2. Traceable.ai configuration file
+3. OpenTelemetry system properties and env variables
+
+Follows and example of using Traceable.ai config file (`example-config.json`):
+
+```bash
+java -javaagent:javaagent/build/libs/hypertrace-agent-0.0.1-all.jar=traceableConfigFile=example-config.json -jar app.jar
+```
+
+Supported agent arguments:
+
+* `traceableConfigFile` - path to traceable config file
+* `traceableServiceName` - service name of the monitored process
 
 ## Test
 
