@@ -14,13 +14,23 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.instrumentation.servlet.v3_0;
+package org.hypertrace.agent.blocking;
 
-import net.bytebuddy.asm.Advice.OnMethodEnter;
+/** Indicates that the execution should be blocked. */
+class ExecutionBlocked implements BlockingResult {
+  private final String reason;
 
-/**
- * Advice methods can return this object to indicate that the execution should be blocked. The class
- * should be added to {@link OnMethodEnter#skipOn()}. If the block object is returned then all exit
- * advices are executed as well but the user code "in-between" is skipped.
- */
-public final class ExecutionBlocked {}
+  public ExecutionBlocked(String reason) {
+    this.reason = reason;
+  }
+
+  @Override
+  public boolean blockExecution() {
+    return true;
+  }
+
+  @Override
+  public String getReason() {
+    return null;
+  }
+}

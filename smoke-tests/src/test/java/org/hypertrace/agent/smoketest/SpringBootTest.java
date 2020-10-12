@@ -36,20 +36,20 @@ public class SpringBootTest extends AbstractSmokeTest {
   }
 
   @Test
-  public void springBootSmokeTest() throws IOException, InterruptedException {
+  public void springBootSmokeTest() throws IOException {
     // TODO test with multiple JDK (11, 14)
     startAppUnderTest(8);
     String url = String.format("http://localhost:%d/greeting", target.getMappedPort(8080));
     Request request = new Request.Builder().url(url).get().build();
+
+    Response response = client.newCall(request).execute();
+    Collection<ExportTraceServiceRequest> traces = waitForTraces();
 
     Object currentAgentVersion =
         new JarFile(agentPath)
             .getManifest()
             .getMainAttributes()
             .get(Attributes.Name.IMPLEMENTATION_VERSION);
-
-    Response response = client.newCall(request).execute();
-    Collection<ExportTraceServiceRequest> traces = waitForTraces();
 
     Assertions.assertEquals(response.body().string(), "Hi!");
     Assertions.assertEquals(1, countSpansByName(traces, "/greeting"));
@@ -85,6 +85,24 @@ public class SpringBootTest extends AbstractSmokeTest {
             .collect(Collectors.toList());
     Assertions.assertEquals(1, responseBodyAttributes.size());
     Assertions.assertEquals("Hi!", responseBodyAttributes.get(0));
+    stopAppUnderTest();
+  }
+
+  @Test
+  public void springBootMockBlockingTest() throws IOException {
+    startAppUnderTest(8);
+    String url = String.format("http://localhost:%d/greeting", target.getMappedPort(8080));
+    Request request = new Request.Builder().url(url).addHeader("block", "true").get().build();
+    Response response = client.newCall(request).execute();
+    Collection<ExportTraceServiceRequest> traces = waitForTraces();
+
+    Assertions.assertEquals(response.code(), 403);
+    Assertions.assertEquals(
+        1,
+        getSpanStream(traces)
+            .flatMap(s -> s.getAttributesList().stream())
+            .filter(a -> a.getKey().equals("hypertrace.opa.result"))
+            .count());
     stopAppUnderTest();
   }
 }

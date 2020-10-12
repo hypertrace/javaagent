@@ -3,6 +3,8 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":blocking"))
+
     compileOnly("javax.servlet:javax.servlet-api:3.1.0")
     implementation("net.bytebuddy:byte-buddy:1.10.10")
 
