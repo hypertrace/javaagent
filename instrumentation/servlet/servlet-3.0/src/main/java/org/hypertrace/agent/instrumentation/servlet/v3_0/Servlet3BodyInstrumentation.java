@@ -26,6 +26,7 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
 import com.google.auto.service.AutoService;
+import io.opentelemetry.javaagent.common.exec.Foo;
 import io.opentelemetry.javaagent.tooling.Instrumenter;
 import io.opentelemetry.trace.Span;
 import java.util.Enumeration;
@@ -42,6 +43,7 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.blocking.BlockingProvider;
 import org.hypertrace.agent.blocking.BlockingResult;
+import org.hypertrace.agent.blocking.FooBlocking;
 
 @AutoService(Instrumenter.class)
 public class Servlet3BodyInstrumentation extends Instrumenter.Default {
@@ -124,6 +126,8 @@ public class Servlet3BodyInstrumentation extends Instrumenter.Default {
         return null;
       }
       request.setAttribute(ALREADY_LOADED, true);
+      Foo.foo();
+      FooBlocking.print();
 
       HttpServletRequest httpRequest = (HttpServletRequest) request;
       HttpServletResponse httpResponse = (HttpServletResponse) response;
