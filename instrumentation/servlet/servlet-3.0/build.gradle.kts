@@ -2,6 +2,20 @@ plugins {
     java
 }
 
+muzzle {
+    pass {
+        group = "javax.servlet"
+        module = "javax.servlet-api"
+        versions = "[3.0,)"
+        assertInverse = true
+    }
+    fail {
+        group = "javax.servlet"
+        module = "servlet-api"
+        versions = "(,)"
+    }
+}
+
 dependencies {
     implementation(project(":blocking"))
 
@@ -10,4 +24,3 @@ dependencies {
 
     implementation("io.opentelemetry.instrumentation.auto:opentelemetry-auto-servlet-3.0:0.9.0-20201009.101216-80")
 }
-

@@ -6,3 +6,5 @@ include("instrumentation:servlet:servlet-3.0")
 findProject(":instrumentation:servlet:servlet-3.0")?.name = "servlet-3.0"
 include("smoke-tests")
 include("blocking")
+include("javaagent-tooling")
+include("javaagent-bootstrap")

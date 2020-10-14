@@ -1,9 +1,13 @@
 plugins {
     java
     id("com.github.johnrengelman.shadow") version "6.0.0"
+    id("net.bytebuddy.byte-buddy-gradle-plugin") version "1.10.10"
+    muzzle
 }
 
 subprojects {
+    apply(plugin = "net.bytebuddy.byte-buddy-gradle-plugin")
+    apply(plugin = "muzzle")
     dependencies {
         implementation("org.slf4j:slf4j-api:1.7.30")
         implementation("com.google.auto.service:auto-service:1.0-rc7")
@@ -11,10 +15,27 @@ subprojects {
 
         implementation("io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-tooling:0.9.0-20201009.101126-80")
     }
+    // set in gradle/instrumentation.gradle and applied to all instrumentations
+    afterEvaluate{
+        byteBuddy {
+            transformation(closureOf<net.bytebuddy.build.gradle.Transformation> {
+                plugin = "io.opentelemetry.javaagent.tooling.muzzle.MuzzleGradlePlugin"
+                setClassPath(instrumentationMuzzle + project.configurations.runtimeClasspath + project.sourceSets["main"].output)
+            })
+        }
+    }
 }
+
+val instrumentationMuzzle by configurations.creating
 
 dependencies{
     implementation(project(":instrumentation:servlet:servlet-3.0"))
+    implementation("io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-tooling:0.9.0-20201009.101126-80")
+
+    // should be set to :javaagent-tooling from OTEL jaeger
+    instrumentationMuzzle("io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-bootstrap:0.9.0-20201011.183556-85")
+    // this might not be necessary
+    instrumentationMuzzle("io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-tooling:0.9.0-20201009.101126-80")
 }
 
 tasks {
