@@ -49,7 +49,6 @@ dependencies{
     instrumentationMuzzle("com.blogspot.mydailyjava:weak-lock-free:0.15")
     instrumentationMuzzle("com.google.auto.service:auto-service:1.0-rc7")
     instrumentationMuzzle("org.slf4j:slf4j-api:1.7.30")
-//    instrumentationMuzzle(project(":blocking"))
 }
 
 tasks {
