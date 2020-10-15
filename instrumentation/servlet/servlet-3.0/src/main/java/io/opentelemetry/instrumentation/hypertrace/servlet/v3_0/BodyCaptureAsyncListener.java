@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.instrumentation.servlet.v3_0;
+package io.opentelemetry.instrumentation.hypertrace.servlet.v3_0;
 
 import io.opentelemetry.trace.Span;
 import java.util.concurrent.atomic.AtomicBoolean;
