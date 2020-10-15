@@ -18,13 +18,13 @@ subprojects {
         implementation("io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-tooling:0.9.0-20201009.101126-80")
     }
 
+    // set in gradle/instrumentation.gradle and applied to all instrumentations
     byteBuddy {
         transformation(closureOf<net.bytebuddy.build.gradle.Transformation> {
             setTasks(setOf("compileJava", "compileScala", "compileKotlin"))
             plugin = "io.opentelemetry.javaagent.tooling.muzzle.MuzzleGradlePlugin\$NoOp"
         })
     }
-    // set in gradle/instrumentation.gradle and applied to all instrumentations
     afterEvaluate{
         byteBuddy {
             transformation(closureOf<net.bytebuddy.build.gradle.Transformation> {
@@ -48,6 +48,8 @@ dependencies{
     instrumentationMuzzle("net.bytebuddy:byte-buddy-agent:1.10.10")
     instrumentationMuzzle("com.blogspot.mydailyjava:weak-lock-free:0.15")
     instrumentationMuzzle("com.google.auto.service:auto-service:1.0-rc7")
+    instrumentationMuzzle("org.slf4j:slf4j-api:1.7.30")
+//    instrumentationMuzzle(project(":blocking"))
 }
 
 tasks {
@@ -74,10 +76,10 @@ tasks {
         relocate("io.opentelemetry.metrics", "io.opentelemetry.javaagent.shaded.io.opentelemetry.metrics")
         relocate("io.opentelemetry.trace", "io.opentelemetry.javaagent.shaded.io.opentelemetry.trace")
 
-        // rewrite library instrumentation dependencies
-//        relocate("io.opentelemetry.instrumentation", "io.opentelemetry.javaagent.shaded.instrumentation") {
-//            exclude("io.opentelemetry.instrumentation.auto.**")
-//        }
+        //opentelemetry rewrite library instrumentation dependencies
+        relocate("io.opentelemetry.instrumentation", "io.opentelemetry.javaagent.shaded.instrumentation") {
+            exclude("io.opentelemetry.instrumentation.auto.**")
+        }
 
         // relocate OpenTelemetry API dependency
         relocate("io.grpc", "io.opentelemetry.javaagent.shaded.io.grpc")
