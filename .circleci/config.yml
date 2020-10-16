@@ -1,23 +1,16 @@
 version: 2
-#executorType: machine
 jobs:
   build:
     # For testcontainers.org
     machine:
       image: ubuntu-1604:202007-01
-#    docker:
-      # specify the version you desire here
-#      - image: circleci/openjdk:8-jdk
     working_directory: ~/repo
-
     environment:
       # Customize the JVM maximum heap limit
       JVM_OPTS: -Xmx1g
       TERM: dumb
-
     steps:
       - checkout
-
 # TODO Task 'downloadDependencies' not found in root project 'hypertrace-otel-agent'.
 #      # Download and cache dependencies
 #      - restore_cache:
@@ -33,7 +26,6 @@ jobs:
 #          paths:
 #            - ~/.gradle
 #          key: v1-dependencies-{{ checksum "build.gradle.kts" }}
-
       - run: make build
 
   muzzle:
