@@ -39,7 +39,6 @@ jobs:
       TERM: dumb
     steps:
       - checkout
-      - run: java -version
       - run: ./gradlew assemble muzzle
 
 workflows:
