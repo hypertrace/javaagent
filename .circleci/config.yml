@@ -35,9 +35,27 @@ jobs:
 
       - run: make build
 
+  muzzle:
+    docker:
+      # specify the version you desire here
+      - image: circleci/openjdk:8-jdk
+
+    working_directory: ~/repo
+
+    environment:
+      # Customize the JVM maximum heap limit
+      JVM_OPTS: -Xmx1g
+      TERM: dumb
+
+    steps:
+      - checkout
+      - run: ./gradlew assemble muzzle
+
 workflows:
   version: 2
   build:
     jobs:
       - build:
+          context: artifactory-gradle
+      - muzzle:
           context: artifactory-gradle
