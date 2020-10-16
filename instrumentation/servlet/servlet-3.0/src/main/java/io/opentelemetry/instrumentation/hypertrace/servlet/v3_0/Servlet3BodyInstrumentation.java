@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.instrumentation.servlet.v3_0;
+package io.opentelemetry.instrumentation.hypertrace.servlet.v3_0;
 
 import static io.opentelemetry.instrumentation.auto.servlet.v3_0.Servlet3HttpServerTracer.TRACER;
 import static io.opentelemetry.javaagent.tooling.ClassLoaderMatcher.hasClassesNamed;
@@ -43,6 +43,10 @@ import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.blocking.BlockingProvider;
 import org.hypertrace.agent.blocking.BlockingResult;
 
+/**
+ * TODO https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/1395 is resolved
+ * move this to org.hypertrace package.
+ */
 @AutoService(Instrumenter.class)
 public class Servlet3BodyInstrumentation extends Instrumenter.Default {
 
