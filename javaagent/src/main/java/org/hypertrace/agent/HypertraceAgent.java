@@ -16,8 +16,6 @@
 
 package org.hypertrace.agent;
 
-import ai.traceable.agent.agentconfig.InstrumentationAgentConfig;
-import ai.traceable.agent.agentconfig.Reporting;
 import io.opentelemetry.javaagent.OpenTelemetryAgent;
 import java.lang.instrument.Instrumentation;
 
@@ -36,40 +34,6 @@ public class HypertraceAgent {
   }
 
   public static void agentmain(String agentArgs, Instrumentation inst) {
-    configureOTELWithTraceableConfig(agentArgs);
     OpenTelemetryAgent.premain(agentArgs, inst);
-  }
-
-  private static void configureOTELWithTraceableConfig(String agentArgs) {
-    // The properties from traceable config file are set as default to OTEL config.
-    InstrumentationAgentConfig traceableConfig = TraceableConfig.loadConfigFile(agentArgs);
-    if (traceableConfig == null) {
-      return;
-    }
-
-    if (traceableConfig.getLogging() != null && traceableConfig.getLogging().getLevel() != null) {
-      OpenTelemetryConfig.setDefault(
-          OTEL_DEFAULT_LOG_LEVEL, traceableConfig.getLogging().getLevel());
-    }
-
-    // set reporter to Zipkin because OpenTelemetry supports only Jaeger gRPC
-    // which is not supported by OC collector in Hypertrace
-    OpenTelemetryConfig.setDefault(OTEL_EXPORTER, "zipkin");
-
-    // TODO retry and backoff are not in OTEL. Maybe gRPC exporter does retry automatically?
-    Reporting reporting = traceableConfig.getReporting();
-    if (reporting != null) {
-      if (reporting != null && reporting.getTracesAddress() != null) {
-        OpenTelemetryConfig.setDefault(OTEL_EXPORTER_ZIPKIN_ENDPOINT, reporting.getTracesAddress());
-      }
-      if (reporting.getQueueSize() != null) {
-        OpenTelemetryConfig.setDefault(
-            OTEL_PROCESSOR_BATCH_MAX_QUEUE, Integer.toString(reporting.getQueueSize()));
-      }
-    }
-    if (traceableConfig.getServiceName() != null) {
-      OpenTelemetryConfig.setDefault(
-          OTEL_EXPORTER_ZIPKIN_SERVICE_NAME, traceableConfig.getServiceName());
-    }
   }
 }

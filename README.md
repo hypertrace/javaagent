@@ -29,23 +29,9 @@ The final artifact is in `javaagent/build/libs/hypertrace-agent-<version>-all.ja
 OTEL_EXPORTER=zipkin java -javaagent:javaagent/build/libs/hypertrace-agent-0.0.1-all.jar -jar app.jar
 ```
 
-### Run with Traceable.ai config
-
-The precedence order of different configuration 
+The configuration precedence order 
 1. OpenTelemetry Agent's trace config file `OTEL_TRACE_CONFIG`/`otel.trace.config`
-2. Traceable.ai configuration file
 3. OpenTelemetry system properties and env variables
-
-Follows and example of using Traceable.ai config file (`example-config.json`):
-
-```bash
-java -javaagent:javaagent/build/libs/hypertrace-agent-0.0.1-all.jar=traceableConfigFile=example-config.json -jar app.jar
-```
-
-Supported agent arguments:
-
-* `traceableConfigFile` - path to traceable config file
-* `traceableServiceName` - service name of the monitored process
 
 ### Disable request/response body capture
 
