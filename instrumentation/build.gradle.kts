@@ -1,15 +1,9 @@
 plugins {
     java
     id("com.github.johnrengelman.shadow") version "6.0.0"
-    id("net.bytebuddy.byte-buddy-gradle-plugin") version "1.10.10"
-    id("io.opentelemetry.instrumentation.auto-instrumentation")
-    muzzle
 }
 
 subprojects {
-    apply(plugin = "net.bytebuddy.byte-buddy-gradle-plugin")
-    apply(plugin = "muzzle")
-    apply(plugin = "io.opentelemetry.instrumentation.auto-instrumentation")
     dependencies {
         implementation("org.slf4j:slf4j-api:1.7.30")
         implementation("com.google.auto.service:auto-service:1.0-rc7")
@@ -18,37 +12,10 @@ subprojects {
         implementation("io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-tooling:0.9.0-20201009.101126-80")
     }
 
-    // set in gradle/instrumentation.gradle and applied to all instrumentations
-    byteBuddy {
-        transformation(closureOf<net.bytebuddy.build.gradle.Transformation> {
-            setTasks(setOf("compileJava", "compileScala", "compileKotlin"))
-            plugin = "io.opentelemetry.javaagent.tooling.muzzle.MuzzleGradlePlugin\$NoOp"
-        })
-    }
-    afterEvaluate{
-        byteBuddy {
-            transformation(closureOf<net.bytebuddy.build.gradle.Transformation> {
-                setTasks(setOf("compileJava", "compileScala", "compileKotlin"))
-                plugin = "io.opentelemetry.javaagent.tooling.muzzle.MuzzleGradlePlugin"
-                setClassPath(instrumentationMuzzle + project.configurations.runtimeClasspath + project.sourceSets["main"].output)
-            })
-        }
-    }
 }
-
-val instrumentationMuzzle by configurations.creating
 
 dependencies{
     implementation(project(":instrumentation:servlet:servlet-3.0"))
-
-    instrumentationMuzzle("io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-tooling:0.9.0-20201009.101126-80")
-    instrumentationMuzzle("io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-bootstrap:0.9.0-20201009.192532-82")
-    instrumentationMuzzle("io.opentelemetry.instrumentation:opentelemetry-auto-api:0.9.0-20201009.192531-82")
-    instrumentationMuzzle("net.bytebuddy:byte-buddy:1.10.10")
-    instrumentationMuzzle("net.bytebuddy:byte-buddy-agent:1.10.10")
-    instrumentationMuzzle("com.blogspot.mydailyjava:weak-lock-free:0.15")
-    instrumentationMuzzle("com.google.auto.service:auto-service:1.0-rc7")
-    instrumentationMuzzle("org.slf4j:slf4j-api:1.7.30")
 }
 
 tasks {
