@@ -32,7 +32,7 @@ afterEvaluate{
 val instrumentationMuzzle by configurations.creating
 
 dependencies {
-    implementation(project(":blocking"))
+    api(project(":blocking"))
 
     compileOnly("javax.servlet:javax.servlet-api:3.1.0")
     implementation("net.bytebuddy:byte-buddy:1.10.10")
