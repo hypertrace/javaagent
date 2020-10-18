@@ -26,14 +26,10 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
 import com.google.auto.service.AutoService;
-import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.javaagent.tooling.Instrumenter;
 import io.opentelemetry.trace.Span;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.servlet.ServletRequest;
@@ -54,17 +50,15 @@ import org.hypertrace.agent.blocking.BlockingResult;
 @AutoService(Instrumenter.class)
 public class Servlet3BodyInstrumentation extends Instrumenter.Default {
 
-  private static final List<String> INSTRUMETNATION_NAME = Arrays.asList("servlet", "servlet-3");
-
   public Servlet3BodyInstrumentation() {
-    super(INSTRUMETNATION_NAME.get(0), INSTRUMETNATION_NAME.subList(1, INSTRUMETNATION_NAME.size()).toArray(new String[0]));
+    super(InstrumentationName.INSTRUMENTATION_NAME[0], InstrumentationName.INSTRUMENTATION_NAME[1]);
   }
 
   @Override
   public int getOrder() {
     /**
-     * Order 1 assures that this instrumentation runs after OTEL servlet instrumentation
-     * so we can access current span in our advice.
+     * Order 1 assures that this instrumentation runs after OTEL servlet instrumentation so we can
+     * access current span in our advice.
      */
     return 1;
   }
@@ -97,6 +91,7 @@ public class Servlet3BodyInstrumentation extends Instrumenter.Default {
       "io.opentelemetry.instrumentation.servlet.ServletHttpServerTracer",
       "io.opentelemetry.instrumentation.auto.servlet.v3_0.Servlet3HttpServerTracer",
       packageName + ".DynamicConfig",
+      packageName + ".InstrumentationName",
       packageName + ".BufferingHttpServletResponse",
       packageName + ".BufferingHttpServletResponse$BufferingServletOutputStream",
       packageName + ".BufferingHttpServletResponse$BufferedWriterWrapper",
@@ -132,8 +127,9 @@ public class Servlet3BodyInstrumentation extends Instrumenter.Default {
         return null;
       }
 
-
-      DynamicConfig.getProperty("oteld.dynamic.integration..enabled");
+      if (!DynamicConfig.isEnabled(InstrumentationName.INSTRUMENTATION_NAME)) {
+        return null;
+      }
 
       // TODO run on every doFilter and check if user removed wrapper
       // TODO what if user unwraps request and reads the body?
