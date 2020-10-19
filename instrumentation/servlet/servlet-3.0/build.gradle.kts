@@ -6,11 +6,11 @@ plugins {
 }
 
 muzzle {
-//    pass {
-//        group = "javax.servlet"
-//        module = "javax.servlet-api"
-//        versions = "[3.0.0,3.0.1]"
-//    }
+    pass {
+        group = "javax.servlet"
+        module = "javax.servlet-api"
+        versions = "[3.0.0,3.0.1]"
+    }
     fail {
         group = "javax.servlet"
         module = "servlet-api"
