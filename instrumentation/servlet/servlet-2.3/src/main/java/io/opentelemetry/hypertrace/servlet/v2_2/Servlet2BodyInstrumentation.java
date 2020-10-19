@@ -83,7 +83,7 @@ public class Servlet2BodyInstrumentation extends Instrumenter.Default {
     return new String[] {
       "io.opentelemetry.instrumentation.servlet.HttpServletRequestGetter",
       "io.opentelemetry.instrumentation.servlet.ServletHttpServerTracer",
-      "io.opentelemetry.instrumentation.auto.servlet.v2_0.Servlet2HttpServerTracer",
+      "io.opentelemetry.instrumentation.auto.servlet.v2_2.Servlet2HttpServerTracer",
       "org.hypertrace.agent.blocking.BlockingProvider",
       "org.hypertrace.agent.blocking.BlockingEvaluator",
       "org.hypertrace.agent.blocking.BlockingResult",
