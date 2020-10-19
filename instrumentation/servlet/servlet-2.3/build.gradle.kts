@@ -11,7 +11,6 @@ muzzle {
         module = "servlet-api"
         versions = "[2.3,)"
     }
-    // fail on all old servlet-api. This groupId was changed in 3.x to javax.servlet-api
     fail {
         group = "javax.servlet"
         module = "javax.servlet-api"

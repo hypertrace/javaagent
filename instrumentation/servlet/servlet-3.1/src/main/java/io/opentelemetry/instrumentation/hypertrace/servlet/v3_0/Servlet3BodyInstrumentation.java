@@ -68,8 +68,7 @@ public class Servlet3BodyInstrumentation extends Instrumenter.Default {
   @Override
   public ElementMatcher<ClassLoader> classLoaderMatcher() {
     // Optimization for expensive typeMatcher.
-    // return hasClassesNamed("javax.servlet.Filter"); // Not available in 2.2
-    return hasClassesNamed("javax.servlet.http.HttpServlet");
+    return hasClassesNamed("javax.servlet.http.HttpServlet", "javax.servlet.ReadListener");
   }
 
   @Override

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.hypertrace.servlet.v2_2;
+package io.opentelemetry.instrumentation.hypertrace.servlet.v2_2;
 
 import static io.opentelemetry.instrumentation.auto.servlet.v2_2.Servlet2HttpServerTracer.TRACER;
 import static io.opentelemetry.javaagent.tooling.ClassLoaderMatcher.hasClassesNamed;
@@ -67,8 +67,7 @@ public class Servlet2BodyInstrumentation extends Instrumenter.Default {
   @Override
   public ElementMatcher<ClassLoader> classLoaderMatcher() {
     // Request/response wrappers are available since servlet 2.3!
-    return hasClassesNamed(
-            "javax.servlet.http.HttpServlet", "javax.servlet.http.HttpServletRequestWrapper")
+    return hasClassesNamed("javax.servlet.http.HttpServlet", "javax.servlet.http.HttpServletRequestWrapper")
         .and(not(hasClassesNamed("javax.servlet.AsyncEvent", "javax.servlet.AsyncListener")));
   }
 
@@ -76,6 +75,11 @@ public class Servlet2BodyInstrumentation extends Instrumenter.Default {
   public ElementMatcher<TypeDescription> typeMatcher() {
     return safeHasSuperType(
         namedOneOf("javax.servlet.FilterChain", "javax.servlet.http.HttpServlet"));
+  }
+
+  @Override
+  public Map<String, String> contextStore() {
+    return singletonMap("javax.servlet.ServletResponse", Integer.class.getName());
   }
 
   @Override
@@ -111,7 +115,7 @@ public class Servlet2BodyInstrumentation extends Instrumenter.Default {
             .and(takesArgument(0, named("javax.servlet.ServletRequest")))
             .and(takesArgument(1, named("javax.servlet.ServletResponse")))
             .and(isPublic()),
-        packageName + ".Servlet2BodyInstrumentation$Filter2Advice");
+        Filter2Advice.class.getName());
   }
 
   public static class Filter2Advice {
@@ -123,6 +127,7 @@ public class Servlet2BodyInstrumentation extends Instrumenter.Default {
         @Advice.Argument(value = 0, readOnly = false) ServletRequest request,
         @Advice.Argument(value = 1, readOnly = false) ServletResponse response,
         @Advice.Local("rootStart") Boolean rootStart) {
+      System.out.println("---> is 2.3");
       if (!(request instanceof HttpServletRequest) || !(response instanceof HttpServletResponse)) {
         return null;
       }

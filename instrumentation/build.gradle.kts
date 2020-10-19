@@ -47,6 +47,7 @@ tasks {
         //opentelemetry rewrite library instrumentation dependencies
         relocate("io.opentelemetry.instrumentation", "io.opentelemetry.javaagent.shaded.instrumentation") {
             exclude("io.opentelemetry.instrumentation.auto.**")
+            exclude("io.opentelemetry.instrumentation.hypertrace.**")
         }
 
         // relocate OpenTelemetry API dependency
