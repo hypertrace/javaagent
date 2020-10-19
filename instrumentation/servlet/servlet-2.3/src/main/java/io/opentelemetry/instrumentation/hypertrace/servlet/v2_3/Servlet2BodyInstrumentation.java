@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.servlet.v2_2;
+package io.opentelemetry.instrumentation.hypertrace.servlet.v2_3;
 
 import static io.opentelemetry.instrumentation.auto.servlet.v2_2.Servlet2HttpServerTracer.TRACER;
 import static io.opentelemetry.javaagent.tooling.ClassLoaderMatcher.hasClassesNamed;

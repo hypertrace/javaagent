@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.servlet.v2_2;
+package io.opentelemetry.instrumentation.hypertrace.servlet.v2_3;
 
 public class InstrumentationName {
   public static final String[] INSTRUMENTATION_NAME = {"servlet", "servlet-2"};
