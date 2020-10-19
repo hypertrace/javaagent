@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.servlet.v3_0;
+package io.opentelemetry.instrumentation.hypertrace.servlet.v2_2;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import javax.servlet.AsyncContext;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
@@ -50,11 +49,6 @@ public class BufferingHttpServletRequest extends HttpServletRequestWrapper {
       HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
     super(httpServletRequest);
     this.response = httpServletResponse;
-  }
-
-  @Override
-  public AsyncContext startAsync() {
-    return getRequest().startAsync(this, response);
   }
 
   @Override

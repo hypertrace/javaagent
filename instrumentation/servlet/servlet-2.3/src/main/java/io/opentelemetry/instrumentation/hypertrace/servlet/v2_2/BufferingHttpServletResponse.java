@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.servlet.v3_0;
+package io.opentelemetry.instrumentation.hypertrace.servlet.v2_2;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -43,6 +43,7 @@ public class BufferingHttpServletResponse extends HttpServletResponseWrapper {
   private ServletOutputStream outputStream = null;
   private PrintWriter writer = null;
   private final Map<String, List<String>> headers = new LinkedHashMap<>();
+  private String contentType;
 
   public BufferingHttpServletResponse(HttpServletResponse httpServletResponse) {
     super(httpServletResponse);
@@ -84,36 +85,43 @@ public class BufferingHttpServletResponse extends HttpServletResponseWrapper {
     return writer;
   }
 
+  @Override
   public void setDateHeader(String name, long date) {
     super.setDateHeader(name, date);
     safelyCaptureHeader(name, date);
   }
 
+  @Override
   public void addDateHeader(String name, long date) {
     super.addDateHeader(name, date);
     safelyCaptureHeader(name, date);
   }
 
+  @Override
   public void setHeader(String name, String value) {
     super.setHeader(name, value);
     safelyCaptureHeader(name, value);
   }
 
+  @Override
   public void addHeader(String name, String value) {
     super.addHeader(name, value);
     safelyCaptureHeader(name, value);
   }
 
+  @Override
   public void setIntHeader(String name, int value) {
     super.setIntHeader(name, value);
     safelyCaptureHeader(name, value);
   }
 
+  @Override
   public void addIntHeader(String name, int value) {
     super.addIntHeader(name, value);
     safelyCaptureHeader(name, value);
   }
 
+  @Override
   public void addCookie(Cookie cookie) {
     super.addCookie(cookie);
     safelyAddCookieHeader(cookie);
@@ -127,7 +135,6 @@ public class BufferingHttpServletResponse extends HttpServletResponseWrapper {
       httpCookie.setPath(cookie.getPath());
       httpCookie.setMaxAge(cookie.getMaxAge());
       httpCookie.setVersion(cookie.getVersion());
-      httpCookie.setHttpOnly(cookie.isHttpOnly());
       httpCookie.setSecure(cookie.getSecure());
       String headerValue = httpCookie.toString();
       List<String> values = new ArrayList<>(1);
@@ -139,6 +146,9 @@ public class BufferingHttpServletResponse extends HttpServletResponseWrapper {
   }
 
   private void safelyCaptureHeader(String name, Object value) {
+    if (name != null && "content-type".equals(name.toLowerCase())) {
+      this.contentType = String.valueOf(value);
+    }
     try {
       List<String> values = headers.getOrDefault(name, new ArrayList<>());
       values.add(String.valueOf(value));
@@ -177,7 +187,6 @@ public class BufferingHttpServletResponse extends HttpServletResponseWrapper {
   }
 
   private boolean shouldReadContent() {
-    String contentType = getContentType();
     if (contentType == null || contentType.isEmpty()) {
       return false;
     }

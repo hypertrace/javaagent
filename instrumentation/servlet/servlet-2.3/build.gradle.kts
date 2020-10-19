@@ -8,12 +8,12 @@ plugins {
 muzzle {
     pass {
         group = "javax.servlet"
-        module = "javax.servlet-api"
-        versions = "[3.0.0,3.0.1]"
+        module = "servlet-api"
+        versions = "[2.3,)"
     }
     fail {
         group = "javax.servlet"
-        module = "servlet-api"
+        module = "javax.servlet-api"
         versions = "(,)"
     }
 }
@@ -22,7 +22,7 @@ muzzle {
 afterEvaluate{
     byteBuddy {
         transformation(closureOf<net.bytebuddy.build.gradle.Transformation> {
-            setTasks(kotlin.collections.setOf("compileJava", "compileScala", "compileKotlin"))
+            setTasks(setOf("compileJava", "compileScala", "compileKotlin"))
             plugin = "io.opentelemetry.javaagent.tooling.muzzle.MuzzleGradlePlugin"
             setClassPath(instrumentationMuzzle + configurations.runtimeClasspath + sourceSets["main"].output)
         })
@@ -34,10 +34,10 @@ val instrumentationMuzzle by configurations.creating
 dependencies {
     api(project(":blocking"))
 
-    compileOnly("javax.servlet:javax.servlet-api:3.0.1")
+    compileOnly("javax.servlet:servlet-api:2.3")
     implementation("net.bytebuddy:byte-buddy:1.10.10")
 
-    implementation("io.opentelemetry.instrumentation.auto:opentelemetry-auto-servlet-3.0:0.9.0-20201009.101216-80")
+    implementation("io.opentelemetry.instrumentation.auto:opentelemetry-auto-servlet-2.2:0.9.0-20201009.101215-80")
 
     instrumentationMuzzle("io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-tooling:0.9.0-20201009.101126-80")
     instrumentationMuzzle("io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-bootstrap:0.9.0-20201009.192532-82")
@@ -48,4 +48,3 @@ dependencies {
     instrumentationMuzzle("com.google.auto.service:auto-service:1.0-rc7")
     instrumentationMuzzle("org.slf4j:slf4j-api:1.7.30")
 }
-

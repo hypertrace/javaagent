@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.servlet.v3_0;
+package io.opentelemetry.instrumentation.hypertrace.servlet.v3_1;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -27,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
@@ -235,6 +236,14 @@ public class BufferingHttpServletResponse extends HttpServletResponseWrapper {
     @Override
     public void close() throws IOException {
       outputStream.close();
+    }
+
+    public boolean isReady() {
+      return outputStream.isReady();
+    }
+
+    public void setWriteListener(WriteListener writeListener) {
+      outputStream.setWriteListener(writeListener);
     }
   }
 

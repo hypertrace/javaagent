@@ -12,11 +12,12 @@ subprojects {
         implementation("io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-tooling:0.9.0-20201009.101126-80")
         implementation(project(":javaagent-core"))
     }
-
 }
 
 dependencies{
+    implementation(project(":instrumentation:servlet:servlet-2.3"))
     implementation(project(":instrumentation:servlet:servlet-3.0"))
+    implementation(project(":instrumentation:servlet:servlet-3.1"))
 }
 
 tasks {
@@ -46,6 +47,7 @@ tasks {
         //opentelemetry rewrite library instrumentation dependencies
         relocate("io.opentelemetry.instrumentation", "io.opentelemetry.javaagent.shaded.instrumentation") {
             exclude("io.opentelemetry.instrumentation.auto.**")
+            exclude("io.opentelemetry.instrumentation.hypertrace.**")
         }
 
         // relocate OpenTelemetry API dependency
