@@ -34,6 +34,7 @@ val instrumentationMuzzle by configurations.creating
 
 dependencies {
     api(project(":blocking"))
+    api(project(":instrumentation:servlet:servlet-common"))
 
     compileOnly("javax.servlet:javax.servlet-api:3.1.0")
     implementation("net.bytebuddy:byte-buddy:1.10.10")

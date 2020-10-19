@@ -30,6 +30,8 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
+import org.hypertrace.agent.servlet.common.ByteBufferData;
+import org.hypertrace.agent.servlet.common.CharBufferData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -252,8 +254,6 @@ public class BufferingHttpServletResponse extends HttpServletResponseWrapper {
 
   public static class BufferedWriterWrapper extends BufferedWriter {
 
-    private static final Logger logger = LoggerFactory.getLogger(BufferedWriterWrapper.class);
-
     private final PrintWriter writer;
     private final CharBufferData charBufferData;
 
@@ -263,24 +263,29 @@ public class BufferingHttpServletResponse extends HttpServletResponseWrapper {
       this.charBufferData = charBufferData;
     }
 
+    @Override
     public void write(char buf[]) throws IOException {
       write(buf, 0, buf.length);
     }
 
+    @Override
     public void write(char buf[], int off, int len) throws IOException {
       writer.write(buf, off, len);
       charBufferData.appendData(buf, off, len);
     }
 
+    @Override
     public void write(int c) throws IOException {
       writer.write(c);
       charBufferData.appendData(c);
     }
 
+    @Override
     public void write(String s) throws IOException {
       write(s, 0, s.length());
     }
 
+    @Override
     public void write(String s, int off, int len) throws IOException {
       writer.write(s, off, len);
       charBufferData.appendData(s, off, len);

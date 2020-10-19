@@ -29,12 +29,14 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
+import org.hypertrace.agent.servlet.common.ByteBufferData;
+import org.hypertrace.agent.servlet.common.CharBufferData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class BufferingHttpServletRequest extends HttpServletRequestWrapper {
 
-  private static final Logger logger = LoggerFactory.getLogger(BufferingHttpServletResponse.class);
+  private static final Logger logger = LoggerFactory.getLogger(BufferingHttpServletRequest.class);
 
   // to pass the wrapped response explicitly in case user invokes the inherent async method..
   protected HttpServletResponse response;
@@ -304,26 +306,32 @@ public class BufferingHttpServletRequest extends HttpServletRequestWrapper {
       return numRead;
     }
 
+    @Override
     public long skip(long n) throws IOException {
       return this.is.skip(n);
     }
 
+    @Override
     public int available() throws IOException {
       return this.is.available();
     }
 
+    @Override
     public void close() throws IOException {
       this.is.close();
     }
 
+    @Override
     public void mark(int readlimit) {
       this.is.mark(readlimit);
     }
 
+    @Override
     public void reset() throws IOException {
       this.is.reset();
     }
 
+    @Override
     public boolean markSupported() {
       return this.is.markSupported();
     }
@@ -343,6 +351,7 @@ public class BufferingHttpServletRequest extends HttpServletRequestWrapper {
       this.bufferingHttpServletRequest = bufferingHttpServletRequest;
     }
 
+    @Override
     public int read() throws IOException {
       int read = this.reader.read();
       try {
@@ -355,6 +364,7 @@ public class BufferingHttpServletRequest extends HttpServletRequestWrapper {
       return read;
     }
 
+    @Override
     public int read(char[] cbuf, int off, int len) throws IOException {
       int read = this.reader.read(cbuf, off, len);
       try {
@@ -367,6 +377,7 @@ public class BufferingHttpServletRequest extends HttpServletRequestWrapper {
       return read;
     }
 
+    @Override
     public String readLine() throws IOException {
       String read = this.reader.readLine();
       if (read == null) {
@@ -382,30 +393,37 @@ public class BufferingHttpServletRequest extends HttpServletRequestWrapper {
       }
     }
 
+    @Override
     public long skip(long n) throws IOException {
       return this.reader.skip(n);
     }
 
+    @Override
     public boolean ready() throws IOException {
       return this.reader.ready();
     }
 
+    @Override
     public boolean markSupported() {
       return this.reader.markSupported();
     }
 
+    @Override
     public void mark(int readAheadLimit) throws IOException {
       this.reader.mark(readAheadLimit);
     }
 
+    @Override
     public void reset() throws IOException {
       this.reader.reset();
     }
 
+    @Override
     public void close() throws IOException {
       this.reader.close();
     }
 
+    @Override
     public int read(java.nio.CharBuffer target) throws IOException {
       int initPos = target.position();
       int read = this.reader.read(target);
@@ -423,6 +441,7 @@ public class BufferingHttpServletRequest extends HttpServletRequestWrapper {
       return read;
     }
 
+    @Override
     public int read(char[] cbuf) throws IOException {
       int read = this.reader.read(cbuf);
       try {
