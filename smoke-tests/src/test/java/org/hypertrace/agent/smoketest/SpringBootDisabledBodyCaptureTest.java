@@ -31,7 +31,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 
-public class SpringBootTest extends AbstractSmokeTest {
+public class SpringBootDisabledBodyCaptureTest extends AbstractSmokeTest {
 
   @Override
   protected String getTargetImage(int jdk) {
@@ -43,6 +43,7 @@ public class SpringBootTest extends AbstractSmokeTest {
   @BeforeEach
   void beforeEach() {
     app = createAppUnderTest(8);
+    app.addEnv("HYPERTRACE_INTEGRATION_ALL_ENABLED", "false");
     app.start();
   }
 
@@ -80,43 +81,19 @@ public class SpringBootTest extends AbstractSmokeTest {
             .map(a -> a.getValue().getStringValue())
             .filter(s -> s.equals(currentAgentVersion))
             .count());
-    Assertions.assertTrue(
+    Assertions.assertEquals(
+        0,
         getSpanStream(traces)
-                .flatMap(s -> s.getAttributesList().stream())
-                .filter(a -> a.getKey().contains("request.header."))
-                .map(a -> a.getValue().getStringValue())
-                .count()
-            > 0);
-    Assertions.assertTrue(
-        getSpanStream(traces)
-                .flatMap(s -> s.getAttributesList().stream())
-                .filter(a -> a.getKey().contains("response.header."))
-                .map(a -> a.getValue().getStringValue())
-                .count()
-            > 0);
+            .flatMap(s -> s.getAttributesList().stream())
+            .filter(a -> a.getKey().contains("request.header."))
+            .map(a -> a.getValue().getStringValue())
+            .count());
     List<String> responseBodyAttributes =
         getSpanStream(traces)
             .flatMap(s -> s.getAttributesList().stream())
             .filter(a -> a.getKey().contains("response.body"))
             .map(a -> a.getValue().getStringValue())
             .collect(Collectors.toList());
-    Assertions.assertEquals(1, responseBodyAttributes.size());
-    Assertions.assertEquals("Hi!", responseBodyAttributes.get(0));
-  }
-
-  @Test
-  public void springBootMockBlockingTest() throws IOException {
-    String url = String.format("http://localhost:%d/greeting", target.getMappedPort(8080));
-    Request request = new Request.Builder().url(url).addHeader("block", "true").get().build();
-    Response response = client.newCall(request).execute();
-    Collection<ExportTraceServiceRequest> traces = waitForTraces();
-
-    Assertions.assertEquals(response.code(), 403);
-    Assertions.assertEquals(
-        1,
-        getSpanStream(traces)
-            .flatMap(s -> s.getAttributesList().stream())
-            .filter(a -> a.getKey().equals("hypertrace.opa.result"))
-            .count());
+    Assertions.assertEquals(0, responseBodyAttributes.size());
   }
 }

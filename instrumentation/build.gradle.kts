@@ -10,6 +10,7 @@ subprojects {
         annotationProcessor("com.google.auto.service:auto-service:1.0-rc7")
 
         implementation("io.opentelemetry.instrumentation.auto:opentelemetry-javaagent-tooling:0.9.0-20201009.101126-80")
+        implementation(project(":javaagent-core"))
     }
 
 }

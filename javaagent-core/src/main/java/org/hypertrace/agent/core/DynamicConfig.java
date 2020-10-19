@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.servlet.v3_0;
+package org.hypertrace.agent.core;
 
 public class DynamicConfig {
 
@@ -36,6 +36,7 @@ public class DynamicConfig {
   }
 
   public static String getProperty(String name) {
-    return System.getenv(name);
+    /** * TODO this is just a mock impl */
+    return System.getenv(name.replaceAll("\\.", "_").toUpperCase());
   }
 }

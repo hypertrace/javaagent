@@ -117,7 +117,7 @@ public abstract class AbstractSmokeTest {
 
   protected abstract String getTargetImage(int jdk);
 
-  void startAppUnderTest(int jdk) {
+  GenericContainer createAppUnderTest(int jdk) {
     if (agentPath == null || agentPath.isEmpty()) {
       throw new IllegalStateException(
           "agentPath is not set, configure it via env var SMOKETEST_JAVAAGENT_PATH");
@@ -135,11 +135,7 @@ public abstract class AbstractSmokeTest {
             .withEnv("OTEL_BSP_SCHEDULE_DELAY", "10")
             .withEnv("OTEL_EXPORTER_ZIPKIN_ENDPOINT", OTEL_EXPORTER_ENDPOINT)
             .withEnv("OTEL_EXPORTER", OTEL_EXPORTER);
-    target.start();
-  }
-
-  void stopAppUnderTest() {
-    target.stop();
+    return target;
   }
 
   protected static int countSpansByName(
