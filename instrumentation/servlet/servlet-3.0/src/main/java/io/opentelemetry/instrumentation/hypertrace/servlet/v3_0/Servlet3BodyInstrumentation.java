@@ -42,6 +42,8 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.blocking.BlockingProvider;
 import org.hypertrace.agent.blocking.BlockingResult;
+import org.hypertrace.agent.core.DynamicConfig;
+import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 
 /**
  * TODO https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/1395 is resolved
@@ -51,11 +53,15 @@ import org.hypertrace.agent.blocking.BlockingResult;
 public class Servlet3BodyInstrumentation extends Instrumenter.Default {
 
   public Servlet3BodyInstrumentation() {
-    super("servlet", "servlet-3", "body", "servlet-body", "servlet-3-body");
+    super(InstrumentationName.INSTRUMENTATION_NAME[0], InstrumentationName.INSTRUMENTATION_NAME[1]);
   }
 
   @Override
   public int getOrder() {
+    /**
+     * Order 1 assures that this instrumentation runs after OTEL servlet instrumentation so we can
+     * access current span in our advice.
+     */
     return 1;
   }
 
@@ -83,9 +89,12 @@ public class Servlet3BodyInstrumentation extends Instrumenter.Default {
       "org.hypertrace.agent.blocking.ExecutionBlocked",
       "org.hypertrace.agent.blocking.ExecutionNotBlocked",
       "org.hypertrace.agent.blocking.MockBlockingEvaluator",
+      "org.hypertrace.agent.core.HypertraceSemanticAttributes",
+      "org.hypertrace.agent.core.DynamicConfig",
       "io.opentelemetry.instrumentation.servlet.HttpServletRequestGetter",
       "io.opentelemetry.instrumentation.servlet.ServletHttpServerTracer",
       "io.opentelemetry.instrumentation.auto.servlet.v3_0.Servlet3HttpServerTracer",
+      packageName + ".InstrumentationName",
       packageName + ".BufferingHttpServletResponse",
       packageName + ".BufferingHttpServletResponse$BufferingServletOutputStream",
       packageName + ".BufferingHttpServletResponse$BufferedWriterWrapper",
@@ -120,6 +129,11 @@ public class Servlet3BodyInstrumentation extends Instrumenter.Default {
       if (!(request instanceof HttpServletRequest) || !(response instanceof HttpServletResponse)) {
         return null;
       }
+
+      if (!DynamicConfig.isEnabled(InstrumentationName.INSTRUMENTATION_NAME)) {
+        return null;
+      }
+
       // TODO run on every doFilter and check if user removed wrapper
       // TODO what if user unwraps request and reads the body?
 
@@ -142,14 +156,17 @@ public class Servlet3BodyInstrumentation extends Instrumenter.Default {
       while (headerNames.hasMoreElements()) {
         String headerName = headerNames.nextElement();
         String headerValue = httpRequest.getHeader(headerName);
-        currentSpan.setAttribute("request.header." + headerName, headerValue);
+        currentSpan.setAttribute(
+            HypertraceSemanticAttributes.requestHeader(headerName), headerValue);
         headers.put(headerName, headerValue);
       }
       BlockingResult blockingResult = BlockingProvider.getBlockingEvaluator().evaluate(headers);
-      currentSpan.setAttribute("hypertrace.opa.result", blockingResult.blockExecution());
+      currentSpan.setAttribute(
+          HypertraceSemanticAttributes.OPA_RESULT, blockingResult.blockExecution());
       if (blockingResult.blockExecution()) {
         httpResponse.setStatus(403);
-        currentSpan.setAttribute("hypertrace.opa.reason", blockingResult.getReason());
+        currentSpan.setAttribute(
+            HypertraceSemanticAttributes.OPA_REASON, blockingResult.getReason());
         return blockingResult;
       }
       return null;
@@ -189,12 +206,15 @@ public class Servlet3BodyInstrumentation extends Instrumenter.Default {
           bufferingResponse.getHeaderNames();
           for (String headerName : bufferingResponse.getHeaderNames()) {
             String headerValue = bufferingResponse.getHeader(headerName);
-            currentSpan.setAttribute("response.header." + headerName, headerValue);
+            currentSpan.setAttribute(
+                HypertraceSemanticAttributes.responseHeader(headerName), headerValue);
           }
           // Bodies are captured at the end after all user processing.
           currentSpan.setAttribute(
-              "request.body", bufferingRequest.getByteBuffer().getBufferAsString());
-          currentSpan.setAttribute("response.body", bufferingResponse.getBufferAsString());
+              HypertraceSemanticAttributes.REQUEST_BODY,
+              bufferingRequest.getByteBuffer().getBufferAsString());
+          currentSpan.setAttribute(
+              HypertraceSemanticAttributes.RESPONSE_BODY, bufferingResponse.getBufferAsString());
         }
       }
     }

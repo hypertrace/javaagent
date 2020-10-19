@@ -33,6 +33,10 @@ The configuration precedence order
 1. OpenTelemetry Agent's trace config file `OTEL_TRACE_CONFIG`/`otel.trace.config`
 3. OpenTelemetry system properties and env variables
 
+Hypertrace body/headers capture can be disabled by:
+* `HYPERTRACE_INTEGRATION_ALL_ENABLED` - disables capture for all instrumentations
+* `HYPERTRACE_INTEGRATION_<integration>_ENABLED` - disables capture for a specified instrumentation e.g. `servlet`, `servlet-1`
+
 ### Disable request/response body capture
 
 Request and response body capture can be disabled by `-Dotel.integration.body.enabled=false` or
