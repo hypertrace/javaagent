@@ -26,7 +26,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.AsyncContext;
-import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
@@ -309,18 +308,6 @@ public class BufferingHttpServletRequest extends HttpServletRequestWrapper {
       }
 
       return numRead;
-    }
-
-    public boolean isFinished() {
-      return is.isFinished();
-    }
-
-    public boolean isReady() {
-      return is.isReady();
-    }
-
-    public void setReadListener(ReadListener readListener) {
-      is.setReadListener(readListener);
     }
 
     public long skip(long n) throws IOException {

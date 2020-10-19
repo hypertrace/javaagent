@@ -23,6 +23,7 @@ import static io.opentelemetry.javaagent.tooling.matcher.NameMatchers.namedOneOf
 import static java.util.Collections.singletonMap;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.not;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
 import com.google.auto.service.AutoService;
@@ -50,9 +51,9 @@ import org.hypertrace.agent.core.HypertraceSemanticAttributes;
  * move this to org.hypertrace package.
  */
 @AutoService(Instrumenter.class)
-public class Servlet3BodyInstrumentation extends Instrumenter.Default {
+public class Servlet30BodyInstrumentation extends Instrumenter.Default {
 
-  public Servlet3BodyInstrumentation() {
+  public Servlet30BodyInstrumentation() {
     super(InstrumentationName.INSTRUMENTATION_NAME[0], InstrumentationName.INSTRUMENTATION_NAME[1]);
   }
 
@@ -68,7 +69,9 @@ public class Servlet3BodyInstrumentation extends Instrumenter.Default {
   @Override
   public ElementMatcher<ClassLoader> classLoaderMatcher() {
     // Optimization for expensive typeMatcher.
-    return hasClassesNamed("javax.servlet.http.HttpServlet", "javax.servlet.ReadListener");
+    // ReadListener was added in 3.1
+    return hasClassesNamed("javax.servlet.http.HttpServlet", "javax.servlet.AsyncEvent")
+        .and(not(hasClassesNamed("javax.servlet.ReadListener")));
   }
 
   @Override

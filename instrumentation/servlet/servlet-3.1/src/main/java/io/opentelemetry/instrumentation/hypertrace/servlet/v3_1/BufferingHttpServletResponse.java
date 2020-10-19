@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.servlet.v3_0;
+package io.opentelemetry.instrumentation.hypertrace.servlet.v3_1;
 
 import java.io.BufferedWriter;
 import java.io.IOException;

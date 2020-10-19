@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.servlet.v2_2;
+package io.opentelemetry.instrumentation.hypertrace.servlet.v3_1;
 
-import static io.opentelemetry.instrumentation.auto.servlet.v2_2.Servlet2HttpServerTracer.TRACER;
+import static io.opentelemetry.instrumentation.auto.servlet.v3_0.Servlet3HttpServerTracer.TRACER;
 import static io.opentelemetry.javaagent.tooling.ClassLoaderMatcher.hasClassesNamed;
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.safeHasSuperType;
 import static io.opentelemetry.javaagent.tooling.matcher.NameMatchers.namedOneOf;
 import static java.util.Collections.singletonMap;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
-import static net.bytebuddy.matcher.ElementMatchers.not;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
 import com.google.auto.service.AutoService;
@@ -31,8 +30,8 @@ import io.opentelemetry.javaagent.tooling.Instrumenter;
 import io.opentelemetry.trace.Span;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -47,40 +46,35 @@ import org.hypertrace.agent.core.DynamicConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 
 /**
- * Body capture for servlet 2.3. Note that OTEL servlet instrumentation is compatible with servlet
- * version 2.2, however this implementation uses request and response wrappers that were introduced
- * in 2.3.
+ * TODO https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/1395 is resolved
+ * move this to org.hypertrace package.
  */
 @AutoService(Instrumenter.class)
-public class Servlet2BodyInstrumentation extends Instrumenter.Default {
+public class Servlet31BodyInstrumentation extends Instrumenter.Default {
 
-  public Servlet2BodyInstrumentation() {
-    super("servlet", "servlet-2");
+  public Servlet31BodyInstrumentation() {
+    super(InstrumentationName.INSTRUMENTATION_NAME[0], InstrumentationName.INSTRUMENTATION_NAME[1]);
   }
 
   @Override
   public int getOrder() {
+    /**
+     * Order 1 assures that this instrumentation runs after OTEL servlet instrumentation so we can
+     * access current span in our advice.
+     */
     return 1;
   }
 
-  // this is required to make sure servlet 2 instrumentation won't apply to servlet 3
   @Override
   public ElementMatcher<ClassLoader> classLoaderMatcher() {
-    // Request/response wrappers are available since servlet 2.3!
-    return hasClassesNamed(
-            "javax.servlet.http.HttpServlet", "javax.servlet.http.HttpServletRequestWrapper")
-        .and(not(hasClassesNamed("javax.servlet.AsyncEvent", "javax.servlet.AsyncListener")));
+    // Optimization for expensive typeMatcher.
+    return hasClassesNamed("javax.servlet.http.HttpServlet", "javax.servlet.ReadListener");
   }
 
   @Override
-  public ElementMatcher<TypeDescription> typeMatcher() {
+  public ElementMatcher<? super TypeDescription> typeMatcher() {
     return safeHasSuperType(
         namedOneOf("javax.servlet.FilterChain", "javax.servlet.http.HttpServlet"));
-  }
-
-  @Override
-  public Map<String, String> contextStore() {
-    return singletonMap("javax.servlet.ServletResponse", Integer.class.getName());
   }
 
   @Override
@@ -88,8 +82,9 @@ public class Servlet2BodyInstrumentation extends Instrumenter.Default {
     return new String[] {
       "io.opentelemetry.instrumentation.servlet.HttpServletRequestGetter",
       "io.opentelemetry.instrumentation.servlet.ServletHttpServerTracer",
-      "io.opentelemetry.instrumentation.auto.servlet.v2_2.Servlet2HttpServerTracer",
-      "io.opentelemetry.instrumentation.auto.servlet.v2_2.ResponseWithStatus",
+      "io.opentelemetry.instrumentation.auto.servlet.v3_0.Servlet3HttpServerTracer",
+      // TODO Add these to bootstrap classloader so they don't have to referenced in every
+      // instrumentation, see https://github.com/Traceableai/opentelemetry-javaagent/issues/17
       "org.hypertrace.agent.blocking.BlockingProvider",
       "org.hypertrace.agent.blocking.BlockingEvaluator",
       "org.hypertrace.agent.blocking.BlockingResult",
@@ -107,6 +102,7 @@ public class Servlet2BodyInstrumentation extends Instrumenter.Default {
       packageName + ".BufferingHttpServletRequest",
       packageName + ".BufferingHttpServletRequest$ServletInputStreamWrapper",
       packageName + ".BufferingHttpServletRequest$BufferedReaderWrapper",
+      packageName + ".BodyCaptureAsyncListener",
     };
   }
 
@@ -117,10 +113,10 @@ public class Servlet2BodyInstrumentation extends Instrumenter.Default {
             .and(takesArgument(0, named("javax.servlet.ServletRequest")))
             .and(takesArgument(1, named("javax.servlet.ServletResponse")))
             .and(isPublic()),
-        Filter2Advice.class.getName());
+        FilterAdvice.class.getName());
   }
 
-  public static class Filter2Advice {
+  public static class FilterAdvice {
     // request attribute key injected at first filerChain.doFilter
     private static final String ALREADY_LOADED = "__org.hypertrace.agent.on_start_executed";
 
@@ -189,24 +185,36 @@ public class Servlet2BodyInstrumentation extends Instrumenter.Default {
         request.removeAttribute(ALREADY_LOADED);
         Span currentSpan = TRACER.getCurrentSpan();
 
-        BufferingHttpServletResponse bufferingResponse = (BufferingHttpServletResponse) response;
-        BufferingHttpServletRequest bufferingRequest = (BufferingHttpServletRequest) request;
+        AtomicBoolean responseHandled = new AtomicBoolean(false);
+        if (request.isAsyncStarted()) {
+          try {
+            request
+                .getAsyncContext()
+                .addListener(new BodyCaptureAsyncListener(responseHandled, currentSpan));
+          } catch (IllegalStateException e) {
+            // org.eclipse.jetty.server.Request may throw an exception here if request became
+            // finished after check above. We just ignore that exception and move on.
+          }
+        }
 
-        // set response headers
-        Map<String, List<String>> bufferedHeaders = bufferingResponse.getBufferedHeaders();
-        for (Map.Entry<String, List<String>> nameToHeadersEntry : bufferedHeaders.entrySet()) {
-          String headerName = nameToHeadersEntry.getKey();
-          for (String headerValue : nameToHeadersEntry.getValue()) {
+        if (!request.isAsyncStarted() && responseHandled.compareAndSet(false, true)) {
+          BufferingHttpServletResponse bufferingResponse = (BufferingHttpServletResponse) response;
+          BufferingHttpServletRequest bufferingRequest = (BufferingHttpServletRequest) request;
+
+          // set response headers
+          bufferingResponse.getHeaderNames();
+          for (String headerName : bufferingResponse.getHeaderNames()) {
+            String headerValue = bufferingResponse.getHeader(headerName);
             currentSpan.setAttribute(
                 HypertraceSemanticAttributes.responseHeader(headerName), headerValue);
           }
+          // Bodies are captured at the end after all user processing.
+          currentSpan.setAttribute(
+              HypertraceSemanticAttributes.REQUEST_BODY,
+              bufferingRequest.getByteBuffer().getBufferAsString());
+          currentSpan.setAttribute(
+              HypertraceSemanticAttributes.RESPONSE_BODY, bufferingResponse.getBufferAsString());
         }
-        // Bodies are captured at the end after all user processing.
-        currentSpan.setAttribute(
-            HypertraceSemanticAttributes.REQUEST_BODY,
-            bufferingRequest.getByteBuffer().getBufferAsString());
-        currentSpan.setAttribute(
-            HypertraceSemanticAttributes.RESPONSE_BODY, bufferingResponse.getBufferAsString());
       }
     }
   }
