@@ -4,7 +4,8 @@
 
 Hypertrace distribution of [OpenTelemetry Java agent](https://github.com/open-telemetry/opentelemetry-java-instrumentation).
 
-In addition to the upstream this project adds these capabilities:
+This agent supports [these frameworks](https://github.com/open-telemetry/opentelemetry-java-instrumentation#supported-java-libraries-and-frameworks)
+and adds following capabilities:
 * capture request and response headers
 * capture request and response bodies
 * execution blocking based on Open Policy Agent
