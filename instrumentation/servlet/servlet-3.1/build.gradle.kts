@@ -48,4 +48,8 @@ dependencies {
     instrumentationMuzzle("com.blogspot.mydailyjava:weak-lock-free:0.15")
     instrumentationMuzzle("com.google.auto.service:auto-service:1.0-rc7")
     instrumentationMuzzle("org.slf4j:slf4j-api:1.7.30")
+
+    testImplementation(project(":testing-common"))
+    testImplementation("org.eclipse.jetty:jetty-server:9.4.32.v20200930")
+    testImplementation("org.eclipse.jetty:jetty-servlet:9.4.32.v20200930")
 }

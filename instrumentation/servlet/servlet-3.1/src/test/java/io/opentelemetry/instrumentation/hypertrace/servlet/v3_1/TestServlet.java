@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrymentation.hypertrace.servlet.v2_3;
+package io.opentelemetry.instrumentation.hypertrace.servlet.v3_1;
 
 import java.io.IOException;
 import javax.servlet.http.HttpServlet;

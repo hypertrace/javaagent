@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrymentation.hypertrace.servlet.v2_3;
+package org.hypertrace.agent.testing;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -31,7 +31,11 @@ import net.bytebuddy.agent.ByteBuddyAgent;
 import org.junit.jupiter.api.BeforeAll;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractAgentTest {
+/**
+ * Abstract test class that tests {@link io.opentelemetry.javaagent.tooling.Instrumenter} on the
+ * classpath.
+ */
+public abstract class AbstractInstrumenterTest {
 
   /**
    * For test runs, agent's global tracer will report to this list writer.
