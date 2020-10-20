@@ -16,7 +16,7 @@
 
 package io.opentelemetry.instrumentation.hypertrace.servlet.v2_3;
 
-import static io.opentelemetry.instrumentation.auto.servlet.v2_2.Servlet2HttpServerTracer.TRACER;
+import static io.opentelemetry.javaagent.instrumentation.servlet.v2_2.Servlet2HttpServerTracer.TRACER;
 import static io.opentelemetry.javaagent.tooling.ClassLoaderMatcher.hasClassesNamed;
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.safeHasSuperType;
 import static io.opentelemetry.javaagent.tooling.matcher.NameMatchers.namedOneOf;
@@ -88,8 +88,8 @@ public class Servlet2BodyInstrumentation extends Instrumenter.Default {
     return new String[] {
       "io.opentelemetry.instrumentation.servlet.HttpServletRequestGetter",
       "io.opentelemetry.instrumentation.servlet.ServletHttpServerTracer",
-      "io.opentelemetry.instrumentation.auto.servlet.v2_2.Servlet2HttpServerTracer",
-      "io.opentelemetry.instrumentation.auto.servlet.v2_2.ResponseWithStatus",
+      "io.opentelemetry.javaagent.instrumentation.servlet.v2_2.Servlet2HttpServerTracer",
+      "io.opentelemetry.javaagent.instrumentation.servlet.v2_2.ResponseWithStatus",
       "org.hypertrace.agent.blocking.BlockingProvider",
       "org.hypertrace.agent.blocking.BlockingEvaluator",
       "org.hypertrace.agent.blocking.BlockingResult",

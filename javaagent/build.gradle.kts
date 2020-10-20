@@ -7,7 +7,7 @@ dependencies {
     // pin released version or snapshot with pinned version
     // update the dependencies also in the instrumentations sub-projects
     // https://oss.jfrog.org/artifactory/oss-snapshot-local/io/opentelemetry/instrumentation/auto/
-    implementation("io.opentelemetry.instrumentation.auto", "opentelemetry-javaagent", version = "0.9.0-20201008.091003-73", classifier = "all")
+    implementation("io.opentelemetry.javaagent", "opentelemetry-javaagent", version = "0.9.0", classifier = "all")
 }
 
 base.archivesBaseName = "hypertrace-agent"

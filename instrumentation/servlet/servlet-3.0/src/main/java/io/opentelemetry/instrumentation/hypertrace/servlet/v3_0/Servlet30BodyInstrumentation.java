@@ -16,7 +16,7 @@
 
 package io.opentelemetry.instrumentation.hypertrace.servlet.v3_0;
 
-import static io.opentelemetry.instrumentation.auto.servlet.v3_0.Servlet3HttpServerTracer.TRACER;
+import static io.opentelemetry.javaagent.instrumentation.servlet.v3_0.Servlet3HttpServerTracer.TRACER;
 import static io.opentelemetry.javaagent.tooling.ClassLoaderMatcher.hasClassesNamed;
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.safeHasSuperType;
 import static io.opentelemetry.javaagent.tooling.matcher.NameMatchers.namedOneOf;
@@ -85,7 +85,7 @@ public class Servlet30BodyInstrumentation extends Instrumenter.Default {
     return new String[] {
       "io.opentelemetry.instrumentation.servlet.HttpServletRequestGetter",
       "io.opentelemetry.instrumentation.servlet.ServletHttpServerTracer",
-      "io.opentelemetry.instrumentation.auto.servlet.v3_0.Servlet3HttpServerTracer",
+      "io.opentelemetry.javaagent.instrumentation.servlet.v3_0.Servlet3HttpServerTracer",
       // TODO Add these to bootstrap classloader so they don't have to referenced in every
       // instrumentation, see https://github.com/Traceableai/opentelemetry-javaagent/issues/17
       "org.hypertrace.agent.blocking.BlockingProvider",
