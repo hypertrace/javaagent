@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrymentation.hypertrace.servlet.v2_3;
+package org.hypertrace.agent.testing;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;

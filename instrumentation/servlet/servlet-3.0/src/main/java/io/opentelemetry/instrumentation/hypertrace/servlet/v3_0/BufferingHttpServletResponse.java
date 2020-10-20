@@ -19,15 +19,9 @@ package io.opentelemetry.instrumentation.hypertrace.servlet.v3_0;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.HttpCookie;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 import javax.servlet.ServletOutputStream;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 import org.slf4j.Logger;
@@ -42,7 +36,6 @@ public class BufferingHttpServletResponse extends HttpServletResponseWrapper {
 
   private ServletOutputStream outputStream = null;
   private PrintWriter writer = null;
-  private final Map<String, List<String>> headers = new LinkedHashMap<>();
 
   public BufferingHttpServletResponse(HttpServletResponse httpServletResponse) {
     super(httpServletResponse);
@@ -82,74 +75,6 @@ public class BufferingHttpServletResponse extends HttpServletResponseWrapper {
       }
     }
     return writer;
-  }
-
-  public void setDateHeader(String name, long date) {
-    super.setDateHeader(name, date);
-    safelyCaptureHeader(name, date);
-  }
-
-  public void addDateHeader(String name, long date) {
-    super.addDateHeader(name, date);
-    safelyCaptureHeader(name, date);
-  }
-
-  public void setHeader(String name, String value) {
-    super.setHeader(name, value);
-    safelyCaptureHeader(name, value);
-  }
-
-  public void addHeader(String name, String value) {
-    super.addHeader(name, value);
-    safelyCaptureHeader(name, value);
-  }
-
-  public void setIntHeader(String name, int value) {
-    super.setIntHeader(name, value);
-    safelyCaptureHeader(name, value);
-  }
-
-  public void addIntHeader(String name, int value) {
-    super.addIntHeader(name, value);
-    safelyCaptureHeader(name, value);
-  }
-
-  public void addCookie(Cookie cookie) {
-    super.addCookie(cookie);
-    safelyAddCookieHeader(cookie);
-  }
-
-  private void safelyAddCookieHeader(Cookie cookie) {
-    try {
-      HttpCookie httpCookie = new HttpCookie(cookie.getName(), cookie.getValue());
-      httpCookie.setComment(cookie.getComment());
-      httpCookie.setDomain(cookie.getDomain());
-      httpCookie.setPath(cookie.getPath());
-      httpCookie.setMaxAge(cookie.getMaxAge());
-      httpCookie.setVersion(cookie.getVersion());
-      httpCookie.setHttpOnly(cookie.isHttpOnly());
-      httpCookie.setSecure(cookie.getSecure());
-      String headerValue = httpCookie.toString();
-      List<String> values = new ArrayList<>(1);
-      values.add(headerValue);
-      headers.put("Set-Cookie", values);
-    } catch (Exception e) {
-      logger.error("Error capturing cookie - ", e);
-    }
-  }
-
-  private void safelyCaptureHeader(String name, Object value) {
-    try {
-      List<String> values = headers.getOrDefault(name, new ArrayList<>());
-      values.add(String.valueOf(value));
-      headers.put(name, values);
-    } catch (Exception e) {
-      logger.error("Error capturing header - ", e);
-    }
-  }
-
-  public Map<String, List<String>> getBufferedHeaders() {
-    return headers;
   }
 
   public synchronized ByteBufferData getByteBuffer() {
