@@ -31,6 +31,9 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
+import org.hypertrace.agent.servlet.common.BufferedReaderWrapper;
+import org.hypertrace.agent.servlet.common.ByteBufferData;
+import org.hypertrace.agent.servlet.common.CharBufferData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -179,7 +182,7 @@ public class BufferingHttpServletRequest extends HttpServletRequestWrapper {
     if (reader == null) {
       reader = super.getReader();
       if (shouldReadContent()) {
-        reader = new BufferedReaderWrapper(reader, this);
+        reader = new BufferedReaderWrapper(reader, this.charBufferData);
       }
     }
     return reader;
@@ -264,6 +267,7 @@ public class BufferingHttpServletRequest extends HttpServletRequestWrapper {
       this.bufferingHttpServletRequest = bufferingHttpServletRequest;
     }
 
+    @Override
     public int read(byte[] b) throws IOException {
       int numRead = this.is.read(b);
       try {
@@ -276,6 +280,7 @@ public class BufferingHttpServletRequest extends HttpServletRequestWrapper {
       return numRead;
     }
 
+    @Override
     public int read(byte[] b, int off, int len) throws IOException {
       int numRead = this.is.read(b, off, len);
       try {
@@ -288,6 +293,7 @@ public class BufferingHttpServletRequest extends HttpServletRequestWrapper {
       return numRead;
     }
 
+    @Override
     public int read() throws IOException {
       int read = this.is.read();
       try {
@@ -298,6 +304,7 @@ public class BufferingHttpServletRequest extends HttpServletRequestWrapper {
       return read;
     }
 
+    @Override
     public int readLine(byte[] b, int off, int len) throws IOException {
       int numRead = this.is.readLine(b, off, len);
       try {
@@ -311,147 +318,49 @@ public class BufferingHttpServletRequest extends HttpServletRequestWrapper {
       return numRead;
     }
 
+    @Override
     public boolean isFinished() {
       return is.isFinished();
     }
 
+    @Override
     public boolean isReady() {
       return is.isReady();
     }
 
+    @Override
     public void setReadListener(ReadListener readListener) {
       is.setReadListener(readListener);
     }
 
+    @Override
     public long skip(long n) throws IOException {
       return this.is.skip(n);
     }
 
+    @Override
     public int available() throws IOException {
       return this.is.available();
     }
 
+    @Override
     public void close() throws IOException {
       this.is.close();
     }
 
+    @Override
     public void mark(int readlimit) {
       this.is.mark(readlimit);
     }
 
+    @Override
     public void reset() throws IOException {
       this.is.reset();
     }
 
+    @Override
     public boolean markSupported() {
       return this.is.markSupported();
-    }
-  }
-
-  public static class BufferedReaderWrapper extends BufferedReader {
-
-    private static final Logger logger = LoggerFactory.getLogger(BufferedReaderWrapper.class);
-
-    private final BufferedReader reader;
-    private final BufferingHttpServletRequest bufferingHttpServletRequest;
-
-    public BufferedReaderWrapper(
-        BufferedReader reader, BufferingHttpServletRequest bufferingHttpServletRequest) {
-      super(reader);
-      this.reader = reader;
-      this.bufferingHttpServletRequest = bufferingHttpServletRequest;
-    }
-
-    public int read() throws IOException {
-      int read = this.reader.read();
-      try {
-        if (read >= 0) {
-          bufferingHttpServletRequest.getCharBuffer().appendData(read);
-        }
-      } catch (Exception e) {
-        logger.error("Error in read() - ", e);
-      }
-      return read;
-    }
-
-    public int read(char[] cbuf, int off, int len) throws IOException {
-      int read = this.reader.read(cbuf, off, len);
-      try {
-        if (read > 0) {
-          bufferingHttpServletRequest.getCharBuffer().appendData(cbuf, off, off + read);
-        }
-      } catch (Exception e) {
-        logger.error("Error in read(char[] cbuf, int off, int len) - ", e);
-      }
-      return read;
-    }
-
-    public String readLine() throws IOException {
-      String read = this.reader.readLine();
-      if (read == null) {
-        return null;
-      } else {
-        try {
-          CharBufferData charBufferData = bufferingHttpServletRequest.getCharBuffer();
-          charBufferData.appendData(read);
-        } catch (Exception e) {
-          logger.error("Error in readLine() - ", e);
-        }
-        return read;
-      }
-    }
-
-    public long skip(long n) throws IOException {
-      return this.reader.skip(n);
-    }
-
-    public boolean ready() throws IOException {
-      return this.reader.ready();
-    }
-
-    public boolean markSupported() {
-      return this.reader.markSupported();
-    }
-
-    public void mark(int readAheadLimit) throws IOException {
-      this.reader.mark(readAheadLimit);
-    }
-
-    public void reset() throws IOException {
-      this.reader.reset();
-    }
-
-    public void close() throws IOException {
-      this.reader.close();
-    }
-
-    public int read(java.nio.CharBuffer target) throws IOException {
-      int initPos = target.position();
-      int read = this.reader.read(target);
-      try {
-        if (read > 0) {
-          CharBufferData charBufferData = bufferingHttpServletRequest.getCharBuffer();
-
-          for (int i = initPos; i < initPos + read; ++i) {
-            charBufferData.appendData(target.get(i));
-          }
-        }
-      } catch (Exception e) {
-        logger.error("Error in read(target) - ", e);
-      }
-      return read;
-    }
-
-    public int read(char[] cbuf) throws IOException {
-      int read = this.reader.read(cbuf);
-      try {
-        if (read > 0) {
-          bufferingHttpServletRequest.getCharBuffer().appendData(cbuf, 0, read);
-        }
-      } catch (Exception e) {
-        logger.error("Error in read(char[]) - ", e);
-      }
-      return read;
     }
   }
 }

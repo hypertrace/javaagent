@@ -2,6 +2,8 @@ rootProject.name = "hypertrace-otel-agent"
 
 include(":javaagent")
 include("instrumentation")
+include("instrumentation:servlet:servlet-common")
+findProject(":instrumentation:servlet:servlet-common")?.name = "servlet-common"
 include("instrumentation:servlet:servlet-2.3")
 findProject(":instrumentation:servlet:servlet-2.3")?.name = "servlet-2.3"
 include("instrumentation:servlet:servlet-3.0")

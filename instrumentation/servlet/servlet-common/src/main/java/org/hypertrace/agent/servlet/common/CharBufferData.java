@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.servlet.v3_1;
+package org.hypertrace.agent.servlet.common;
 
 import java.util.Arrays;
 

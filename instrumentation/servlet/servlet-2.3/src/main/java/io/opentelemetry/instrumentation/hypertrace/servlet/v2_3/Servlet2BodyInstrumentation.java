@@ -98,15 +98,15 @@ public class Servlet2BodyInstrumentation extends Instrumenter.Default {
       "org.hypertrace.agent.blocking.MockBlockingEvaluator",
       "org.hypertrace.agent.core.HypertraceSemanticAttributes",
       "org.hypertrace.agent.core.DynamicConfig",
+      "org.hypertrace.agent.servlet.common.ByteBufferData",
+      "org.hypertrace.agent.servlet.common.CharBufferData",
+      "org.hypertrace.agent.servlet.common.BufferedWriterWrapper",
+      "org.hypertrace.agent.servlet.common.BufferedReaderWrapper",
       packageName + ".InstrumentationName",
       packageName + ".BufferingHttpServletResponse",
       packageName + ".BufferingHttpServletResponse$BufferingServletOutputStream",
-      packageName + ".BufferingHttpServletResponse$BufferedWriterWrapper",
-      packageName + ".ByteBufferData",
-      packageName + ".CharBufferData",
       packageName + ".BufferingHttpServletRequest",
       packageName + ".BufferingHttpServletRequest$ServletInputStreamWrapper",
-      packageName + ".BufferingHttpServletRequest$BufferedReaderWrapper",
     };
   }
 
