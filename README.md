@@ -12,7 +12,7 @@ In addition to the upstream this project adds these capabilities:
 List of supported frameworks with additional capabilities:
 | Library/Framework                                                                                      | Versions        |
 |--------------------------------------------------------------------------------------------------------|-----------------|
-| [Servlet](https://javaee.github.io/javaee-spec/javadocs/javax/servlet/package-summary.html)            | 3.0+            |
+| [Servlet](https://javaee.github.io/javaee-spec/javadocs/javax/servlet/package-summary.html)            | 2.3+            |
 
 
 ## Build
