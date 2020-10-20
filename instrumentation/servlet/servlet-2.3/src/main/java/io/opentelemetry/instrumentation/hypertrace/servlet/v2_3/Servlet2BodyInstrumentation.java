@@ -203,8 +203,7 @@ public class Servlet2BodyInstrumentation extends Instrumenter.Default {
         }
         // Bodies are captured at the end after all user processing.
         currentSpan.setAttribute(
-            HypertraceSemanticAttributes.REQUEST_BODY,
-            bufferingRequest.getByteBuffer().getBufferAsString());
+            HypertraceSemanticAttributes.REQUEST_BODY, bufferingRequest.getBufferedBodyAsString());
         currentSpan.setAttribute(
             HypertraceSemanticAttributes.RESPONSE_BODY, bufferingResponse.getBufferAsString());
       }

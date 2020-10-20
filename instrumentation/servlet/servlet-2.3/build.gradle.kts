@@ -47,4 +47,17 @@ dependencies {
     instrumentationMuzzle("com.blogspot.mydailyjava:weak-lock-free:0.15")
     instrumentationMuzzle("com.google.auto.service:auto-service:1.0-rc7")
     instrumentationMuzzle("org.slf4j:slf4j-api:1.7.30")
+
+    testImplementation("org.eclipse.jetty:jetty-server:7.5.4.v20111024")
+    testImplementation("org.eclipse.jetty:jetty-servlet:7.5.4.v20111024")
+    testImplementation("io.opentelemetry:opentelemetry-sdk:0.9.1")
+    testImplementation("io.opentelemetry.javaagent:opentelemetry-javaagent-api:0.9.0")
+    testImplementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:0.9.0")
+    testImplementation("com.squareup.okhttp3:okhttp:4.9.0")
+    testImplementation("cglib:cglib:3.2.5")
+    testImplementation("ch.qos.logback:logback-classic:1.2.3")
+    testImplementation("org.slf4j:log4j-over-slf4j:1.7.30")
+    testImplementation("org.slf4j:jcl-over-slf4j:1.7.30")
+    testImplementation("org.slf4j:jul-to-slf4j:1.7.30")
+
 }

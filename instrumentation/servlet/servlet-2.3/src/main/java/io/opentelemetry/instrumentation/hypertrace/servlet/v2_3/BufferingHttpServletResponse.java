@@ -127,6 +127,12 @@ public class BufferingHttpServletResponse extends HttpServletResponseWrapper {
     safelyAddCookieHeader(cookie);
   }
 
+  @Override
+  public void setContentType(String type) {
+    super.setContentType(type);
+    this.contentType = type;
+  }
+
   private void safelyAddCookieHeader(Cookie cookie) {
     try {
       HttpCookie httpCookie = new HttpCookie(cookie.getName(), cookie.getValue());
@@ -146,9 +152,6 @@ public class BufferingHttpServletResponse extends HttpServletResponseWrapper {
   }
 
   private void safelyCaptureHeader(String name, Object value) {
-    if (name != null && "content-type".equals(name.toLowerCase())) {
-      this.contentType = String.valueOf(value);
-    }
     try {
       List<String> values = headers.getOrDefault(name, new ArrayList<>());
       values.add(String.valueOf(value));
