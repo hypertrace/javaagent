@@ -95,13 +95,13 @@ public class Servlet31BodyInstrumentation extends Instrumenter.Default {
       "org.hypertrace.agent.core.DynamicConfig",
       "org.hypertrace.agent.servlet.common.ByteBufferData",
       "org.hypertrace.agent.servlet.common.CharBufferData",
+      "org.hypertrace.agent.servlet.common.BufferedWriterWrapper",
+      "org.hypertrace.agent.servlet.common.BufferedReaderWrapper",
       packageName + ".InstrumentationName",
       packageName + ".BufferingHttpServletResponse",
       packageName + ".BufferingHttpServletResponse$BufferingServletOutputStream",
-      packageName + ".BufferingHttpServletResponse$BufferedWriterWrapper",
       packageName + ".BufferingHttpServletRequest",
       packageName + ".BufferingHttpServletRequest$ServletInputStreamWrapper",
-      packageName + ".BufferingHttpServletRequest$BufferedReaderWrapper",
       packageName + ".BodyCaptureAsyncListener",
     };
   }

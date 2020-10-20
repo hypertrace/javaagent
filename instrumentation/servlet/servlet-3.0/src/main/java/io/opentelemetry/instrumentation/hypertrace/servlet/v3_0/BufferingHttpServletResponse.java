@@ -16,7 +16,6 @@
 
 package io.opentelemetry.instrumentation.hypertrace.servlet.v3_0;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
@@ -24,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
+import org.hypertrace.agent.servlet.common.BufferedWriterWrapper;
 import org.hypertrace.agent.servlet.common.ByteBufferData;
 import org.hypertrace.agent.servlet.common.CharBufferData;
 import org.slf4j.Logger;
@@ -162,46 +162,6 @@ public class BufferingHttpServletResponse extends HttpServletResponseWrapper {
     @Override
     public void close() throws IOException {
       outputStream.close();
-    }
-  }
-
-  public static class BufferedWriterWrapper extends BufferedWriter {
-
-    private final PrintWriter writer;
-    private final CharBufferData charBufferData;
-
-    public BufferedWriterWrapper(PrintWriter writer, CharBufferData charBufferData) {
-      super(writer);
-      this.writer = writer;
-      this.charBufferData = charBufferData;
-    }
-
-    @Override
-    public void write(char buf[]) throws IOException {
-      write(buf, 0, buf.length);
-    }
-
-    @Override
-    public void write(char buf[], int off, int len) throws IOException {
-      writer.write(buf, off, len);
-      charBufferData.appendData(buf, off, len);
-    }
-
-    @Override
-    public void write(int c) throws IOException {
-      writer.write(c);
-      charBufferData.appendData(c);
-    }
-
-    @Override
-    public void write(String s) throws IOException {
-      write(s, 0, s.length());
-    }
-
-    @Override
-    public void write(String s, int off, int len) throws IOException {
-      writer.write(s, off, len);
-      charBufferData.appendData(s, off, len);
     }
   }
 }
