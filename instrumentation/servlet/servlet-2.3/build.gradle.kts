@@ -48,8 +48,8 @@ dependencies {
     instrumentationMuzzle("com.google.auto.service:auto-service:1.0-rc7")
     instrumentationMuzzle("org.slf4j:slf4j-api:1.7.30")
 
-    testImplementation("org.eclipse.jetty:jetty-server:7.6.21.v20160908")
-    testImplementation("org.eclipse.jetty:jetty-servlet:7.6.21.v20160908")
+    testImplementation("org.eclipse.jetty:jetty-server:7.5.4.v20111024")
+    testImplementation("org.eclipse.jetty:jetty-servlet:7.5.4.v20111024")
     testImplementation("io.opentelemetry:opentelemetry-sdk:0.9.1")
     testImplementation("io.opentelemetry.javaagent:opentelemetry-javaagent-api:0.9.0")
     testImplementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:0.9.0")
@@ -59,6 +59,5 @@ dependencies {
     testImplementation("org.slf4j:log4j-over-slf4j:1.7.30")
     testImplementation("org.slf4j:jcl-over-slf4j:1.7.30")
     testImplementation("org.slf4j:jul-to-slf4j:1.7.30")
-    testImplementation("io.opentelemetry.javaagent:opentelemetry-javaagent-api:0.9.0-20201013.195535-1")
 
 }

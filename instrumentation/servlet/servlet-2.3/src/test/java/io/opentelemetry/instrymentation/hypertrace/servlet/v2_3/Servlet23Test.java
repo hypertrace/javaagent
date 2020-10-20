@@ -16,12 +16,18 @@
 
 package io.opentelemetry.instrymentation.hypertrace.servlet.v2_3;
 
+import io.opentelemetry.sdk.trace.data.SpanData;
+import java.util.List;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.hypertrace.agent.core.HypertraceSemanticAttributes;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class Servlet23Test extends AbstractAgentTest {
@@ -37,14 +43,41 @@ public class Servlet23Test extends AbstractAgentTest {
 
     int serverPort = server.getConnectors()[0].getLocalPort();
 
+    String requestBody = "hello";
+    String requestHeader = "requestheader";
+    String requestHeaderValue = "requestvalue";
     OkHttpClient httpClient = new Builder().build();
     Request request =
         new Request.Builder()
             .url(String.format("http://localhost:%d/test", serverPort))
-            .get()
+            .post(RequestBody.create(requestBody, MediaType.get("application/json")))
+            .header(requestHeader, requestHeaderValue)
             .build();
-    Response response = httpClient.newCall(request).execute();
+    try (Response response = httpClient.newCall(request).execute()) {
+      Assertions.assertEquals(200, response.code());
+      Assertions.assertEquals(TestServlet.RESPONSE_BODY, response.body().string());
+    }
 
+    TEST_WRITER.waitForTraces(1);
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    Assertions.assertEquals(1, traces.size());
+    List<SpanData> spans = traces.get(0);
+    Assertions.assertEquals(1, spans.size());
+    SpanData spanData = spans.get(0);
+    Assertions.assertEquals(
+        requestBody, spanData.getAttributes().get(HypertraceSemanticAttributes.REQUEST_BODY));
+    Assertions.assertEquals(
+        requestHeaderValue,
+        spanData.getAttributes().get(HypertraceSemanticAttributes.requestHeader(requestHeader)));
+
+    Assertions.assertEquals(
+        TestServlet.RESPONSE_BODY,
+        spanData.getAttributes().get(HypertraceSemanticAttributes.RESPONSE_BODY));
+    Assertions.assertEquals(
+        TestServlet.RESPONSE_HEADER_VALUE,
+        spanData
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.responseHeader(TestServlet.RESPONSE_HEADER)));
     server.stop();
   }
 }
