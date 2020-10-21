@@ -28,7 +28,9 @@ import io.opentelemetry.trace.propagation.HttpTraceContext;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
 import net.bytebuddy.agent.ByteBuddyAgent;
+import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -74,11 +76,17 @@ public abstract class AbstractInstrumenterTest {
   }
 
   private static ClassFileTransformer classFileTransformer;
+  protected OkHttpClient httpClient = new OkHttpClient.Builder().build();
 
   @BeforeAll
   public static void beforeAll() {
     if (classFileTransformer == null) {
       classFileTransformer = AgentInstaller.installBytebuddyAgent(INSTRUMENTATION, false);
     }
+  }
+
+  @BeforeEach
+  public void beforeEach() {
+    TEST_WRITER.clear();
   }
 }

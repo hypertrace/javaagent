@@ -15,10 +15,11 @@ subprojects {
 }
 
 dependencies{
+    implementation(project(":instrumentation:servlet:servlet-common"))
     implementation(project(":instrumentation:servlet:servlet-2.3"))
     implementation(project(":instrumentation:servlet:servlet-3.0"))
     implementation(project(":instrumentation:servlet:servlet-3.1"))
-    implementation(project(":instrumentation:servlet:servlet-common"))
+    implementation(project(":instrumentation:spark-web-framework-2.3"))
 }
 
 tasks {

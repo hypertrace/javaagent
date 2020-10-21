@@ -202,7 +202,6 @@ public class Servlet31BodyInstrumentation extends Instrumenter.Default {
           BufferingHttpServletRequest bufferingRequest = (BufferingHttpServletRequest) request;
 
           // set response headers
-          bufferingResponse.getHeaderNames();
           for (String headerName : bufferingResponse.getHeaderNames()) {
             String headerValue = bufferingResponse.getHeader(headerName);
             currentSpan.setAttribute(
