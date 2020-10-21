@@ -19,8 +19,6 @@ package io.opentelemetry.instrumentation.hypertrace.servlet.v2_3;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.List;
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.OkHttpClient.Builder;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -47,7 +45,6 @@ public class Servlet23Test extends AbstractInstrumenterTest {
     String requestBody = "hello";
     String requestHeader = "requestheader";
     String requestHeaderValue = "requestvalue";
-    OkHttpClient httpClient = new Builder().build();
     Request request =
         new Request.Builder()
             .url(String.format("http://localhost:%d/test", serverPort))

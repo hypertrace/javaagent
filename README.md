@@ -14,6 +14,7 @@ List of supported frameworks with additional capabilities:
 | Library/Framework                                                                                      | Versions        |
 |--------------------------------------------------------------------------------------------------------|-----------------|
 | [Servlet](https://javaee.github.io/javaee-spec/javadocs/javax/servlet/package-summary.html)            | 2.3+            |
+| [Spark Web Framework](https://github.com/perwendel/spark)                                              | 2.3+            |
 
 
 ## Build
