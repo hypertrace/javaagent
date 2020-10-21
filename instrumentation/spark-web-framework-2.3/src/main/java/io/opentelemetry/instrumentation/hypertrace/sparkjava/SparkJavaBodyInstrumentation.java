@@ -46,7 +46,8 @@ import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 
 /**
  * {@code Spark.after} is not being called if a handler throws an exception. Exception handler
- * {@code Spark.exception} cannot be used because it overrides user defined exception handlers.
+ * {@code Spark.exception} cannot be used because it overrides user defined exception handlers. This
+ * might be fine as on exception there is usually not body send to users.
  */
 @AutoService(Instrumenter.class)
 public class SparkJavaBodyInstrumentation extends Instrumenter.Default {
