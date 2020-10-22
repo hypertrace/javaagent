@@ -1,5 +1,5 @@
 plugins {
-    java
+    `java-library`
     id("net.bytebuddy.byte-buddy-gradle-plugin") version "1.10.10"
     id("io.opentelemetry.instrumentation.auto-instrumentation")
     muzzle
@@ -19,7 +19,7 @@ afterEvaluate{
         transformation(closureOf<net.bytebuddy.build.gradle.Transformation> {
             setTasks(kotlin.collections.setOf("compileJava", "compileScala", "compileKotlin"))
             plugin = "io.opentelemetry.javaagent.tooling.muzzle.collector.MuzzleCodeGenerationPlugin"
-            setClassPath(instrumentationMuzzle + configurations.runtimeClasspath + sourceSets["main"].output)
+            setClassPath(instrumentationMuzzle + configurations.runtimeClasspath + sourceSets["main"].output + project(":instrumentation:servlet:servlet-3.1").sourceSets["main"].output)
         })
     }
 }

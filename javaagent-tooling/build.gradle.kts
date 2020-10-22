@@ -1,7 +1,7 @@
 // This project is here to satisfy dependencies for the Muzzle gradle plugin (./buildSrc)
 
 plugins {
-    java
+    `java-library`
 }
 
 dependencies{
