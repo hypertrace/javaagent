@@ -1,5 +1,5 @@
 plugins {
-    java
+    `java-library`
     id("net.bytebuddy.byte-buddy-gradle-plugin") version "1.10.10"
 }
 

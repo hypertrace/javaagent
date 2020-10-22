@@ -1,8 +1,7 @@
 
 .PHONY: build
 build:
-	# TODO remove once https://github.com/Traceableai/opentelemetry-javaagent/issues/46 is fixed
-	./gradlew :instrumentation:servlet:servlet-3.1:assemble build
+	./gradlew build
 
 .PHONY: test
 test:

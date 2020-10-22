@@ -40,7 +40,7 @@ jobs:
     steps:
       - checkout
 # TODO remove once https://github.com/Traceableai/opentelemetry-javaagent/issues/46 is fixed
-      - run: ./gradlew :instrumentation:servlet:servlet-3.1:assemble muzzle
+      - run: ./gradlew muzzle
 
 workflows:
   version: 2
