@@ -37,7 +37,7 @@ The configuration precedence order
 
 Hypertrace body/headers capture can be disabled by:
 * `HYPERTRACE_INTEGRATION_ALL_ENABLED` - disables capture for all instrumentations
-* `HYPERTRACE_INTEGRATION_<integration>_ENABLED` - disables capture for a specified instrumentation e.g. `servlet`, `servlet-1`
+* `HYPERTRACE_INTEGRATION_<integration>_ENABLED` - disables capture for a specified instrumentation e.g. `servlet`, `servlet-3`
 
 ### Disable request/response body capture
 
