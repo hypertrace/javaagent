@@ -23,9 +23,9 @@ import java.nio.charset.StandardCharsets;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
-import org.hypertrace.agent.servlet.common.BufferedWriterWrapper;
-import org.hypertrace.agent.servlet.common.ByteBufferData;
-import org.hypertrace.agent.servlet.common.CharBufferData;
+import io.opentelemetry.instrumentation.hypertrace.servlet.common.BufferedWriterWrapper;
+import io.opentelemetry.instrumentation.hypertrace.servlet.common.ByteBufferData;
+import io.opentelemetry.instrumentation.hypertrace.servlet.common.CharBufferData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
