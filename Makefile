@@ -3,9 +3,10 @@
 build:
 	./gradlew build
 
-.PHONY: build
-build:
-	# daemon was causing failures when a helper class was in the same package as instrumentation
+.PHONY: muzzle
+muzzle:
+	# daemon was causing failure "java.lang.IllegalStateException: Could not locate class file for"
+    # for injecting helper classes from the same packages as instrumentations
 	./gradlew muzzle --no-daemon
 
 .PHONY: test
