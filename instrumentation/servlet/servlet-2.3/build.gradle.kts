@@ -31,10 +31,10 @@ afterEvaluate{
 dependencies {
     api(project(":instrumentation:servlet:servlet-common"))
 
+    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-2.2:0.9.0")
+
     compileOnly("javax.servlet:servlet-api:2.3")
     implementation("net.bytebuddy:byte-buddy:1.10.10")
-
-    implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-2.2:0.9.0")
 
     testImplementation(project(":testing-common"))
     testImplementation("org.eclipse.jetty:jetty-server:7.5.4.v20111024")
