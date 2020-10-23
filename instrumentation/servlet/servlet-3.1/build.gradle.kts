@@ -25,12 +25,10 @@ afterEvaluate{
         transformation(closureOf<net.bytebuddy.build.gradle.Transformation> {
             setTasks(setOf("compileJava", "compileScala", "compileKotlin"))
             plugin = "io.opentelemetry.javaagent.tooling.muzzle.collector.MuzzleCodeGenerationPlugin"
-            setClassPath(instrumentationMuzzle + configurations.runtimeClasspath + sourceSets["main"].output)
+            setClassPath(project(":javaagent-tooling").configurations["instrumentationMuzzle"] + configurations.runtimeClasspath + sourceSets["main"].output)
         })
     }
 }
-
-val instrumentationMuzzle by configurations.creating
 
 dependencies {
     api(project(":blocking"))
@@ -40,15 +38,6 @@ dependencies {
     implementation("net.bytebuddy:byte-buddy:1.10.10")
 
     implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0:0.9.0")
-
-    instrumentationMuzzle("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:0.9.0")
-    instrumentationMuzzle("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:0.9.0")
-    instrumentationMuzzle("io.opentelemetry.javaagent:opentelemetry-javaagent-api:0.9.0")
-    instrumentationMuzzle("net.bytebuddy:byte-buddy:1.10.10")
-    instrumentationMuzzle("net.bytebuddy:byte-buddy-agent:1.10.10")
-    instrumentationMuzzle("com.blogspot.mydailyjava:weak-lock-free:0.15")
-    instrumentationMuzzle("com.google.auto.service:auto-service:1.0-rc7")
-    instrumentationMuzzle("org.slf4j:slf4j-api:1.7.30")
 
     testImplementation(project(":testing-common"))
     testImplementation("org.eclipse.jetty:jetty-server:9.4.32.v20200930")
