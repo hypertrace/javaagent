@@ -3,6 +3,11 @@
 build:
 	./gradlew build
 
+.PHONY: build
+build:
+	# daemon was causing failures when a helper class was in the same package as instrumentation
+	./gradlew muzzle --no-daemon
+
 .PHONY: test
 test:
 	./gradlew check

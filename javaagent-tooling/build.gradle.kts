@@ -6,11 +6,12 @@ plugins {
 
 val instrumentationMuzzle by configurations.creating {
     extendsFrom(configurations.implementation.get())
+    extendsFrom(configurations.api.get())
 }
 
 dependencies {
-    implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:0.9.0")
-    implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-api:0.9.0")
+    api("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:0.9.0")
+    api("io.opentelemetry.javaagent:opentelemetry-javaagent-api:0.9.0")
     instrumentationMuzzle("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:0.9.0")
     instrumentationMuzzle("net.bytebuddy:byte-buddy:1.10.10")
     instrumentationMuzzle("net.bytebuddy:byte-buddy-agent:1.10.10")
