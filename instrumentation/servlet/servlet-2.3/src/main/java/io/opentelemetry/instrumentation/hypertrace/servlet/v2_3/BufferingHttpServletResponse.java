@@ -16,6 +16,9 @@
 
 package io.opentelemetry.instrumentation.hypertrace.servlet.v2_3;
 
+import io.opentelemetry.instrumentation.hypertrace.servlet.common.BufferedWriterWrapper;
+import io.opentelemetry.instrumentation.hypertrace.servlet.common.ByteBufferData;
+import io.opentelemetry.instrumentation.hypertrace.servlet.common.CharBufferData;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.HttpCookie;
@@ -29,9 +32,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
-import io.opentelemetry.instrumentation.hypertrace.servlet.common.BufferedWriterWrapper;
-import io.opentelemetry.instrumentation.hypertrace.servlet.common.ByteBufferData;
-import io.opentelemetry.instrumentation.hypertrace.servlet.common.CharBufferData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
