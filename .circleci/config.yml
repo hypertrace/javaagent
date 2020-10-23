@@ -39,8 +39,7 @@ jobs:
       TERM: dumb
     steps:
       - checkout
-# TODO remove once https://github.com/Traceableai/opentelemetry-javaagent/issues/46 is fixed
-      - run: ./gradlew muzzle
+      - run: make muzzle
 
 workflows:
   version: 2

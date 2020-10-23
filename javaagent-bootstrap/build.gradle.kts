@@ -5,6 +5,6 @@ plugins {
 }
 
 dependencies{
-    implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:0.9.0")
-    implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-api:0.9.0")
+    api("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:0.9.0")
+    api("io.opentelemetry.javaagent:opentelemetry-javaagent-api:0.9.0")
 }
