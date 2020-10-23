@@ -25,7 +25,6 @@ afterEvaluate{
 }
 
 dependencies {
-    api(project(":blocking"))
     api(project(":instrumentation:servlet:servlet-3.1"))
 
     compileOnly("com.sparkjava:spark-core:2.3")

@@ -11,6 +11,7 @@ subprojects {
 
         implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:0.9.0")
         implementation(project(":javaagent-core"))
+        implementation(project(":blocking"))
     }
 }
 

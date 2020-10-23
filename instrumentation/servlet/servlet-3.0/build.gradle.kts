@@ -30,7 +30,6 @@ afterEvaluate{
 }
 
 dependencies {
-    api(project(":blocking"))
     api(project(":instrumentation:servlet:servlet-common"))
 
     compileOnly("javax.servlet:javax.servlet-api:3.0.1")
