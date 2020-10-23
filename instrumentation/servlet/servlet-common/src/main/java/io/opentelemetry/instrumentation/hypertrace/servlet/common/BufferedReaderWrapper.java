@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.servlet.common;
+package io.opentelemetry.instrumentation.hypertrace.servlet.common;
 
 import java.io.BufferedReader;
 import java.io.IOException;

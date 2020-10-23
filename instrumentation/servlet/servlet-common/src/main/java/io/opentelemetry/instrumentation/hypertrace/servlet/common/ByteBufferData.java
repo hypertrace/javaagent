@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.servlet.common;
+package io.opentelemetry.instrumentation.hypertrace.servlet.common;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;

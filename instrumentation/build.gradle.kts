@@ -13,6 +13,13 @@ subprojects {
         implementation(project(":javaagent-core"))
         implementation(project(":blocking"))
     }
+
+    // This ensures to build jars for all dependencies in instrumentation module for ByteBuddy
+    configurations.named(JavaPlugin.COMPILE_CLASSPATH_CONFIGURATION_NAME) {
+        attributes {
+            attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, objects.named<LibraryElements>(LibraryElements.JAR))
+        }
+    }
 }
 
 dependencies{
