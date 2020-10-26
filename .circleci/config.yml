@@ -46,6 +46,6 @@ workflows:
   build:
     jobs:
       - build:
-          context: artifactory-gradle
+          context: hypertrace-publishing
       - muzzle:
           context: artifactory-gradle
