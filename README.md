@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/Traceableai/opentelemetry-javaagent.svg?style=svg&circle-token=b562d40d95cc5906f445004c4a96b666250d260b)](https://circleci.com/gh/Traceableai/opentelemetry-javaagent)
+[![CircleCI](https://circleci.com/gh/hypertrace/opentelemetry-javaagent.svg?style=svg&circle-token=b562d40d95cc5906f445004c4a96b666250d260b)](https://circleci.com/gh/hypertrace/opentelemetry-javaagent)
 
 # Hypertrace OpenTelemetry Java agent
 
