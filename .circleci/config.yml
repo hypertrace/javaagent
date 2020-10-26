@@ -64,5 +64,6 @@ workflows:
             - muzzle
           filters:
             branches:
-              only:
-                - main
+              ignore: /.*/
+            tags:
+              only: /^release-.*/
