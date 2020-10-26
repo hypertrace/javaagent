@@ -1,7 +1,7 @@
 # Release
 
 This repository uses automated build process. The release build is triggered by pushing a release tag e.g.
-`git tag release-1` (`1` is a sequence number to trigger the release). 
+`git tag release-1 && git push origin release-1` (`1` is a sequence number to trigger the release). 
 The release version is supplied from the
 [Hypertrace version plugin](https://github.com/hypertrace/hypertrace-gradle-version-settings-plugin)
 that uses git history and [semantic versioning settings](./semantic-build-versioning.gradle) to

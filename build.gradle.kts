@@ -4,9 +4,6 @@ plugins {
     id("org.hypertrace.publish-plugin") version "0.3.3" apply false
 }
 
-description = "Hypertrace OpenTelemetry Java agent"
-group = "org.hypertrace.agent"
-
 allprojects {
     apply(plugin="java-library")
     java {
@@ -16,6 +13,9 @@ allprojects {
 }
 
 subprojects {
+    group = "org.hypertrace.agent"
+    description = "Hypertrace OpenTelemetry Javaagent"
+
     apply<JavaPlugin>()
     apply(plugin = "com.diffplug.spotless")
     apply(from = "$rootDir/gradle/spotless.gradle")
