@@ -87,7 +87,7 @@ public class Servlet30BodyInstrumentation extends Instrumenter.Default {
       "io.opentelemetry.instrumentation.servlet.ServletHttpServerTracer",
       "io.opentelemetry.javaagent.instrumentation.servlet.v3_0.Servlet3HttpServerTracer",
       // TODO Add these to bootstrap classloader so they don't have to referenced in every
-      // instrumentation, see https://github.com/hypertrace/opentelemetry-javaagent/issues/17
+      // instrumentation, see https://github.com/hypertrace/javaagent/issues/17
       "org.hypertrace.agent.blocking.BlockingProvider",
       "org.hypertrace.agent.blocking.BlockingEvaluator",
       "org.hypertrace.agent.blocking.BlockingResult",
