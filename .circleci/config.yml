@@ -39,7 +39,7 @@ jobs:
     steps:
       - checkout
       - run: make muzzle
-  publish:
+  release-publish:
     docker:
       - image: circleci/openjdk:11.0.6-jdk-buster
     steps:
@@ -53,11 +53,11 @@ jobs:
 
 workflows:
   version: 2
-  build:
+  build-and-publish:
     jobs:
       - build
       - muzzle
-      - publish:
+      - release-publish:
           context: hypertrace-publishing
           requires:
             - build
