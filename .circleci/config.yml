@@ -30,7 +30,6 @@ jobs:
 
   muzzle:
     docker:
-      # specify the version you desire here
       - image: circleci/openjdk:11.0.6-jdk-buster
     working_directory: ~/repo
     environment:
@@ -40,12 +39,31 @@ jobs:
     steps:
       - checkout
       - run: make muzzle
+  publish:
+    docker:
+      - image: circleci/openjdk:11.0.6-jdk-buster
+    steps:
+      - checkout
+      - run: ./gradlew :tag -Prelease
+      - run: ./gradlew publish
+      - add_ssh_keys:
+          fingerprints:
+            - 'f1:dd:0f:dc:42:b3:bf:9f:b8:e3:e8:3f:9b:92:04:fb'
+      - run: git push origin $(./gradlew -q :printVersion)
 
 workflows:
   version: 2
   build:
     jobs:
-      - build:
-          context: artifactory-gradle
-      - muzzle:
-          context: artifactory-gradle
+      - build
+      - muzzle
+      - publish:
+          context: hypertrace-publishing
+          requires:
+            - build
+            - muzzle
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^release-.*/

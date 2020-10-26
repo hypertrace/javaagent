@@ -1,15 +1,14 @@
 plugins {
     `java-library`
     id("com.diffplug.spotless") version "5.2.0" apply false
+    id("org.hypertrace.publish-plugin") version "0.3.3" apply false
 }
 
 description = "Hypertrace OpenTelemetry Java agent"
 group = "org.hypertrace.agent"
-version = "0.0.1"
 
 allprojects {
     apply(plugin="java-library")
-    group = rootProject.group
     java {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -17,8 +16,6 @@ allprojects {
 }
 
 subprojects {
-    version = rootProject.version
-
     apply<JavaPlugin>()
     apply(plugin = "com.diffplug.spotless")
     apply(from = "$rootDir/gradle/spotless.gradle")
@@ -32,12 +29,11 @@ subprojects {
         maven {
             url = uri("https://oss.jfrog.org/artifactory/oss-snapshot-local")
         }
-        maven {
-            url = uri(extra.properties["artifactory_contextUrl"] as String + "/gradle")
-            credentials {
-                username = extra.properties["artifactory_user"] as String
-                password = extra.properties["artifactory_password"] as String
-            }
+    }
+
+    pluginManager.withPlugin("org.hypertrace.publish-plugin") {
+        configure<org.hypertrace.gradle.publishing.HypertracePublishExtension> {
+            license.set(org.hypertrace.gradle.publishing.License.APACHE_2_0)
         }
     }
 

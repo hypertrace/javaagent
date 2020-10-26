@@ -1,6 +1,7 @@
 plugins {
     `java-library`
     id("com.github.johnrengelman.shadow") version "6.0.0"
+    id("org.hypertrace.publish-plugin")
 }
 
 dependencies {
