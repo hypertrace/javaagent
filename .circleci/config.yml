@@ -1,4 +1,19 @@
-version: 2
+version: 2.1
+
+commands:
+  setup_build_environment:
+    description: 'Checkout, update submodules, restore the cache, and setup docker'
+    steps:
+      - checkout
+      - run:
+          name: Generate cache key
+          command: find . -type f -name "*.gradle*" -o -name "gradle-wrapper*" -exec shasum {} + | sort > /tmp/checksum.txt && cat /tmp/checksum.txt
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "/tmp/checksum.txt" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+
 jobs:
   build:
     # For testcontainers.org
@@ -10,22 +25,7 @@ jobs:
       JVM_OPTS: -Xmx1g
       TERM: dumb
     steps:
-      - checkout
-# TODO Task 'downloadDependencies' not found in root project 'hypertrace-otel-agent'.
-#      # Download and cache dependencies
-#      - restore_cache:
-#          keys:
-#            - v1-dependencies-{{ checksum "build.gradle.kts" }}
-#            # fallback to using the latest cache if no exact match is found
-#            - v1-dependencies-
-#
-#
-#      - run: ./gradlew downloadDependencies
-#
-#      - save_cache:
-#          paths:
-#            - ~/.gradle
-#          key: v1-dependencies-{{ checksum "build.gradle.kts" }}
+      - setup_build_environment
       - run: make build
 
   muzzle:
@@ -37,13 +37,13 @@ jobs:
       JVM_OPTS: -Xmx1g
       TERM: dumb
     steps:
-      - checkout
+      - setup_build_environment
       - run: make muzzle
   release-publish:
     docker:
       - image: circleci/openjdk:11.0.6-jdk-buster
     steps:
-      - checkout
+      - setup_build_environment
       - run: ./gradlew :tag -Prelease
       - run: ./gradlew publish
       - add_ssh_keys:
