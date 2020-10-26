@@ -1,7 +1,6 @@
 plugins {
     `java-library`
     id("com.diffplug.spotless") version "5.2.0" apply false
-    id("org.hypertrace.repository-plugin") version "0.2.3"
     id("org.hypertrace.publish-plugin") version "0.3.3" apply false
 }
 
