@@ -16,11 +16,21 @@ The minor version is incremented if commit history contains:
 
 The patch version is incremented in other cases.
 
-## Print the next release version run:
+## Print the next release version:
 
 ```bash
 ./gradlew printVersion -Prelease
 ```
+
+## Release CI job
+
+The release CI job performs the following actions:
+1. creates git tag for the next version
+2. publishes artifacts to remove github repository with the new version
+3. pushes the new git tag to the origin repository
+
+Run `./gradlew publishToMavenLocal` and `ls ~/.m2/repository/org/hypertrace/agent` to find out which
+artifacts are being published.
 
 ## Configuration
 
