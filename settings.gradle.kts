@@ -1,4 +1,4 @@
-rootProject.name = "hypertrace-otel-agent"
+rootProject.name = "hypertrace-agent"
 
 pluginManagement {
     repositories {

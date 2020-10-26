@@ -128,9 +128,8 @@ public abstract class AbstractSmokeTest {
             .withExposedPorts(8080)
             .withNetwork(network)
             .withLogConsumer(new Slf4jLogConsumer(log))
-            .withCopyFileToContainer(
-                MountableFile.forHostPath(agentPath), "/opentelemetry-javaagent.jar")
-            .withEnv("JAVA_TOOL_OPTIONS", "-javaagent:/opentelemetry-javaagent.jar")
+            .withCopyFileToContainer(MountableFile.forHostPath(agentPath), "/javaagent.jar")
+            .withEnv("JAVA_TOOL_OPTIONS", "-javaagent:/javaagent.jar")
             .withEnv("OTEL_BSP_MAX_EXPORT_BATCH", "1")
             .withEnv("OTEL_BSP_SCHEDULE_DELAY", "10")
             .withEnv("OTEL_EXPORTER_ZIPKIN_ENDPOINT", OTEL_EXPORTER_ENDPOINT)

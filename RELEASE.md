@@ -36,8 +36,8 @@ artifacts are being published.
 
 * Add SSH key
    * Generate SSH key `ssh-keygen -t rsa -b 4096 -m PEM -C <email>` without passphrase
-   * Add private key to CircleCI project settings with `github.com` domain: https://app.circleci.com/settings/project/github/hypertrace/opentelemetry-javaagent/ssh
-   * Add public key to Github project deploy keys and check "allow write access" https://github.com/hypertrace/opentelemetry-javaagent/settings/keys
+   * Add private key to CircleCI project settings with `github.com` domain: https://app.circleci.com/settings/project/github/hypertrace/javaagent/ssh
+   * Add public key to Github project deploy keys and check "allow write access" https://github.com/hypertrace/javaagent/settings/keys
    * Add fingerprint from CircleCI project settings to `./circleci/config.yml`
 * Configure CI to release on `release-` tag or merge to the main branch.
 * Configure CI to have access to bintray. E.g. add `hypertrace-publishing` context to the publish job.
