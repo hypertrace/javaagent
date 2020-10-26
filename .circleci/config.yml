@@ -55,8 +55,14 @@ workflows:
   version: 2
   build-and-publish:
     jobs:
-      - build
-      - muzzle
+      - build:
+          filters:
+            tags:
+              only: /.*/
+      - muzzle:
+          filters:
+            tags:
+              only: /.*/
       - release-publish:
           context: hypertrace-publishing
           requires:
