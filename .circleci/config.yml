@@ -63,7 +63,5 @@ workflows:
             - build
             - muzzle
           filters:
-            branches:
-              ignore: /.*/
             tags:
               only: /^release-.*/
