@@ -89,16 +89,21 @@ public class SparkJavaBodyCaptureTest extends AbstractInstrumenterTest {
     Assertions.assertEquals(1, spans.size());
     SpanData spanData = spans.get(0);
     Assertions.assertEquals(
-        REQUEST_BODY, spanData.getAttributes().get(HypertraceSemanticAttributes.REQUEST_BODY));
+        REQUEST_BODY, spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
     Assertions.assertEquals(
         REQUEST_HEADER_VALUE,
-        spanData.getAttributes().get(HypertraceSemanticAttributes.requestHeader(REQUEST_HEADER)));
+        spanData
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER)));
 
     Assertions.assertEquals(
-        RESPONSE_BODY, spanData.getAttributes().get(HypertraceSemanticAttributes.RESPONSE_BODY));
+        RESPONSE_BODY,
+        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
     Assertions.assertEquals(
         RESPONSE_HEADER_VALUE,
-        spanData.getAttributes().get(HypertraceSemanticAttributes.responseHeader(RESPONSE_HEADER)));
+        spanData
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_HEADER)));
   }
 
   @Test
@@ -119,13 +124,17 @@ public class SparkJavaBodyCaptureTest extends AbstractInstrumenterTest {
     SpanData spanData = spans.get(0);
     Assertions.assertEquals(
         REQUEST_HEADER_VALUE,
-        spanData.getAttributes().get(HypertraceSemanticAttributes.requestHeader(REQUEST_HEADER)));
+        spanData
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER)));
 
     Assertions.assertEquals(
         "<html><body><h2>500 Internal Error</h2></body></html>",
-        spanData.getAttributes().get(HypertraceSemanticAttributes.RESPONSE_BODY));
+        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
     Assertions.assertEquals(
         RESPONSE_HEADER_VALUE,
-        spanData.getAttributes().get(HypertraceSemanticAttributes.responseHeader(RESPONSE_HEADER)));
+        spanData
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_HEADER)));
   }
 }

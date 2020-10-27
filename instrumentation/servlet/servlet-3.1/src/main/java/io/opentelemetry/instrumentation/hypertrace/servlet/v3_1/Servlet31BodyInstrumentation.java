@@ -156,7 +156,7 @@ public class Servlet31BodyInstrumentation extends Instrumenter.Default {
         String headerName = headerNames.nextElement();
         String headerValue = httpRequest.getHeader(headerName);
         currentSpan.setAttribute(
-            HypertraceSemanticAttributes.requestHeader(headerName), headerValue);
+            HypertraceSemanticAttributes.httpRequestHeader(headerName), headerValue);
         headers.put(headerName, headerValue);
       }
       BlockingResult blockingResult = BlockingProvider.getBlockingEvaluator().evaluate(headers);
@@ -205,14 +205,15 @@ public class Servlet31BodyInstrumentation extends Instrumenter.Default {
           for (String headerName : bufferingResponse.getHeaderNames()) {
             String headerValue = bufferingResponse.getHeader(headerName);
             currentSpan.setAttribute(
-                HypertraceSemanticAttributes.responseHeader(headerName), headerValue);
+                HypertraceSemanticAttributes.httpResponseHeader(headerName), headerValue);
           }
           // Bodies are captured at the end after all user processing.
           currentSpan.setAttribute(
-              HypertraceSemanticAttributes.REQUEST_BODY,
+              HypertraceSemanticAttributes.HTTP_REQUEST_BODY,
               bufferingRequest.getBufferedBodyAsString());
           currentSpan.setAttribute(
-              HypertraceSemanticAttributes.RESPONSE_BODY, bufferingResponse.getBufferAsString());
+              HypertraceSemanticAttributes.HTTP_RESPONSE_BODY,
+              bufferingResponse.getBufferAsString());
         }
       }
     }

@@ -24,17 +24,17 @@ import io.opentelemetry.common.AttributeKey;
 public class HypertraceSemanticAttributes {
   private HypertraceSemanticAttributes() {}
 
-  public static AttributeKey<String> requestHeader(String header) {
-    return stringKey("request.header." + header);
+  public static AttributeKey<String> httpRequestHeader(String header) {
+    return stringKey("http.request.header." + header);
   }
 
-  public static AttributeKey<String> responseHeader(String header) {
-    return stringKey("response.header." + header);
+  public static AttributeKey<String> httpResponseHeader(String header) {
+    return stringKey("http.response.header." + header);
   }
 
-  public static final AttributeKey<String> REQUEST_BODY = stringKey("request.body");
+  public static final AttributeKey<String> HTTP_REQUEST_BODY = stringKey("http.request.body");
 
-  public static final AttributeKey<String> RESPONSE_BODY = stringKey("response.body");
+  public static final AttributeKey<String> HTTP_RESPONSE_BODY = stringKey("http.response.body");
 
   public static final AttributeKey<Boolean> OPA_RESULT = booleanKey("hypertrace.opa.result");
 
