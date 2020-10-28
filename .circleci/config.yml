@@ -46,9 +46,6 @@ jobs:
       - setup_build_environment
       - run: echo "Releasing version" && ./gradlew printVersion
       - run: ./gradlew publish
-      - add_ssh_keys:
-          fingerprints:
-            - 'f1:dd:0f:dc:42:b3:bf:9f:b8:e3:e8:3f:9b:92:04:fb'
 
 workflows:
   version: 2
