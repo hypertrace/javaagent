@@ -25,9 +25,9 @@ import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 
@@ -40,13 +40,14 @@ public class SpringBootTest extends AbstractSmokeTest {
 
   private GenericContainer app;
 
-  @BeforeEach
+  @BeforeAll
   void beforeEach() {
+    // TODO test with JDK (11, 14)
     app = createAppUnderTest(8);
     app.start();
   }
 
-  @AfterEach
+  @AfterAll
   void afterEach() {
     if (app != null) {
       app.stop();
@@ -55,7 +56,6 @@ public class SpringBootTest extends AbstractSmokeTest {
 
   @Test
   public void springBootSmokeTest() throws IOException {
-    // TODO test with multiple JDK (11, 14)
     String url = String.format("http://localhost:%d/greeting", target.getMappedPort(8080));
     Request request = new Request.Builder().url(url).get().build();
 

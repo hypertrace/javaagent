@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.Set;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.utility.DockerImageName;
 
 public class OpenTelemetryCollector extends GenericContainer<OpenTelemetryCollector> {
 
@@ -29,7 +30,7 @@ public class OpenTelemetryCollector extends GenericContainer<OpenTelemetryCollec
   public static final int HEALTH_CHECK_PORT = 13133;
 
   public OpenTelemetryCollector(String dockerImage) {
-    super(dockerImage);
+    super(DockerImageName.parse(dockerImage));
     init();
   }
 

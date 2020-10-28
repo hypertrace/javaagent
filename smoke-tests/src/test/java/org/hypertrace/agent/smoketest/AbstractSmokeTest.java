@@ -42,6 +42,7 @@ import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 public abstract class AbstractSmokeTest {
@@ -124,7 +125,7 @@ public abstract class AbstractSmokeTest {
     }
     log.info("Agent path {}", agentPath);
     target =
-        new GenericContainer<>(getTargetImage(jdk))
+        new GenericContainer<>(DockerImageName.parse(getTargetImage(jdk)))
             .withExposedPorts(8080)
             .withNetwork(network)
             .withLogConsumer(new Slf4jLogConsumer(log))
