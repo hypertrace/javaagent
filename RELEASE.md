@@ -12,7 +12,7 @@ the last tag version with `-SNAPSHOT` is used.
 ## Print the current version:
 
 ```bash
-./gradlew printVersion # -Prelease - prints the release version, it's not used at the moment.
+./gradlew printVersion # -Prelease - prints the next release version, it's not used at the moment.
 ```
 
 ## Release CI job
