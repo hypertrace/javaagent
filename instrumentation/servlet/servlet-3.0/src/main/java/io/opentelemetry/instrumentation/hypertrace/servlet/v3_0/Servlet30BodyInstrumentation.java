@@ -101,6 +101,7 @@ public class Servlet30BodyInstrumentation extends Instrumenter.Default {
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.CharBufferData",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.BufferedWriterWrapper",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.BufferedReaderWrapper",
+      "io.opentelemetry.instrumentation.hypertrace.servlet.common.ServletSpanDecorator",
       packageName + ".InstrumentationName",
       packageName + ".BufferingHttpServletResponse",
       packageName + ".BufferingHttpServletResponse$BufferingServletOutputStream",
