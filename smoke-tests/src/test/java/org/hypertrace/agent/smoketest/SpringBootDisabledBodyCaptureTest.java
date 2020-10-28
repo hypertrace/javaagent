@@ -57,7 +57,7 @@ public class SpringBootDisabledBodyCaptureTest extends AbstractSmokeTest {
   @Test
   public void springBootSmokeTest() throws IOException {
     // TODO test with multiple JDK (11, 14)
-    String url = String.format("http://localhost:%d/greeting", target.getMappedPort(8080));
+    String url = String.format("http://localhost:%d/greeting", app.getMappedPort(8080));
     Request request = new Request.Builder().url(url).get().build();
 
     Response response = client.newCall(request).execute();

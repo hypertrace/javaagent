@@ -27,7 +27,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 
@@ -38,17 +38,19 @@ public class SpringBootTest extends AbstractSmokeTest {
     return "open-telemetry-docker-dev.bintray.io/java/smoke-springboot-jdk" + jdk + ":latest";
   }
 
-  private GenericContainer app;
+  private static GenericContainer app;
 
-  @BeforeAll
+  @BeforeEach
   void beforeEach() {
-    // TODO test with JDK (11, 14)
-    app = createAppUnderTest(8);
-    app.start();
+    if (app == null) {
+      // TODO test with JDK (11, 14)
+      app = createAppUnderTest(8);
+      app.start();
+    }
   }
 
   @AfterAll
-  void afterEach() {
+  static void afterEach() {
     if (app != null) {
       app.stop();
     }
@@ -56,7 +58,7 @@ public class SpringBootTest extends AbstractSmokeTest {
 
   @Test
   public void springBootSmokeTest() throws IOException {
-    String url = String.format("http://localhost:%d/greeting", target.getMappedPort(8080));
+    String url = String.format("http://localhost:%d/greeting", app.getMappedPort(8080));
     Request request = new Request.Builder().url(url).get().build();
 
     Response response = client.newCall(request).execute();
@@ -106,7 +108,7 @@ public class SpringBootTest extends AbstractSmokeTest {
 
   @Test
   public void springBootMockBlockingTest() throws IOException {
-    String url = String.format("http://localhost:%d/greeting", target.getMappedPort(8080));
+    String url = String.format("http://localhost:%d/greeting", app.getMappedPort(8080));
     Request request = new Request.Builder().url(url).addHeader("block", "true").get().build();
     Response response = client.newCall(request).execute();
     Collection<ExportTraceServiceRequest> traces = waitForTraces();

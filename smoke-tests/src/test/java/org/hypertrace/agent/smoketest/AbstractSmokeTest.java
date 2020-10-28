@@ -62,7 +62,6 @@ public abstract class AbstractSmokeTest {
   private static final Network network = Network.newNetwork();
   private static OpenTelemetryCollector collector;
   private static OpenTelemetryStorage openTelemetryStorage;
-  protected GenericContainer target;
 
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   protected OkHttpClient client =
@@ -124,18 +123,16 @@ public abstract class AbstractSmokeTest {
           "agentPath is not set, configure it via env var SMOKETEST_JAVAAGENT_PATH");
     }
     log.info("Agent path {}", agentPath);
-    target =
-        new GenericContainer<>(DockerImageName.parse(getTargetImage(jdk)))
-            .withExposedPorts(8080)
-            .withNetwork(network)
-            .withLogConsumer(new Slf4jLogConsumer(log))
-            .withCopyFileToContainer(MountableFile.forHostPath(agentPath), "/javaagent.jar")
-            .withEnv("JAVA_TOOL_OPTIONS", "-javaagent:/javaagent.jar")
-            .withEnv("OTEL_BSP_MAX_EXPORT_BATCH", "1")
-            .withEnv("OTEL_BSP_SCHEDULE_DELAY", "10")
-            .withEnv("OTEL_EXPORTER_ZIPKIN_ENDPOINT", OTEL_EXPORTER_ENDPOINT)
-            .withEnv("OTEL_EXPORTER", OTEL_EXPORTER);
-    return target;
+    return new GenericContainer<>(DockerImageName.parse(getTargetImage(jdk)))
+        .withExposedPorts(8080)
+        .withNetwork(network)
+        .withLogConsumer(new Slf4jLogConsumer(log))
+        .withCopyFileToContainer(MountableFile.forHostPath(agentPath), "/javaagent.jar")
+        .withEnv("JAVA_TOOL_OPTIONS", "-javaagent:/javaagent.jar")
+        .withEnv("OTEL_BSP_MAX_EXPORT_BATCH", "1")
+        .withEnv("OTEL_BSP_SCHEDULE_DELAY", "10")
+        .withEnv("OTEL_EXPORTER_ZIPKIN_ENDPOINT", OTEL_EXPORTER_ENDPOINT)
+        .withEnv("OTEL_EXPORTER", OTEL_EXPORTER);
   }
 
   protected static int countSpansByName(
