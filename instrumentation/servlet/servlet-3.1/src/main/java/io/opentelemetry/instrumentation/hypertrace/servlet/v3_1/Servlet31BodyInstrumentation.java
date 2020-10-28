@@ -26,6 +26,7 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
 import com.google.auto.service.AutoService;
+import io.opentelemetry.instrumentation.hypertrace.servlet.common.ServletSpanDecorator;
 import io.opentelemetry.javaagent.tooling.Instrumenter;
 import io.opentelemetry.trace.Span;
 import java.util.Enumeration;
@@ -149,6 +150,9 @@ public class Servlet31BodyInstrumentation extends Instrumenter.Default {
       rootStart = true;
       response = new BufferingHttpServletResponse(httpResponse);
       request = new BufferingHttpServletRequest(httpRequest, (HttpServletResponse) response);
+
+      ServletSpanDecorator.addSessionId(currentSpan, httpRequest);
+
       // set request headers
       Enumeration<String> headerNames = httpRequest.getHeaderNames();
       Map<String, String> headers = new HashMap<>();

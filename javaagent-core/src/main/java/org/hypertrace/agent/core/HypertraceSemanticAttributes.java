@@ -39,4 +39,7 @@ public class HypertraceSemanticAttributes {
   public static final AttributeKey<Boolean> OPA_RESULT = booleanKey("hypertrace.opa.result");
 
   public static final AttributeKey<String> OPA_REASON = stringKey("hypertrace.opa.reason");
+
+  public static final AttributeKey<String> HTTP_REQUEST_SESSION_ID =
+      stringKey("http.request.session_id");
 }
