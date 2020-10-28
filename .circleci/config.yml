@@ -44,12 +44,8 @@ jobs:
       - image: circleci/openjdk:11.0.6-jdk-buster
     steps:
       - setup_build_environment
-      - run: ./gradlew :tag -Prelease
+      - run: echo "Releasing version" && ./gradlew printVersion
       - run: ./gradlew publish
-      - add_ssh_keys:
-          fingerprints:
-            - 'f1:dd:0f:dc:42:b3:bf:9f:b8:e3:e8:3f:9b:92:04:fb'
-      - run: git push origin $(./gradlew -q :printVersion)
 
 workflows:
   version: 2
@@ -72,4 +68,4 @@ workflows:
             branches:
               ignore: /.*/
             tags:
-              only: /^release-.*/
+              only: /^[0-9]+\.[0-9]+\.[0-9]+/

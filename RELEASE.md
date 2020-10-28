@@ -1,25 +1,18 @@
 # Release
 
-This repository uses fully automated release process. The release build is triggered by pushing a release tag e.g.
-`git tag release-1 && git push origin release-1` (`1` is a sequence number to trigger the release). 
-The release version is supplied from the
+This repository uses automated release process. The release build is triggered by pushing a release tag e.g.
+`git tag 0.2.0 && git push origin 0.2.0` to release version `0.2.0`. 
+
+The version is supplied from the
 [Hypertrace version plugin](https://github.com/hypertrace/hypertrace-gradle-version-settings-plugin)
-that uses git history and [semantic versioning settings](./semantic-build-versioning.gradle) to
-decide what the next release version should be.
+that uses git history (e.g. the latest tag) to derive the version. For instance if the last
+commit has a tag then the version from tag is used. If the last commit does not have a tag then
+the last tag version with `-SNAPSHOT` is used.
 
-The major version is incremented if commit history contains:
-* Prefix `BREAKING CHANGE`
-* Feature suffix `!` e.g. `feat!` or `feat(scope)!`
-
-The minor version is incremented if commit history contains:
-* `feat` or `feat(scope)`
-
-The patch version is incremented in other cases.
-
-## Print the next release version:
+## Print the current version:
 
 ```bash
-./gradlew printVersion -Prelease
+./gradlew printVersion # -Prelease - prints the next release version, it's not used at the moment.
 ```
 
 ## Release CI job
