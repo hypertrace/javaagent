@@ -72,9 +72,8 @@ public class SpringBootDisabledBodyCaptureTest extends AbstractSmokeTest {
     Assertions.assertEquals(response.body().string(), "Hi!");
     Assertions.assertEquals(1, countSpansByName(traces, "/greeting"));
     Assertions.assertEquals(1, countSpansByName(traces, "webcontroller.greeting"));
-    Assertions.assertEquals(1, countSpansByName(traces, "webcontroller.withspan"));
     Assertions.assertEquals(
-        3,
+        2,
         getSpanStream(traces)
             .flatMap(s -> s.getAttributesList().stream())
             .filter(a -> a.getKey().equals(OTEL_LIBRARY_VERSION_ATTRIBUTE))
