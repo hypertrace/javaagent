@@ -181,7 +181,7 @@ public class BufferingHttpServletRequest extends HttpServletRequestWrapper {
     if (reader == null) {
       reader = super.getReader();
       if (shouldReadContent()) {
-        reader = new BufferedReaderWrapper(reader, this.charBufferData);
+        reader = new BufferedReaderWrapper(reader, this.getCharBuffer());
       }
     }
     return reader;
