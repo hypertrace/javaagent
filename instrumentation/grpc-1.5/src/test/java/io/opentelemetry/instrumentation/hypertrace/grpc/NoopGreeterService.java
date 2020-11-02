@@ -16,5 +16,20 @@
 
 package io.opentelemetry.instrumentation.hypertrace.grpc;
 
-public class GrpcClientTracer
-    extends io.opentelemetry.instrumentation.grpc.v1_5.client.GrpcClientTracer {}
+import io.grpc.stub.StreamObserver;
+import org.hypertrace.example.GreeterGrpc;
+import org.hypertrace.example.Helloworld;
+import org.hypertrace.example.Helloworld.Request;
+import org.hypertrace.example.Helloworld.Response;
+
+public class NoopGreeterService extends GreeterGrpc.GreeterImplBase {
+
+  private static final Response RESPONSE =
+      Helloworld.Response.newBuilder().setMessage("response message").build();
+
+  @Override
+  public void sayHello(Request request, StreamObserver<Response> responseObserver) {
+    responseObserver.onNext(RESPONSE);
+    responseObserver.onCompleted();
+  }
+}

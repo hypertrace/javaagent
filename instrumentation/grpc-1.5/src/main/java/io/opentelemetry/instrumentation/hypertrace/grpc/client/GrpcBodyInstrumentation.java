@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.grpc;
+package io.opentelemetry.instrumentation.hypertrace.grpc.client;
 
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.extendsClass;
 import static java.util.Collections.singletonMap;
@@ -59,6 +59,8 @@ public class GrpcBodyInstrumentation extends Instrumenter.Default {
       "io.opentelemetry.instrumentation.grpc.v1_5.server.TracingServerInterceptor$TracingServerCall",
       "io.opentelemetry.instrumentation.grpc.v1_5.server.TracingServerInterceptor$TracingServerCallListener",
       "org.hypertrace.agent.core.HypertraceSemanticAttributes",
+      "io.opentelemetry.instrumentation.hypertrace.grpc.GrpcTracer",
+      "io.opentelemetry.instrumentation.hypertrace.grpc.GrpcSpanDecorator",
       packageName + ".GrpcClientInterceptor"
     };
   }
@@ -87,7 +89,6 @@ public class GrpcBodyInstrumentation extends Instrumenter.Default {
           break;
         }
       }
-      System.out.println("GRPC interceptor");
       if (shouldRegister) {
         interceptors.add(0, new GrpcClientInterceptor());
       }

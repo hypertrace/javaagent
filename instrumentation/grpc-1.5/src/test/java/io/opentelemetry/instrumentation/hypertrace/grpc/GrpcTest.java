@@ -45,8 +45,7 @@ import org.junit.jupiter.api.Test;
 public class GrpcTest extends AbstractInstrumenterTest {
 
   private static final Helloworld.Request REQUEST =
-      Request.newBuilder().setName("John Doe").build();
-
+      Request.newBuilder().setName("request name").build();
   private static final Metadata.Key<String> SERVER_STRING_METADATA_KEY =
       Metadata.Key.of("serverheaderkey", Metadata.ASCII_STRING_MARSHALLER);
   private static final Metadata.Key<String> CLIENT_STRING_METADATA_KEY =
@@ -55,10 +54,10 @@ public class GrpcTest extends AbstractInstrumenterTest {
       Metadata.Key.of("name" + Metadata.BINARY_HEADER_SUFFIX, Metadata.BINARY_BYTE_MARSHALLER);
 
   @Test
-  public void test() throws IOException, TimeoutException, InterruptedException {
+  public void blockingStub() throws IOException, TimeoutException, InterruptedException {
     Server server =
         ServerBuilder.forPort(0)
-            .addService(new ServiceImpl())
+            .addService(new NoopGreeterService())
             .intercept(
                 new ServerInterceptor() {
                   @Override
@@ -71,10 +70,10 @@ public class GrpcTest extends AbstractInstrumenterTest {
                             serverCall) {
                           @Override
                           public void sendHeaders(Metadata headers) {
-                            Metadata header = new Metadata();
-                            header.put(SERVER_STRING_METADATA_KEY, "serverheader");
-                            header.put(BYTE_METADATA_KEY, "serverbyteheader".getBytes());
-                            headers.merge(header);
+                            Metadata addHeaders = new Metadata();
+                            addHeaders.put(SERVER_STRING_METADATA_KEY, "serverheader");
+                            addHeaders.put(BYTE_METADATA_KEY, "serverbyteheader".getBytes());
+                            headers.merge(addHeaders);
                             super.sendHeaders(headers);
                           }
                         };
@@ -90,12 +89,12 @@ public class GrpcTest extends AbstractInstrumenterTest {
             .usePlaintext(true)
             .build();
 
-    Metadata header = new Metadata();
-    header.put(CLIENT_STRING_METADATA_KEY, "clientheader");
-    header.put(BYTE_METADATA_KEY, "hello".getBytes());
+    Metadata headers = new Metadata();
+    headers.put(CLIENT_STRING_METADATA_KEY, "clientheader");
+    headers.put(BYTE_METADATA_KEY, "hello".getBytes());
 
     GreeterBlockingStub blockingStub = GreeterGrpc.newBlockingStub(channel);
-    blockingStub = MetadataUtils.attachHeaders(blockingStub, header);
+    blockingStub = MetadataUtils.attachHeaders(blockingStub, headers);
     Response response = blockingStub.sayHello(REQUEST);
 
     String requestJson = JsonFormat.printer().print(REQUEST);
@@ -128,7 +127,16 @@ public class GrpcTest extends AbstractInstrumenterTest {
                 HypertraceSemanticAttributes.rpcResponseMetadata(
                     SERVER_STRING_METADATA_KEY.name())));
 
+    // TODO Server body instrumentation get default span because the gRPC instrumentation does not
+    // set
+    // context correctly. It has been fixed in the master branch
     SpanData serverSpan = spans.get(1);
+    //    Assertions.assertEquals(
+    //        requestJson,
+    // serverSpan.getAttributes().get(HypertraceSemanticAttributes.RPC_REQUEST_BODY));
+    //    Assertions.assertEquals(
+    //        responseJson,
+    //        serverSpan.getAttributes().get(HypertraceSemanticAttributes.RPC_RESPONSE_BODY));
 
     server.shutdownNow();
   }
