@@ -30,3 +30,5 @@ include("javaagent-tooling")
 include("javaagent-bootstrap")
 include("javaagent-core")
 include("testing-common")
+include("instrumentation:grpc-1.5")
+findProject(":instrumentation:grpc-1.5")?.name = "grpc-1.5"

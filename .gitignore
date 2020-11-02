@@ -34,6 +34,8 @@ build
 
 .idea
 
+.DS_Store
+
 # the ./gradlew printVersion generates this file
 # ignore this file because the version is consumed from the git tags only
 semantic-build-versioning.gradle
