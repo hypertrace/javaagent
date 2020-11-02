@@ -42,7 +42,7 @@ import org.hypertrace.example.Helloworld.Response;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class GrpcTest extends AbstractInstrumenterTest {
+public class GrpcBodyTest extends AbstractInstrumenterTest {
 
   private static final Helloworld.Request REQUEST =
       Request.newBuilder().setName("request name").build();
