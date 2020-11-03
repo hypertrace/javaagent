@@ -130,7 +130,6 @@ public class GrpcBodyTest extends AbstractInstrumenterTest {
   @Test
   public void serverRequestBlocking() throws TimeoutException, InterruptedException {
     Metadata blockHeaders = new Metadata();
-    blockHeaders.put(CLIENT_STRING_METADATA_KEY, "clientheader");
     blockHeaders.put(Metadata.Key.of("block", Metadata.ASCII_STRING_MARSHALLER), "true");
 
     GreeterBlockingStub blockingStub = GreeterGrpc.newBlockingStub(CHANNEL);
@@ -154,12 +153,8 @@ public class GrpcBodyTest extends AbstractInstrumenterTest {
     Assertions.assertNull(
         serverSpan.getAttributes().get(HypertraceSemanticAttributes.RPC_RESPONSE_BODY));
     Assertions.assertEquals(
-        "clientheader",
-        serverSpan
-            .getAttributes()
-            .get(
-                HypertraceSemanticAttributes.rpcRequestMetadata(
-                    CLIENT_STRING_METADATA_KEY.name())));
+        "true",
+        serverSpan.getAttributes().get(HypertraceSemanticAttributes.rpcRequestMetadata("block")));
   }
 
   private void assertBodiesAndHeaders(SpanData span, String requestJson, String responseJson) {

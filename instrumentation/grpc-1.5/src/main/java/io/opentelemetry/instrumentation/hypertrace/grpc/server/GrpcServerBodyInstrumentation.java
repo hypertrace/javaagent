@@ -39,7 +39,7 @@ public class GrpcServerBodyInstrumentation extends Instrumenter.Default {
 
   @Override
   public int getOrder() {
-    return 10;
+    return 1;
   }
 
   @Override
@@ -95,11 +95,9 @@ public class GrpcServerBodyInstrumentation extends Instrumenter.Default {
         }
       }
       if (shouldRegister) {
-        interceptors.add(0, new GrpcServerInterceptor());
-      }
-
-      for (ServerInterceptor interceptor : interceptors) {
-        System.out.println(interceptor);
+        // Interceptors run in the reverse order in which they are added
+        // OTEL interceptor is last
+        interceptors.add(interceptors.size() - 1, new GrpcServerInterceptor());
       }
     }
   }
