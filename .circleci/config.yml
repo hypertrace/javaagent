@@ -39,13 +39,31 @@ jobs:
     steps:
       - setup_build_environment
       - run: make muzzle
-  release-publish:
+
+  release-bintray-publish:
     docker:
       - image: circleci/openjdk:11.0.6-jdk-buster
     steps:
       - setup_build_environment
       - run: echo "Releasing version" && ./gradlew printVersion
       - run: ./gradlew publish
+      - run: mkdir -p artifacts >/dev/null 2>&1
+      - run: cp javaagent/build/libs/*-all.jar artifacts/
+      - persist_to_workspace:
+          root: .
+          paths:
+            - artifacts
+
+    release-github-publish:
+      docker:
+        - image: cibuilds/github:0.10
+      steps:
+        - attach_workspace:
+            at: ./artifacts
+        - run:
+            name: "Publish Release on GitHub"
+            command: |
+              ghr -t ${GH_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -n "Release ${CIRCLE_TAG}" -b "..." --soft ${CIRCLE_TAG} ./artifacts/*-all.jar
 
 workflows:
   version: 2
@@ -59,11 +77,19 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - release-publish:
+      - release-bintray-publish:
           context: hypertrace-publishing
           requires:
             - build
             - muzzle
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^[0-9]+\.[0-9]+\.[0-9]+/
+      - release-github-publish:
+          requires:
+            - release-publish
           filters:
             branches:
               ignore: /.*/
