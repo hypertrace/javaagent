@@ -17,7 +17,6 @@
 package io.opentelemetry.instrumentation.hypertrace.grpc;
 
 import com.google.protobuf.util.JsonFormat;
-import io.grpc.Channel;
 import io.grpc.ForwardingServerCall;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
