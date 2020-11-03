@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.grpc;
+package io.opentelemetry.instrumentation.hypertrace.grpc.v1_5;
 
 import io.grpc.stub.StreamObserver;
 import org.hypertrace.example.GreeterGrpc;

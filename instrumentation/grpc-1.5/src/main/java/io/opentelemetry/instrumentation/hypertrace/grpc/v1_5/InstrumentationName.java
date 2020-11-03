@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.grpc;
+package io.opentelemetry.instrumentation.hypertrace.grpc.v1_5;
 
 public class InstrumentationName {
   public static final String[] INSTRUMENTATION_NAME = {"grpc"};

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.grpc.server;
+package io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.server;
 
 import static java.util.Collections.singletonMap;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
@@ -64,9 +64,9 @@ public class GrpcServerBodyInstrumentation extends Instrumenter.Default {
       "org.hypertrace.agent.blocking.MockBlockingEvaluator",
       "org.hypertrace.agent.core.HypertraceSemanticAttributes",
       "org.hypertrace.agent.core.DynamicConfig",
-      "io.opentelemetry.instrumentation.hypertrace.grpc.GrpcTracer",
-      "io.opentelemetry.instrumentation.hypertrace.grpc.GrpcSpanDecorator",
-      "io.opentelemetry.instrumentation.hypertrace.grpc.InstrumentationName",
+      "io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.GrpcTracer",
+      "io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.GrpcSpanDecorator",
+      "io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.InstrumentationName",
       packageName + ".GrpcServerInterceptor",
       packageName + ".NoopServerCallListener"
     };

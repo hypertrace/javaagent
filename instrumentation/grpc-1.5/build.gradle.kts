@@ -59,14 +59,16 @@ dependencies {
     api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-grpc-1.5:0.9.0")
     api("io.opentelemetry.instrumentation:opentelemetry-grpc-1.5:0.9.0")
 
-    api("io.grpc:grpc-core:1.5.0")
-    api("io.grpc:grpc-protobuf:1.5.0")
-    api("io.grpc:grpc-stub:1.5.0")
+    compileOnly("io.grpc:grpc-core:1.5.0")
+    compileOnly("io.grpc:grpc-protobuf:1.5.0")
+    compileOnly("io.grpc:grpc-stub:1.5.0")
 
     implementation("javax.annotation:javax.annotation-api:1.3.2")
     implementation("net.bytebuddy:byte-buddy:1.10.10")
-    compileOnly("io.grpc:grpc-core:1.5.0")
 
     testImplementation(project(":testing-common"))
+    testImplementation("io.grpc:grpc-core:1.5.0")
+    testImplementation("io.grpc:grpc-protobuf:1.5.0")
+    testImplementation("io.grpc:grpc-stub:1.5.0")
     testImplementation("io.grpc:grpc-netty:1.5.0")
 }

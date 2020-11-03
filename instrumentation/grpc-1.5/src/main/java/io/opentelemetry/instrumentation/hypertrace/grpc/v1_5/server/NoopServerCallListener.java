@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.grpc;
+package io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.server;
 
-public class GrpcTracer
-    extends io.opentelemetry.instrumentation.grpc.v1_5.client.GrpcClientTracer {}
+import io.grpc.ServerCall;
+
+public class NoopServerCallListener<T> extends ServerCall.Listener<T> {
+
+  private NoopServerCallListener() {}
+
+  static NoopServerCallListener INSTANCE = new NoopServerCallListener();
+}

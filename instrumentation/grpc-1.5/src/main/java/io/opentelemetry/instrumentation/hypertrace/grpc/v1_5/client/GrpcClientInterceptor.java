@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.grpc.client;
+package io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.client;
 
 import io.grpc.CallOptions;
 import io.grpc.Channel;
@@ -25,9 +25,9 @@ import io.grpc.ForwardingClientCall;
 import io.grpc.ForwardingClientCallListener;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
-import io.opentelemetry.instrumentation.hypertrace.grpc.GrpcSpanDecorator;
-import io.opentelemetry.instrumentation.hypertrace.grpc.GrpcTracer;
-import io.opentelemetry.instrumentation.hypertrace.grpc.InstrumentationName;
+import io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.GrpcSpanDecorator;
+import io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.GrpcTracer;
+import io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.InstrumentationName;
 import io.opentelemetry.trace.Span;
 import org.hypertrace.agent.core.DynamicConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;

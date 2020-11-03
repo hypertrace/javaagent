@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.grpc.server;
+package io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.server;
 
 import io.grpc.ForwardingServerCall;
 import io.grpc.ForwardingServerCallListener;
@@ -24,10 +24,10 @@ import io.grpc.ServerCall.Listener;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import io.grpc.Status;
-import io.opentelemetry.instrumentation.hypertrace.grpc.GrpcSpanDecorator;
-import io.opentelemetry.instrumentation.hypertrace.grpc.GrpcTracer;
-import io.opentelemetry.instrumentation.hypertrace.grpc.InstrumentationName;
-import io.opentelemetry.instrumentation.hypertrace.grpc.server.GrpcServerInterceptor.TracingServerCall.TracingServerCallListener;
+import io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.GrpcSpanDecorator;
+import io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.GrpcTracer;
+import io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.InstrumentationName;
+import io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.server.GrpcServerInterceptor.TracingServerCall.TracingServerCallListener;
 import io.opentelemetry.trace.Span;
 import java.util.Map;
 import org.hypertrace.agent.blocking.BlockingProvider;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.grpc;
+package io.opentelemetry.instrumentation.hypertrace.grpc.v1_5;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
