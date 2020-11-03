@@ -1,7 +1,7 @@
 
 .PHONY: build
 build:
-	./gradlew build
+	./gradlew build --stacktrace
 
 .PHONY: muzzle
 muzzle:
