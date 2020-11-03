@@ -26,11 +26,13 @@ import io.grpc.ServerInterceptor;
 import io.grpc.Status;
 import io.opentelemetry.instrumentation.hypertrace.grpc.GrpcSpanDecorator;
 import io.opentelemetry.instrumentation.hypertrace.grpc.GrpcTracer;
+import io.opentelemetry.instrumentation.hypertrace.grpc.InstrumentationName;
 import io.opentelemetry.instrumentation.hypertrace.grpc.server.GrpcServerInterceptor.TracingServerCall.TracingServerCallListener;
 import io.opentelemetry.trace.Span;
 import java.util.Map;
 import org.hypertrace.agent.blocking.BlockingProvider;
 import org.hypertrace.agent.blocking.BlockingResult;
+import org.hypertrace.agent.core.DynamicConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 
 public class GrpcServerInterceptor implements ServerInterceptor {
@@ -40,6 +42,9 @@ public class GrpcServerInterceptor implements ServerInterceptor {
   @Override
   public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
       ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
+    if (!DynamicConfig.isEnabled(InstrumentationName.INSTRUMENTATION_NAME)) {
+      return next.startCall(call, headers);
+    }
 
     Span currentSpan = TRACER.getCurrentSpan();
 

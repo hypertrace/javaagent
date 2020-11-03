@@ -34,6 +34,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
+import org.hypertrace.agent.core.DynamicConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.hypertrace.example.GreeterGrpc;
@@ -41,9 +42,9 @@ import org.hypertrace.example.GreeterGrpc.GreeterBlockingStub;
 import org.hypertrace.example.Helloworld;
 import org.hypertrace.example.Helloworld.Request;
 import org.hypertrace.example.Helloworld.Response;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class GrpcBodyTest extends AbstractInstrumenterTest {
@@ -57,11 +58,11 @@ public class GrpcBodyTest extends AbstractInstrumenterTest {
   private static final Metadata.Key<byte[]> BYTE_METADATA_KEY =
       Metadata.Key.of("name" + Metadata.BINARY_HEADER_SUFFIX, Metadata.BINARY_BYTE_MARSHALLER);
 
-  private Server SERVER;
-  private Channel CHANNEL;
+  private static Server SERVER;
+  private static Channel CHANNEL;
 
-  @BeforeEach
-  public void startServer() throws IOException {
+  @BeforeAll
+  public static void startServer() throws IOException {
     SERVER =
         ServerBuilder.forPort(0)
             .addService(new NoopGreeterService())
@@ -97,8 +98,8 @@ public class GrpcBodyTest extends AbstractInstrumenterTest {
             .build();
   }
 
-  @AfterEach
-  public void close() {
+  @AfterAll
+  public static void close() {
     SERVER.shutdownNow();
   }
 
@@ -155,6 +156,32 @@ public class GrpcBodyTest extends AbstractInstrumenterTest {
     Assertions.assertEquals(
         "true",
         serverSpan.getAttributes().get(HypertraceSemanticAttributes.rpcRequestMetadata("block")));
+  }
+
+  @Test
+  public void disabledInstrumentation_dynamicConfig()
+      throws TimeoutException, InterruptedException {
+    System.setProperty(DynamicConfig.ENABLED_ALL_PROPERTY_NAME, "false");
+
+    GreeterBlockingStub blockingStub = GreeterGrpc.newBlockingStub(CHANNEL);
+    Response response = blockingStub.sayHello(REQUEST);
+
+    TEST_WRITER.waitForTraces(1);
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    Assertions.assertEquals(1, traces.size());
+    List<SpanData> spans = traces.get(0);
+    Assertions.assertEquals(2, spans.size());
+
+    SpanData clientSpan = spans.get(0);
+    Assertions.assertNull(
+        clientSpan.getAttributes().get(HypertraceSemanticAttributes.RPC_REQUEST_BODY));
+    Assertions.assertNull(
+        clientSpan.getAttributes().get(HypertraceSemanticAttributes.RPC_RESPONSE_BODY));
+    SpanData serverSpan = spans.get(1);
+    Assertions.assertNull(
+        serverSpan.getAttributes().get(HypertraceSemanticAttributes.RPC_REQUEST_BODY));
+    Assertions.assertNull(
+        serverSpan.getAttributes().get(HypertraceSemanticAttributes.RPC_RESPONSE_BODY));
   }
 
   private void assertBodiesAndHeaders(SpanData span, String requestJson, String responseJson) {

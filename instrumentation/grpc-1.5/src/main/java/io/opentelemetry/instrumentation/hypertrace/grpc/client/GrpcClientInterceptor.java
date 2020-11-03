@@ -27,7 +27,9 @@ import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.opentelemetry.instrumentation.hypertrace.grpc.GrpcSpanDecorator;
 import io.opentelemetry.instrumentation.hypertrace.grpc.GrpcTracer;
+import io.opentelemetry.instrumentation.hypertrace.grpc.InstrumentationName;
 import io.opentelemetry.trace.Span;
+import org.hypertrace.agent.core.DynamicConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 
 public class GrpcClientInterceptor implements ClientInterceptor {
@@ -37,6 +39,9 @@ public class GrpcClientInterceptor implements ClientInterceptor {
   @Override
   public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
       MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
+    if (!DynamicConfig.isEnabled(InstrumentationName.INSTRUMENTATION_NAME)) {
+      return next.newCall(method, callOptions);
+    }
 
     Span currentSpan = TRACER.getCurrentSpan();
     ClientCall<ReqT, RespT> clientCall = next.newCall(method, callOptions);

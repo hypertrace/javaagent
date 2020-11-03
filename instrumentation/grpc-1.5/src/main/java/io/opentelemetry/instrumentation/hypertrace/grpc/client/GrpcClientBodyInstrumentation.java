@@ -61,6 +61,7 @@ public class GrpcClientBodyInstrumentation extends Instrumenter.Default {
       "org.hypertrace.agent.core.HypertraceSemanticAttributes",
       "io.opentelemetry.instrumentation.hypertrace.grpc.GrpcTracer",
       "io.opentelemetry.instrumentation.hypertrace.grpc.GrpcSpanDecorator",
+      "io.opentelemetry.instrumentation.hypertrace.grpc.InstrumentationName",
       packageName + ".GrpcClientInterceptor"
     };
   }
