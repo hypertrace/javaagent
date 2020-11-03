@@ -109,7 +109,7 @@ public class GrpcBodyTest extends AbstractInstrumenterTest {
     headers.put(CLIENT_STRING_METADATA_KEY, "clientheader");
     headers.put(BYTE_METADATA_KEY, "hello".getBytes());
 
-    GreeterBlockingStub blockingStub = GreeterGrpc.newBlockingStub(CHANNEL);
+    GreeterBlockingStub blockingStub = GreeterGrpc.newBlockingStub(CHANNEL).withWaitForReady();
     blockingStub = MetadataUtils.attachHeaders(blockingStub, headers);
     Response response = blockingStub.sayHello(REQUEST);
 
@@ -133,7 +133,7 @@ public class GrpcBodyTest extends AbstractInstrumenterTest {
     Metadata blockHeaders = new Metadata();
     blockHeaders.put(Metadata.Key.of("block", Metadata.ASCII_STRING_MARSHALLER), "true");
 
-    GreeterBlockingStub blockingStub = GreeterGrpc.newBlockingStub(CHANNEL);
+    GreeterBlockingStub blockingStub = GreeterGrpc.newBlockingStub(CHANNEL).withWaitForReady();
     blockingStub = MetadataUtils.attachHeaders(blockingStub, blockHeaders);
 
     try {
