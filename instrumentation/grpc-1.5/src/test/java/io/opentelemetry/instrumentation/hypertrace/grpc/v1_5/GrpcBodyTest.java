@@ -124,6 +124,7 @@ public class GrpcBodyTest extends AbstractInstrumenterTest {
     String responseJson = JsonFormat.printer().print(response);
 
     TEST_WRITER.waitForTraces(1);
+    Thread.sleep(1000);
     List<List<SpanData>> traces = TEST_WRITER.getTraces();
     Assertions.assertEquals(1, traces.size());
     List<SpanData> spans = traces.get(0);
