@@ -33,9 +33,9 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
 @AutoService(Instrumenter.class)
-public class GrpcBodyInstrumentation extends Instrumenter.Default {
+public class GrpcClientBodyInstrumentation extends Instrumenter.Default {
 
-  public GrpcBodyInstrumentation() {
+  public GrpcClientBodyInstrumentation() {
     super("grpc");
   }
 
@@ -75,7 +75,7 @@ public class GrpcBodyInstrumentation extends Instrumenter.Default {
   public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
     return singletonMap(
         isMethod().and(named("build")),
-        GrpcBodyInstrumentation.class.getName() + "$AddInterceptorAdvice");
+        GrpcClientBodyInstrumentation.class.getName() + "$AddInterceptorAdvice");
   }
 
   public static class AddInterceptorAdvice {
@@ -91,10 +91,6 @@ public class GrpcBodyInstrumentation extends Instrumenter.Default {
       }
       if (shouldRegister) {
         interceptors.add(0, new GrpcClientInterceptor());
-      }
-
-      for (ClientInterceptor interceptor : interceptors) {
-        System.out.println(interceptor.getClass().getName());
       }
     }
   }
