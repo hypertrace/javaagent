@@ -43,6 +43,7 @@ import org.hypertrace.example.Helloworld;
 import org.hypertrace.example.Helloworld.Request;
 import org.hypertrace.example.Helloworld.Response;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -96,12 +97,6 @@ public class GrpcBodyTest extends AbstractInstrumenterTest {
         ManagedChannelBuilder.forTarget(String.format("localhost:%d", SERVER.getPort()))
             .usePlaintext(true)
             .build();
-
-    try {
-      Thread.sleep(1000);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
   }
 
   @AfterAll
@@ -110,13 +105,18 @@ public class GrpcBodyTest extends AbstractInstrumenterTest {
     SERVER.shutdownNow();
   }
 
+  @AfterEach
+  public void afterEach() {
+    System.clearProperty(DynamicConfig.ENABLED_ALL_PROPERTY_NAME);
+  }
+
   @Test
   public void blockingStub() throws IOException, TimeoutException, InterruptedException {
     Metadata headers = new Metadata();
     headers.put(CLIENT_STRING_METADATA_KEY, "clientheader");
     headers.put(BYTE_METADATA_KEY, "hello".getBytes());
 
-    GreeterBlockingStub blockingStub = GreeterGrpc.newBlockingStub(CHANNEL).withWaitForReady();
+    GreeterBlockingStub blockingStub = GreeterGrpc.newBlockingStub(CHANNEL);
     blockingStub = MetadataUtils.attachHeaders(blockingStub, headers);
     Response response = blockingStub.sayHello(REQUEST);
 
@@ -140,7 +140,7 @@ public class GrpcBodyTest extends AbstractInstrumenterTest {
     Metadata blockHeaders = new Metadata();
     blockHeaders.put(Metadata.Key.of("block", Metadata.ASCII_STRING_MARSHALLER), "true");
 
-    GreeterBlockingStub blockingStub = GreeterGrpc.newBlockingStub(CHANNEL).withWaitForReady();
+    GreeterBlockingStub blockingStub = GreeterGrpc.newBlockingStub(CHANNEL);
     blockingStub = MetadataUtils.attachHeaders(blockingStub, blockHeaders);
 
     try {
