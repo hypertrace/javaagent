@@ -43,7 +43,7 @@ public class GrpcSpanDecorator {
         String requestBody = PRINTER.print(mb);
         span.setAttribute(key, requestBody);
       } catch (InvalidProtocolBufferException e) {
-        log.error("Failed to parse request message to JSON", e);
+        log.error("Failed to decode message to JSON", e);
       }
     }
   }
