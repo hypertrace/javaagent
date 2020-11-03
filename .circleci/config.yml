@@ -54,16 +54,16 @@ jobs:
           paths:
             - artifacts
 
-    release-github-publish:
-      docker:
-        - image: cibuilds/github:0.10
-      steps:
-        - attach_workspace:
-            at: ./artifacts
-        - run:
-            name: "Publish Release on GitHub"
-            command: |
-              ghr -t ${GH_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -n "Release ${CIRCLE_TAG}" -b "..." --soft ${CIRCLE_TAG} ./artifacts/*-all.jar
+  release-github-publish:
+    docker:
+      - image: cibuilds/github:0.10
+    steps:
+      - attach_workspace:
+          at: ./artifacts
+      - run:
+          name: "Publish Release on GitHub"
+          command: |
+            ghr -t ${GH_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -n "Release ${CIRCLE_TAG}" -b "..." --soft ${CIRCLE_TAG} ./artifacts/*-all.jar
 
 workflows:
   version: 2
