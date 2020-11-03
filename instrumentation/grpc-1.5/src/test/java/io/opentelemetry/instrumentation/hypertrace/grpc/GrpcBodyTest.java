@@ -17,8 +17,8 @@
 package io.opentelemetry.instrumentation.hypertrace.grpc;
 
 import com.google.protobuf.util.JsonFormat;
+import io.grpc.Channel;
 import io.grpc.ForwardingServerCall;
-import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.Server;
@@ -27,6 +27,8 @@ import io.grpc.ServerCall;
 import io.grpc.ServerCall.Listener;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import io.grpc.stub.MetadataUtils;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.IOException;
@@ -39,7 +41,9 @@ import org.hypertrace.example.GreeterGrpc.GreeterBlockingStub;
 import org.hypertrace.example.Helloworld;
 import org.hypertrace.example.Helloworld.Request;
 import org.hypertrace.example.Helloworld.Response;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class GrpcBodyTest extends AbstractInstrumenterTest {
@@ -53,9 +57,12 @@ public class GrpcBodyTest extends AbstractInstrumenterTest {
   private static final Metadata.Key<byte[]> BYTE_METADATA_KEY =
       Metadata.Key.of("name" + Metadata.BINARY_HEADER_SUFFIX, Metadata.BINARY_BYTE_MARSHALLER);
 
-  @Test
-  public void blockingStub() throws IOException, TimeoutException, InterruptedException {
-    Server server =
+  private Server SERVER;
+  private Channel CHANNEL;
+
+  @BeforeEach
+  public void startServer() throws IOException {
+    SERVER =
         ServerBuilder.forPort(0)
             .addService(new NoopGreeterService())
             .intercept(
@@ -82,18 +89,26 @@ public class GrpcBodyTest extends AbstractInstrumenterTest {
                   }
                 })
             .build();
-    server.start();
+    SERVER.start();
 
-    ManagedChannel channel =
-        ManagedChannelBuilder.forTarget(String.format("localhost:%d", server.getPort()))
+    CHANNEL =
+        ManagedChannelBuilder.forTarget(String.format("localhost:%d", SERVER.getPort()))
             .usePlaintext(true)
             .build();
+  }
 
+  @AfterEach
+  public void close() {
+    SERVER.shutdownNow();
+  }
+
+  @Test
+  public void blockingStub() throws IOException, TimeoutException, InterruptedException {
     Metadata headers = new Metadata();
     headers.put(CLIENT_STRING_METADATA_KEY, "clientheader");
     headers.put(BYTE_METADATA_KEY, "hello".getBytes());
 
-    GreeterBlockingStub blockingStub = GreeterGrpc.newBlockingStub(channel);
+    GreeterBlockingStub blockingStub = GreeterGrpc.newBlockingStub(CHANNEL);
     blockingStub = MetadataUtils.attachHeaders(blockingStub, headers);
     Response response = blockingStub.sayHello(REQUEST);
 
@@ -107,37 +122,62 @@ public class GrpcBodyTest extends AbstractInstrumenterTest {
     Assertions.assertEquals(2, spans.size());
 
     SpanData clientSpan = spans.get(0);
-    Assertions.assertEquals(
-        requestJson, clientSpan.getAttributes().get(HypertraceSemanticAttributes.RPC_REQUEST_BODY));
-    Assertions.assertEquals(
-        responseJson,
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.RPC_RESPONSE_BODY));
+    assertBodiesAndHeaders(clientSpan, requestJson, responseJson);
+    SpanData serverSpan = spans.get(1);
+    assertBodiesAndHeaders(serverSpan, requestJson, responseJson);
+  }
+
+  @Test
+  public void serverRequestBlocking() throws TimeoutException, InterruptedException {
+    Metadata blockHeaders = new Metadata();
+    blockHeaders.put(CLIENT_STRING_METADATA_KEY, "clientheader");
+    blockHeaders.put(Metadata.Key.of("block", Metadata.ASCII_STRING_MARSHALLER), "true");
+
+    GreeterBlockingStub blockingStub = GreeterGrpc.newBlockingStub(CHANNEL);
+    blockingStub = MetadataUtils.attachHeaders(blockingStub, blockHeaders);
+
+    try {
+      Response response = blockingStub.sayHello(REQUEST);
+    } catch (StatusRuntimeException ex) {
+      Assertions.assertEquals(Status.PERMISSION_DENIED, ex.getStatus());
+    }
+
+    TEST_WRITER.waitForTraces(1);
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    Assertions.assertEquals(1, traces.size());
+    List<SpanData> spans = traces.get(0);
+    Assertions.assertEquals(2, spans.size());
+
+    SpanData serverSpan = spans.get(1);
+    Assertions.assertNull(
+        serverSpan.getAttributes().get(HypertraceSemanticAttributes.RPC_REQUEST_BODY));
+    Assertions.assertNull(
+        serverSpan.getAttributes().get(HypertraceSemanticAttributes.RPC_RESPONSE_BODY));
     Assertions.assertEquals(
         "clientheader",
-        clientSpan
+        serverSpan
             .getAttributes()
+            .get(
+                HypertraceSemanticAttributes.rpcRequestMetadata(
+                    CLIENT_STRING_METADATA_KEY.name())));
+  }
+
+  private void assertBodiesAndHeaders(SpanData span, String requestJson, String responseJson) {
+    Assertions.assertEquals(
+        requestJson, span.getAttributes().get(HypertraceSemanticAttributes.RPC_REQUEST_BODY));
+    Assertions.assertEquals(
+        responseJson, span.getAttributes().get(HypertraceSemanticAttributes.RPC_RESPONSE_BODY));
+    Assertions.assertEquals(
+        "clientheader",
+        span.getAttributes()
             .get(
                 HypertraceSemanticAttributes.rpcRequestMetadata(
                     CLIENT_STRING_METADATA_KEY.name())));
     Assertions.assertEquals(
         "serverheader",
-        clientSpan
-            .getAttributes()
+        span.getAttributes()
             .get(
                 HypertraceSemanticAttributes.rpcResponseMetadata(
                     SERVER_STRING_METADATA_KEY.name())));
-
-    // TODO Server body instrumentation get default span because the gRPC instrumentation does not
-    // set
-    // context correctly. It has been fixed in the master branch
-    SpanData serverSpan = spans.get(1);
-    //    Assertions.assertEquals(
-    //        requestJson,
-    // serverSpan.getAttributes().get(HypertraceSemanticAttributes.RPC_REQUEST_BODY));
-    //    Assertions.assertEquals(
-    //        responseJson,
-    //        serverSpan.getAttributes().get(HypertraceSemanticAttributes.RPC_RESPONSE_BODY));
-
-    server.shutdownNow();
   }
 }

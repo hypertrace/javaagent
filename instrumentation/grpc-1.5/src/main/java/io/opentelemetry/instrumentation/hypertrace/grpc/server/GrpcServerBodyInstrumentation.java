@@ -39,7 +39,7 @@ public class GrpcServerBodyInstrumentation extends Instrumenter.Default {
 
   @Override
   public int getOrder() {
-    return 1;
+    return 10;
   }
 
   @Override
@@ -56,10 +56,18 @@ public class GrpcServerBodyInstrumentation extends Instrumenter.Default {
       "io.opentelemetry.instrumentation.grpc.v1_5.server.TracingServerInterceptor",
       "io.opentelemetry.instrumentation.grpc.v1_5.server.TracingServerInterceptor$TracingServerCall",
       "io.opentelemetry.instrumentation.grpc.v1_5.server.TracingServerInterceptor$TracingServerCallListener",
+      "org.hypertrace.agent.blocking.BlockingProvider",
+      "org.hypertrace.agent.blocking.BlockingEvaluator",
+      "org.hypertrace.agent.blocking.BlockingResult",
+      "org.hypertrace.agent.blocking.ExecutionBlocked",
+      "org.hypertrace.agent.blocking.ExecutionNotBlocked",
+      "org.hypertrace.agent.blocking.MockBlockingEvaluator",
       "org.hypertrace.agent.core.HypertraceSemanticAttributes",
+      "org.hypertrace.agent.core.DynamicConfig",
       "io.opentelemetry.instrumentation.hypertrace.grpc.GrpcTracer",
       "io.opentelemetry.instrumentation.hypertrace.grpc.GrpcSpanDecorator",
-      packageName + ".GrpcServerInterceptor"
+      packageName + ".GrpcServerInterceptor",
+      packageName + ".NoopServerCallListener"
     };
   }
 
@@ -87,7 +95,11 @@ public class GrpcServerBodyInstrumentation extends Instrumenter.Default {
         }
       }
       if (shouldRegister) {
-        interceptors.add(new GrpcServerInterceptor());
+        interceptors.add(0, new GrpcServerInterceptor());
+      }
+
+      for (ServerInterceptor interceptor : interceptors) {
+        System.out.println(interceptor);
       }
     }
   }

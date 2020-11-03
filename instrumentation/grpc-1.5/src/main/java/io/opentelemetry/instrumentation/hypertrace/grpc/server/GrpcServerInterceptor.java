@@ -20,12 +20,17 @@ import io.grpc.ForwardingServerCall;
 import io.grpc.ForwardingServerCallListener;
 import io.grpc.Metadata;
 import io.grpc.ServerCall;
+import io.grpc.ServerCall.Listener;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
+import io.grpc.Status;
 import io.opentelemetry.instrumentation.hypertrace.grpc.GrpcSpanDecorator;
 import io.opentelemetry.instrumentation.hypertrace.grpc.GrpcTracer;
 import io.opentelemetry.instrumentation.hypertrace.grpc.server.GrpcServerInterceptor.TracingServerCall.TracingServerCallListener;
 import io.opentelemetry.trace.Span;
+import java.util.Map;
+import org.hypertrace.agent.blocking.BlockingProvider;
+import org.hypertrace.agent.blocking.BlockingResult;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 
 public class GrpcServerInterceptor implements ServerInterceptor {
@@ -37,12 +42,19 @@ public class GrpcServerInterceptor implements ServerInterceptor {
       ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
 
     Span currentSpan = TRACER.getCurrentSpan();
-    GrpcSpanDecorator.addMetadataAttributes(
-        headers, currentSpan, HypertraceSemanticAttributes::rpcRequestMetadata);
 
-    return new TracingServerCallListener<>(
-        next.startCall(new GrpcServerInterceptor.TracingServerCall<>(call, currentSpan), headers),
-        currentSpan);
+    Map<String, String> mapHeaders = GrpcSpanDecorator.metadataToMap(headers);
+    GrpcSpanDecorator.addMetadataAttributes(
+        mapHeaders, currentSpan, HypertraceSemanticAttributes::rpcRequestMetadata);
+
+    BlockingResult blockingResult = BlockingProvider.getBlockingEvaluator().evaluate(mapHeaders);
+    if (blockingResult.blockExecution()) {
+      call.close(Status.PERMISSION_DENIED, new Metadata());
+      return NoopServerCallListener.INSTANCE;
+    }
+
+    Listener<ReqT> serverCall = next.startCall(new TracingServerCall<>(call, currentSpan), headers);
+    return new TracingServerCallListener<>(serverCall, currentSpan);
   }
 
   static final class TracingServerCall<ReqT, RespT>
@@ -57,16 +69,16 @@ public class GrpcServerInterceptor implements ServerInterceptor {
 
     @Override
     public void sendMessage(RespT message) {
+      super.sendMessage(message);
       GrpcSpanDecorator.addMessageAttribute(
           message, span, HypertraceSemanticAttributes.RPC_RESPONSE_BODY);
-      super.sendMessage(message);
     }
 
     @Override
     public void sendHeaders(Metadata headers) {
+      super.sendHeaders(headers);
       GrpcSpanDecorator.addMetadataAttributes(
           headers, span, HypertraceSemanticAttributes::rpcResponseMetadata);
-      super.sendHeaders(headers);
     }
 
     static final class TracingServerCallListener<ReqT>
@@ -81,9 +93,9 @@ public class GrpcServerInterceptor implements ServerInterceptor {
 
       @Override
       public void onMessage(ReqT message) {
+        delegate().onMessage(message);
         GrpcSpanDecorator.addMessageAttribute(
             message, span, HypertraceSemanticAttributes.RPC_REQUEST_BODY);
-        delegate().onMessage(message);
       }
     }
   }

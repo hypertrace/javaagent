@@ -23,11 +23,16 @@ import io.grpc.Metadata;
 import io.grpc.Metadata.Key;
 import io.opentelemetry.common.AttributeKey;
 import io.opentelemetry.trace.Span;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class GrpcSpanDecorator {
+
+  private GrpcSpanDecorator() {}
+
   private static final Logger log = LoggerFactory.getLogger(GrpcSpanDecorator.class);
   private static final JsonFormat.Printer PRINTER = JsonFormat.printer();
 
@@ -56,5 +61,27 @@ public class GrpcSpanDecorator {
         span.setAttribute(keySupplier.apply(key), stringValue);
       }
     }
+  }
+
+  public static void addMetadataAttributes(
+      Map<String, String> metadata, Span span, Function<String, AttributeKey<String>> keySupplier) {
+    for (Map.Entry<String, String> entry : metadata.entrySet()) {
+      span.setAttribute(keySupplier.apply(entry.getKey()), entry.getValue());
+    }
+  }
+
+  public static Map<String, String> metadataToMap(Metadata metadata) {
+    Map<String, String> mapHeaders = new LinkedHashMap(metadata.keys().size());
+    for (String key : metadata.keys()) {
+      if (key.endsWith(Metadata.BINARY_HEADER_SUFFIX)) {
+        continue;
+      }
+      Key<String> stringKey = Key.of(key, Metadata.ASCII_STRING_MARSHALLER);
+      Iterable<String> stringValues = metadata.getAll(stringKey);
+      for (String stringValue : stringValues) {
+        mapHeaders.put(key, stringValue);
+      }
+    }
+    return mapHeaders;
   }
 }

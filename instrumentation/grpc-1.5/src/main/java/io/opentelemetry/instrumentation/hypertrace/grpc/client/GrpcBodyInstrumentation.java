@@ -92,6 +92,10 @@ public class GrpcBodyInstrumentation extends Instrumenter.Default {
       if (shouldRegister) {
         interceptors.add(0, new GrpcClientInterceptor());
       }
+
+      for (ClientInterceptor interceptor : interceptors) {
+        System.out.println(interceptor.getClass().getName());
+      }
     }
   }
 }

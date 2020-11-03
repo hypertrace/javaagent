@@ -39,8 +39,8 @@ public class GrpcClientInterceptor implements ClientInterceptor {
       MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
 
     Span currentSpan = TRACER.getCurrentSpan();
-    ClientCall<ReqT, RespT> result = next.newCall(method, callOptions);
-    return new GrpcClientInterceptor.TracingClientCall<>(result, currentSpan, TRACER);
+    ClientCall<ReqT, RespT> clientCall = next.newCall(method, callOptions);
+    return new GrpcClientInterceptor.TracingClientCall<>(clientCall, currentSpan, TRACER);
   }
 
   static final class TracingClientCall<ReqT, RespT>
@@ -58,16 +58,16 @@ public class GrpcClientInterceptor implements ClientInterceptor {
 
     @Override
     public void start(Listener<RespT> responseListener, Metadata headers) {
+      super.start(new TracingClientCallListener<>(responseListener, span), headers);
       GrpcSpanDecorator.addMetadataAttributes(
           headers, span, HypertraceSemanticAttributes::rpcRequestMetadata);
-      super.start(new TracingClientCallListener<>(responseListener, span), headers);
     }
 
     @Override
     public void sendMessage(ReqT message) {
+      super.sendMessage(message);
       GrpcSpanDecorator.addMessageAttribute(
           message, span, HypertraceSemanticAttributes.RPC_REQUEST_BODY);
-      super.sendMessage(message);
     }
   }
 
@@ -82,16 +82,16 @@ public class GrpcClientInterceptor implements ClientInterceptor {
 
     @Override
     public void onMessage(RespT message) {
+      delegate().onMessage(message);
       GrpcSpanDecorator.addMessageAttribute(
           message, span, HypertraceSemanticAttributes.RPC_RESPONSE_BODY);
-      delegate().onMessage(message);
     }
 
     @Override
     public void onHeaders(Metadata headers) {
+      super.onHeaders(headers);
       GrpcSpanDecorator.addMetadataAttributes(
           headers, span, HypertraceSemanticAttributes::rpcResponseMetadata);
-      super.onHeaders(headers);
     }
   }
 }
