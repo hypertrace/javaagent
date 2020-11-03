@@ -19,6 +19,7 @@ package io.opentelemetry.instrumentation.hypertrace.grpc;
 import com.google.protobuf.util.JsonFormat;
 import io.grpc.Channel;
 import io.grpc.ForwardingServerCall;
+import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.Server;
@@ -59,7 +60,7 @@ public class GrpcBodyTest extends AbstractInstrumenterTest {
       Metadata.Key.of("name" + Metadata.BINARY_HEADER_SUFFIX, Metadata.BINARY_BYTE_MARSHALLER);
 
   private static Server SERVER;
-  private static Channel CHANNEL;
+  private static ManagedChannel CHANNEL;
 
   @BeforeAll
   public static void startServer() throws IOException {
@@ -96,10 +97,17 @@ public class GrpcBodyTest extends AbstractInstrumenterTest {
         ManagedChannelBuilder.forTarget(String.format("localhost:%d", SERVER.getPort()))
             .usePlaintext(true)
             .build();
+
+    try {
+      Thread.sleep(1000);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
   }
 
   @AfterAll
   public static void close() {
+    CHANNEL.shutdownNow();
     SERVER.shutdownNow();
   }
 
