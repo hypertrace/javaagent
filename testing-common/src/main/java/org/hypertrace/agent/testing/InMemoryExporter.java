@@ -200,26 +200,33 @@ public class InMemoryExporter implements SpanProcessor {
     }
   }
 
-  public List<List<SpanData>> waitForSpans(int number, Predicate<List<SpanData>> excludes)
+  private int spansCount(List<List<SpanData>> traces) {
+    int count = 0;
+    for (List<SpanData> trace : traces) {
+      count += trace.size();
+    }
+    return count;
+  }
+
+  public List<List<SpanData>> waitForSpans(int number)
       throws InterruptedException, TimeoutException {
+    Predicate<List<SpanData>> excludes = Predicates.alwaysFalse();
     synchronized (tracesLock) {
       long remainingWaitMillis = TimeUnit.SECONDS.toMillis(20);
       List<List<SpanData>> traces = getCompletedAndFilteredTraces(excludes);
-      while (traces.size() < number && remainingWaitMillis > 0) {
+      while (spansCount(traces) < number && remainingWaitMillis > 0) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         tracesLock.wait(remainingWaitMillis);
         remainingWaitMillis -= stopwatch.elapsed(TimeUnit.MILLISECONDS);
         traces = getCompletedAndFilteredTraces(excludes);
       }
-      if (traces.size() < number) {
+      if (spansCount(traces) < number) {
         throw new TimeoutException(
             "Timeout waiting for "
                 + number
-                + " completed/filtered trace(s), found "
-                + traces.size()
-                + " completed/filtered trace(s) and "
-                + traces.size()
-                + " total trace(s): "
+                + " completed/filtered spans(s), found "
+                + spansCount(traces)
+                + " total spans(s): "
                 + traces);
       }
       return traces;

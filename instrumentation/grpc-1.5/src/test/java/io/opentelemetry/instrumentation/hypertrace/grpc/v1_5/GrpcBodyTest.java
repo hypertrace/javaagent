@@ -123,8 +123,7 @@ public class GrpcBodyTest extends AbstractInstrumenterTest {
     String requestJson = JsonFormat.printer().print(REQUEST);
     String responseJson = JsonFormat.printer().print(response);
 
-    TEST_WRITER.waitForTraces(1);
-    Thread.sleep(1000);
+    TEST_WRITER.waitForSpans(2);
     List<List<SpanData>> traces = TEST_WRITER.getTraces();
     Assertions.assertEquals(1, traces.size());
     List<SpanData> spans = traces.get(0);
@@ -150,8 +149,7 @@ public class GrpcBodyTest extends AbstractInstrumenterTest {
       Assertions.assertEquals(Status.PERMISSION_DENIED, ex.getStatus());
     }
 
-    TEST_WRITER.waitForTraces(1);
-    Thread.sleep(1000);
+    TEST_WRITER.waitForSpans(2);
     List<List<SpanData>> traces = TEST_WRITER.getTraces();
     Assertions.assertEquals(1, traces.size());
     List<SpanData> spans = traces.get(0);
@@ -175,8 +173,7 @@ public class GrpcBodyTest extends AbstractInstrumenterTest {
     GreeterBlockingStub blockingStub = GreeterGrpc.newBlockingStub(CHANNEL);
     Response response = blockingStub.sayHello(REQUEST);
 
-    TEST_WRITER.waitForTraces(1);
-    Thread.sleep(1000);
+    TEST_WRITER.waitForSpans(2);
     List<List<SpanData>> traces = TEST_WRITER.getTraces();
     Assertions.assertEquals(1, traces.size());
     List<SpanData> spans = traces.get(0);
