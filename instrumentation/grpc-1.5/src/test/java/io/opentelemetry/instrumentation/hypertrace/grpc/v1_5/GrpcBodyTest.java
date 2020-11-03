@@ -151,6 +151,7 @@ public class GrpcBodyTest extends AbstractInstrumenterTest {
     }
 
     TEST_WRITER.waitForTraces(1);
+    Thread.sleep(1000);
     List<List<SpanData>> traces = TEST_WRITER.getTraces();
     Assertions.assertEquals(1, traces.size());
     List<SpanData> spans = traces.get(0);
@@ -175,6 +176,7 @@ public class GrpcBodyTest extends AbstractInstrumenterTest {
     Response response = blockingStub.sayHello(REQUEST);
 
     TEST_WRITER.waitForTraces(1);
+    Thread.sleep(1000);
     List<List<SpanData>> traces = TEST_WRITER.getTraces();
     Assertions.assertEquals(1, traces.size());
     List<SpanData> spans = traces.get(0);
