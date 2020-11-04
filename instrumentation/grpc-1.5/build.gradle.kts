@@ -31,7 +31,7 @@ afterEvaluate{
 
 idea {
     module {
-        sourceDirs.add(file("${projectDir}/build/generated/source/proto/main/proto"))
+        sourceDirs.add(file("${projectDir}/build/generated/source/proto/test/proto"))
     }
 }
 
