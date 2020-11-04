@@ -30,7 +30,7 @@ jobs:
 
   muzzle:
     docker:
-      - image: circleci/openjdk:11.0.6-jdk-buster
+      - image: cimg/openjdk:11.0
     working_directory: ~/repo
     environment:
       # Customize the JVM maximum heap limit
@@ -42,7 +42,7 @@ jobs:
 
   release-bintray-publish:
     docker:
-      - image: circleci/openjdk:11.0.6-jdk-buster
+      - image: cimg/openjdk:11.0
     steps:
       - setup_build_environment
       - run: echo "Releasing version" && ./gradlew printVersion
