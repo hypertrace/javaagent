@@ -2,7 +2,7 @@ version: 2.1
 
 commands:
   setup_build_environment:
-    description: 'Checkout, update submodules, restore the cache, and setup docker'
+    description: "Checkout, update submodules, restore the cache, and setup docker"
     steps:
       - checkout
       - run:
@@ -13,6 +13,14 @@ commands:
             - v1-dependencies-{{ checksum "/tmp/checksum.txt" }}
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
+  populate_and_save_cache:
+    description: "Downloads all gradle dependencies and uploads cache for later use"
+    steps:
+      - run: ./gradlew downloadDependencies
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: v1-dependencies-{{ checksum "/tmp/checksum.txt" }}
 
 jobs:
   build:
@@ -26,6 +34,7 @@ jobs:
       TERM: dumb
     steps:
       - setup_build_environment
+      - populate_and_save_cache
       - run: make build
 
   muzzle:
