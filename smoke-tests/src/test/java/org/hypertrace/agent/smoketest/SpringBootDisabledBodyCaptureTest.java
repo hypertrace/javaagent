@@ -43,7 +43,7 @@ public class SpringBootDisabledBodyCaptureTest extends AbstractSmokeTest {
   @BeforeEach
   void beforeEach() {
     app = createAppUnderTest(8);
-    app.addEnv("HYPERTRACE_INTEGRATION_ALL_ENABLED", "false");
+    app.addEnv("HT_DATA_CAPTURE_HTTP_BODY_REQUEST", "false");
     app.start();
   }
 

@@ -26,24 +26,25 @@ make build
 
 The final artifact is in `javaagent/build/libs/hypertrace-agent-<version>-all.jar`
 
-## Run
+## Run & Configure
 
 ```bash
-OTEL_EXPORTER=zipkin java -javaagent:javaagent/build/libs/hypertrace-agent-0.0.1-all.jar -jar app.jar
+HT_EXPORTING_ADDRESS=http://localhost:9411/api/v2/spans java -javaagent:javaagent/build/libs/hypertrace-agent-<version>-all.jar -jar app.jar
 ```
+
+By default the agent uses Zipkin exporter.
 
 The configuration precedence order 
 1. OpenTelemetry Agent's trace config file `OTEL_TRACE_CONFIG`/`otel.trace.config`
-3. OpenTelemetry system properties and env variables
+2. OpenTelemetry system properties and env variables
+3. Hypertrace configuration with the following precedence order:
+   1. system properties 
+   2. environment variables, TODO add link to agent-config repo
+   3. [configuration file](./example-config.yaml), specified `HT_CONFIG_FILE=example-config.yaml`
 
 Hypertrace body/headers capture can be disabled by:
-* `HYPERTRACE_INTEGRATION_ALL_ENABLED` - disables capture for all instrumentations
+* `HT_DATA_CAPTURE_HTTP_BODY_REQUEST` - disables additional data capture for all instrumentations
 * `HYPERTRACE_INTEGRATION_<integration>_ENABLED` - disables capture for a specified instrumentation e.g. `servlet`, `servlet-3`
-
-### Disable request/response body capture
-
-Request and response body capture can be disabled by `-Dotel.integration.body.enabled=false` or
-`-Dotel.integration.<instrumentation>-body.enabled=false`.
 
 ## Test
 

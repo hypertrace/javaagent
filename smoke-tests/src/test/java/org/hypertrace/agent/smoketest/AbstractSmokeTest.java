@@ -52,7 +52,6 @@ public abstract class AbstractSmokeTest {
       "open-telemetry-docker-dev.bintray.io/java/smoke-fake-backend:latest";
   private static final String NETWORK_ALIAS_OTEL_COLLECTOR = "collector";
   private static final String NETWORK_ALIAS_OTEL_MOCK_STORAGE = "storage";
-  private static final String OTEL_EXPORTER = "zipkin";
   private static final String OTEL_EXPORTER_ENDPOINT =
       String.format("http://%s:9411/api/v2/spans", NETWORK_ALIAS_OTEL_COLLECTOR);
 
@@ -128,11 +127,13 @@ public abstract class AbstractSmokeTest {
         .withNetwork(network)
         .withLogConsumer(new Slf4jLogConsumer(log))
         .withCopyFileToContainer(MountableFile.forHostPath(agentPath), "/javaagent.jar")
+        .withCopyFileToContainer(
+            MountableFile.forClasspathResource("/ht-config.yaml"), "/etc/ht-config.yaml")
         .withEnv("JAVA_TOOL_OPTIONS", "-javaagent:/javaagent.jar")
+        .withEnv("HT_CONFIG_FILE", "/etc/ht-config.yaml")
         .withEnv("OTEL_BSP_MAX_EXPORT_BATCH", "1")
         .withEnv("OTEL_BSP_SCHEDULE_DELAY", "10")
-        .withEnv("OTEL_EXPORTER_ZIPKIN_ENDPOINT", OTEL_EXPORTER_ENDPOINT)
-        .withEnv("OTEL_EXPORTER", OTEL_EXPORTER);
+        .withEnv("HT_REPORTING_ADDRESS", OTEL_EXPORTER_ENDPOINT);
   }
 
   protected static int countSpansByName(

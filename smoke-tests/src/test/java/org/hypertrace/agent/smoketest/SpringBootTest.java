@@ -18,6 +18,7 @@ package org.hypertrace.agent.smoketest;
 
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.jar.Attributes;
@@ -62,13 +63,27 @@ public class SpringBootTest extends AbstractSmokeTest {
     Request request = new Request.Builder().url(url).get().build();
 
     Response response = client.newCall(request).execute();
-    Collection<ExportTraceServiceRequest> traces = waitForTraces();
+    ArrayList<ExportTraceServiceRequest> traces = new ArrayList<>(waitForTraces());
 
     Object currentAgentVersion =
         new JarFile(agentPath)
             .getManifest()
             .getMainAttributes()
             .get(Attributes.Name.IMPLEMENTATION_VERSION);
+
+    Assertions.assertEquals(1, traces.size());
+    Assertions.assertEquals(
+        "service.name", traces.get(0).getResourceSpans(0).getResource().getAttributes(0).getKey());
+    // value is specified in resources/ht-config.yaml
+    Assertions.assertEquals(
+        "app_under_test",
+        traces
+            .get(0)
+            .getResourceSpans(0)
+            .getResource()
+            .getAttributes(0)
+            .getValue()
+            .getStringValue());
 
     Assertions.assertEquals(response.body().string(), "Hi!");
     Assertions.assertEquals(1, countSpansByName(traces, "/greeting"));

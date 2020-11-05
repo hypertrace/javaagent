@@ -18,6 +18,8 @@ package org.hypertrace.agent;
 
 import io.opentelemetry.javaagent.OpenTelemetryAgent;
 import java.lang.instrument.Instrumentation;
+import org.hypertrace.agent.config.Config.AgentConfig;
+import org.hypertrace.agent.core.HypertraceConfig;
 
 public class HypertraceAgent {
   // https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/sdk-environment-variables.md
@@ -34,6 +36,16 @@ public class HypertraceAgent {
   }
 
   public static void agentmain(String agentArgs, Instrumentation inst) {
+    setDefaultConfig();
     OpenTelemetryAgent.premain(agentArgs, inst);
+  }
+
+  /** Set default values to OTEL config. OTEL config has a higher precedence. */
+  private static void setDefaultConfig() {
+    AgentConfig agentConfig = HypertraceConfig.get();
+    OpenTelemetryConfig.setDefault(OTEL_EXPORTER, "zipkin");
+    OpenTelemetryConfig.setDefault(
+        OTEL_EXPORTER_ZIPKIN_ENDPOINT, agentConfig.getReporting().getAddress().getValue());
+    OpenTelemetryConfig.setDefault(OTEL_EXPORTER_ZIPKIN_SERVICE_NAME, agentConfig.getServiceName());
   }
 }
