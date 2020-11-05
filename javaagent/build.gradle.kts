@@ -10,6 +10,7 @@ dependencies {
     // https://oss.jfrog.org/artifactory/oss-snapshot-local/io/opentelemetry/instrumentation/auto/
     // https://dl.bintray.com/open-telemetry/maven/
     implementation("io.opentelemetry.javaagent", "opentelemetry-javaagent", version = "0.9.0", classifier = "all")
+    api(project(":javaagent-core"))
 }
 
 base.archivesBaseName = "hypertrace-agent"
@@ -26,7 +27,19 @@ tasks {
     }
 
     shadowJar {
+        // config in javaagent-core uses protobuf and jackson
         relocate("com.fasterxml.jackson", "org.hypertrace.shaded.com.fasterxml.jackson")
+
+        // relocate following classes because javaagent-core uses OTEL APIs
+        relocate("io.grpc", "io.opentelemetry.javaagent.shaded.io.grpc")
+        relocate("io.opentelemetry.OpenTelemetry", "io.opentelemetry.javaagent.shaded.io.opentelemetry.OpenTelemetry")
+        relocate("io.opentelemetry.common", "io.opentelemetry.javaagent.shaded.io.opentelemetry.common")
+        relocate("io.opentelemetry.baggage", "io.opentelemetry.javaagent.shaded.io.opentelemetry.baggage")
+        relocate("io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context")
+        relocate("io.opentelemetry.internal", "io.opentelemetry.javaagent.shaded.io.opentelemetry.internal")
+        relocate("io.opentelemetry.metrics", "io.opentelemetry.javaagent.shaded.io.opentelemetry.metrics")
+        relocate("io.opentelemetry.trace", "io.opentelemetry.javaagent.shaded.io.opentelemetry.trace")
+
         mergeServiceFiles {
             include("inst/META-INF/services/*")
         }

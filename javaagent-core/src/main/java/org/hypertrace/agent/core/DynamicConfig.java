@@ -20,25 +20,18 @@ public class DynamicConfig {
 
   private DynamicConfig() {}
 
-  public static final String ENABLED_ALL_PROPERTY_NAME = "hypertrace.integration.all.enabled";
-
   public static boolean isEnabled(String[] instrumentationNames) {
-    String integrationEnabled = getProperty(ENABLED_ALL_PROPERTY_NAME);
-    if (integrationEnabled != null && "false".equals(integrationEnabled.toLowerCase())) {
+    if (!HypertraceConfig.get().getDataCapture().getHttpBody().getRequest().getValue()) {
       return false;
     }
 
     for (String name : instrumentationNames) {
-      integrationEnabled = getProperty("hypertrace.integration." + name + ".enabled");
+      String integrationEnabled =
+          EnvironmentConfig.getProperty("hypertrace.integration." + name + ".enabled");
       if (integrationEnabled != null && "false".equals(integrationEnabled.toLowerCase())) {
         return false;
       }
     }
     return true;
-  }
-
-  public static String getProperty(String name) {
-    /** * TODO this is just a mock impl */
-    return System.getProperty(name, System.getenv(name.replaceAll("\\.", "_").toUpperCase()));
   }
 }

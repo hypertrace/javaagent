@@ -1,0 +1,9 @@
+serviceName: service
+reporting:
+  address: http://localhost:9411
+  secure: true
+dataCapture:
+  httpHeaders:
+    request: true
+    response: false
+  httpBody:

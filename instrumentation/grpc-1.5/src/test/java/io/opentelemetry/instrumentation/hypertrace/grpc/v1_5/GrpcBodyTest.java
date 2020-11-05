@@ -34,7 +34,8 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
-import org.hypertrace.agent.core.DynamicConfig;
+import org.hypertrace.agent.core.EnvironmentConfig;
+import org.hypertrace.agent.core.HypertraceConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.hypertrace.example.GreeterGrpc;
@@ -107,7 +108,8 @@ public class GrpcBodyTest extends AbstractInstrumenterTest {
 
   @AfterEach
   public void afterEach() {
-    System.clearProperty(DynamicConfig.ENABLED_ALL_PROPERTY_NAME);
+    System.clearProperty(EnvironmentConfig.CAPTURE_HTTP_BODY_PREFIX + "request");
+    HypertraceConfig.reset();
   }
 
   @Test
@@ -168,7 +170,7 @@ public class GrpcBodyTest extends AbstractInstrumenterTest {
   @Test
   public void disabledInstrumentation_dynamicConfig()
       throws TimeoutException, InterruptedException {
-    System.setProperty(DynamicConfig.ENABLED_ALL_PROPERTY_NAME, "false");
+    System.setProperty(EnvironmentConfig.CAPTURE_HTTP_BODY_PREFIX + "request", "false");
 
     GreeterBlockingStub blockingStub = GreeterGrpc.newBlockingStub(CHANNEL);
     Response response = blockingStub.sayHello(REQUEST);
