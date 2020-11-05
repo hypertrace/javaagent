@@ -8,6 +8,7 @@ commands:
       - run:
           name: Generate cache key
           command: find . -type f -name "*.gradle*" -o -name "gradle-wrapper*" -exec shasum {} + | sort > /tmp/checksum.txt && cat /tmp/checksum.txt
+      - run: make init-submodules
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "/tmp/checksum.txt" }}

@@ -20,3 +20,7 @@ format:
 .PHONY: clean
 clean:
 	./gradlew clean
+
+.PHONY: init-submodules
+init-submodules:
+	git submodule update --init --recursive
