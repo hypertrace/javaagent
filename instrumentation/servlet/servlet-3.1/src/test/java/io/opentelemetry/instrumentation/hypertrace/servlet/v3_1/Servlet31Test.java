@@ -30,7 +30,6 @@ import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-/** @author Pavol Loffay */
 public class Servlet31Test extends AbstractInstrumenterTest {
 
   @Test
