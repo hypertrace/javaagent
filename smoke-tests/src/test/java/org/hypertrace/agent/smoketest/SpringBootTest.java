@@ -127,7 +127,7 @@ public class SpringBootTest extends AbstractSmokeTest {
     Response response = client.newCall(request).execute();
     Collection<ExportTraceServiceRequest> traces = waitForTraces();
 
-    Assertions.assertEquals(response.code(), 403);
+    Assertions.assertEquals(403, response.code());
     Assertions.assertEquals(
         1,
         getSpanStream(traces)

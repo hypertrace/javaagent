@@ -59,6 +59,8 @@ public class GrpcServerBodyInstrumentation extends Instrumenter.Default {
       "org.hypertrace.agent.blocking.FilterProvider",
       "org.hypertrace.agent.blocking.FilterEvaluator",
       "org.hypertrace.agent.blocking.FilterResult",
+      "org.hypertrace.agent.blocking.ExecutionBlocked",
+      "org.hypertrace.agent.blocking.ExecutionNotBlocked",
       "org.hypertrace.agent.blocking.MockFilterEvaluator",
       "org.hypertrace.agent.core.HypertraceSemanticAttributes",
       "org.hypertrace.agent.core.DynamicConfig",
