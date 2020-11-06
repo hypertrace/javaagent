@@ -16,7 +16,10 @@
 
 package org.hypertrace.agent.blocking;
 
-class ExecutionNotBlocked implements BlockingResult {
+import java.util.Collections;
+import java.util.Map;
+
+class ExecutionNotBlocked implements FilterResult {
 
   static ExecutionNotBlocked INSTANCE = new ExecutionNotBlocked();
 
@@ -28,7 +31,7 @@ class ExecutionNotBlocked implements BlockingResult {
   }
 
   @Override
-  public String getReason() {
-    return null;
+  public Map<String, String> getAttributes() {
+    return Collections.emptyMap();
   }
 }

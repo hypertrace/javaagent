@@ -16,20 +16,30 @@
 
 package org.hypertrace.agent.blocking;
 
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /** Mock blocking evaluator, blocks execution if an attribute with "block" key is present. */
-class MockBlockingEvaluator implements BlockingEvaluator {
+class MockFilterEvaluator implements FilterEvaluator {
 
-  public static MockBlockingEvaluator INSTANCE = new MockBlockingEvaluator();
+  private MockFilterEvaluator() {}
 
-  private MockBlockingEvaluator() {}
+  public static MockFilterEvaluator INSTANCE = new MockFilterEvaluator();
+
+  private static ExecutionBlocked EXECUTION_BLOCKED = executionBlocked();
 
   @Override
-  public BlockingResult evaluate(Map<String, String> attributes) {
+  public FilterResult evaluate(Map<String, String> attributes) {
     if (attributes.containsKey("block")) {
-      return new ExecutionBlocked("Header 'block' found");
+      return EXECUTION_BLOCKED;
     }
     return ExecutionNotBlocked.INSTANCE;
+  }
+
+  private static ExecutionBlocked executionBlocked() {
+    Map<String, String> attributes = new LinkedHashMap<>();
+    attributes.put("hypertrace.mock.filter.result", "true");
+    return new ExecutionBlocked(Collections.unmodifiableMap(attributes));
   }
 }

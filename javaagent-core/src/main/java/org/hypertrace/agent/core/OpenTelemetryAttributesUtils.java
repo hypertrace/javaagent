@@ -14,18 +14,24 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.blocking;
+package org.hypertrace.agent.core;
 
+import io.opentelemetry.trace.Span;
 import java.util.Map;
 
-/** Blocking evaluator. */
-public interface BlockingEvaluator {
+public class OpenTelemetryAttributesUtils {
+
+  private OpenTelemetryAttributesUtils() {}
 
   /**
-   * Evaluate if execution should be blocked.
+   * Adds attribute map to span.
    *
-   * @param attributes are used for blocking evaluation.
-   * @return blocking result
+   * @param span the span
+   * @param attributes the attribute map
    */
-  BlockingResult evaluate(Map<String, String> attributes);
+  public static void setAttributes(Span span, Map<String, String> attributes) {
+    for (Map.Entry<String, String> attributeEntry : attributes.entrySet()) {
+      span.setAttribute(attributeEntry.getKey(), attributeEntry.getValue());
+    }
+  }
 }

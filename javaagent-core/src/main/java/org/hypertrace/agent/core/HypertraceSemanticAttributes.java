@@ -16,7 +16,6 @@
 
 package org.hypertrace.agent.core;
 
-import static io.opentelemetry.common.AttributeKey.booleanKey;
 import static io.opentelemetry.common.AttributeKey.stringKey;
 
 import io.opentelemetry.common.AttributeKey;
@@ -33,15 +32,10 @@ public class HypertraceSemanticAttributes {
   }
 
   public static final AttributeKey<String> HTTP_REQUEST_BODY = stringKey("http.request.body");
-
   public static final AttributeKey<String> HTTP_RESPONSE_BODY = stringKey("http.response.body");
 
   public static final AttributeKey<String> HTTP_REQUEST_SESSION_ID =
       stringKey("http.request.session_id");
-
-  public static final AttributeKey<Boolean> OPA_RESULT = booleanKey("hypertrace.opa.result");
-
-  public static final AttributeKey<String> OPA_REASON = stringKey("hypertrace.opa.reason");
 
   public static final AttributeKey<String> RPC_REQUEST_BODY = stringKey("rpc.request.body");
   public static final AttributeKey<String> RPC_RESPONSE_BODY = stringKey("rpc.response.body");

@@ -16,20 +16,16 @@
 
 package org.hypertrace.agent.blocking;
 
-/** Result of blocking evaluation from {@link BlockingEvaluator} */
-public interface BlockingResult {
+import java.util.Map;
+
+/** Filter evaluator. */
+public interface FilterEvaluator {
 
   /**
-   * Indicates that execution should be blocked.
+   * Evaluate the execution.
    *
-   * @return true if execution should be blocked otherwise false
+   * @param attributes are used for blocking evaluation.
+   * @return filter result
    */
-  boolean blockExecution();
-
-  /**
-   * The reason why execution was blocked.
-   *
-   * @return the reason why execution was blocked.
-   */
-  String getReason();
+  FilterResult evaluate(Map<String, String> attributes);
 }

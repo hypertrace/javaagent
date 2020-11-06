@@ -42,10 +42,11 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import org.hypertrace.agent.blocking.BlockingProvider;
-import org.hypertrace.agent.blocking.BlockingResult;
+import org.hypertrace.agent.blocking.FilterProvider;
+import org.hypertrace.agent.blocking.FilterResult;
 import org.hypertrace.agent.core.DynamicConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.OpenTelemetryAttributesUtils;
 
 /**
  * TODO https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/1395 is resolved
@@ -89,12 +90,12 @@ public class Servlet30BodyInstrumentation extends Instrumenter.Default {
       "io.opentelemetry.javaagent.instrumentation.servlet.v3_0.Servlet3HttpServerTracer",
       // TODO Add these to bootstrap classloader so they don't have to referenced in every
       // instrumentation, see https://github.com/hypertrace/javaagent/issues/17
-      "org.hypertrace.agent.blocking.BlockingProvider",
-      "org.hypertrace.agent.blocking.BlockingEvaluator",
-      "org.hypertrace.agent.blocking.BlockingResult",
+      "org.hypertrace.agent.blocking.FilterProvider",
+      "org.hypertrace.agent.blocking.FilterEvaluator",
+      "org.hypertrace.agent.blocking.FilterResult",
       "org.hypertrace.agent.blocking.ExecutionBlocked",
       "org.hypertrace.agent.blocking.ExecutionNotBlocked",
-      "org.hypertrace.agent.blocking.MockBlockingEvaluator",
+      "org.hypertrace.agent.blocking.MockFilterEvaluator",
       "org.hypertrace.agent.core.HypertraceSemanticAttributes",
       "org.hypertrace.agent.core.DynamicConfig",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.ByteBufferData",
@@ -125,7 +126,7 @@ public class Servlet30BodyInstrumentation extends Instrumenter.Default {
     // request attribute key injected at first filerChain.doFilter
     private static final String ALREADY_LOADED = "__org.hypertrace.agent.on_start_executed";
 
-    @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = BlockingResult.class)
+    @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = FilterResult.class)
     public static Object start(
         @Advice.Argument(value = 0, readOnly = false) ServletRequest request,
         @Advice.Argument(value = 1, readOnly = false) ServletResponse response,
@@ -167,14 +168,11 @@ public class Servlet30BodyInstrumentation extends Instrumenter.Default {
             HypertraceSemanticAttributes.httpRequestHeader(headerName), headerValue);
         headers.put(headerName, headerValue);
       }
-      BlockingResult blockingResult = BlockingProvider.getBlockingEvaluator().evaluate(headers);
-      currentSpan.setAttribute(
-          HypertraceSemanticAttributes.OPA_RESULT, blockingResult.blockExecution());
-      if (blockingResult.blockExecution()) {
+      FilterResult filterResult = FilterProvider.getFilterEvaluator().evaluate(headers);
+      OpenTelemetryAttributesUtils.setAttributes(currentSpan, filterResult.getAttributes());
+      if (filterResult.blockExecution()) {
         httpResponse.setStatus(403);
-        currentSpan.setAttribute(
-            HypertraceSemanticAttributes.OPA_REASON, blockingResult.getReason());
-        return blockingResult;
+        return filterResult;
       }
       return null;
     }
