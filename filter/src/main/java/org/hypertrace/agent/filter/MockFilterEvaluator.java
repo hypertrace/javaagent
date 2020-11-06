@@ -30,10 +30,20 @@ class MockFilterEvaluator implements FilterEvaluator {
   private static ExecutionBlocked EXECUTION_BLOCKED = executionBlocked();
 
   @Override
-  public FilterResult evaluate(Map<String, String> attributes) {
-    if (attributes.containsKey("block")) {
+  public FilterResult evaluate(Map<String, String> headers) {
+    if (headers.containsKey("block")) {
       return EXECUTION_BLOCKED;
     }
+    return ExecutionNotBlocked.INSTANCE;
+  }
+
+  @Override
+  public FilterResult evaluate(String body) {
+    return ExecutionNotBlocked.INSTANCE;
+  }
+
+  @Override
+  public FilterResult evaluate(StringBuilder body) {
     return ExecutionNotBlocked.INSTANCE;
   }
 

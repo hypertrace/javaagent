@@ -18,14 +18,33 @@ package org.hypertrace.agent.filter;
 
 import java.util.Map;
 
-/** Filter evaluator. */
+/**
+ * {@link FilterEvaluator} evaluates given request/RPC and the result is used to block further
+ * processing of the request.
+ */
 public interface FilterEvaluator {
 
   /**
    * Evaluate the execution.
    *
-   * @param attributes are used for blocking evaluation.
+   * @param headers are used for blocking evaluation.
    * @return filter result
    */
-  FilterResult evaluate(Map<String, String> attributes);
+  FilterResult evaluate(Map<String, String> headers);
+
+  /**
+   * Evaluate the execution.
+   *
+   * @param body request body
+   * @return filter result
+   */
+  FilterResult evaluate(String body);
+
+  /**
+   * Evaluate the execution.
+   *
+   * @param body request body
+   * @return filter result
+   */
+  FilterResult evaluate(StringBuilder body);
 }

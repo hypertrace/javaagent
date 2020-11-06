@@ -16,10 +16,16 @@
 
 package org.hypertrace.agent.filter;
 
+/** Returns an instance of {@link FilterEvaluator}. */
 public class FilterProvider {
 
   private FilterProvider() {}
 
+  /**
+   * Get {@link FilterEvaluator}
+   *
+   * @return the filter evaluator.
+   */
   public static FilterEvaluator getFilterEvaluator() {
     return MockFilterEvaluator.INSTANCE;
   }

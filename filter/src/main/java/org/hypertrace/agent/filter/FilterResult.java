@@ -22,7 +22,7 @@ import java.util.Map;
 public interface FilterResult {
 
   /**
-   * Indicates that execution should be blocked.
+   * Indicates whether the execution should be blocked.
    *
    * @return true if execution should be blocked otherwise false.
    */
