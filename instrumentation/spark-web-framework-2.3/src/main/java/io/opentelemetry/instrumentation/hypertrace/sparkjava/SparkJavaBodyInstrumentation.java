@@ -16,7 +16,6 @@
 
 package io.opentelemetry.instrumentation.hypertrace.sparkjava;
 
-import static io.opentelemetry.javaagent.instrumentation.jetty.JettyHttpServerTracer.TRACER;
 import static io.opentelemetry.javaagent.tooling.matcher.NameMatchers.namedOneOf;
 import static java.util.Collections.singletonMap;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
@@ -24,26 +23,12 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
 import com.google.auto.service.AutoService;
-import io.opentelemetry.instrumentation.hypertrace.servlet.common.ServletSpanDecorator;
-import io.opentelemetry.instrumentation.hypertrace.servlet.v3_1.BufferingHttpServletRequest;
-import io.opentelemetry.instrumentation.hypertrace.servlet.v3_1.BufferingHttpServletResponse;
+import io.opentelemetry.instrumentation.hypertrace.servlet.v3_1.Servlet31Advice;
 import io.opentelemetry.javaagent.tooling.Instrumenter;
-import io.opentelemetry.trace.Span;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Map;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import org.hypertrace.agent.blocking.BlockingProvider;
-import org.hypertrace.agent.blocking.BlockingResult;
-import org.hypertrace.agent.core.DynamicConfig;
-import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 
 /**
  * {@code Spark.after} is not being called if a handler throws an exception. Exception handler
@@ -74,7 +59,7 @@ public class SparkJavaBodyInstrumentation extends Instrumenter.Default {
             .and(takesArgument(0, named("javax.servlet.ServletRequest")))
             .and(takesArgument(1, named("javax.servlet.ServletResponse")))
             .and(isPublic()),
-        SparkJavaAdvice.class.getName());
+        Servlet31Advice.class.getName());
   }
 
   @Override
@@ -97,78 +82,8 @@ public class SparkJavaBodyInstrumentation extends Instrumenter.Default {
       "io.opentelemetry.instrumentation.hypertrace.servlet.v3_1.BufferingHttpServletResponse$BufferingServletOutputStream",
       "io.opentelemetry.instrumentation.hypertrace.servlet.v3_1.BufferingHttpServletRequest",
       "io.opentelemetry.instrumentation.hypertrace.servlet.v3_1.BufferingHttpServletRequest$ServletInputStreamWrapper",
+      "io.opentelemetry.instrumentation.hypertrace.servlet.v3_1.Servlet31Advice",
       packageName + ".InstrumentationName",
     };
-  }
-
-  public static class SparkJavaAdvice {
-    @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = BlockingResult.class)
-    public static Object onEnter(
-        @Advice.Argument(value = 0, readOnly = false) ServletRequest request,
-        @Advice.Argument(value = 1, readOnly = false) ServletResponse response) {
-      if (!DynamicConfig.isEnabled(InstrumentationName.INSTRUMENTATION_NAME)) {
-        return null;
-      }
-
-      if (!(request instanceof HttpServletRequest) || !(response instanceof HttpServletResponse)) {
-        return null;
-      }
-
-      Span currentSpan = TRACER.getCurrentSpan();
-      HttpServletRequest httpRequest = (HttpServletRequest) request;
-      HttpServletResponse httpResponse = (HttpServletResponse) response;
-
-      response = new BufferingHttpServletResponse(httpResponse);
-      request = new BufferingHttpServletRequest(httpRequest, (HttpServletResponse) response);
-
-      ServletSpanDecorator.addSessionId(currentSpan, httpRequest);
-
-      Enumeration<String> headerNames = httpRequest.getHeaderNames();
-      Map<String, String> headers = new HashMap<>();
-      while (headerNames.hasMoreElements()) {
-        String headerName = headerNames.nextElement();
-        String headerValue = httpRequest.getHeader(headerName);
-        currentSpan.setAttribute(
-            HypertraceSemanticAttributes.httpRequestHeader(headerName), headerValue);
-        headers.put(headerName, headerValue);
-      }
-      BlockingResult blockingResult = BlockingProvider.getBlockingEvaluator().evaluate(headers);
-      currentSpan.setAttribute(
-          HypertraceSemanticAttributes.OPA_RESULT, blockingResult.blockExecution());
-      if (blockingResult.blockExecution()) {
-        httpResponse.setStatus(403);
-        currentSpan.setAttribute(
-            HypertraceSemanticAttributes.OPA_REASON, blockingResult.getReason());
-        return blockingResult;
-      }
-      return null;
-    }
-
-    @Advice.OnMethodExit(suppress = Throwable.class)
-    public static Object onExit(
-        @Advice.Argument(value = 0, readOnly = false) ServletRequest request,
-        @Advice.Argument(value = 1, readOnly = false) ServletResponse response) {
-      if (!(request instanceof BufferingHttpServletRequest)
-          || !(response instanceof BufferingHttpServletResponse)) {
-        return null;
-      }
-      BufferingHttpServletResponse bufferingResponse = (BufferingHttpServletResponse) response;
-      BufferingHttpServletRequest bufferingRequest = (BufferingHttpServletRequest) request;
-
-      Span currentSpan = TRACER.getCurrentSpan();
-      // set response headers
-      for (String headerName : bufferingResponse.getHeaderNames()) {
-        String headerValue = bufferingResponse.getHeader(headerName);
-        currentSpan.setAttribute(
-            HypertraceSemanticAttributes.httpResponseHeader(headerName), headerValue);
-      }
-      // Bodies are captured at the end after all user processing.
-      currentSpan.setAttribute(
-          HypertraceSemanticAttributes.HTTP_REQUEST_BODY,
-          bufferingRequest.getBufferedBodyAsString());
-      currentSpan.setAttribute(
-          HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, bufferingResponse.getBufferAsString());
-      return null;
-    }
   }
 }
