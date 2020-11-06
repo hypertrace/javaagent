@@ -3,10 +3,11 @@ plugins {
     id("net.bytebuddy.byte-buddy-gradle-plugin") version "1.10.10"
 }
 
-dependencies {
-    implementation("org.junit.jupiter:junit-jupiter-api:5.6.2")
-    implementation("org.junit.jupiter:junit-jupiter-engine:5.6.2")
+configurations {
+    implementation.get().extendsFrom(project(":").configurations["testDependencies"])
+}
 
+dependencies {
     api("io.opentelemetry:opentelemetry-sdk:0.9.1")
     implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-api:0.9.0")
     implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:0.9.0")

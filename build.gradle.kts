@@ -13,6 +13,11 @@ allprojects {
     }
 }
 
+val testDependencies by configurations.creating {
+    extendsFrom(configurations.testImplementation.get())
+    extendsFrom(configurations.testRuntimeOnly.get())
+}
+
 subprojects {
     group = "org.hypertrace.agent"
     description = "Hypertrace OpenTelemetry Javaagent"
@@ -39,9 +44,9 @@ subprojects {
     }
 
     dependencies {
-        testImplementation("org.mockito:mockito-core:3.3.3")
-        testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.2")
-        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.2")
+        testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
+        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.0")
+        testImplementation("org.junit-pioneer:junit-pioneer:1.0.0")
     }
 
     tasks {
