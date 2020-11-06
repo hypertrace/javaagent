@@ -20,7 +20,6 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
-/** @author Pavol Loffay */
 public class OpenTelemetryStorage extends GenericContainer<OpenTelemetryStorage> {
   public static final int PORT = 8080;
 
