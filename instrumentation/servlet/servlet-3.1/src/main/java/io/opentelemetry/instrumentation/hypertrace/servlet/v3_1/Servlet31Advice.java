@@ -34,7 +34,6 @@ import org.hypertrace.agent.blocking.BlockingResult;
 import org.hypertrace.agent.core.DynamicConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 
-/** @author Pavol Loffay */
 public class Servlet31Advice {
 
   // request attribute key injected at first filerChain.doFilter
