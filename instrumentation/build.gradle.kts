@@ -11,7 +11,7 @@ subprojects {
 
         implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:0.9.0")
         implementation(project(":javaagent-core"))
-        implementation(project(":blocking"))
+        implementation(project(":filter"))
     }
 
     // This ensures to build jars for all dependencies in instrumentation module for ByteBuddy
