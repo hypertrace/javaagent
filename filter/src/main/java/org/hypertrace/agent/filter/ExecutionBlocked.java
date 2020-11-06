@@ -14,24 +14,25 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.blocking;
+package org.hypertrace.agent.filter;
 
-import java.util.Collections;
 import java.util.Map;
 
-class ExecutionNotBlocked implements FilterResult {
+/** Indicates that the execution should be blocked. */
+class ExecutionBlocked implements FilterResult {
+  private final Map<String, String> attributes;
 
-  static ExecutionNotBlocked INSTANCE = new ExecutionNotBlocked();
-
-  private ExecutionNotBlocked() {}
+  public ExecutionBlocked(Map<String, String> attributes) {
+    this.attributes = attributes;
+  }
 
   @Override
   public boolean blockExecution() {
-    return false;
+    return true;
   }
 
   @Override
   public Map<String, String> getAttributes() {
-    return Collections.emptyMap();
+    return attributes;
   }
 }

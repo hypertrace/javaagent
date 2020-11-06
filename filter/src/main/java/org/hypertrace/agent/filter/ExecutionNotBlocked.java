@@ -14,13 +14,24 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.blocking;
+package org.hypertrace.agent.filter;
 
-public class FilterProvider {
+import java.util.Collections;
+import java.util.Map;
 
-  private FilterProvider() {}
+class ExecutionNotBlocked implements FilterResult {
 
-  public static FilterEvaluator getFilterEvaluator() {
-    return MockFilterEvaluator.INSTANCE;
+  static ExecutionNotBlocked INSTANCE = new ExecutionNotBlocked();
+
+  private ExecutionNotBlocked() {}
+
+  @Override
+  public boolean blockExecution() {
+    return false;
+  }
+
+  @Override
+  public Map<String, String> getAttributes() {
+    return Collections.emptyMap();
   }
 }

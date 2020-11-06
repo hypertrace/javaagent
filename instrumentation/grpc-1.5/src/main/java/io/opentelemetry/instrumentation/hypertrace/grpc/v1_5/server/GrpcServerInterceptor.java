@@ -30,11 +30,11 @@ import io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.InstrumentationName
 import io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.server.GrpcServerInterceptor.TracingServerCall.TracingServerCallListener;
 import io.opentelemetry.trace.Span;
 import java.util.Map;
-import org.hypertrace.agent.blocking.FilterProvider;
-import org.hypertrace.agent.blocking.FilterResult;
 import org.hypertrace.agent.core.DynamicConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.OpenTelemetryAttributesUtils;
+import org.hypertrace.agent.filter.FilterProvider;
+import org.hypertrace.agent.filter.FilterResult;
 
 public class GrpcServerInterceptor implements ServerInterceptor {
 

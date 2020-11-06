@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.blocking;
+package org.hypertrace.agent.filter;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;

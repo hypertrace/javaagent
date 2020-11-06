@@ -14,25 +14,13 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.blocking;
+package org.hypertrace.agent.filter;
 
-import java.util.Map;
+public class FilterProvider {
 
-/** Indicates that the execution should be blocked. */
-class ExecutionBlocked implements FilterResult {
-  private final Map<String, String> attributes;
+  private FilterProvider() {}
 
-  public ExecutionBlocked(Map<String, String> attributes) {
-    this.attributes = attributes;
-  }
-
-  @Override
-  public boolean blockExecution() {
-    return true;
-  }
-
-  @Override
-  public Map<String, String> getAttributes() {
-    return attributes;
+  public static FilterEvaluator getFilterEvaluator() {
+    return MockFilterEvaluator.INSTANCE;
   }
 }

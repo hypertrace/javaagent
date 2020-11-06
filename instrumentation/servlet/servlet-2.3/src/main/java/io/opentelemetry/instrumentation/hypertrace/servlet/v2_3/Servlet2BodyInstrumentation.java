@@ -42,11 +42,11 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import org.hypertrace.agent.blocking.FilterProvider;
-import org.hypertrace.agent.blocking.FilterResult;
 import org.hypertrace.agent.core.DynamicConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.OpenTelemetryAttributesUtils;
+import org.hypertrace.agent.filter.FilterProvider;
+import org.hypertrace.agent.filter.FilterResult;
 
 /**
  * Body capture for servlet 2.3. Note that OTEL servlet instrumentation is compatible with servlet
@@ -92,12 +92,12 @@ public class Servlet2BodyInstrumentation extends Instrumenter.Default {
       "io.opentelemetry.instrumentation.servlet.ServletHttpServerTracer",
       "io.opentelemetry.javaagent.instrumentation.servlet.v2_2.Servlet2HttpServerTracer",
       "io.opentelemetry.javaagent.instrumentation.servlet.v2_2.ResponseWithStatus",
-      "org.hypertrace.agent.blocking.FilterProvider",
-      "org.hypertrace.agent.blocking.FilterEvaluator",
-      "org.hypertrace.agent.blocking.FilterResult",
-      "org.hypertrace.agent.blocking.ExecutionBlocked",
-      "org.hypertrace.agent.blocking.ExecutionNotBlocked",
-      "org.hypertrace.agent.blocking.MockFilterEvaluator",
+      "org.hypertrace.agent.filter.FilterProvider",
+      "org.hypertrace.agent.filter.FilterEvaluator",
+      "org.hypertrace.agent.filter.FilterResult",
+      "org.hypertrace.agent.filter.ExecutionBlocked",
+      "org.hypertrace.agent.filter.ExecutionNotBlocked",
+      "org.hypertrace.agent.filter.MockFilterEvaluator",
       "org.hypertrace.agent.core.HypertraceSemanticAttributes",
       "org.hypertrace.agent.core.DynamicConfig",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.ByteBufferData",

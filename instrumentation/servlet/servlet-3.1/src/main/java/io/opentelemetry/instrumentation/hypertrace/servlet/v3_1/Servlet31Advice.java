@@ -29,11 +29,11 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import net.bytebuddy.asm.Advice;
-import org.hypertrace.agent.blocking.FilterProvider;
-import org.hypertrace.agent.blocking.FilterResult;
 import org.hypertrace.agent.core.DynamicConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.OpenTelemetryAttributesUtils;
+import org.hypertrace.agent.filter.FilterProvider;
+import org.hypertrace.agent.filter.FilterResult;
 
 public class Servlet31Advice {
 

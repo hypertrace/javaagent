@@ -14,18 +14,25 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.blocking;
+package org.hypertrace.agent.filter;
 
 import java.util.Map;
 
-/** Filter evaluator. */
-public interface FilterEvaluator {
+/** Result of filter evaluation from {@link FilterEvaluator} */
+public interface FilterResult {
 
   /**
-   * Evaluate the execution.
+   * Indicates that execution should be blocked.
    *
-   * @param attributes are used for blocking evaluation.
-   * @return filter result
+   * @return true if execution should be blocked otherwise false.
    */
-  FilterResult evaluate(Map<String, String> attributes);
+  boolean blockExecution();
+
+  /**
+   * Metadata of the evaluation. These attributes are added to the current span corresponding to the
+   * active execution.
+   *
+   * @return the metadata from the evaluation.
+   */
+  Map<String, String> getAttributes();
 }

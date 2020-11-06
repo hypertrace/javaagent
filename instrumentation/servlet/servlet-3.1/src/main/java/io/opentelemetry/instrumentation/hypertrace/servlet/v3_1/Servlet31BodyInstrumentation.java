@@ -71,12 +71,12 @@ public class Servlet31BodyInstrumentation extends Instrumenter.Default {
       "io.opentelemetry.javaagent.instrumentation.servlet.v3_0.Servlet3HttpServerTracer",
       // TODO Add these to bootstrap classloader so they don't have to referenced in every
       // instrumentation, see https://github.com/hypertrace/javaagent/issues/17
-      "org.hypertrace.agent.blocking.FilterProvider",
-      "org.hypertrace.agent.blocking.FilterEvaluator",
-      "org.hypertrace.agent.blocking.FilterResult",
-      "org.hypertrace.agent.blocking.ExecutionBlocked",
-      "org.hypertrace.agent.blocking.ExecutionNotBlocked",
-      "org.hypertrace.agent.blocking.MockFilterEvaluator",
+      "org.hypertrace.agent.filter.FilterProvider",
+      "org.hypertrace.agent.filter.FilterEvaluator",
+      "org.hypertrace.agent.filter.FilterResult",
+      "org.hypertrace.agent.filter.ExecutionBlocked",
+      "org.hypertrace.agent.filter.ExecutionNotBlocked",
+      "org.hypertrace.agent.filter.MockFilterEvaluator",
       "org.hypertrace.agent.core.HypertraceSemanticAttributes",
       "org.hypertrace.agent.core.DynamicConfig",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.ByteBufferData",
