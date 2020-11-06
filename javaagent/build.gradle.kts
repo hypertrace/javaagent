@@ -10,7 +10,9 @@ dependencies {
     // https://oss.jfrog.org/artifactory/oss-snapshot-local/io/opentelemetry/instrumentation/auto/
     // https://dl.bintray.com/open-telemetry/maven/
     implementation("io.opentelemetry.javaagent", "opentelemetry-javaagent", version = "0.9.0", classifier = "all")
-    api(project(":javaagent-core"))
+    implementation(project(":javaagent-core")) {
+        exclude(group = "io.grpc", module = "grpc-context")
+    }
 }
 
 base.archivesBaseName = "hypertrace-agent"

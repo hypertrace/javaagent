@@ -22,10 +22,19 @@ idea {
 }
 
 dependencies {
-    implementation("io.opentelemetry:opentelemetry-api:0.9.1")
+    implementation("io.opentelemetry:opentelemetry-api:0.9.1") {
+        exclude(group = "io.grpc", module = "grpc-context")
+    }
 
-    api("com.google.protobuf:protobuf-java:3.13.0")
-    api("com.google.protobuf:protobuf-java-util:3.13.0")
+    api("com.google.protobuf:protobuf-java:3.13.0"){
+        exclude(group = "io.opentelemetry", module = "opentelemetry-api")
+        exclude(group = "io.grpc", module = "grpc-context")
+    }
+    api("com.google.protobuf:protobuf-java-util:3.13.0") {
+        exclude(group = "io.opentelemetry", module = "opentelemetry-api")
+        exclude(group = "io.grpc", module = "grpc-context")
+    }
+//    api("io.grpc:grpc-netty:1.33.1")
     // convert yaml to json, since java protobuf impl supports only json
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.11.3")
 }
