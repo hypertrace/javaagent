@@ -64,6 +64,7 @@ public class GrpcServerBodyInstrumentation extends Instrumenter.Default {
       "org.hypertrace.agent.filter.MockFilterEvaluator",
       "org.hypertrace.agent.core.HypertraceSemanticAttributes",
       "org.hypertrace.agent.core.DynamicConfig",
+      "org.hypertrace.agent.core.OpenTelemetryAttributesUtils",
       "io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.GrpcTracer",
       "io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.GrpcSpanDecorator",
       "io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.InstrumentationName",
