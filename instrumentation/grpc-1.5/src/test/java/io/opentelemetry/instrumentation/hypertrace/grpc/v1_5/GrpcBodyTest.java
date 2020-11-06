@@ -48,6 +48,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ClearSystemProperty;
 
 public class GrpcBodyTest extends AbstractInstrumenterTest {
 
@@ -108,7 +109,6 @@ public class GrpcBodyTest extends AbstractInstrumenterTest {
 
   @AfterEach
   public void afterEach() {
-    System.clearProperty(EnvironmentConfig.CAPTURE_HTTP_BODY_PREFIX + "request");
     HypertraceConfig.reset();
   }
 
@@ -168,6 +168,7 @@ public class GrpcBodyTest extends AbstractInstrumenterTest {
   }
 
   @Test
+  @ClearSystemProperty(key = EnvironmentConfig.CAPTURE_HTTP_HEADERS_PREFIX + "request")
   public void disabledInstrumentation_dynamicConfig()
       throws TimeoutException, InterruptedException {
     System.setProperty(EnvironmentConfig.CAPTURE_HTTP_BODY_PREFIX + "request", "false");

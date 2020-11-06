@@ -28,6 +28,4 @@ dependencies {
     api("com.google.protobuf:protobuf-java-util:3.13.0")
     // convert yaml to json, since java protobuf impl supports only json
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.11.3")
-
-    testImplementation("org.junit-pioneer:junit-pioneer:1.0.0")
 }
