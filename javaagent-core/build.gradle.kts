@@ -9,7 +9,7 @@ plugins {
 protobuf {
     protoc {
         // The artifact spec for the Protobuf Compiler
-        artifact = "com.google.protobuf:protoc:3.12.0"
+        artifact = "com.google.protobuf:protoc:3.12.1"
     }
     generateProtoTasks {
     }
@@ -24,8 +24,8 @@ idea {
 dependencies {
     implementation("io.opentelemetry:opentelemetry-api:0.9.1")
 
-    api("com.google.protobuf:protobuf-java:3.12.0")
-    api("com.google.protobuf:protobuf-java-util:3.12.0")
+    api("com.google.protobuf:protobuf-java:3.12.1")
+    api("com.google.protobuf:protobuf-java-util:3.12.1")
     // convert yaml to json, since java protobuf impl supports only json
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.11.3")
 }
