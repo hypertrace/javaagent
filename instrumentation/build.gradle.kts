@@ -10,9 +10,7 @@ subprojects {
         annotationProcessor("com.google.auto.service:auto-service:1.0-rc7")
 
         implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:0.9.0")
-        implementation(project(":javaagent-core")) {
-            exclude(group = "io.grpc", module = "grpc-context")
-        }
+        implementation(project(":javaagent-core"))
         implementation(project(":blocking"))
     }
 
@@ -61,8 +59,5 @@ tasks {
             exclude("io.opentelemetry.instrumentation.auto.**")
             exclude("io.opentelemetry.instrumentation.hypertrace.**")
         }
-
-        // relocate OpenTelemetry API dependency
-        relocate("io.grpc", "io.opentelemetry.javaagent.shaded.io.grpc")
     }
 }
