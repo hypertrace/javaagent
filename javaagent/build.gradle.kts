@@ -10,7 +10,7 @@ dependencies {
     // https://oss.jfrog.org/artifactory/oss-snapshot-local/io/opentelemetry/instrumentation/auto/
     // https://dl.bintray.com/open-telemetry/maven/
     implementation("io.opentelemetry.javaagent", "opentelemetry-javaagent", version = "0.9.0", classifier = "all")
-    api(project(":javaagent-core"))
+    implementation(project(":javaagent-core"))
 }
 
 base.archivesBaseName = "hypertrace-agent"
@@ -26,9 +26,20 @@ tasks {
         dependsOn(customizationShadowTask)
     }
 
+
     shadowJar {
         // config in javaagent-core uses protobuf and jackson
         relocate("com.fasterxml.jackson", "org.hypertrace.shaded.com.fasterxml.jackson")
+        relocate("com.google", "org.hypertrace.shaded.com.google")
+        relocate("google.protobuf", "org.hypertrace.shaded.google.protobuf")
+        relocate("javax", "org.hypertrace.shaded.javax")
+        relocate("org.checkerframework", "org.hypertrace.shaded.com.checkerframework")
+        relocate("org.yaml", "org.hypertrace.shaded.org.yaml")
+
+        dependencies {
+            exclude(dependency("org.codehaus.mojo:animal-sniffer-annotations"))
+            exclude(dependency("javax.annotation:javax.annotation-api"))
+        }
 
         // relocate following classes because javaagent-core uses OTEL APIs
         relocate("io.grpc", "io.opentelemetry.javaagent.shaded.io.grpc")
@@ -42,6 +53,8 @@ tasks {
 
         mergeServiceFiles {
             include("inst/META-INF/services/*")
+            // exclude because it would be shaded twice and the META-INF/services/ would be io.opentelemetry.javaagent.shaded.io.grpc
+            exclude("inst/META-INF/services/io.grpc*")
         }
         exclude("**/module-info.class")
         manifest {
