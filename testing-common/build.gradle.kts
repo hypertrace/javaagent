@@ -9,9 +9,9 @@ configurations {
 
 dependencies {
     api("io.opentelemetry:opentelemetry-sdk:0.9.1")
+    api("com.squareup.okhttp3:okhttp:4.9.0")
     implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-api:0.9.0")
     implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:0.9.0")
-    api("com.squareup.okhttp3:okhttp:4.9.0")
     implementation("ch.qos.logback:logback-classic:1.2.3")
     implementation("org.slf4j:log4j-over-slf4j:1.7.30")
     implementation("org.slf4j:jcl-over-slf4j:1.7.30")
@@ -19,4 +19,5 @@ dependencies {
     implementation("net.bytebuddy:byte-buddy:1.10.10")
     implementation("net.bytebuddy:byte-buddy-agent:1.10.10")
     implementation("com.google.auto.service:auto-service:1.0-rc7")
+    implementation("org.eclipse.jetty:jetty-server:8.0.0.v20110901")
 }

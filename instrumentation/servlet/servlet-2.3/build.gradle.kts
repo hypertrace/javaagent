@@ -36,7 +36,9 @@ dependencies {
     compileOnly("javax.servlet:servlet-api:2.3")
     implementation("net.bytebuddy:byte-buddy:1.10.10")
 
-    testImplementation(project(":testing-common"))
+    testImplementation(project(":testing-common")){
+        exclude(group ="org.eclipse.jetty", module= "jetty-server")
+    }
     testImplementation("org.eclipse.jetty:jetty-server:7.5.4.v20111024")
     testImplementation("org.eclipse.jetty:jetty-servlet:7.5.4.v20111024")
 }
