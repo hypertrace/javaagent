@@ -16,6 +16,7 @@ List of supported frameworks with additional capabilities:
 | [Servlet](https://javaee.github.io/javaee-spec/javadocs/javax/servlet/package-summary.html)            | 2.3+            |
 | [Spark Web Framework](https://github.com/perwendel/spark)                                              | 2.3+            |
 | [gRPC](https://github.com/grpc/grpc-java)                                                              | 1.5+            |
+| [OkHttp](https://github.com/square/okhttp/)                                                            | 3.0+            |
 
 
 ## Build
