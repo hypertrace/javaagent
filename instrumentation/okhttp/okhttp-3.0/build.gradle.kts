@@ -27,9 +27,8 @@ afterEvaluate{
 dependencies {
     api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-okhttp-3.0:0.9.0")
 
-    implementation("com.squareup.okhttp3:okhttp:3.0.0")
+    compileOnly("com.squareup.okhttp3:okhttp:3.0.0")
     implementation("net.bytebuddy:byte-buddy:1.10.10")
 
     testImplementation(project(":testing-common"))
-    testImplementation("com.squareup.okhttp3:mockwebserver:3.0.0")
 }
