@@ -9,7 +9,9 @@ subprojects {
         implementation("com.google.auto.service:auto-service:1.0-rc7")
         annotationProcessor("com.google.auto.service:auto-service:1.0-rc7")
 
+        implementation("io.opentelemetry:opentelemetry-api:0.9.1")
         implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:0.9.0")
+        implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:0.9.0")
         implementation(project(":javaagent-core"))
         implementation(project(":blocking"))
     }
@@ -28,6 +30,8 @@ dependencies{
     implementation(project(":instrumentation:servlet:servlet-3.0"))
     implementation(project(":instrumentation:servlet:servlet-3.1"))
     implementation(project(":instrumentation:spark-web-framework-2.3"))
+    implementation(project(":instrumentation:grpc-1.5"))
+    implementation(project(":instrumentation:okhttp:okhttp-3.0"))
 }
 
 tasks {
