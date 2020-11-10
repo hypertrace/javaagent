@@ -169,7 +169,8 @@ public class Servlet30BodyInstrumentation extends Instrumenter.Default {
             HypertraceSemanticAttributes.httpRequestHeader(headerName), headerValue);
         headers.put(headerName, headerValue);
       }
-      FilterResult filterResult = FilterProvider.getFilterEvaluator().evaluate(headers);
+      FilterResult filterResult =
+          FilterProvider.getFilterEvaluator().evaluateRequestHeaders(headers);
       OpenTelemetryAttributesUtils.setAttributes(currentSpan, filterResult.getAttributes());
       if (filterResult.blockExecution()) {
         httpResponse.setStatus(403);

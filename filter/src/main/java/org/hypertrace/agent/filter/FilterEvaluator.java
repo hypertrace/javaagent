@@ -30,7 +30,7 @@ public interface FilterEvaluator {
    * @param headers are used for blocking evaluation.
    * @return filter result
    */
-  FilterResult evaluate(Map<String, String> headers);
+  FilterResult evaluateRequestHeaders(Map<String, String> headers);
 
   /**
    * Evaluate the execution.
@@ -38,13 +38,5 @@ public interface FilterEvaluator {
    * @param body request body
    * @return filter result
    */
-  FilterResult evaluate(String body);
-
-  /**
-   * Evaluate the execution.
-   *
-   * @param body request body
-   * @return filter result
-   */
-  FilterResult evaluate(StringBuilder body);
+  FilterResult evaluateRequestBody(String body);
 }

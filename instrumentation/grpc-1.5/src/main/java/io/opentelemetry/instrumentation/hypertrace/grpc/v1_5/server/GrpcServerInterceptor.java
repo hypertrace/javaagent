@@ -53,7 +53,8 @@ public class GrpcServerInterceptor implements ServerInterceptor {
     GrpcSpanDecorator.addMetadataAttributes(
         mapHeaders, currentSpan, HypertraceSemanticAttributes::rpcRequestMetadata);
 
-    FilterResult filterResult = FilterProvider.getFilterEvaluator().evaluate(mapHeaders);
+    FilterResult filterResult =
+        FilterProvider.getFilterEvaluator().evaluateRequestHeaders(mapHeaders);
     OpenTelemetryAttributesUtils.setAttributes(currentSpan, filterResult.getAttributes());
     if (filterResult.blockExecution()) {
       call.close(Status.PERMISSION_DENIED, new Metadata());
