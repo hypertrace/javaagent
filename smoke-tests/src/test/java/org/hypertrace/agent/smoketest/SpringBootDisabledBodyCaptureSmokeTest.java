@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.MountableFile;
 
 public class SpringBootDisabledBodyCaptureSmokeTest extends AbstractSmokeTest {
 
@@ -44,6 +45,10 @@ public class SpringBootDisabledBodyCaptureSmokeTest extends AbstractSmokeTest {
   void beforeEach() {
     app = createAppUnderTest(8);
     app.addEnv("HT_DATA_CAPTURE_HTTP_BODY_REQUEST", "false");
+    app.withCopyFileToContainer(
+        MountableFile.forClasspathResource("/ht-config-all-disabled.yaml"),
+        "/etc/ht-config-all-disabled.yaml");
+    app.withEnv("HT_CONFIG_FILE", "/etc/ht-config-all-disabled.yaml");
     app.start();
   }
 

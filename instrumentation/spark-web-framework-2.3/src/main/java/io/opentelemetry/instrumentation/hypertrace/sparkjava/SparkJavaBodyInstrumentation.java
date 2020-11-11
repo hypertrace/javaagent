@@ -71,8 +71,6 @@ public class SparkJavaBodyInstrumentation extends Instrumenter.Default {
       "org.hypertrace.agent.filter.ExecutionBlocked",
       "org.hypertrace.agent.filter.ExecutionNotBlocked",
       "org.hypertrace.agent.filter.MockFilterEvaluator",
-      "org.hypertrace.agent.core.HypertraceSemanticAttributes",
-      "org.hypertrace.agent.core.DynamicConfig",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.ByteBufferData",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.CharBufferData",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.BufferedWriterWrapper",
@@ -83,6 +81,8 @@ public class SparkJavaBodyInstrumentation extends Instrumenter.Default {
       "io.opentelemetry.instrumentation.hypertrace.servlet.v3_1.BufferingHttpServletRequest",
       "io.opentelemetry.instrumentation.hypertrace.servlet.v3_1.BufferingHttpServletRequest$ServletInputStreamWrapper",
       "io.opentelemetry.instrumentation.hypertrace.servlet.v3_1.Servlet31Advice",
+      //        TODO Instrumentation name is not used in the advice method to check whether
+      // instrumentation is enabled or not
       packageName + ".InstrumentationName",
     };
   }

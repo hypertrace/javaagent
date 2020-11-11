@@ -30,6 +30,7 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okio.Buffer;
 import org.hypertrace.agent.core.ContentTypeUtils;
+import org.hypertrace.agent.core.HypertraceConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,18 +42,29 @@ public class OkHttpTracingInterceptor implements Interceptor {
 
   @Override
   public Response intercept(Chain chain) throws IOException {
+    if (!HypertraceConfig.isInstrumentationEnabled(InstrumentationName.INSTRUMENTATION_NAME)) {
+      return chain.proceed(chain.request());
+    }
+
     Span span = TRACER.getCurrentSpan();
 
     Request request = chain.request();
-    captureHeaders(span, request.headers(), HypertraceSemanticAttributes::httpRequestHeader);
+    if (HypertraceConfig.get().getDataCapture().getHttpHeaders().getRequest().getValue()) {
+      captureHeaders(span, request.headers(), HypertraceSemanticAttributes::httpRequestHeader);
+    }
     captureRequestBody(span, request.body());
 
     Response response = chain.proceed(request);
-    captureHeaders(span, response.headers(), HypertraceSemanticAttributes::httpResponseHeader);
+    if (HypertraceConfig.get().getDataCapture().getHttpHeaders().getResponse().getValue()) {
+      captureHeaders(span, response.headers(), HypertraceSemanticAttributes::httpResponseHeader);
+    }
     return captureResponseBody(span, response);
   }
 
   private static void captureRequestBody(Span span, RequestBody requestBody) {
+    if (!HypertraceConfig.get().getDataCapture().getHttpBody().getRequest().getValue()) {
+      return;
+    }
     if (requestBody == null) {
       return;
     }
@@ -70,6 +82,9 @@ public class OkHttpTracingInterceptor implements Interceptor {
   }
 
   private static Response captureResponseBody(Span span, final Response response) {
+    if (!HypertraceConfig.get().getDataCapture().getHttpBody().getResponse().getValue()) {
+      return response;
+    }
     if (response.body() == null) {
       return response;
     }

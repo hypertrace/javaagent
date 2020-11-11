@@ -58,8 +58,6 @@ public class GrpcClientBodyInstrumentation extends Instrumenter.Default {
       "io.opentelemetry.instrumentation.grpc.v1_5.server.TracingServerInterceptor",
       "io.opentelemetry.instrumentation.grpc.v1_5.server.TracingServerInterceptor$TracingServerCall",
       "io.opentelemetry.instrumentation.grpc.v1_5.server.TracingServerInterceptor$TracingServerCallListener",
-      "org.hypertrace.agent.core.HypertraceSemanticAttributes",
-      "org.hypertrace.agent.core.DynamicConfig",
       "io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.GrpcTracer",
       "io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.GrpcSpanDecorator",
       "io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.InstrumentationName",

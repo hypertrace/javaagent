@@ -56,6 +56,22 @@ public class HypertraceConfig {
     return agentConfig;
   }
 
+  public static boolean isInstrumentationEnabled(String[] instrumentationNames) {
+    // the instNames is not used because the config does not support it at the moment.
+
+    AgentConfig agentConfig = get();
+    // disabled if all is disabled
+    if (!agentConfig.getDataCapture().getHttpBody().getRequest().getValue()
+        && !agentConfig.getDataCapture().getHttpBody().getResponse().getValue()
+        && !agentConfig.getDataCapture().getHttpHeaders().getRequest().getValue()
+        && !agentConfig.getDataCapture().getHttpHeaders().getResponse().getValue()
+        && !agentConfig.getDataCapture().getRpcMetadata().getRequest().getValue()
+        && !agentConfig.getDataCapture().getRpcMetadata().getResponse().getValue()) {
+      return false;
+    }
+    return true;
+  }
+
   /** Reset the config, use only in tests. */
   public static void reset() {
     agentConfig = null;

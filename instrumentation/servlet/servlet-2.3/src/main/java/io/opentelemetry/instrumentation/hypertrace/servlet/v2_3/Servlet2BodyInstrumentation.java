@@ -42,7 +42,7 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import org.hypertrace.agent.core.DynamicConfig;
+import org.hypertrace.agent.core.HypertraceConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.hypertrace.agent.filter.FilterProvider;
 import org.hypertrace.agent.filter.FilterResult;
@@ -56,7 +56,7 @@ import org.hypertrace.agent.filter.FilterResult;
 public class Servlet2BodyInstrumentation extends Instrumenter.Default {
 
   public Servlet2BodyInstrumentation() {
-    super("servlet", "servlet-2");
+    super(InstrumentationName.INSTRUMENTATION_NAME[0], InstrumentationName.INSTRUMENTATION_NAME[1]);
   }
 
   @Override
@@ -97,8 +97,6 @@ public class Servlet2BodyInstrumentation extends Instrumenter.Default {
       "org.hypertrace.agent.filter.ExecutionBlocked",
       "org.hypertrace.agent.filter.ExecutionNotBlocked",
       "org.hypertrace.agent.filter.MockFilterEvaluator",
-      "org.hypertrace.agent.core.HypertraceSemanticAttributes",
-      "org.hypertrace.agent.core.DynamicConfig",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.ByteBufferData",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.CharBufferData",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.BufferedWriterWrapper",
@@ -131,11 +129,11 @@ public class Servlet2BodyInstrumentation extends Instrumenter.Default {
         @Advice.Argument(value = 0, readOnly = false) ServletRequest request,
         @Advice.Argument(value = 1, readOnly = false) ServletResponse response,
         @Advice.Local("rootStart") Boolean rootStart) {
-      if (!(request instanceof HttpServletRequest) || !(response instanceof HttpServletResponse)) {
+
+      if (!HypertraceConfig.isInstrumentationEnabled(InstrumentationName.INSTRUMENTATION_NAME)) {
         return null;
       }
-
-      if (!DynamicConfig.isEnabled(InstrumentationName.INSTRUMENTATION_NAME)) {
+      if (!(request instanceof HttpServletRequest) || !(response instanceof HttpServletResponse)) {
         return null;
       }
 
@@ -162,11 +160,14 @@ public class Servlet2BodyInstrumentation extends Instrumenter.Default {
       @SuppressWarnings("unchecked")
       Enumeration<String> headerNames = httpRequest.getHeaderNames();
       Map<String, String> headers = new HashMap<>();
+
       while (headerNames.hasMoreElements()) {
         String headerName = headerNames.nextElement();
         String headerValue = httpRequest.getHeader(headerName);
-        currentSpan.setAttribute(
-            HypertraceSemanticAttributes.httpRequestHeader(headerName), headerValue);
+        if (HypertraceConfig.get().getDataCapture().getHttpHeaders().getRequest().getValue()) {
+          currentSpan.setAttribute(
+              HypertraceSemanticAttributes.httpRequestHeader(headerName), headerValue);
+        }
         headers.put(headerName, headerValue);
       }
       FilterResult filterResult =
@@ -195,21 +196,28 @@ public class Servlet2BodyInstrumentation extends Instrumenter.Default {
         BufferingHttpServletResponse bufferingResponse = (BufferingHttpServletResponse) response;
         BufferingHttpServletRequest bufferingRequest = (BufferingHttpServletRequest) request;
 
-        // set response headers
-        Map<String, List<String>> bufferedHeaders = bufferingResponse.getBufferedHeaders();
-        for (Map.Entry<String, List<String>> nameToHeadersEntry : bufferedHeaders.entrySet()) {
-          String headerName = nameToHeadersEntry.getKey();
-          for (String headerValue : nameToHeadersEntry.getValue()) {
-            currentSpan.setAttribute(
-                HypertraceSemanticAttributes.httpResponseHeader(headerName), headerValue);
+        if (HypertraceConfig.get().getDataCapture().getHttpHeaders().getResponse().getValue()) {
+          // set response headers
+          Map<String, List<String>> bufferedHeaders = bufferingResponse.getBufferedHeaders();
+          for (Map.Entry<String, List<String>> nameToHeadersEntry : bufferedHeaders.entrySet()) {
+            String headerName = nameToHeadersEntry.getKey();
+            for (String headerValue : nameToHeadersEntry.getValue()) {
+              currentSpan.setAttribute(
+                  HypertraceSemanticAttributes.httpResponseHeader(headerName), headerValue);
+            }
           }
         }
         // Bodies are captured at the end after all user processing.
-        currentSpan.setAttribute(
-            HypertraceSemanticAttributes.HTTP_REQUEST_BODY,
-            bufferingRequest.getBufferedBodyAsString());
-        currentSpan.setAttribute(
-            HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, bufferingResponse.getBufferAsString());
+        if (HypertraceConfig.get().getDataCapture().getHttpBody().getRequest().getValue()) {
+          currentSpan.setAttribute(
+              HypertraceSemanticAttributes.HTTP_REQUEST_BODY,
+              bufferingRequest.getBufferedBodyAsString());
+        }
+        if (HypertraceConfig.get().getDataCapture().getHttpBody().getResponse().getValue()) {
+          currentSpan.setAttribute(
+              HypertraceSemanticAttributes.HTTP_RESPONSE_BODY,
+              bufferingResponse.getBufferAsString());
+        }
       }
     }
   }

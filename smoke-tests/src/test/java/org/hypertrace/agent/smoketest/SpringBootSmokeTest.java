@@ -33,6 +33,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 
+// @org.junitpioneer.jupiter.SetEnvironmentVariable(
+//    key = "SMOKETEST_JAVAAGENT_PATH",
+//    value =
+//
+// "/Users/ploffay/projects/hypertrace/opentelemetry-java-agent/javaagent/build/libs/hypertrace-agent-0.2.2-SNAPSHOT-all.jar")
 public class SpringBootSmokeTest extends AbstractSmokeTest {
 
   @Override
@@ -43,7 +48,7 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
   private static GenericContainer app;
 
   @BeforeEach
-  void beforeEach() {
+  synchronized void beforeEach() {
     if (app == null) {
       // TODO test with JDK (11, 14)
       app = createAppUnderTest(8);
@@ -52,7 +57,7 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
   }
 
   @AfterAll
-  static void afterEach() {
+  static synchronized void afterEach() {
     if (app != null) {
       app.stop();
     }

@@ -4,7 +4,7 @@ plugins {
 
 dependencies{
     testImplementation(project(":javaagent-core"))
-    testImplementation("org.testcontainers:testcontainers:1.15.0-rc2")
+    testImplementation("org.testcontainers:testcontainers:1.15.0")
     testImplementation("com.squareup.okhttp3:okhttp:4.9.0")
     testImplementation("org.awaitility:awaitility:4.0.3")
     testImplementation("io.opentelemetry:opentelemetry-proto:0.9.1")
