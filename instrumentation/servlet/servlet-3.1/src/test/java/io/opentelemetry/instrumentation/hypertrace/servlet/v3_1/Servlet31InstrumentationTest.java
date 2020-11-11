@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.servlet.v3_0;
+package io.opentelemetry.instrumentation.hypertrace.servlet.v3_1;
 
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.List;
@@ -23,16 +23,17 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class Servlet30Test extends AbstractInstrumenterTest {
+public class Servlet31InstrumentationTest extends AbstractInstrumenterTest {
 
   @Test
-  public void simpleServlet() throws Exception {
+  public void postJson() throws Exception {
     Server server = new Server(0);
     ServletContextHandler handler = new ServletContextHandler();
     handler.addServlet(TestServlet.class, "/test");
@@ -40,7 +41,7 @@ public class Servlet30Test extends AbstractInstrumenterTest {
     server.setHandler(handler);
     server.start();
 
-    int serverPort = server.getConnectors()[0].getLocalPort();
+    int serverPort = ((ServerConnector) server.getConnectors()[0]).getLocalPort();
 
     String requestBody = "hello";
     String requestHeader = "requestheader";

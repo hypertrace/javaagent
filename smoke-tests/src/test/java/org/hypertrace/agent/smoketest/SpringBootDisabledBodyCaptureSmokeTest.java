@@ -31,7 +31,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 
-public class SpringBootDisabledBodyCaptureTest extends AbstractSmokeTest {
+public class SpringBootDisabledBodyCaptureSmokeTest extends AbstractSmokeTest {
 
   @Override
   protected String getTargetImage(int jdk) {
@@ -55,7 +55,7 @@ public class SpringBootDisabledBodyCaptureTest extends AbstractSmokeTest {
   }
 
   @Test
-  public void springBootSmokeTest() throws IOException {
+  public void get() throws IOException {
     // TODO test with multiple JDK (11, 14)
     String url = String.format("http://localhost:%d/greeting", app.getMappedPort(8080));
     Request request = new Request.Builder().url(url).get().build();
@@ -75,23 +75,23 @@ public class SpringBootDisabledBodyCaptureTest extends AbstractSmokeTest {
     Assertions.assertEquals(
         2,
         getSpanStream(traces)
-            .flatMap(s -> s.getAttributesList().stream())
-            .filter(a -> a.getKey().equals(OTEL_LIBRARY_VERSION_ATTRIBUTE))
-            .map(a -> a.getValue().getStringValue())
-            .filter(s -> s.equals(currentAgentVersion))
+            .flatMap(span -> span.getAttributesList().stream())
+            .filter(attribute -> attribute.getKey().equals(OTEL_LIBRARY_VERSION_ATTRIBUTE))
+            .map(attribute -> attribute.getValue().getStringValue())
+            .filter(value -> value.equals(currentAgentVersion))
             .count());
     Assertions.assertEquals(
         0,
         getSpanStream(traces)
-            .flatMap(s -> s.getAttributesList().stream())
-            .filter(a -> a.getKey().contains("request.header."))
-            .map(a -> a.getValue().getStringValue())
+            .flatMap(span -> span.getAttributesList().stream())
+            .filter(attribute -> attribute.getKey().contains("request.header."))
+            .map(attribute -> attribute.getValue().getStringValue())
             .count());
     List<String> responseBodyAttributes =
         getSpanStream(traces)
-            .flatMap(s -> s.getAttributesList().stream())
-            .filter(a -> a.getKey().contains("response.body"))
-            .map(a -> a.getValue().getStringValue())
+            .flatMap(span -> span.getAttributesList().stream())
+            .filter(attribute -> attribute.getKey().contains("response.body"))
+            .map(attribute -> attribute.getValue().getStringValue())
             .collect(Collectors.toList());
     Assertions.assertEquals(0, responseBodyAttributes.size());
   }

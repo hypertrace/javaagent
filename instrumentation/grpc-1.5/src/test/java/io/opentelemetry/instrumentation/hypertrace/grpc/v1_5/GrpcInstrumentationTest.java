@@ -50,7 +50,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ClearSystemProperty;
 
-public class GrpcBodyTest extends AbstractInstrumenterTest {
+public class GrpcInstrumentationTest extends AbstractInstrumenterTest {
 
   private static final Helloworld.Request REQUEST =
       Request.newBuilder().setName("request name").build();
