@@ -65,12 +65,12 @@ public class SparkJavaBodyInstrumentation extends Instrumenter.Default {
   @Override
   public String[] helperClassNames() {
     return new String[] {
-      "org.hypertrace.agent.blocking.BlockingProvider",
-      "org.hypertrace.agent.blocking.BlockingEvaluator",
-      "org.hypertrace.agent.blocking.BlockingResult",
-      "org.hypertrace.agent.blocking.ExecutionBlocked",
-      "org.hypertrace.agent.blocking.ExecutionNotBlocked",
-      "org.hypertrace.agent.blocking.MockBlockingEvaluator",
+      "org.hypertrace.agent.filter.FilterProvider",
+      "org.hypertrace.agent.filter.FilterEvaluator",
+      "org.hypertrace.agent.filter.FilterResult",
+      "org.hypertrace.agent.filter.ExecutionBlocked",
+      "org.hypertrace.agent.filter.ExecutionNotBlocked",
+      "org.hypertrace.agent.filter.MockFilterEvaluator",
       "org.hypertrace.agent.core.HypertraceSemanticAttributes",
       "org.hypertrace.agent.core.DynamicConfig",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.ByteBufferData",

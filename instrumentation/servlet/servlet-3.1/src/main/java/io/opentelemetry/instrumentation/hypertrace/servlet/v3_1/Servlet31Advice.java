@@ -29,17 +29,17 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import net.bytebuddy.asm.Advice;
-import org.hypertrace.agent.blocking.BlockingProvider;
-import org.hypertrace.agent.blocking.BlockingResult;
 import org.hypertrace.agent.core.DynamicConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
+import org.hypertrace.agent.filter.FilterProvider;
+import org.hypertrace.agent.filter.FilterResult;
 
 public class Servlet31Advice {
 
   // request attribute key injected at first filerChain.doFilter
   private static final String ALREADY_LOADED = "__org.hypertrace.agent.on_start_executed";
 
-  @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = BlockingResult.class)
+  @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = FilterResult.class)
   public static Object start(
       @Advice.Argument(value = 0, readOnly = false) ServletRequest request,
       @Advice.Argument(value = 1, readOnly = false) ServletResponse response,
@@ -81,13 +81,11 @@ public class Servlet31Advice {
           HypertraceSemanticAttributes.httpRequestHeader(headerName), headerValue);
       headers.put(headerName, headerValue);
     }
-    BlockingResult blockingResult = BlockingProvider.getBlockingEvaluator().evaluate(headers);
-    currentSpan.setAttribute(
-        HypertraceSemanticAttributes.OPA_RESULT, blockingResult.blockExecution());
-    if (blockingResult.blockExecution()) {
+    FilterResult filterResult =
+        FilterProvider.getFilterEvaluator().evaluateRequestHeaders(currentSpan, headers);
+    if (filterResult.blockExecution()) {
       httpResponse.setStatus(403);
-      currentSpan.setAttribute(HypertraceSemanticAttributes.OPA_REASON, blockingResult.getReason());
-      return blockingResult;
+      return filterResult;
     }
     return null;
   }

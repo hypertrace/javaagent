@@ -30,10 +30,10 @@ import io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.InstrumentationName
 import io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.server.GrpcServerInterceptor.TracingServerCall.TracingServerCallListener;
 import io.opentelemetry.trace.Span;
 import java.util.Map;
-import org.hypertrace.agent.blocking.BlockingProvider;
-import org.hypertrace.agent.blocking.BlockingResult;
 import org.hypertrace.agent.core.DynamicConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
+import org.hypertrace.agent.filter.FilterProvider;
+import org.hypertrace.agent.filter.FilterResult;
 
 public class GrpcServerInterceptor implements ServerInterceptor {
 
@@ -52,8 +52,9 @@ public class GrpcServerInterceptor implements ServerInterceptor {
     GrpcSpanDecorator.addMetadataAttributes(
         mapHeaders, currentSpan, HypertraceSemanticAttributes::rpcRequestMetadata);
 
-    BlockingResult blockingResult = BlockingProvider.getBlockingEvaluator().evaluate(mapHeaders);
-    if (blockingResult.blockExecution()) {
+    FilterResult filterResult =
+        FilterProvider.getFilterEvaluator().evaluateRequestHeaders(currentSpan, mapHeaders);
+    if (filterResult.blockExecution()) {
       call.close(Status.PERMISSION_DENIED, new Metadata());
       return NoopServerCallListener.INSTANCE;
     }

@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.blocking;
+package org.hypertrace.agent.filter;
 
-public class BlockingProvider {
+/** Indicates that the execution should be blocked. */
+class ExecutionBlocked implements FilterResult {
 
-  private BlockingProvider() {}
+  static ExecutionBlocked INSTANCE = new ExecutionBlocked();
 
-  public static BlockingEvaluator getBlockingEvaluator() {
-    return MockBlockingEvaluator.INSTANCE;
+  private ExecutionBlocked() {}
+
+  @Override
+  public boolean blockExecution() {
+    return true;
   }
 }

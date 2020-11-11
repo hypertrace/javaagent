@@ -14,23 +14,16 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.blocking;
+package org.hypertrace.agent.filter;
 
-/** Indicates that the execution should be blocked. */
-class ExecutionBlocked implements BlockingResult {
-  private final String reason;
+class ExecutionNotBlocked implements FilterResult {
 
-  public ExecutionBlocked(String reason) {
-    this.reason = reason;
-  }
+  static ExecutionNotBlocked INSTANCE = new ExecutionNotBlocked();
+
+  private ExecutionNotBlocked() {}
 
   @Override
   public boolean blockExecution() {
-    return true;
-  }
-
-  @Override
-  public String getReason() {
-    return reason;
+    return false;
   }
 }

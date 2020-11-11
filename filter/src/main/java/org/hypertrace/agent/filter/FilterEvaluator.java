@@ -14,22 +14,30 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.blocking;
+package org.hypertrace.agent.filter;
 
-/** Result of blocking evaluation from {@link BlockingEvaluator} */
-public interface BlockingResult {
+import io.opentelemetry.trace.Span;
+import java.util.Map;
+
+/**
+ * {@link FilterEvaluator} evaluates given request/RPC and the result is used to block further
+ * processing of the request.
+ */
+public interface FilterEvaluator {
 
   /**
-   * Indicates that execution should be blocked.
+   * Evaluate the execution.
    *
-   * @return true if execution should be blocked otherwise false
+   * @param headers are used for blocking evaluation.
+   * @return filter result
    */
-  boolean blockExecution();
+  FilterResult evaluateRequestHeaders(Span span, Map<String, String> headers);
 
   /**
-   * The reason why execution was blocked.
+   * Evaluate the execution.
    *
-   * @return the reason why execution was blocked.
+   * @param body request body
+   * @return filter result
    */
-  String getReason();
+  FilterResult evaluateRequestBody(Span span, String body);
 }

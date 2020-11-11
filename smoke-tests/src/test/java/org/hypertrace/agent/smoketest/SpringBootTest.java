@@ -58,7 +58,7 @@ public class SpringBootTest extends AbstractSmokeTest {
   }
 
   @Test
-  public void springBootSmokeTest() throws IOException {
+  public void smoke() throws IOException {
     String url = String.format("http://localhost:%d/greeting", app.getMappedPort(8080));
     Request request = new Request.Builder().url(url).get().build();
 
@@ -121,18 +121,18 @@ public class SpringBootTest extends AbstractSmokeTest {
   }
 
   @Test
-  public void springBootMockBlockingTest() throws IOException {
+  public void blocking() throws IOException {
     String url = String.format("http://localhost:%d/greeting", app.getMappedPort(8080));
     Request request = new Request.Builder().url(url).addHeader("block", "true").get().build();
     Response response = client.newCall(request).execute();
     Collection<ExportTraceServiceRequest> traces = waitForTraces();
 
-    Assertions.assertEquals(response.code(), 403);
+    Assertions.assertEquals(403, response.code());
     Assertions.assertEquals(
         1,
         getSpanStream(traces)
             .flatMap(s -> s.getAttributesList().stream())
-            .filter(a -> a.getKey().equals("hypertrace.opa.result"))
+            .filter(a -> a.getKey().equals("hypertrace.mock.filter.result"))
             .count());
   }
 }

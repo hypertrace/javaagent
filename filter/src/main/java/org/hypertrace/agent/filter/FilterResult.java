@@ -14,22 +14,15 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.blocking;
+package org.hypertrace.agent.filter;
 
-import java.util.Map;
+/** Result of filter evaluation from {@link FilterEvaluator} */
+public interface FilterResult {
 
-/** Mock blocking evaluator, blocks execution if an attribute with "block" key is present. */
-class MockBlockingEvaluator implements BlockingEvaluator {
-
-  public static MockBlockingEvaluator INSTANCE = new MockBlockingEvaluator();
-
-  private MockBlockingEvaluator() {}
-
-  @Override
-  public BlockingResult evaluate(Map<String, String> attributes) {
-    if (attributes.containsKey("block")) {
-      return new ExecutionBlocked("Header 'block' found");
-    }
-    return ExecutionNotBlocked.INSTANCE;
-  }
+  /**
+   * Indicates whether the execution should be blocked.
+   *
+   * @return true if execution should be blocked otherwise false.
+   */
+  boolean blockExecution();
 }

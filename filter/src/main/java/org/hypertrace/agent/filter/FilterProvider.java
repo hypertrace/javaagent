@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.blocking;
+package org.hypertrace.agent.filter;
 
-import java.util.Map;
+/** Returns an instance of {@link FilterEvaluator}. */
+public class FilterProvider {
 
-/** Blocking evaluator. */
-public interface BlockingEvaluator {
+  private FilterProvider() {}
 
   /**
-   * Evaluate if execution should be blocked.
+   * Get {@link FilterEvaluator}
    *
-   * @param attributes are used for blocking evaluation.
-   * @return blocking result
+   * @return the filter evaluator.
    */
-  BlockingResult evaluate(Map<String, String> attributes);
+  public static FilterEvaluator getFilterEvaluator() {
+    return MockFilterEvaluator.INSTANCE;
+  }
 }
