@@ -56,7 +56,9 @@ public class GrpcServerInterceptor implements ServerInterceptor {
         FilterProvider.getFilterEvaluator().evaluateRequestHeaders(currentSpan, mapHeaders);
     if (filterResult.blockExecution()) {
       call.close(Status.PERMISSION_DENIED, new Metadata());
-      return NoopServerCallListener.INSTANCE;
+      @SuppressWarnings("unchecked")
+      ServerCall.Listener<ReqT> noop = NoopServerCallListener.INSTANCE;
+      return noop;
     }
 
     Listener<ReqT> serverCall = next.startCall(new TracingServerCall<>(call, currentSpan), headers);
