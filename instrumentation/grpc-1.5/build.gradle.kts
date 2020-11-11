@@ -64,7 +64,6 @@ dependencies {
     compileOnly("io.grpc:grpc-stub:1.5.0")
 
     implementation("javax.annotation:javax.annotation-api:1.3.2")
-    implementation("net.bytebuddy:byte-buddy:1.10.10")
 
     testImplementation(project(":testing-common"))
     testImplementation("io.grpc:grpc-core:1.5.0")
