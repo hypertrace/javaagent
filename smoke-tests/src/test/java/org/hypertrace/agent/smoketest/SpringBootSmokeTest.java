@@ -31,13 +31,13 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.SetEnvironmentVariable;
 import org.testcontainers.containers.GenericContainer;
 
-@SetEnvironmentVariable(
-    key = "SMOKETEST_JAVAAGENT_PATH",
-    value =
-        "/Users/ploffay/projects/hypertrace/opentelemetry-java-agent/javaagent/build/libs/hypertrace-agent-0.2.2-SNAPSHOT-all.jar")
+// @org.junitpioneer.jupiter.SetEnvironmentVariable(
+//    key = "SMOKETEST_JAVAAGENT_PATH",
+//    value =
+//
+// "/Users/ploffay/projects/hypertrace/opentelemetry-java-agent/javaagent/build/libs/hypertrace-agent-0.2.2-SNAPSHOT-all.jar")
 public class SpringBootSmokeTest extends AbstractSmokeTest {
 
   @Override
