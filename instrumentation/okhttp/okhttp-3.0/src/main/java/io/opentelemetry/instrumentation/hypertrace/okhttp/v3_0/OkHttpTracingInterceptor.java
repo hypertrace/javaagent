@@ -30,6 +30,7 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okio.Buffer;
 import org.hypertrace.agent.core.ContentTypeUtils;
+import org.hypertrace.agent.core.HypertraceConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +42,10 @@ public class OkHttpTracingInterceptor implements Interceptor {
 
   @Override
   public Response intercept(Chain chain) throws IOException {
+    if (!HypertraceConfig.isInstrumentationEnabled(InstrumentationName.INSTRUMENTATION_NAME)) {
+      return chain.proceed(chain.request());
+    }
+
     Span span = TRACER.getCurrentSpan();
 
     Request request = chain.request();

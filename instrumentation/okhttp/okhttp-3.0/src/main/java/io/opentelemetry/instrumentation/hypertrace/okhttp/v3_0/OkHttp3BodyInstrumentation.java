@@ -35,7 +35,7 @@ import okhttp3.OkHttpClient;
 public class OkHttp3BodyInstrumentation extends Instrumenter.Default {
 
   public OkHttp3BodyInstrumentation() {
-    super("okhttp", "okhttp-3");
+    super(InstrumentationName.INSTRUMENTATION_NAME[0], InstrumentationName.INSTRUMENTATION_NAME[1]);
   }
 
   @Override
@@ -60,6 +60,7 @@ public class OkHttp3BodyInstrumentation extends Instrumenter.Default {
     return new String[] {
       "org.hypertrace.agent.core.ContentTypeUtils",
       "org.hypertrace.agent.core.HypertraceSemanticAttributes",
+      packageName + ".InstrumentationName",
       packageName + ".OkHttpTracingInterceptor",
     };
   }

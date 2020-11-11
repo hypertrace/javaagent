@@ -42,7 +42,7 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import org.hypertrace.agent.core.DynamicConfig;
+import org.hypertrace.agent.core.HypertraceConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.hypertrace.agent.filter.FilterProvider;
 import org.hypertrace.agent.filter.FilterResult;
@@ -96,7 +96,7 @@ public class Servlet30BodyInstrumentation extends Instrumenter.Default {
       "org.hypertrace.agent.filter.ExecutionNotBlocked",
       "org.hypertrace.agent.filter.MockFilterEvaluator",
       "org.hypertrace.agent.core.HypertraceSemanticAttributes",
-      "org.hypertrace.agent.core.DynamicConfig",
+      "org.hypertrace.agent.core.HypertraceConfig",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.ByteBufferData",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.CharBufferData",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.BufferedWriterWrapper",
@@ -130,11 +130,11 @@ public class Servlet30BodyInstrumentation extends Instrumenter.Default {
         @Advice.Argument(value = 0, readOnly = false) ServletRequest request,
         @Advice.Argument(value = 1, readOnly = false) ServletResponse response,
         @Advice.Local("rootStart") Boolean rootStart) {
-      if (!(request instanceof HttpServletRequest) || !(response instanceof HttpServletResponse)) {
+
+      if (!HypertraceConfig.isInstrumentationEnabled(InstrumentationName.INSTRUMENTATION_NAME)) {
         return null;
       }
-
-      if (!DynamicConfig.isEnabled(InstrumentationName.INSTRUMENTATION_NAME)) {
+      if (!(request instanceof HttpServletRequest) || !(response instanceof HttpServletResponse)) {
         return null;
       }
 

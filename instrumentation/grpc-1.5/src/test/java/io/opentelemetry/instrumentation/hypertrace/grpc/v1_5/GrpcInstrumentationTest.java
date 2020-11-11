@@ -32,6 +32,7 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.stub.MetadataUtils;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.IOException;
+import java.net.URL;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 import org.hypertrace.agent.core.EnvironmentConfig;
@@ -48,7 +49,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.ClearSystemProperty;
 
 public class GrpcInstrumentationTest extends AbstractInstrumenterTest {
 
@@ -168,10 +168,11 @@ public class GrpcInstrumentationTest extends AbstractInstrumenterTest {
   }
 
   @Test
-  @ClearSystemProperty(key = EnvironmentConfig.CAPTURE_HTTP_HEADERS_PREFIX + "request")
   public void disabledInstrumentation_dynamicConfig()
-      throws TimeoutException, InterruptedException {
-    System.setProperty(EnvironmentConfig.CAPTURE_HTTP_BODY_PREFIX + "request", "false");
+      throws TimeoutException, InterruptedException, IOException {
+    URL configUrl = getClass().getClassLoader().getResource("ht-config-all-disabled.yaml");
+    System.setProperty(EnvironmentConfig.CONFIG_FILE_PROPERTY, configUrl.getPath());
+    HypertraceConfig.reset();
 
     GreeterBlockingStub blockingStub = GreeterGrpc.newBlockingStub(CHANNEL);
     Response response = blockingStub.sayHello(REQUEST);

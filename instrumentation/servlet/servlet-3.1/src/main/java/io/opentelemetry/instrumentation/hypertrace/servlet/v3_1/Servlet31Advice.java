@@ -29,7 +29,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import net.bytebuddy.asm.Advice;
-import org.hypertrace.agent.core.DynamicConfig;
+import org.hypertrace.agent.core.HypertraceConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.hypertrace.agent.filter.FilterProvider;
 import org.hypertrace.agent.filter.FilterResult;
@@ -44,11 +44,11 @@ public class Servlet31Advice {
       @Advice.Argument(value = 0, readOnly = false) ServletRequest request,
       @Advice.Argument(value = 1, readOnly = false) ServletResponse response,
       @Advice.Local("rootStart") Boolean rootStart) {
-    if (!(request instanceof HttpServletRequest) || !(response instanceof HttpServletResponse)) {
+
+    if (!HypertraceConfig.isInstrumentationEnabled(InstrumentationName.INSTRUMENTATION_NAME)) {
       return null;
     }
-
-    if (!DynamicConfig.isEnabled(InstrumentationName.INSTRUMENTATION_NAME)) {
+    if (!(request instanceof HttpServletRequest) || !(response instanceof HttpServletResponse)) {
       return null;
     }
 

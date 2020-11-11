@@ -14,24 +14,8 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.core;
+package io.opentelemetry.instrumentation.hypertrace.okhttp.v3_0;
 
-public class DynamicConfig {
-
-  private DynamicConfig() {}
-
-  public static boolean isEnabled(String[] instrumentationNames) {
-    if (!HypertraceConfig.get().getDataCapture().getHttpBody().getRequest().getValue()) {
-      return false;
-    }
-
-    for (String name : instrumentationNames) {
-      String integrationEnabled =
-          EnvironmentConfig.getProperty("hypertrace.integration." + name + ".enabled");
-      if (integrationEnabled != null && "false".equals(integrationEnabled.toLowerCase())) {
-        return false;
-      }
-    }
-    return true;
-  }
+public class InstrumentationName {
+  public static final String[] INSTRUMENTATION_NAME = {"okhttp", "okhttp-3"};
 }

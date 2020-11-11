@@ -1,0 +1,17 @@
+serviceName: app_under_test
+reporting:
+  address: http://localhost:9411
+  secure: true
+dataCapture:
+  httpHeaders:
+    request: false
+    response: false
+  httpBody:
+    request: false
+    response: false
+  rpcMetadata:
+    request: false
+    response: false
+  rpcBody:
+    request: false
+    response: false

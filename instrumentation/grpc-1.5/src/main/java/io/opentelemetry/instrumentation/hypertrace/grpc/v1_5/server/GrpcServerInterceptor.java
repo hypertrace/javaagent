@@ -30,7 +30,7 @@ import io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.InstrumentationName
 import io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.server.GrpcServerInterceptor.TracingServerCall.TracingServerCallListener;
 import io.opentelemetry.trace.Span;
 import java.util.Map;
-import org.hypertrace.agent.core.DynamicConfig;
+import org.hypertrace.agent.core.HypertraceConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.hypertrace.agent.filter.FilterProvider;
 import org.hypertrace.agent.filter.FilterResult;
@@ -42,7 +42,7 @@ public class GrpcServerInterceptor implements ServerInterceptor {
   @Override
   public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
       ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
-    if (!DynamicConfig.isEnabled(InstrumentationName.INSTRUMENTATION_NAME)) {
+    if (!HypertraceConfig.isInstrumentationEnabled(InstrumentationName.INSTRUMENTATION_NAME)) {
       return next.startCall(call, headers);
     }
 
