@@ -8,7 +8,8 @@ This agent supports [these frameworks](https://github.com/open-telemetry/opentel
 and adds following capabilities:
 * capture request and response headers
 * capture request and response bodies
-* execution blocking based on Open Policy Agent
+* server request headers/bodies evaluation in agent filter that can result in request blocking.
+    The filter implementation will be pluggable.
 
 List of supported frameworks with additional capabilities:
 | Library/Framework                                                                                      | Versions        |
@@ -42,10 +43,6 @@ The configuration precedence order
    1. system properties 
    2. environment variables, TODO add link to agent-config repo
    3. [configuration file](./example-config.yaml), specified `HT_CONFIG_FILE=example-config.yaml`
-
-Hypertrace body/headers capture can be disabled by:
-* `HT_DATA_CAPTURE_HTTP_BODY_REQUEST` - disables additional data capture for all instrumentations
-* `HYPERTRACE_INTEGRATION_<integration>_ENABLED` - disables capture for a specified instrumentation e.g. `servlet`, `servlet-3`
 
 ## Test
 
