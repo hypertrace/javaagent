@@ -40,12 +40,11 @@ tasks {
     shadowJar {
         mergeServiceFiles()
 
-        relocate("com.fasterxml.jackson", "org.hypertrace.shaded.com.fasterxml.jackson")
-        relocate("com.google", "org.hypertrace.shaded.com.google")
-        relocate("google.protobuf", "org.hypertrace.shaded.google.protobuf")
-//        relocate("javax", "org.hypertrace.shaded.javax")
-        relocate("org.checkerframework", "org.hypertrace.shaded.com.checkerframework")
-        relocate("org.yaml", "org.hypertrace.shaded.org.yaml")
+        relocate("com.fasterxml.jackson", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.com.fasterxml.jackson")
+        relocate("com.google", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.com.google")
+        relocate("google.protobuf", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.google.protobuf")
+        relocate("org.checkerframework", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.com.checkerframework")
+        relocate("org.yaml", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.org.yaml")
 
         exclude("**/module-info.class")
 

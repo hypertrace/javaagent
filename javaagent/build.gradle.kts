@@ -29,14 +29,14 @@ tasks {
 
     shadowJar {
         // config in javaagent-core uses protobuf and jackson
-        // TODO relocation causes muzzle to fail! The relocation has to run before ByteBuddy plugin generates muzzle
-        //  Missing method org.hypertrace.agent.config.Config$Message#getRequest()Lcom/google/protobuf/BoolValue
-        relocate("com.fasterxml.jackson", "org.hypertrace.shaded.com.fasterxml.jackson")
-        relocate("com.google", "org.hypertrace.shaded.com.google")
-        relocate("google.protobuf", "org.hypertrace.shaded.google.protobuf")
-//        relocate("javax", "org.hypertrace.shaded.javax")
-        relocate("org.checkerframework", "org.hypertrace.shaded.com.checkerframework")
-        relocate("org.yaml", "org.hypertrace.shaded.org.yaml")
+        // shade to the same location as OTEL, because the package prefix is used in classloader instrumentation
+        // https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/master/javaagent-tooling/src/main/java/io/opentelemetry/javaagent/tooling/Constants.java#L25
+        relocate("com.fasterxml.jackson", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.com.fasterxml.jackson")
+        relocate("com.google", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.com.google")
+        relocate("google.protobuf", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.google.protobuf")
+        relocate("javax", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.javax")
+        relocate("org.checkerframework", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.com.checkerframework")
+        relocate("org.yaml", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.org.yaml")
 
         dependencies {
             exclude(dependency("org.codehaus.mojo:animal-sniffer-annotations"))
