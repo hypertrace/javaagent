@@ -134,8 +134,6 @@ public class Servlet31Advice {
           }
         }
         // Bodies are captured at the end after all user processing.
-        System.out.println(agentConfig.getDataCapture().getHttpBody().getRequest().getValue());
-        System.out.println(agentConfig.getDataCapture().getHttpBody().getResponse().getValue());
         if (agentConfig.getDataCapture().getHttpBody().getRequest().getValue()) {
           currentSpan.setAttribute(
               HypertraceSemanticAttributes.HTTP_REQUEST_BODY,
