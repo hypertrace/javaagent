@@ -29,6 +29,8 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import net.bytebuddy.asm.Advice;
+import org.hypertrace.agent.config.Config.AgentConfig;
+import org.hypertrace.agent.core.FooClass;
 import org.hypertrace.agent.core.HypertraceConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.hypertrace.agent.filter.FilterProvider;
@@ -44,6 +46,10 @@ public class Servlet31Advice {
       @Advice.Argument(value = 0, readOnly = false) ServletRequest request,
       @Advice.Argument(value = 1, readOnly = false) ServletResponse response,
       @Advice.Local("rootStart") Boolean rootStart) {
+
+    System.out.println("\n\n\n\n\n");
+    FooClass fooClass = new FooClass();
+    System.out.println(fooClass.getClass().getDeclaringClass());
 
     if (!HypertraceConfig.isInstrumentationEnabled(InstrumentationName.INSTRUMENTATION_NAME)) {
       return null;
@@ -77,8 +83,11 @@ public class Servlet31Advice {
     while (headerNames.hasMoreElements()) {
       String headerName = headerNames.nextElement();
       String headerValue = httpRequest.getHeader(headerName);
-      currentSpan.setAttribute(
-          HypertraceSemanticAttributes.httpRequestHeader(headerName), headerValue);
+
+      if (HypertraceConfig.get().getDataCapture().getHttpHeaders().getRequest().getValue()) {
+        currentSpan.setAttribute(
+            HypertraceSemanticAttributes.httpRequestHeader(headerName), headerValue);
+      }
       headers.put(headerName, headerValue);
     }
     FilterResult filterResult =
@@ -121,17 +130,27 @@ public class Servlet31Advice {
         BufferingHttpServletRequest bufferingRequest = (BufferingHttpServletRequest) request;
 
         // set response headers
-        for (String headerName : bufferingResponse.getHeaderNames()) {
-          String headerValue = bufferingResponse.getHeader(headerName);
-          currentSpan.setAttribute(
-              HypertraceSemanticAttributes.httpResponseHeader(headerName), headerValue);
+        AgentConfig agentConfig = HypertraceConfig.get();
+        if (agentConfig.getDataCapture().getHttpHeaders().getResponse().getValue()) {
+          for (String headerName : bufferingResponse.getHeaderNames()) {
+            String headerValue = bufferingResponse.getHeader(headerName);
+            currentSpan.setAttribute(
+                HypertraceSemanticAttributes.httpResponseHeader(headerName), headerValue);
+          }
         }
         // Bodies are captured at the end after all user processing.
-        currentSpan.setAttribute(
-            HypertraceSemanticAttributes.HTTP_REQUEST_BODY,
-            bufferingRequest.getBufferedBodyAsString());
-        currentSpan.setAttribute(
-            HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, bufferingResponse.getBufferAsString());
+        System.out.println(agentConfig.getDataCapture().getHttpBody().getRequest().getValue());
+        System.out.println(agentConfig.getDataCapture().getHttpBody().getResponse().getValue());
+        if (agentConfig.getDataCapture().getHttpBody().getRequest().getValue()) {
+          currentSpan.setAttribute(
+              HypertraceSemanticAttributes.HTTP_REQUEST_BODY,
+              bufferingRequest.getBufferedBodyAsString());
+        }
+        if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()) {
+          currentSpan.setAttribute(
+              HypertraceSemanticAttributes.HTTP_RESPONSE_BODY,
+              bufferingResponse.getBufferAsString());
+        }
       }
     }
   }

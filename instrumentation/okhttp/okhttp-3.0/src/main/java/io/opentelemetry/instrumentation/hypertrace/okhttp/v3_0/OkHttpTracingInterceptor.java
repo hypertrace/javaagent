@@ -49,15 +49,22 @@ public class OkHttpTracingInterceptor implements Interceptor {
     Span span = TRACER.getCurrentSpan();
 
     Request request = chain.request();
-    captureHeaders(span, request.headers(), HypertraceSemanticAttributes::httpRequestHeader);
+    if (HypertraceConfig.get().getDataCapture().getHttpHeaders().getRequest().getValue()) {
+      captureHeaders(span, request.headers(), HypertraceSemanticAttributes::httpRequestHeader);
+    }
     captureRequestBody(span, request.body());
 
     Response response = chain.proceed(request);
-    captureHeaders(span, response.headers(), HypertraceSemanticAttributes::httpResponseHeader);
+    if (HypertraceConfig.get().getDataCapture().getHttpHeaders().getResponse().getValue()) {
+      captureHeaders(span, response.headers(), HypertraceSemanticAttributes::httpResponseHeader);
+    }
     return captureResponseBody(span, response);
   }
 
   private static void captureRequestBody(Span span, RequestBody requestBody) {
+    if (!HypertraceConfig.get().getDataCapture().getHttpBody().getRequest().getValue()) {
+      return;
+    }
     if (requestBody == null) {
       return;
     }
@@ -75,6 +82,9 @@ public class OkHttpTracingInterceptor implements Interceptor {
   }
 
   private static Response captureResponseBody(Span span, final Response response) {
+    if (!HypertraceConfig.get().getDataCapture().getHttpBody().getResponse().getValue()) {
+      return response;
+    }
     if (response.body() == null) {
       return response;
     }

@@ -29,12 +29,13 @@ tasks {
 
     shadowJar {
         // config in javaagent-core uses protobuf and jackson
-        relocate("com.fasterxml.jackson", "org.hypertrace.shaded.com.fasterxml.jackson")
-        relocate("com.google", "org.hypertrace.shaded.com.google")
-        relocate("google.protobuf", "org.hypertrace.shaded.google.protobuf")
-        relocate("javax", "org.hypertrace.shaded.javax")
-        relocate("org.checkerframework", "org.hypertrace.shaded.com.checkerframework")
-        relocate("org.yaml", "org.hypertrace.shaded.org.yaml")
+        // TODO relocation causes muzzle to fail! The relocation has to run before ByteBuddy plugin generates muzzle
+//        relocate("com.fasterxml.jackson", "org.hypertrace.shaded.com.fasterxml.jackson")
+//        relocate("com.google", "org.hypertrace.shaded.com.google")
+//        relocate("google.protobuf", "org.hypertrace.shaded.google.protobuf")
+//        relocate("javax", "org.hypertrace.shaded.javax")
+//        relocate("org.checkerframework", "org.hypertrace.shaded.com.checkerframework")
+//        relocate("org.yaml", "org.hypertrace.shaded.org.yaml")
 
         dependencies {
             exclude(dependency("org.codehaus.mojo:animal-sniffer-annotations"))

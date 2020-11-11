@@ -13,7 +13,7 @@ subprojects {
         implementation("io.opentelemetry:opentelemetry-api:0.9.1")
         implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:0.9.0")
         implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:0.9.0")
-        implementation(project(":javaagent-core"))
+        api(project(":javaagent-core"))
         implementation(project(":filter"))
     }
 
@@ -39,6 +39,13 @@ tasks {
     // Keep in sync with https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/f893ca540b72a895fbf18c14d2df8d1cabaf2c7f/instrumentation/instrumentation.gradle#L51
     shadowJar {
         mergeServiceFiles()
+
+//        relocate("com.fasterxml.jackson", "org.hypertrace.shaded.com.fasterxml.jackson")
+//        relocate("com.google", "org.hypertrace.shaded.com.google")
+//        relocate("google.protobuf", "org.hypertrace.shaded.google.protobuf")
+//        relocate("javax", "org.hypertrace.shaded.javax")
+//        relocate("org.checkerframework", "org.hypertrace.shaded.com.checkerframework")
+//        relocate("org.yaml", "org.hypertrace.shaded.org.yaml")
 
         exclude("**/module-info.class")
 

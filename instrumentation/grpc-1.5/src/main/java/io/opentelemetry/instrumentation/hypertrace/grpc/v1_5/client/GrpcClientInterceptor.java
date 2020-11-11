@@ -45,7 +45,7 @@ public class GrpcClientInterceptor implements ClientInterceptor {
 
     Span currentSpan = TRACER.getCurrentSpan();
     ClientCall<ReqT, RespT> clientCall = next.newCall(method, callOptions);
-    return new GrpcClientInterceptor.TracingClientCall<>(clientCall, currentSpan, TRACER);
+    return new GrpcClientInterceptor.TracingClientCall<>(clientCall, currentSpan);
   }
 
   static final class TracingClientCall<ReqT, RespT>
@@ -53,10 +53,7 @@ public class GrpcClientInterceptor implements ClientInterceptor {
 
     private final Span span;
 
-    TracingClientCall(
-        ClientCall<ReqT, RespT> delegate,
-        Span span,
-        io.opentelemetry.instrumentation.grpc.v1_5.client.GrpcClientTracer tracer) {
+    TracingClientCall(ClientCall<ReqT, RespT> delegate, Span span) {
       super(delegate);
       this.span = span;
     }
@@ -64,15 +61,19 @@ public class GrpcClientInterceptor implements ClientInterceptor {
     @Override
     public void start(Listener<RespT> responseListener, Metadata headers) {
       super.start(new TracingClientCallListener<>(responseListener, span), headers);
-      GrpcSpanDecorator.addMetadataAttributes(
-          headers, span, HypertraceSemanticAttributes::rpcRequestMetadata);
+      if (HypertraceConfig.get().getDataCapture().getRpcMetadata().getRequest().getValue()) {
+        GrpcSpanDecorator.addMetadataAttributes(
+            headers, span, HypertraceSemanticAttributes::rpcRequestMetadata);
+      }
     }
 
     @Override
     public void sendMessage(ReqT message) {
       super.sendMessage(message);
-      GrpcSpanDecorator.addMessageAttribute(
-          message, span, HypertraceSemanticAttributes.RPC_REQUEST_BODY);
+      if (HypertraceConfig.get().getDataCapture().getRpcBody().getRequest().getValue()) {
+        GrpcSpanDecorator.addMessageAttribute(
+            message, span, HypertraceSemanticAttributes.RPC_REQUEST_BODY);
+      }
     }
   }
 
@@ -88,15 +89,19 @@ public class GrpcClientInterceptor implements ClientInterceptor {
     @Override
     public void onMessage(RespT message) {
       delegate().onMessage(message);
-      GrpcSpanDecorator.addMessageAttribute(
-          message, span, HypertraceSemanticAttributes.RPC_RESPONSE_BODY);
+      if (HypertraceConfig.get().getDataCapture().getRpcBody().getResponse().getValue()) {
+        GrpcSpanDecorator.addMessageAttribute(
+            message, span, HypertraceSemanticAttributes.RPC_RESPONSE_BODY);
+      }
     }
 
     @Override
     public void onHeaders(Metadata headers) {
       super.onHeaders(headers);
-      GrpcSpanDecorator.addMetadataAttributes(
-          headers, span, HypertraceSemanticAttributes::rpcResponseMetadata);
+      if (HypertraceConfig.get().getDataCapture().getRpcMetadata().getResponse().getValue()) {
+        GrpcSpanDecorator.addMetadataAttributes(
+            headers, span, HypertraceSemanticAttributes::rpcResponseMetadata);
+      }
     }
   }
 }

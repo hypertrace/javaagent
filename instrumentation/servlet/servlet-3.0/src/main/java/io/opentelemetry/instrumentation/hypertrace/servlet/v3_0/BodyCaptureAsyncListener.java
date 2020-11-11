@@ -22,6 +22,8 @@ import javax.servlet.AsyncEvent;
 import javax.servlet.AsyncListener;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import org.hypertrace.agent.core.HypertraceConfig;
+import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 
 public class BodyCaptureAsyncListener implements AsyncListener {
 
@@ -36,16 +38,16 @@ public class BodyCaptureAsyncListener implements AsyncListener {
   @Override
   public void onComplete(AsyncEvent event) {
     if (responseHandled.compareAndSet(false, true)) {
-      annotateRequest(event.getSuppliedRequest());
-      annotateResponse(event.getSuppliedResponse());
+      captureRequestBody(event.getSuppliedRequest());
+      captureResponseBodyAndHeaders(event.getSuppliedResponse());
     }
   }
 
   @Override
   public void onError(AsyncEvent event) {
     if (responseHandled.compareAndSet(false, true)) {
-      annotateRequest(event.getSuppliedRequest());
-      annotateResponse(event.getSuppliedResponse());
+      captureRequestBody(event.getSuppliedRequest());
+      captureResponseBodyAndHeaders(event.getSuppliedResponse());
     }
   }
 
@@ -55,22 +57,31 @@ public class BodyCaptureAsyncListener implements AsyncListener {
   @Override
   public void onStartAsync(AsyncEvent event) {}
 
-  private void annotateRequest(ServletRequest servletRequest) {
-    if (servletRequest instanceof BufferingHttpServletRequest) {
-      BufferingHttpServletRequest bufferingRequest = (BufferingHttpServletRequest) servletRequest;
-      span.setAttribute("request.body", bufferingRequest.getBufferedBodyAsString());
+  private void captureRequestBody(ServletRequest servletRequest) {
+    if (HypertraceConfig.get().getDataCapture().getHttpBody().getRequest().getValue()) {
+      if (servletRequest instanceof BufferingHttpServletRequest) {
+        BufferingHttpServletRequest bufferingRequest = (BufferingHttpServletRequest) servletRequest;
+        span.setAttribute(
+            HypertraceSemanticAttributes.HTTP_REQUEST_BODY,
+            bufferingRequest.getBufferedBodyAsString());
+      }
     }
   }
 
-  private void annotateResponse(ServletResponse servletResponse) {
+  private void captureResponseBodyAndHeaders(ServletResponse servletResponse) {
     if (servletResponse instanceof BufferingHttpServletResponse) {
       BufferingHttpServletResponse bufferingResponse =
           (BufferingHttpServletResponse) servletResponse;
-      String responseBody = bufferingResponse.getBufferAsString();
-      span.setAttribute("response.body", responseBody);
-      for (String headerName : bufferingResponse.getHeaderNames()) {
-        String headerValue = bufferingResponse.getHeader(headerName);
-        span.setAttribute("response.header." + headerName, headerValue);
+      if (HypertraceConfig.get().getDataCapture().getHttpBody().getResponse().getValue()) {
+        String responseBody = bufferingResponse.getBufferAsString();
+        span.setAttribute(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, responseBody);
+      }
+      if (HypertraceConfig.get().getDataCapture().getHttpHeaders().getResponse().getValue()) {
+        for (String headerName : bufferingResponse.getHeaderNames()) {
+          String headerValue = bufferingResponse.getHeader(headerName);
+          span.setAttribute(
+              HypertraceSemanticAttributes.httpResponseHeader(headerName), headerValue);
+        }
       }
     }
   }
