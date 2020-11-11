@@ -16,8 +16,6 @@
 
 package org.hypertrace.agent.filter;
 
-import java.util.Map;
-
 /** Result of filter evaluation from {@link FilterEvaluator} */
 public interface FilterResult {
 
@@ -27,12 +25,4 @@ public interface FilterResult {
    * @return true if execution should be blocked otherwise false.
    */
   boolean blockExecution();
-
-  /**
-   * Metadata of the evaluation. These attributes are added to the current span corresponding to the
-   * active execution.
-   *
-   * @return the metadata from the evaluation.
-   */
-  Map<String, String> getAttributes();
 }

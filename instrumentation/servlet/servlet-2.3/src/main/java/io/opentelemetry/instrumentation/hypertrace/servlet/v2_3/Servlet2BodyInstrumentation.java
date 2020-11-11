@@ -44,7 +44,6 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.core.DynamicConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
-import org.hypertrace.agent.core.OpenTelemetryAttributesUtils;
 import org.hypertrace.agent.filter.FilterProvider;
 import org.hypertrace.agent.filter.FilterResult;
 
@@ -100,7 +99,6 @@ public class Servlet2BodyInstrumentation extends Instrumenter.Default {
       "org.hypertrace.agent.filter.MockFilterEvaluator",
       "org.hypertrace.agent.core.HypertraceSemanticAttributes",
       "org.hypertrace.agent.core.DynamicConfig",
-      "org.hypertrace.agent.core.OpenTelemetryAttributesUtils",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.ByteBufferData",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.CharBufferData",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.BufferedWriterWrapper",
@@ -171,8 +169,7 @@ public class Servlet2BodyInstrumentation extends Instrumenter.Default {
         headers.put(headerName, headerValue);
       }
       FilterResult filterResult =
-          FilterProvider.getFilterEvaluator().evaluateRequestHeaders(headers);
-      OpenTelemetryAttributesUtils.setAttributes(currentSpan, filterResult.getAttributes());
+          FilterProvider.getFilterEvaluator().evaluateRequestHeaders(currentSpan, headers);
       if (filterResult.blockExecution()) {
         httpResponse.setStatus(403);
         return filterResult;

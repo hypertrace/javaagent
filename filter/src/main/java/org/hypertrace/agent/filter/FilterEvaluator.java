@@ -16,6 +16,7 @@
 
 package org.hypertrace.agent.filter;
 
+import io.opentelemetry.trace.Span;
 import java.util.Map;
 
 /**
@@ -30,7 +31,7 @@ public interface FilterEvaluator {
    * @param headers are used for blocking evaluation.
    * @return filter result
    */
-  FilterResult evaluateRequestHeaders(Map<String, String> headers);
+  FilterResult evaluateRequestHeaders(Span span, Map<String, String> headers);
 
   /**
    * Evaluate the execution.
@@ -38,5 +39,5 @@ public interface FilterEvaluator {
    * @param body request body
    * @return filter result
    */
-  FilterResult evaluateRequestBody(String body);
+  FilterResult evaluateRequestBody(Span span, String body);
 }

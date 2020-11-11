@@ -16,8 +16,7 @@
 
 package org.hypertrace.agent.filter;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
+import io.opentelemetry.trace.Span;
 import java.util.Map;
 
 /** Mock blocking evaluator, blocks execution if an attribute with "block" key is present. */
@@ -27,24 +26,17 @@ class MockFilterEvaluator implements FilterEvaluator {
 
   public static MockFilterEvaluator INSTANCE = new MockFilterEvaluator();
 
-  private static ExecutionBlocked EXECUTION_BLOCKED = executionBlocked();
-
   @Override
-  public FilterResult evaluateRequestHeaders(Map<String, String> headers) {
+  public FilterResult evaluateRequestHeaders(Span span, Map<String, String> headers) {
     if (headers.containsKey("block")) {
-      return EXECUTION_BLOCKED;
+      span.setAttribute("hypertrace.mock.filter.result", "true");
+      return ExecutionBlocked.INSTANCE;
     }
     return ExecutionNotBlocked.INSTANCE;
   }
 
   @Override
-  public FilterResult evaluateRequestBody(String body) {
+  public FilterResult evaluateRequestBody(Span span, String body) {
     return ExecutionNotBlocked.INSTANCE;
-  }
-
-  private static ExecutionBlocked executionBlocked() {
-    Map<String, String> attributes = new LinkedHashMap<>();
-    attributes.put("hypertrace.mock.filter.result", "true");
-    return new ExecutionBlocked(Collections.unmodifiableMap(attributes));
   }
 }

@@ -16,23 +16,15 @@
 
 package org.hypertrace.agent.filter;
 
-import java.util.Map;
-
 /** Indicates that the execution should be blocked. */
 class ExecutionBlocked implements FilterResult {
-  private final Map<String, String> attributes;
 
-  public ExecutionBlocked(Map<String, String> attributes) {
-    this.attributes = attributes;
-  }
+  static ExecutionBlocked INSTANCE = new ExecutionBlocked();
+
+  private ExecutionBlocked() {}
 
   @Override
   public boolean blockExecution() {
     return true;
-  }
-
-  @Override
-  public Map<String, String> getAttributes() {
-    return attributes;
   }
 }

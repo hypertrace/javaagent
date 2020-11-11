@@ -16,9 +16,6 @@
 
 package org.hypertrace.agent.filter;
 
-import java.util.Collections;
-import java.util.Map;
-
 class ExecutionNotBlocked implements FilterResult {
 
   static ExecutionNotBlocked INSTANCE = new ExecutionNotBlocked();
@@ -28,10 +25,5 @@ class ExecutionNotBlocked implements FilterResult {
   @Override
   public boolean blockExecution() {
     return false;
-  }
-
-  @Override
-  public Map<String, String> getAttributes() {
-    return Collections.emptyMap();
   }
 }

@@ -31,7 +31,6 @@ import javax.servlet.http.HttpServletResponse;
 import net.bytebuddy.asm.Advice;
 import org.hypertrace.agent.core.DynamicConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
-import org.hypertrace.agent.core.OpenTelemetryAttributesUtils;
 import org.hypertrace.agent.filter.FilterProvider;
 import org.hypertrace.agent.filter.FilterResult;
 
@@ -82,8 +81,8 @@ public class Servlet31Advice {
           HypertraceSemanticAttributes.httpRequestHeader(headerName), headerValue);
       headers.put(headerName, headerValue);
     }
-    FilterResult filterResult = FilterProvider.getFilterEvaluator().evaluateRequestHeaders(headers);
-    OpenTelemetryAttributesUtils.setAttributes(currentSpan, filterResult.getAttributes());
+    FilterResult filterResult =
+        FilterProvider.getFilterEvaluator().evaluateRequestHeaders(currentSpan, headers);
     if (filterResult.blockExecution()) {
       httpResponse.setStatus(403);
       return filterResult;
