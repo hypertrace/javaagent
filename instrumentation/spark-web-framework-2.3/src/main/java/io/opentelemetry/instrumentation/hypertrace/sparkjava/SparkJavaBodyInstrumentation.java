@@ -71,8 +71,6 @@ public class SparkJavaBodyInstrumentation extends Instrumenter.Default {
       "org.hypertrace.agent.filter.ExecutionBlocked",
       "org.hypertrace.agent.filter.ExecutionNotBlocked",
       "org.hypertrace.agent.filter.MockFilterEvaluator",
-      "org.hypertrace.agent.core.HypertraceSemanticAttributes",
-      "org.hypertrace.agent.core.HypertraceConfig",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.ByteBufferData",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.CharBufferData",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.BufferedWriterWrapper",

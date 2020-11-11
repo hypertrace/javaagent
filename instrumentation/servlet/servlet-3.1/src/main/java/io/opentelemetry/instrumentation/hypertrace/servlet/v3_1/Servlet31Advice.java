@@ -30,7 +30,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import net.bytebuddy.asm.Advice;
 import org.hypertrace.agent.config.Config.AgentConfig;
-import org.hypertrace.agent.core.FooClass;
 import org.hypertrace.agent.core.HypertraceConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.hypertrace.agent.filter.FilterProvider;
@@ -46,10 +45,6 @@ public class Servlet31Advice {
       @Advice.Argument(value = 0, readOnly = false) ServletRequest request,
       @Advice.Argument(value = 1, readOnly = false) ServletResponse response,
       @Advice.Local("rootStart") Boolean rootStart) {
-
-    System.out.println("\n\n\n\n\n");
-    FooClass fooClass = new FooClass();
-    System.out.println(fooClass.getClass().getDeclaringClass());
 
     if (!HypertraceConfig.isInstrumentationEnabled(InstrumentationName.INSTRUMENTATION_NAME)) {
       return null;

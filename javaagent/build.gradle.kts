@@ -30,7 +30,7 @@ tasks {
     shadowJar {
         // config in javaagent-core uses protobuf and jackson
         // TODO relocation causes muzzle to fail! The relocation has to run before ByteBuddy plugin generates muzzle
-//        relocate("com.fasterxml.jackson", "org.hypertrace.shaded.com.fasterxml.jackson")
+        relocate("com.fasterxml.jackson", "org.hypertrace.shaded.com.fasterxml.jackson")
 //        relocate("com.google", "org.hypertrace.shaded.com.google")
 //        relocate("google.protobuf", "org.hypertrace.shaded.google.protobuf")
 //        relocate("javax", "org.hypertrace.shaded.javax")

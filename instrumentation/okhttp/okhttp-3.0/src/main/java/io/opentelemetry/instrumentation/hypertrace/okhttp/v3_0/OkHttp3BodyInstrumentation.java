@@ -58,10 +58,7 @@ public class OkHttp3BodyInstrumentation extends Instrumenter.Default {
   @Override
   public String[] helperClassNames() {
     return new String[] {
-      "org.hypertrace.agent.core.ContentTypeUtils",
-      "org.hypertrace.agent.core.HypertraceSemanticAttributes",
-      packageName + ".InstrumentationName",
-      packageName + ".OkHttpTracingInterceptor",
+      packageName + ".InstrumentationName", packageName + ".OkHttpTracingInterceptor",
     };
   }
 

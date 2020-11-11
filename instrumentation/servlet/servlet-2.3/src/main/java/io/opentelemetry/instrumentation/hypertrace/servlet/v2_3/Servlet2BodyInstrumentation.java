@@ -97,8 +97,6 @@ public class Servlet2BodyInstrumentation extends Instrumenter.Default {
       "org.hypertrace.agent.filter.ExecutionBlocked",
       "org.hypertrace.agent.filter.ExecutionNotBlocked",
       "org.hypertrace.agent.filter.MockFilterEvaluator",
-      "org.hypertrace.agent.core.HypertraceSemanticAttributes",
-      "org.hypertrace.agent.core.DynamicConfig",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.ByteBufferData",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.CharBufferData",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.BufferedWriterWrapper",

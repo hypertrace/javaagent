@@ -48,7 +48,7 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
   private static GenericContainer app;
 
   @BeforeEach
-  void beforeEach() {
+  synchronized void beforeEach() {
     if (app == null) {
       // TODO test with JDK (11, 14)
       app = createAppUnderTest(8);
@@ -57,7 +57,7 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
   }
 
   @AfterAll
-  static void afterEach() {
+  static synchronized void afterEach() {
     if (app != null) {
       app.stop();
     }
