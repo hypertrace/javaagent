@@ -71,7 +71,7 @@ public class GrpcSpanDecorator {
   }
 
   public static Map<String, String> metadataToMap(Metadata metadata) {
-    Map<String, String> mapHeaders = new LinkedHashMap(metadata.keys().size());
+    Map<String, String> mapHeaders = new LinkedHashMap<>(metadata.keys().size());
     for (String key : metadata.keys()) {
       if (key.endsWith(Metadata.BINARY_HEADER_SUFFIX)) {
         continue;

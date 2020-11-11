@@ -159,6 +159,7 @@ public class Servlet2BodyInstrumentation extends Instrumenter.Default {
       ServletSpanDecorator.addSessionId(currentSpan, httpRequest);
 
       // set request headers
+      @SuppressWarnings("unchecked")
       Enumeration<String> headerNames = httpRequest.getHeaderNames();
       Map<String, String> headers = new HashMap<>();
       while (headerNames.hasMoreElements()) {
