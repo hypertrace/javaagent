@@ -141,11 +141,11 @@ public abstract class AbstractSmokeTest {
     return (int) getSpanStream(traces).filter(it -> it.getName().equals(spanName)).count();
   }
 
-  protected static Stream<Span> getSpanStream(Collection<ExportTraceServiceRequest> traces) {
-    return traces.stream()
-        .flatMap(it -> it.getResourceSpansList().stream())
-        .flatMap(it -> it.getInstrumentationLibrarySpansList().stream())
-        .flatMap(it -> it.getSpansList().stream());
+  protected static Stream<Span> getSpanStream(Collection<ExportTraceServiceRequest> traceRequest) {
+    return traceRequest.stream()
+        .flatMap(request -> request.getResourceSpansList().stream())
+        .flatMap(resourceSpans -> resourceSpans.getInstrumentationLibrarySpansList().stream())
+        .flatMap(librarySpans -> librarySpans.getSpansList().stream());
   }
 
   protected Collection<ExportTraceServiceRequest> waitForTraces() throws IOException {

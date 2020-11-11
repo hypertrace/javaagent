@@ -26,13 +26,14 @@ import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 
-public class SpringBootTest extends AbstractSmokeTest {
+public class SpringBootSmokeTest extends AbstractSmokeTest {
 
   @Override
   protected String getTargetImage(int jdk) {
@@ -58,7 +59,7 @@ public class SpringBootTest extends AbstractSmokeTest {
   }
 
   @Test
-  public void smoke() throws IOException {
+  public void get() throws IOException {
     String url = String.format("http://localhost:%d/greeting", app.getMappedPort(8080));
     Request request = new Request.Builder().url(url).get().build();
 
@@ -91,30 +92,34 @@ public class SpringBootTest extends AbstractSmokeTest {
     Assertions.assertEquals(
         2,
         getSpanStream(traces)
-            .flatMap(s -> s.getAttributesList().stream())
-            .filter(a -> a.getKey().equals(OTEL_LIBRARY_VERSION_ATTRIBUTE))
-            .map(a -> a.getValue().getStringValue())
-            .filter(s -> s.equals(currentAgentVersion))
+            .flatMap(span -> span.getAttributesList().stream())
+            .filter(attribute -> attribute.getKey().equals(OTEL_LIBRARY_VERSION_ATTRIBUTE))
+            .map(attribute -> attribute.getValue().getStringValue())
+            .filter(value -> value.equals(currentAgentVersion))
             .count());
     Assertions.assertTrue(
         getSpanStream(traces)
-                .flatMap(s -> s.getAttributesList().stream())
-                .filter(a -> a.getKey().contains("request.header."))
-                .map(a -> a.getValue().getStringValue())
+                .flatMap(span -> span.getAttributesList().stream())
+                .filter(attribute -> attribute.getKey().contains("request.header."))
+                .map(attribute -> attribute.getValue().getStringValue())
                 .count()
             > 0);
     Assertions.assertTrue(
         getSpanStream(traces)
-                .flatMap(s -> s.getAttributesList().stream())
-                .filter(a -> a.getKey().contains("response.header."))
-                .map(a -> a.getValue().getStringValue())
+                .flatMap(span -> span.getAttributesList().stream())
+                .filter(attribute -> attribute.getKey().contains("response.header."))
+                .map(attribute -> attribute.getValue().getStringValue())
                 .count()
             > 0);
     List<String> responseBodyAttributes =
         getSpanStream(traces)
-            .flatMap(s -> s.getAttributesList().stream())
-            .filter(a -> a.getKey().contains("response.body"))
-            .map(a -> a.getValue().getStringValue())
+            .flatMap(span -> span.getAttributesList().stream())
+            .filter(
+                attribute ->
+                    attribute
+                        .getKey()
+                        .contains(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY.getKey()))
+            .map(attribute -> attribute.getValue().getStringValue())
             .collect(Collectors.toList());
     Assertions.assertEquals(1, responseBodyAttributes.size());
     Assertions.assertEquals("Hi!", responseBodyAttributes.get(0));
@@ -131,8 +136,8 @@ public class SpringBootTest extends AbstractSmokeTest {
     Assertions.assertEquals(
         1,
         getSpanStream(traces)
-            .flatMap(s -> s.getAttributesList().stream())
-            .filter(a -> a.getKey().equals("hypertrace.mock.filter.result"))
+            .flatMap(span -> span.getAttributesList().stream())
+            .filter(attribute -> attribute.getKey().equals("hypertrace.mock.filter.result"))
             .count());
   }
 }

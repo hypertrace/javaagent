@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.servlet.v2_3;
+package io.opentelemetry.instrumentation.hypertrace.servlet.v3_0;
 
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.List;
@@ -29,10 +29,10 @@ import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class Servlet23Test extends AbstractInstrumenterTest {
+public class Servlet30InstrumentationTest extends AbstractInstrumenterTest {
 
   @Test
-  public void simpleServlet() throws Exception {
+  public void postJson() throws Exception {
     Server server = new Server(0);
     ServletContextHandler handler = new ServletContextHandler();
     handler.addServlet(TestServlet.class, "/test");

@@ -22,7 +22,7 @@ idea {
 }
 
 dependencies {
-    implementation("io.opentelemetry:opentelemetry-api:0.9.1")
+    api("io.opentelemetry:opentelemetry-api:0.9.1")
 
     api("com.google.protobuf:protobuf-java:3.11.4")
     api("com.google.protobuf:protobuf-java-util:3.11.4")

@@ -33,7 +33,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import spark.Spark;
 
-public class SparkJavaBodyCaptureTest extends AbstractInstrumenterTest {
+public class SparkJavaInstrumentationTest extends AbstractInstrumenterTest {
   private static final int PORT = 8099;
 
   private static final String RESPONSE_BODY = "{\"key\": \"val\"}";
@@ -44,7 +44,7 @@ public class SparkJavaBodyCaptureTest extends AbstractInstrumenterTest {
   private static final String REQUEST_HEADER_VALUE = "responseHeader";
 
   @BeforeAll
-  public static void beforeAll() {
+  public static void postJson() {
     AbstractInstrumenterTest.beforeAll();
     Spark.port(PORT);
     Spark.post(
