@@ -41,11 +41,11 @@ tasks {
         mergeServiceFiles()
 
         relocate("com.fasterxml.jackson", "org.hypertrace.shaded.com.fasterxml.jackson")
-        relocate("com.google.protobuf", "org.hypertrace.shaded.com.google.protobuf")
-//        relocate("google.protobuf", "org.hypertrace.shaded.google.protobuf")
+        relocate("com.google", "org.hypertrace.shaded.com.google")
+        relocate("google.protobuf", "org.hypertrace.shaded.google.protobuf")
 //        relocate("javax", "org.hypertrace.shaded.javax")
-//        relocate("org.checkerframework", "org.hypertrace.shaded.com.checkerframework")
-//        relocate("org.yaml", "org.hypertrace.shaded.org.yaml")
+        relocate("org.checkerframework", "org.hypertrace.shaded.com.checkerframework")
+        relocate("org.yaml", "org.hypertrace.shaded.org.yaml")
 
         exclude("**/module-info.class")
 
