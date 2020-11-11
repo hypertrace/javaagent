@@ -36,7 +36,6 @@ dependencies {
     api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0:0.9.0")
 
     compileOnly("javax.servlet:javax.servlet-api:3.1.0")
-    implementation("net.bytebuddy:byte-buddy:1.10.10")
 
     testImplementation(project(":testing-common")) {
         exclude(group ="org.eclipse.jetty", module= "jetty-server")

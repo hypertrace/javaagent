@@ -32,7 +32,6 @@ dependencies {
     api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jetty-8.0:0.9.0")
 
     compileOnly("com.sparkjava:spark-core:2.3")
-    implementation("net.bytebuddy:byte-buddy:1.10.10")
 
     testImplementation(project(":testing-common"))
     testImplementation("com.sparkjava:spark-core:2.3")
