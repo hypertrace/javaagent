@@ -81,7 +81,7 @@ public class SparkJavaBodyInstrumentation extends Instrumenter.Default {
       "io.opentelemetry.instrumentation.hypertrace.servlet.v3_1.BufferingHttpServletRequest",
       "io.opentelemetry.instrumentation.hypertrace.servlet.v3_1.BufferingHttpServletRequest$ServletInputStreamWrapper",
       "io.opentelemetry.instrumentation.hypertrace.servlet.v3_1.Servlet31Advice",
-      //        TODO Instrumentation name is not used in the advice method to check whether
+      // TODO Instrumentation name is not used in the advice method to check whether
       // instrumentation is enabled or not
       packageName + ".InstrumentationName",
     };

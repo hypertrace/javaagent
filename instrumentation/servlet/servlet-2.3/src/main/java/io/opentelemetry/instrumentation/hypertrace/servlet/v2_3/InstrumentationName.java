@@ -16,6 +16,10 @@
 
 package io.opentelemetry.instrumentation.hypertrace.servlet.v2_3;
 
+import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.trace.Tracer;
+
 public class InstrumentationName {
   public static final String[] INSTRUMENTATION_NAME = {"servlet", "servlet-2"};
+  public static final Tracer TRACER = OpenTelemetry.getTracer("org.hypertrace.agent.servlet");
 }

@@ -16,7 +16,6 @@
 
 package io.opentelemetry.instrumentation.hypertrace.servlet.v2_3;
 
-import static io.opentelemetry.javaagent.instrumentation.servlet.v2_2.Servlet2HttpServerTracer.TRACER;
 import static io.opentelemetry.javaagent.tooling.ClassLoaderMatcher.hasClassesNamed;
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.safeHasSuperType;
 import static io.opentelemetry.javaagent.tooling.matcher.NameMatchers.namedOneOf;
@@ -87,10 +86,6 @@ public class Servlet2BodyInstrumentation extends Instrumenter.Default {
   @Override
   public String[] helperClassNames() {
     return new String[] {
-      "io.opentelemetry.instrumentation.servlet.HttpServletRequestGetter",
-      "io.opentelemetry.instrumentation.servlet.ServletHttpServerTracer",
-      "io.opentelemetry.javaagent.instrumentation.servlet.v2_2.Servlet2HttpServerTracer",
-      "io.opentelemetry.javaagent.instrumentation.servlet.v2_2.ResponseWithStatus",
       "org.hypertrace.agent.filter.FilterProvider",
       "org.hypertrace.agent.filter.FilterEvaluator",
       "org.hypertrace.agent.filter.FilterResult",
@@ -148,7 +143,7 @@ public class Servlet2BodyInstrumentation extends Instrumenter.Default {
 
       HttpServletRequest httpRequest = (HttpServletRequest) request;
       HttpServletResponse httpResponse = (HttpServletResponse) response;
-      Span currentSpan = TRACER.getCurrentSpan();
+      Span currentSpan = InstrumentationName.TRACER.getCurrentSpan();
 
       rootStart = true;
       response = new BufferingHttpServletResponse(httpResponse);
@@ -191,7 +186,7 @@ public class Servlet2BodyInstrumentation extends Instrumenter.Default {
         }
 
         request.removeAttribute(ALREADY_LOADED);
-        Span currentSpan = TRACER.getCurrentSpan();
+        Span currentSpan = InstrumentationName.TRACER.getCurrentSpan();
 
         BufferingHttpServletResponse bufferingResponse = (BufferingHttpServletResponse) response;
         BufferingHttpServletRequest bufferingRequest = (BufferingHttpServletRequest) request;
