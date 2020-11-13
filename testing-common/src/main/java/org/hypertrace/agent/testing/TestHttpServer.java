@@ -33,7 +33,6 @@ public class TestHttpServer implements AutoCloseable {
     HandlerList handlerList = new HandlerList();
     handlerList.addHandler(new GetNoContentHandler());
     handlerList.addHandler(new GetJsonHandler());
-    handlerList.addHandler(new GetPlainTextHandler());
     handlerList.addHandler(new PostHandler());
     handlerList.addHandler(new PostRedirect());
     server.setHandler(handlerList);
@@ -97,27 +96,6 @@ public class TestHttpServer implements AutoCloseable {
       if (target.equals("/get_json") && "get".equalsIgnoreCase(request.getMethod())) {
         response.setStatus(200);
         response.setContentType("aPplication/jSon");
-        response.getWriter().print(RESPONSE_BODY);
-        baseRequest.setHandled(true);
-      }
-    }
-  }
-
-  public static class GetPlainTextHandler extends ResponseTestHeadersHandler {
-    public static final String RESPONSE_BODY = "name: james";
-
-    @Override
-    public void handle(
-        String target,
-        Request baseRequest,
-        HttpServletRequest request,
-        HttpServletResponse response)
-        throws IOException {
-      super.handle(target, baseRequest, request, response);
-
-      if (target.equals("/get_plain_text") && "get".equalsIgnoreCase(request.getMethod())) {
-        response.setStatus(200);
-        response.setContentType("tExt/pLain");
         response.getWriter().print(RESPONSE_BODY);
         baseRequest.setHandled(true);
       }

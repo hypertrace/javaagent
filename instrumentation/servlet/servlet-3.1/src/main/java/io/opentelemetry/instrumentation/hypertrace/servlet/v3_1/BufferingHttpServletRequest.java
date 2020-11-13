@@ -34,6 +34,7 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
+import org.hypertrace.agent.core.ContentTypeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -199,12 +200,7 @@ public class BufferingHttpServletRequest extends HttpServletRequestWrapper {
     if (contentType == null || contentType.isEmpty()) {
       return false;
     }
-    if (contentType.contains("json")
-        || contentType.contains("x-www-form-urlencoded")
-        || contentType.contains("text/plain")) {
-      return true;
-    }
-    return false;
+    return ContentTypeUtils.shouldCapture(contentType);
   }
 
   public Map<String, List<String>> getBufferedParams() {

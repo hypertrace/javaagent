@@ -16,23 +16,26 @@
 
 package org.hypertrace.agent.core;
 
-public class ContentTypeUtils {
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-  private ContentTypeUtils() {}
+class ContentTypeUtilsTest {
 
-  /**
-   * Returns true if the request/response with this content type should be captured.
-   *
-   * @param contentType request or response content type
-   * @return whether body with this content type should be captured or not
-   */
-  public static boolean shouldCapture(String contentType) {
-    if (contentType == null) {
-      return false;
+  @Test
+  public void shouldCapture() {
+    String[] valid = {"jSoN", "graphQL", "x-www-forM-urlencoded"};
+    for (String contentType : valid) {
+      Assertions.assertTrue(ContentTypeUtils.shouldCapture(contentType), contentType);
     }
-    contentType = contentType.toLowerCase();
-    return contentType.contains("json")
-        || contentType.contains("graphql")
-        || contentType.contains("x-www-form-urlencoded");
+  }
+
+  @Test
+  public void shouldNotCapture() {
+    String[] valid = {
+      "text/plain",
+    };
+    for (String contentType : valid) {
+      Assertions.assertFalse(ContentTypeUtils.shouldCapture(contentType), contentType);
+    }
   }
 }
