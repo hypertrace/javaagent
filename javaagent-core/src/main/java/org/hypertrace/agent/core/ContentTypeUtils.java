@@ -33,8 +33,8 @@ public class ContentTypeUtils {
 
     contentType = contentType.toLowerCase();
     if (contentType.contains("json")
-        || contentType.contains("x-www-form-urlencoded")
-        || contentType.contains("text/plain")) {
+        || contentType.contains("graphql")
+        || contentType.contains("x-www-form-urlencoded")) {
       return true;
     }
 

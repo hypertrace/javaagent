@@ -29,7 +29,6 @@ import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.hypertrace.agent.testing.TestHttpServer;
 import org.hypertrace.agent.testing.TestHttpServer.GetJsonHandler;
-import org.hypertrace.agent.testing.TestHttpServer.GetPlainTextHandler;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -109,34 +108,6 @@ public class OkHttpTracingInterceptorTest extends AbstractInstrumenterTest {
         clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
     Assertions.assertEquals(
         GetJsonHandler.RESPONSE_BODY,
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
-  }
-
-  @Test
-  public void getPlainText() throws Exception {
-    Request request =
-        new Builder()
-            .url(String.format("http://localhost:%d/get_plain_text", testHttpServer.port()))
-            .get()
-            .build();
-
-    Response response = client.newCall(request).execute();
-    response.close();
-
-    TEST_WRITER.waitForTraces(1);
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
-    Assertions.assertEquals(1, traces.size());
-    Assertions.assertEquals(1, traces.get(0).size());
-    SpanData clientSpan = traces.get(0).get(0);
-    Assertions.assertEquals(
-        "test-value",
-        clientSpan
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
-    Assertions.assertNull(
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
-    Assertions.assertEquals(
-        GetPlainTextHandler.RESPONSE_BODY,
         clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
   }
 

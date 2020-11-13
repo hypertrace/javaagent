@@ -26,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
+import org.hypertrace.agent.core.ContentTypeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,12 +109,7 @@ public class BufferingHttpServletResponse extends HttpServletResponseWrapper {
     if (contentType == null || contentType.isEmpty()) {
       return false;
     }
-    if (contentType.contains("json")
-        || contentType.contains("x-www-form-urlencoded")
-        || contentType.contains("text/plain")) {
-      return true;
-    }
-    return false;
+    return ContentTypeUtils.shouldCapture(contentType);
   }
 
   public static class BufferingServletOutputStream extends ServletOutputStream {
