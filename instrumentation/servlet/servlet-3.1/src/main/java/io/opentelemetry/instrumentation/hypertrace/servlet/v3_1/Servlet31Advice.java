@@ -16,8 +16,6 @@
 
 package io.opentelemetry.instrumentation.hypertrace.servlet.v3_1;
 
-import static io.opentelemetry.javaagent.instrumentation.servlet.v3_0.Servlet3HttpServerTracer.TRACER;
-
 import io.opentelemetry.instrumentation.hypertrace.servlet.common.ServletSpanDecorator;
 import io.opentelemetry.trace.Span;
 import java.util.Enumeration;
@@ -64,7 +62,7 @@ public class Servlet31Advice {
 
     HttpServletRequest httpRequest = (HttpServletRequest) request;
     HttpServletResponse httpResponse = (HttpServletResponse) response;
-    Span currentSpan = TRACER.getCurrentSpan();
+    Span currentSpan = InstrumentationName.TRACER.getCurrentSpan();
 
     rootStart = true;
     response = new BufferingHttpServletResponse(httpResponse);
@@ -106,7 +104,7 @@ public class Servlet31Advice {
       }
 
       request.removeAttribute(ALREADY_LOADED);
-      Span currentSpan = TRACER.getCurrentSpan();
+      Span currentSpan = InstrumentationName.TRACER.getCurrentSpan();
 
       AtomicBoolean responseHandled = new AtomicBoolean(false);
       if (request.isAsyncStarted()) {

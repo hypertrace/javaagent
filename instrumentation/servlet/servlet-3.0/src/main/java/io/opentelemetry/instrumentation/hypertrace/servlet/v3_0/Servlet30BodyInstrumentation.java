@@ -16,7 +16,6 @@
 
 package io.opentelemetry.instrumentation.hypertrace.servlet.v3_0;
 
-import static io.opentelemetry.javaagent.instrumentation.servlet.v3_0.Servlet3HttpServerTracer.TRACER;
 import static io.opentelemetry.javaagent.tooling.ClassLoaderMatcher.hasClassesNamed;
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.safeHasSuperType;
 import static io.opentelemetry.javaagent.tooling.matcher.NameMatchers.namedOneOf;
@@ -47,10 +46,6 @@ import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.hypertrace.agent.filter.FilterProvider;
 import org.hypertrace.agent.filter.FilterResult;
 
-/**
- * TODO https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/1395 is resolved
- * move this to org.hypertrace package.
- */
 @AutoService(Instrumenter.class)
 public class Servlet30BodyInstrumentation extends Instrumenter.Default {
 
@@ -84,11 +79,6 @@ public class Servlet30BodyInstrumentation extends Instrumenter.Default {
   @Override
   public String[] helperClassNames() {
     return new String[] {
-      "io.opentelemetry.instrumentation.servlet.HttpServletRequestGetter",
-      "io.opentelemetry.instrumentation.servlet.ServletHttpServerTracer",
-      "io.opentelemetry.javaagent.instrumentation.servlet.v3_0.Servlet3HttpServerTracer",
-      // TODO Add these to bootstrap classloader so they don't have to referenced in every
-      // instrumentation, see https://github.com/hypertrace/javaagent/issues/17
       "org.hypertrace.agent.filter.FilterProvider",
       "org.hypertrace.agent.filter.FilterEvaluator",
       "org.hypertrace.agent.filter.FilterResult",
@@ -122,6 +112,7 @@ public class Servlet30BodyInstrumentation extends Instrumenter.Default {
   public static class FilterAdvice {
     // request attribute key injected at first filerChain.doFilter
     private static final String ALREADY_LOADED = "__org.hypertrace.agent.on_start_executed";
+    private static final String TRACER_NAME = "org.hypertrace.agent.servlet";
 
     @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = FilterResult.class)
     public static Object start(
@@ -147,7 +138,7 @@ public class Servlet30BodyInstrumentation extends Instrumenter.Default {
 
       HttpServletRequest httpRequest = (HttpServletRequest) request;
       HttpServletResponse httpResponse = (HttpServletResponse) response;
-      Span currentSpan = TRACER.getCurrentSpan();
+      Span currentSpan = InstrumentationName.TRACER.getCurrentSpan();
 
       rootStart = true;
       response = new BufferingHttpServletResponse(httpResponse);
@@ -188,7 +179,7 @@ public class Servlet30BodyInstrumentation extends Instrumenter.Default {
         }
 
         request.removeAttribute(ALREADY_LOADED);
-        Span currentSpan = TRACER.getCurrentSpan();
+        Span currentSpan = InstrumentationName.TRACER.getCurrentSpan();
 
         AtomicBoolean responseHandled = new AtomicBoolean(false);
         if (request.isAsyncStarted()) {

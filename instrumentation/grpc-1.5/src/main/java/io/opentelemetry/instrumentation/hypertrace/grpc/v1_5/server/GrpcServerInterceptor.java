@@ -24,11 +24,12 @@ import io.grpc.ServerCall.Listener;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import io.grpc.Status;
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.GrpcSpanDecorator;
-import io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.GrpcTracer;
 import io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.InstrumentationName;
 import io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.server.GrpcServerInterceptor.TracingServerCall.TracingServerCallListener;
 import io.opentelemetry.trace.Span;
+import io.opentelemetry.trace.Tracer;
 import java.util.Map;
 import org.hypertrace.agent.core.HypertraceConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
@@ -37,7 +38,7 @@ import org.hypertrace.agent.filter.FilterResult;
 
 public class GrpcServerInterceptor implements ServerInterceptor {
 
-  private static final GrpcTracer TRACER = new GrpcTracer();
+  private static final Tracer TRACER = OpenTelemetry.getTracer("org.hypertrace.agent.grpc");
 
   @Override
   public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(

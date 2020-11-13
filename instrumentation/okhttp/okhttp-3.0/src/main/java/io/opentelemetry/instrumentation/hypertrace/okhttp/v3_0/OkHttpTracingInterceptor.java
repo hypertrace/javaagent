@@ -16,9 +16,10 @@
 
 package io.opentelemetry.instrumentation.hypertrace.okhttp.v3_0;
 
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.common.AttributeKey;
-import io.opentelemetry.javaagent.instrumentation.okhttp.v3_0.OkHttpClientTracer;
 import io.opentelemetry.trace.Span;
+import io.opentelemetry.trace.Tracer;
 import java.io.IOException;
 import java.util.function.Function;
 import okhttp3.Headers;
@@ -38,7 +39,7 @@ import org.slf4j.LoggerFactory;
 public class OkHttpTracingInterceptor implements Interceptor {
   private static final Logger log = LoggerFactory.getLogger(OkHttpTracingInterceptor.class);
 
-  private static final OkHttpClientTracer TRACER = OkHttpClientTracer.TRACER;
+  private static final Tracer TRACER = OpenTelemetry.getTracer("org.hypertrace.agent.okhttp");
 
   @Override
   public Response intercept(Chain chain) throws IOException {
