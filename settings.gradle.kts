@@ -25,7 +25,7 @@ findProject(":instrumentation:servlet:servlet-3.1")?.name = "servlet-3.1"
 include("instrumentation:spark-web-framework-2.3")
 findProject(":instrumentation:spark-web-framework-2.3")?.name = "spark-web-framework-2.3"
 include("smoke-tests")
-include("filter")
+include("filter-api")
 include("javaagent-tooling")
 include("javaagent-bootstrap")
 include("javaagent-core")

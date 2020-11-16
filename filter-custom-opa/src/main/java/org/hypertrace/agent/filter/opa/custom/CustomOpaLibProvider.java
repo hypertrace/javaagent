@@ -18,9 +18,9 @@ package org.hypertrace.agent.filter.opa.custom;
 
 import com.google.auto.service.AutoService;
 import org.hypertrace.agent.core.EnvironmentConfig;
-import org.hypertrace.agent.filter.Filter;
-import org.hypertrace.agent.filter.FilterProvider;
 import org.hypertrace.agent.filter.FilterRegistry;
+import org.hypertrace.agent.filter.api.Filter;
+import org.hypertrace.agent.filter.spi.FilterProvider;
 
 @AutoService(FilterProvider.class)
 public class CustomOpaLibProvider implements FilterProvider {

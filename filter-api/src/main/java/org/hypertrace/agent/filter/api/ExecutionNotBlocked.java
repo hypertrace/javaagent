@@ -14,20 +14,16 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.filter;
+package org.hypertrace.agent.filter.api;
 
-/**
- * {@link FilterProvider} creates {@link Filter}.
- *
- * <p>The implementation is discovered via Java service loader API - each implementation has to be
- * registered in {@code META-INF/services/}.
- */
-public interface FilterProvider {
+public class ExecutionNotBlocked implements FilterResult {
 
-  /**
-   * Create filter instance.
-   *
-   * @return a filter instance.
-   */
-  Filter create();
+  public static final ExecutionNotBlocked INSTANCE = new ExecutionNotBlocked();
+
+  private ExecutionNotBlocked() {}
+
+  @Override
+  public boolean blockExecution() {
+    return false;
+  }
 }

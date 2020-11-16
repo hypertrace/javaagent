@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.filter.mock;
+package org.hypertrace.agent.filter.api;
 
-import com.google.auto.service.AutoService;
-import org.hypertrace.agent.filter.Filter;
-import org.hypertrace.agent.filter.FilterProvider;
+/** Result of filter evaluation from {@link Filter} */
+public interface FilterResult {
 
-@AutoService(FilterProvider.class)
-public class MockFilterProvider implements FilterProvider {
-
-  @Override
-  public Filter create() {
-    return new MockFilter();
-  }
+  /**
+   * Indicates whether the execution should be blocked.
+   *
+   * @return true if execution should be blocked otherwise false.
+   */
+  boolean blockExecution();
 }
