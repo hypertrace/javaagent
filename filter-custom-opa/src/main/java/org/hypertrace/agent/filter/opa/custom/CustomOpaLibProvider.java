@@ -28,7 +28,7 @@ public class CustomOpaLibProvider implements FilterProvider {
   public CustomOpaLibProvider() {
     String property = FilterRegistry.getProviderDisabledPropertyName(CustomOpaLibProvider.class);
     // by default disable this provider until HT agent config includes OPA
-    if (FilterRegistry.getProperty(property) == null) {
+    if (EnvironmentConfig.getProperty(property) == null) {
       System.setProperty(property, "true");
     }
   }

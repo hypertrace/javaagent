@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceLoader;
+import org.hypertrace.agent.core.EnvironmentConfig;
 
 /**
  * Provides access to the {@link Filter} implementations. The {@link Filter} implementation are
@@ -56,7 +57,8 @@ public class FilterRegistry {
     Iterator<FilterProvider> iterator = providers.iterator();
     while (iterator.hasNext()) {
       FilterProvider provider = iterator.next();
-      String disabled = getProperty(getProviderDisabledPropertyName(provider.getClass()));
+      String disabled =
+          EnvironmentConfig.getProperty(getProviderDisabledPropertyName(provider.getClass()));
       if ("true".equalsIgnoreCase(disabled)) {
         continue;
       }
@@ -68,10 +70,5 @@ public class FilterRegistry {
 
   public static String getProviderDisabledPropertyName(Class<?> clazz) {
     return String.format("ht.filter.provider.%s.disabled", clazz.getSimpleName());
-  }
-
-  public static String getProperty(String propertyName) {
-    return System.getProperty(
-        propertyName, System.getenv(propertyName.replaceAll("\\.", "_").toUpperCase()));
   }
 }
