@@ -20,7 +20,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
 
-/** Returns an instance of {@link Filter}. */
+/**
+ * Provides access to the {@link Filter} implementations. The {@link Filter} implementation are
+ * found via Java service loader.
+ */
 public class FilterRegistry {
 
   private FilterRegistry() {}
