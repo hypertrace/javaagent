@@ -14,17 +14,25 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.filter;
+package org.hypertrace.agent.filter.opa.custom.data;
 
-/** Indicates that the execution should be blocked. */
-public class ExecutionBlocked implements FilterResult {
+import java.util.Set;
 
-  public static final ExecutionBlocked INSTANCE = new ExecutionBlocked();
+public class IpAddress {
 
-  private ExecutionBlocked() {}
+  private Set<String> ipAddress;
 
-  @Override
-  public boolean blockExecution() {
-    return true;
+  public IpAddress() {}
+
+  public IpAddress(Set<String> ipAddress) {
+    this.ipAddress = ipAddress;
+  }
+
+  public Set<String> getIpAddress() {
+    return ipAddress;
+  }
+
+  public void setIpAddress(Set<String> ipAddress) {
+    this.ipAddress = ipAddress;
   }
 }
