@@ -132,7 +132,7 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
   @Test
   public void blocking() throws IOException {
     String url = String.format("http://localhost:%d/greeting", app.getMappedPort(8080));
-    Request request = new Request.Builder().url(url).addHeader("block", "true").get().build();
+    Request request = new Request.Builder().url(url).addHeader("mockblock", "true").get().build();
     Response response = client.newCall(request).execute();
     Collection<ExportTraceServiceRequest> traces = waitForTraces();
 

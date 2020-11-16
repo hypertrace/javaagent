@@ -45,12 +45,6 @@ public class GrpcServerBodyInstrumentation extends Instrumenter.Default {
   @Override
   public String[] helperClassNames() {
     return new String[] {
-      "org.hypertrace.agent.filter.FilterProvider",
-      "org.hypertrace.agent.filter.FilterEvaluator",
-      "org.hypertrace.agent.filter.FilterResult",
-      "org.hypertrace.agent.filter.ExecutionBlocked",
-      "org.hypertrace.agent.filter.ExecutionNotBlocked",
-      "org.hypertrace.agent.filter.MockFilterEvaluator",
       "io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.GrpcTracer",
       "io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.GrpcSpanDecorator",
       "io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.InstrumentationName",

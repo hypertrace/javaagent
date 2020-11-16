@@ -140,7 +140,7 @@ public class GrpcInstrumentationTest extends AbstractInstrumenterTest {
   @Test
   public void serverRequestBlocking() throws TimeoutException, InterruptedException {
     Metadata blockHeaders = new Metadata();
-    blockHeaders.put(Metadata.Key.of("block", Metadata.ASCII_STRING_MARSHALLER), "true");
+    blockHeaders.put(Metadata.Key.of("mockblock", Metadata.ASCII_STRING_MARSHALLER), "true");
 
     GreeterBlockingStub blockingStub = GreeterGrpc.newBlockingStub(CHANNEL);
     blockingStub = MetadataUtils.attachHeaders(blockingStub, blockHeaders);
@@ -164,7 +164,9 @@ public class GrpcInstrumentationTest extends AbstractInstrumenterTest {
         serverSpan.getAttributes().get(HypertraceSemanticAttributes.RPC_RESPONSE_BODY));
     Assertions.assertEquals(
         "true",
-        serverSpan.getAttributes().get(HypertraceSemanticAttributes.rpcRequestMetadata("block")));
+        serverSpan
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.rpcRequestMetadata("mockblock")));
   }
 
   @Test

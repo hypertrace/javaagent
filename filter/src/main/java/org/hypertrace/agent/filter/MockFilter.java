@@ -16,28 +16,25 @@
 
 package org.hypertrace.agent.filter;
 
+import com.google.auto.service.AutoService;
 import io.opentelemetry.trace.Span;
 import java.util.Map;
 
-/**
- * {@link FilterEvaluator} evaluates given request/RPC and the result is used to block further
- * processing of the request.
- */
-public interface FilterEvaluator {
+/** Mock blocking evaluator, blocks execution if an attribute with "mockblock" key is present. */
+@AutoService(Filter.class)
+public class MockFilter implements Filter {
 
-  /**
-   * Evaluate the execution.
-   *
-   * @param headers are used for blocking evaluation.
-   * @return filter result
-   */
-  FilterResult evaluateRequestHeaders(Span span, Map<String, String> headers);
+  @Override
+  public FilterResult evaluateRequestHeaders(Span span, Map<String, String> headers) {
+    if (headers.containsKey("mockblock")) {
+      span.setAttribute("hypertrace.mock.filter.result", "true");
+      return ExecutionBlocked.INSTANCE;
+    }
+    return ExecutionNotBlocked.INSTANCE;
+  }
 
-  /**
-   * Evaluate the execution.
-   *
-   * @param body request body
-   * @return filter result
-   */
-  FilterResult evaluateRequestBody(Span span, String body);
+  @Override
+  public FilterResult evaluateRequestBody(Span span, String body) {
+    return ExecutionNotBlocked.INSTANCE;
+  }
 }

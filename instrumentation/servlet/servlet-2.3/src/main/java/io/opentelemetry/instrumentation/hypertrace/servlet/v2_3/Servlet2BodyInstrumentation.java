@@ -43,7 +43,7 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.core.HypertraceConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
-import org.hypertrace.agent.filter.FilterProvider;
+import org.hypertrace.agent.filter.FilterRegistry;
 import org.hypertrace.agent.filter.FilterResult;
 
 /**
@@ -86,12 +86,6 @@ public class Servlet2BodyInstrumentation extends Instrumenter.Default {
   @Override
   public String[] helperClassNames() {
     return new String[] {
-      "org.hypertrace.agent.filter.FilterProvider",
-      "org.hypertrace.agent.filter.FilterEvaluator",
-      "org.hypertrace.agent.filter.FilterResult",
-      "org.hypertrace.agent.filter.ExecutionBlocked",
-      "org.hypertrace.agent.filter.ExecutionNotBlocked",
-      "org.hypertrace.agent.filter.MockFilterEvaluator",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.ByteBufferData",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.CharBufferData",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.BufferedWriterWrapper",
@@ -166,7 +160,7 @@ public class Servlet2BodyInstrumentation extends Instrumenter.Default {
         headers.put(headerName, headerValue);
       }
       FilterResult filterResult =
-          FilterProvider.getFilterEvaluator().evaluateRequestHeaders(currentSpan, headers);
+          FilterRegistry.getFilter().evaluateRequestHeaders(currentSpan, headers);
       if (filterResult.blockExecution()) {
         httpResponse.setStatus(403);
         return filterResult;

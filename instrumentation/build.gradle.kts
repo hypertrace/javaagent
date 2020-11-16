@@ -45,6 +45,8 @@ tasks {
 
         mergeServiceFiles()
 
+        relocate("org.hypertrace.agent", "io.opentelemetry.javaagent.shaded.org.hypertrace.agent")
+
         relocate("com.fasterxml.jackson", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.com.fasterxml.jackson")
         relocate("com.google", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.com.google")
         relocate("google.protobuf", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.google.protobuf")

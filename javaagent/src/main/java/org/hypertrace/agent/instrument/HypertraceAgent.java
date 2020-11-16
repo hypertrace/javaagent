@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent;
+package org.hypertrace.agent.instrument;
 
 import io.opentelemetry.javaagent.OpenTelemetryAgent;
 import java.lang.instrument.Instrumentation;

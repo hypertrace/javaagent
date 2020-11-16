@@ -16,17 +16,28 @@
 
 package org.hypertrace.agent.filter;
 
-/** Returns an instance of {@link FilterEvaluator}. */
-public class FilterProvider {
+import io.opentelemetry.trace.Span;
+import java.util.Map;
 
-  private FilterProvider() {}
+/**
+ * {@link Filter} evaluates given request/RPC and the result is used to block further processing of
+ * the request.
+ */
+public interface Filter {
 
   /**
-   * Get {@link FilterEvaluator}
+   * Evaluate the execution.
    *
-   * @return the filter evaluator.
+   * @param headers are used for blocking evaluation.
+   * @return filter result
    */
-  public static FilterEvaluator getFilterEvaluator() {
-    return MockFilterEvaluator.INSTANCE;
-  }
+  FilterResult evaluateRequestHeaders(Span span, Map<String, String> headers);
+
+  /**
+   * Evaluate the execution.
+   *
+   * @param body request body
+   * @return filter result
+   */
+  FilterResult evaluateRequestBody(Span span, String body);
 }

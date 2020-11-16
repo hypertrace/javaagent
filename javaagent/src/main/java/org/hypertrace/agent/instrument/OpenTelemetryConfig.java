@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent;
+package org.hypertrace.agent.instrument;
 
 import java.io.File;
 import java.io.FileReader;

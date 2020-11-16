@@ -30,7 +30,7 @@ import net.bytebuddy.asm.Advice;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.core.HypertraceConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
-import org.hypertrace.agent.filter.FilterProvider;
+import org.hypertrace.agent.filter.FilterRegistry;
 import org.hypertrace.agent.filter.FilterResult;
 
 public class Servlet31Advice {
@@ -84,7 +84,7 @@ public class Servlet31Advice {
       headers.put(headerName, headerValue);
     }
     FilterResult filterResult =
-        FilterProvider.getFilterEvaluator().evaluateRequestHeaders(currentSpan, headers);
+        FilterRegistry.getFilter().evaluateRequestHeaders(currentSpan, headers);
     if (filterResult.blockExecution()) {
       httpResponse.setStatus(403);
       return filterResult;
