@@ -16,15 +16,18 @@
 
 package org.hypertrace.agent.filter;
 
-/** Indicates that the execution should be blocked. */
-public class ExecutionBlocked implements FilterResult {
+/**
+ * {@link FilterProvider} creates {@link Filter}.
+ *
+ * <p>The implementation is discovered via Java service loader API - each implementation has to be
+ * registered in {@code META-INF/services/}.
+ */
+public interface FilterProvider {
 
-  public static final ExecutionBlocked INSTANCE = new ExecutionBlocked();
-
-  private ExecutionBlocked() {}
-
-  @Override
-  public boolean blockExecution() {
-    return true;
-  }
+  /**
+   * Create filter instance.
+   *
+   * @return a filter instance.
+   */
+  Filter create();
 }

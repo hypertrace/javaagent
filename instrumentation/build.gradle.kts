@@ -72,6 +72,8 @@ tasks {
         relocate("io.opentelemetry.metrics", "io.opentelemetry.javaagent.shaded.io.opentelemetry.metrics")
         relocate("io.opentelemetry.trace", "io.opentelemetry.javaagent.shaded.io.opentelemetry.trace")
 
+        relocate("org.slf4j", "io.opentelemetry.javaagent.slf4j")
+
         //opentelemetry rewrite library instrumentation dependencies
         relocate("io.opentelemetry.instrumentation", "io.opentelemetry.javaagent.shaded.instrumentation") {
             exclude("io.opentelemetry.instrumentation.auto.**")

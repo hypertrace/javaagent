@@ -14,17 +14,11 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.filter;
+package org.hypertrace.agent.filter.opa.custom.evaluator;
 
-/** Indicates that the execution should be blocked. */
-public class ExecutionBlocked implements FilterResult {
+import java.util.Map;
+import org.hypertrace.agent.filter.opa.custom.data.BlockingData;
 
-  public static final ExecutionBlocked INSTANCE = new ExecutionBlocked();
-
-  private ExecutionBlocked() {}
-
-  @Override
-  public boolean blockExecution() {
-    return true;
-  }
+public interface ICustomPolicyEvaluator {
+  boolean allow(BlockingData blockingData, Map<String, String> attrMap);
 }

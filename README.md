@@ -19,6 +19,10 @@ List of supported frameworks with additional capabilities:
 | [gRPC](https://github.com/grpc/grpc-java)                                                              | 1.5+            |
 | [OkHttp](https://github.com/square/okhttp/)                                                            | 3.0+            |
 
+### Adding custom filter implementation
+
+Custom filter implementations can be added via `FilterProvider` SPI (Java service loader).
+The providers can be disabled at startup via `ht.filter.provider.<provider-class-name>.disabled=true`.
 
 ## Build
 
