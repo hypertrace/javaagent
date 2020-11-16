@@ -18,13 +18,13 @@ package org.hypertrace.agent.filter.mock;
 
 import io.opentelemetry.trace.Span;
 import java.util.Map;
-import org.hypertrace.agent.filter.ExecutionBlocked;
-import org.hypertrace.agent.filter.ExecutionNotBlocked;
-import org.hypertrace.agent.filter.Filter;
-import org.hypertrace.agent.filter.FilterResult;
+import org.hypertrace.agent.filter.api.ExecutionBlocked;
+import org.hypertrace.agent.filter.api.ExecutionNotBlocked;
+import org.hypertrace.agent.filter.api.Filter;
+import org.hypertrace.agent.filter.api.FilterResult;
 
 /** Mock filter, blocks execution if an attribute with "mockblock" key is present. */
-public class MockFilter implements Filter {
+class MockFilter implements Filter {
 
   MockFilter() {}
 

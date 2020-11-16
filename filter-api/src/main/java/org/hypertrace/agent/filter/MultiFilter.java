@@ -19,8 +19,12 @@ package org.hypertrace.agent.filter;
 import io.opentelemetry.trace.Span;
 import java.util.List;
 import java.util.Map;
+import org.hypertrace.agent.filter.api.ExecutionBlocked;
+import org.hypertrace.agent.filter.api.ExecutionNotBlocked;
+import org.hypertrace.agent.filter.api.Filter;
+import org.hypertrace.agent.filter.api.FilterResult;
 
-public class MultiFilter implements Filter {
+class MultiFilter implements Filter {
 
   private final List<Filter> filters;
 

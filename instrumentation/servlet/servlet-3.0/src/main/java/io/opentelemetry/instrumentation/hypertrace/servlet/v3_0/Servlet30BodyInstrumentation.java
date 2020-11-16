@@ -44,7 +44,7 @@ import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.core.HypertraceConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.hypertrace.agent.filter.FilterRegistry;
-import org.hypertrace.agent.filter.FilterResult;
+import org.hypertrace.agent.filter.api.FilterResult;
 
 @AutoService(Instrumenter.class)
 public class Servlet30BodyInstrumentation extends Instrumenter.Default {

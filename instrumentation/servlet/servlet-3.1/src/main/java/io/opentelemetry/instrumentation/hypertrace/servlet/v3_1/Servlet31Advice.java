@@ -31,7 +31,7 @@ import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.core.HypertraceConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.hypertrace.agent.filter.FilterRegistry;
-import org.hypertrace.agent.filter.FilterResult;
+import org.hypertrace.agent.filter.api.FilterResult;
 
 public class Servlet31Advice {
 

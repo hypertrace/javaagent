@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.filter;
+package org.hypertrace.agent.filter.api;
 
 import io.opentelemetry.trace.Span;
 import java.util.Map;
+import org.hypertrace.agent.filter.FilterRegistry;
 
 /**
  * {@link Filter} evaluates given request/RPC and the result is used to block further processing of

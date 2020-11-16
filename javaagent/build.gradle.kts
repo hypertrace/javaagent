@@ -11,7 +11,7 @@ dependencies {
     // https://dl.bintray.com/open-telemetry/maven/
     implementation("io.opentelemetry.javaagent", "opentelemetry-javaagent", version = "0.9.0", classifier = "all")
     implementation(project(":javaagent-core"))
-    implementation(project(":filter"))
+    implementation(project(":filter-api"))
     implementation(project(":filter-custom-opa"))
 }
 

@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.filter;
+package org.hypertrace.agent.filter.api;
 
-/** Result of filter evaluation from {@link Filter} */
-public interface FilterResult {
+/** Indicates that the execution should be blocked. */
+public class ExecutionBlocked implements FilterResult {
 
-  /**
-   * Indicates whether the execution should be blocked.
-   *
-   * @return true if execution should be blocked otherwise false.
-   */
-  boolean blockExecution();
+  public static final ExecutionBlocked INSTANCE = new ExecutionBlocked();
+
+  private ExecutionBlocked() {}
+
+  @Override
+  public boolean blockExecution() {
+    return true;
+  }
 }
