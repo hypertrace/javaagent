@@ -16,9 +16,9 @@
 
 package org.hypertrace.agent.filter;
 
-class ExecutionNotBlocked implements FilterResult {
+public class ExecutionNotBlocked implements FilterResult {
 
-  static ExecutionNotBlocked INSTANCE = new ExecutionNotBlocked();
+  public static final ExecutionNotBlocked INSTANCE = new ExecutionNotBlocked();
 
   private ExecutionNotBlocked() {}
 

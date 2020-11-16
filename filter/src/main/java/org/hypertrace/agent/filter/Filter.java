@@ -21,11 +21,7 @@ import java.util.Map;
 
 /**
  * {@link Filter} evaluates given request/RPC and the result is used to block further processing of
- * the request.
- *
- * <p>Filter implementation should be discoverable via Java service loader API - each implementation
- * has to be registered in {@code META-INF/services/}. The filters are accessed via {@link
- * FilterRegistry}.
+ * the request. The instrumentations access filters via {@link FilterRegistry}.
  */
 public interface Filter {
 

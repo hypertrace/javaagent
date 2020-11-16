@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.filter;
+package org.hypertrace.agent.filter.mock;
 
-/** Indicates that the execution should be blocked. */
-public class ExecutionBlocked implements FilterResult {
+import com.google.auto.service.AutoService;
+import org.hypertrace.agent.filter.Filter;
+import org.hypertrace.agent.filter.FilterProvider;
 
-  public static final ExecutionBlocked INSTANCE = new ExecutionBlocked();
-
-  private ExecutionBlocked() {}
+@AutoService(FilterProvider.class)
+public class MockFilterProvider implements FilterProvider {
 
   @Override
-  public boolean blockExecution() {
-    return true;
+  public Filter create() {
+    return new MockFilter();
   }
 }

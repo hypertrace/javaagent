@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.filter;
+package org.hypertrace.agent.filter.mock;
 
-import com.google.auto.service.AutoService;
 import io.opentelemetry.trace.Span;
 import java.util.Map;
+import org.hypertrace.agent.filter.ExecutionBlocked;
+import org.hypertrace.agent.filter.ExecutionNotBlocked;
+import org.hypertrace.agent.filter.Filter;
+import org.hypertrace.agent.filter.FilterResult;
 
-/** Mock blocking evaluator, blocks execution if an attribute with "mockblock" key is present. */
-@AutoService(Filter.class)
+/** Mock filter, blocks execution if an attribute with "mockblock" key is present. */
 public class MockFilter implements Filter {
+
+  MockFilter() {}
 
   @Override
   public FilterResult evaluateRequestHeaders(Span span, Map<String, String> headers) {

@@ -17,12 +17,16 @@
 package org.hypertrace.agent.filter;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceLoader;
 
 /**
  * Provides access to the {@link Filter} implementations. The {@link Filter} implementation are
- * found via Java service loader.
+ * created via Java service loader.
+ *
+ * @see Filter
+ * @see FilterProvider
  */
 public class FilterRegistry {
 
@@ -47,9 +51,27 @@ public class FilterRegistry {
   }
 
   private static Filter load() {
-    ServiceLoader<Filter> filters = ServiceLoader.load(Filter.class);
-    List<Filter> filterList = new ArrayList<>();
-    filters.iterator().forEachRemaining(filterList::add);
-    return new MultiFilter(filterList);
+    ServiceLoader<FilterProvider> providers = ServiceLoader.load(FilterProvider.class);
+    List<Filter> filters = new ArrayList<>();
+    Iterator<FilterProvider> iterator = providers.iterator();
+    while (iterator.hasNext()) {
+      FilterProvider provider = iterator.next();
+      String disabled = getProperty(getProviderDisabledPropertyName(provider.getClass()));
+      if ("true".equalsIgnoreCase(disabled)) {
+        continue;
+      }
+      Filter filter = provider.create();
+      filters.add(filter);
+    }
+    return new MultiFilter(filters);
+  }
+
+  public static String getProviderDisabledPropertyName(Class<?> clazz) {
+    return String.format("ht.filter.provider.%s.disabled", clazz.getSimpleName());
+  }
+
+  public static String getProperty(String propertyName) {
+    return System.getProperty(
+        propertyName, System.getenv(propertyName.replaceAll("\\.", "_").toUpperCase()));
   }
 }
