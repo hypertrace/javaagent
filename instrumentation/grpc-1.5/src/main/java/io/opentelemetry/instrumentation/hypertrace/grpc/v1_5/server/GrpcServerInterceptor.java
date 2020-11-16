@@ -33,7 +33,7 @@ import io.opentelemetry.trace.Tracer;
 import java.util.Map;
 import org.hypertrace.agent.core.HypertraceConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
-import org.hypertrace.agent.filter.FilterProvider;
+import org.hypertrace.agent.filter.FilterRegistry;
 import org.hypertrace.agent.filter.FilterResult;
 
 public class GrpcServerInterceptor implements ServerInterceptor {
@@ -57,7 +57,7 @@ public class GrpcServerInterceptor implements ServerInterceptor {
     }
 
     FilterResult filterResult =
-        FilterProvider.getFilterEvaluator().evaluateRequestHeaders(currentSpan, mapHeaders);
+        FilterRegistry.getFilter().evaluateRequestHeaders(currentSpan, mapHeaders);
     if (filterResult.blockExecution()) {
       call.close(Status.PERMISSION_DENIED, new Metadata());
       @SuppressWarnings("unchecked")

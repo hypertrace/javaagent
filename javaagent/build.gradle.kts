@@ -11,6 +11,7 @@ dependencies {
     // https://dl.bintray.com/open-telemetry/maven/
     implementation("io.opentelemetry.javaagent", "opentelemetry-javaagent", version = "0.9.0", classifier = "all")
     implementation(project(":javaagent-core"))
+    implementation(project(":filter"))
 }
 
 base.archivesBaseName = "hypertrace-agent"
@@ -28,6 +29,11 @@ tasks {
 
 
     shadowJar {
+        // shade to match with the package prefix for the classloader instrumentation
+        relocate("org.hypertrace.agent", "io.opentelemetry.javaagent.shaded.org.hypertrace.agent") {
+            exclude("org.hypertrace.agent.instrument.*")
+        }
+
         // config in javaagent-core uses protobuf and jackson
         // shade to the same location as OTEL, because the package prefix is used in classloader instrumentation
         // https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/master/javaagent-tooling/src/main/java/io/opentelemetry/javaagent/tooling/Constants.java#L25
@@ -69,8 +75,8 @@ tasks {
             // TODO set to Github repository URL
             attributes.put("Implementation-Url", "https://hypertrace.org")
             attributes.put("Main-Class", "io.opentelemetry.javaagent.OpenTelemetryAgent")
-            attributes.put("Agent-Class",   "org.hypertrace.agent.HypertraceAgent")
-            attributes.put("Premain-Class", "org.hypertrace.agent.HypertraceAgent")
+            attributes.put("Agent-Class",   "org.hypertrace.agent.instrument.HypertraceAgent")
+            attributes.put("Premain-Class", "org.hypertrace.agent.instrument.HypertraceAgent")
             attributes.put("Can-Redefine-Classes", true)
             attributes.put("Can-Retransform-Classes", true)
         }

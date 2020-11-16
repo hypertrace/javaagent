@@ -16,7 +16,7 @@
 
 package org.hypertrace.agent.filter;
 
-/** Result of filter evaluation from {@link FilterEvaluator} */
+/** Result of filter evaluation from {@link Filter} */
 public interface FilterResult {
 
   /**
