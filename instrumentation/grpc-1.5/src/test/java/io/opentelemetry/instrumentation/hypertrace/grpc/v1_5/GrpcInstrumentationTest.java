@@ -171,7 +171,7 @@ public class GrpcInstrumentationTest extends AbstractInstrumenterTest {
 
   @Test
   public void disabledInstrumentation_dynamicConfig()
-      throws TimeoutException, InterruptedException, IOException {
+      throws TimeoutException, InterruptedException {
     URL configUrl = getClass().getClassLoader().getResource("ht-config-all-disabled.yaml");
     System.setProperty(EnvironmentConfig.CONFIG_FILE_PROPERTY, configUrl.getPath());
     HypertraceConfig.reset();

@@ -18,13 +18,13 @@ package org.hypertrace.agent.testing;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.propagation.HttpTraceContext;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.javaagent.tooling.AgentInstaller;
 import io.opentelemetry.javaagent.tooling.config.ConfigInitializer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.propagation.HttpTraceContext;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
 import net.bytebuddy.agent.ByteBuddyAgent;
@@ -61,18 +61,23 @@ public abstract class AbstractInstrumenterTest {
     ((Logger) LoggerFactory.getLogger("io.opentelemetry")).setLevel(Level.DEBUG);
 
     TEST_WRITER = new InMemoryExporter();
-    if (OpenTelemetry.getPropagators()
+
+    // TODO this is probably temporary until default propagators are supplied by SDK
+    //  https://github.com/open-telemetry/opentelemetry-java/issues/1742
+    //  currently checking against no-op implementation so that it won't override aws-lambda
+    //  propagator configuration
+    if (OpenTelemetry.getGlobalPropagators()
         .getTextMapPropagator()
         .getClass()
         .getSimpleName()
         .equals("NoopTextMapPropagator")) {
-      OpenTelemetry.setPropagators(
+      OpenTelemetry.setGlobalPropagators(
           DefaultContextPropagators.builder()
               .addTextMapPropagator(HttpTraceContext.getInstance())
               .build());
     }
-    OpenTelemetrySdk.getTracerManagement().addSpanProcessor(TEST_WRITER);
-    TEST_TRACER = OpenTelemetry.getTracer("io.opentelemetry.auto");
+    OpenTelemetrySdk.getGlobalTracerManagement().addSpanProcessor(TEST_WRITER);
+    TEST_TRACER = OpenTelemetry.getGlobalTracer("io.opentelemetry.auto");
   }
 
   private static ClassFileTransformer classFileTransformer;
@@ -81,7 +86,7 @@ public abstract class AbstractInstrumenterTest {
   @BeforeAll
   public static void beforeAll() {
     if (classFileTransformer == null) {
-      classFileTransformer = AgentInstaller.installBytebuddyAgent(INSTRUMENTATION, false);
+      classFileTransformer = AgentInstaller.installBytebuddyAgent(INSTRUMENTATION, true);
     }
   }
 

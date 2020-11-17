@@ -9,7 +9,7 @@ dependencies {
     // update the dependencies also in the instrumentations sub-projects
     // https://oss.jfrog.org/artifactory/oss-snapshot-local/io/opentelemetry/instrumentation/auto/
     // https://dl.bintray.com/open-telemetry/maven/
-    implementation("io.opentelemetry.javaagent", "opentelemetry-javaagent", version = "0.9.0", classifier = "all")
+    implementation("io.opentelemetry.javaagent", "opentelemetry-javaagent", version = "0.10.1", classifier = "all")
     implementation(project(":javaagent-core"))
     implementation(project(":filter-api"))
     implementation(project(":filter-custom-opa"))
@@ -56,15 +56,8 @@ tasks {
         }
 
         // relocate following classes because javaagent-core uses OTEL APIs
-        relocate("io.grpc", "io.opentelemetry.javaagent.shaded.io.grpc")
-        relocate("io.opentelemetry.OpenTelemetry", "io.opentelemetry.javaagent.shaded.io.opentelemetry.OpenTelemetry")
-        relocate("io.opentelemetry.common", "io.opentelemetry.javaagent.shaded.io.opentelemetry.common")
-        relocate("io.opentelemetry.baggage", "io.opentelemetry.javaagent.shaded.io.opentelemetry.baggage")
+        relocate("io.opentelemetry.api", "io.opentelemetry.javaagent.shaded.io.opentelemetry.api")
         relocate("io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context")
-        relocate("io.opentelemetry.internal", "io.opentelemetry.javaagent.shaded.io.opentelemetry.internal")
-        relocate("io.opentelemetry.metrics", "io.opentelemetry.javaagent.shaded.io.opentelemetry.metrics")
-        relocate("io.opentelemetry.trace", "io.opentelemetry.javaagent.shaded.io.opentelemetry.trace")
-
         relocate("org.slf4j", "io.opentelemetry.javaagent.slf4j")
 
         mergeServiceFiles {
@@ -77,10 +70,10 @@ tasks {
             attributes.put("Implementation-Title", "javaagent")
             attributes.put("Implementation-Version", project.version)
             // TODO set version from a property
-            attributes.put("OpenTelemetry-Instrumentation-Version", "0.8.0")
+            attributes.put("OpenTelemetry-Instrumentation-Version", "0.10.0")
             attributes.put("Implementation-Vendor", "Hypertrace.org")
             // TODO set to Github repository URL
-            attributes.put("Implementation-Url", "https://hypertrace.org")
+            attributes.put("Implementation-Url", "https://github.com/hypertrace/javaagent")
             attributes.put("Main-Class", "io.opentelemetry.javaagent.OpenTelemetryAgent")
             attributes.put("Agent-Class",   "org.hypertrace.agent.instrument.HypertraceAgent")
             attributes.put("Premain-Class", "org.hypertrace.agent.instrument.HypertraceAgent")

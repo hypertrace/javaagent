@@ -25,17 +25,13 @@ import io.grpc.ForwardingClientCall;
 import io.grpc.ForwardingClientCallListener;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
-import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.GrpcSpanDecorator;
 import io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.InstrumentationName;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Tracer;
 import org.hypertrace.agent.core.HypertraceConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 
 public class GrpcClientInterceptor implements ClientInterceptor {
-
-  private static final Tracer TRACER = OpenTelemetry.getTracer("org.hypertrace.agent.grpc");
 
   @Override
   public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
@@ -44,7 +40,7 @@ public class GrpcClientInterceptor implements ClientInterceptor {
       return next.newCall(method, callOptions);
     }
 
-    Span currentSpan = TRACER.getCurrentSpan();
+    Span currentSpan = Span.current();
     ClientCall<ReqT, RespT> clientCall = next.newCall(method, callOptions);
     return new GrpcClientInterceptor.TracingClientCall<>(clientCall, currentSpan);
   }

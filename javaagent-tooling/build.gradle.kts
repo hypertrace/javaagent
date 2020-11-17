@@ -10,9 +10,9 @@ val instrumentationMuzzle by configurations.creating {
 }
 
 dependencies {
-    api("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:0.9.0")
-    api("io.opentelemetry.javaagent:opentelemetry-javaagent-api:0.9.0")
-    instrumentationMuzzle("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:0.9.0")
+    api("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:0.10.1")
+    api("io.opentelemetry.javaagent:opentelemetry-javaagent-api:0.10.1")
+    instrumentationMuzzle("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:0.10.1")
     instrumentationMuzzle("net.bytebuddy:byte-buddy:1.10.10")
     instrumentationMuzzle("net.bytebuddy:byte-buddy-agent:1.10.10")
     instrumentationMuzzle("com.blogspot.mydailyjava:weak-lock-free:0.15")

@@ -16,7 +16,7 @@
 
 package org.hypertrace.agent.filter.api;
 
-import io.opentelemetry.trace.Span;
+import io.opentelemetry.api.trace.Span;
 import java.util.Map;
 import org.hypertrace.agent.filter.FilterRegistry;
 

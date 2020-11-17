@@ -31,7 +31,7 @@ afterEvaluate{
 dependencies {
     api(project(":instrumentation:servlet:servlet-common"))
 
-    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-2.2:0.9.0")
+    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-2.2:0.10.1")
 
     compileOnly("javax.servlet:servlet-api:2.3")
 

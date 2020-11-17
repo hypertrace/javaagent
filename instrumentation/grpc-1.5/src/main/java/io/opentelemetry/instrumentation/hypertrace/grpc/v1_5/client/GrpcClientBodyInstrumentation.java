@@ -47,10 +47,11 @@ public class GrpcClientBodyInstrumentation extends Instrumenter.Default {
   @Override
   public String[] helperClassNames() {
     return new String[] {
-      "io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.GrpcTracer",
       "io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.GrpcSpanDecorator",
       "io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.InstrumentationName",
-      packageName + ".GrpcClientInterceptor"
+      packageName + ".GrpcClientInterceptor",
+      packageName + ".GrpcClientInterceptor$TracingClientCall",
+      packageName + ".GrpcClientInterceptor$TracingClientCallListener"
     };
   }
 

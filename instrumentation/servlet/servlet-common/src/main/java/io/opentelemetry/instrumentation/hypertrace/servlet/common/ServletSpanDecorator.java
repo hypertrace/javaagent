@@ -16,7 +16,7 @@
 
 package io.opentelemetry.instrumentation.hypertrace.servlet.common;
 
-import io.opentelemetry.trace.Span;
+import io.opentelemetry.api.trace.Span;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;

@@ -56,8 +56,8 @@ protobuf {
 }
 
 dependencies {
-    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-grpc-1.5:0.9.0")
-    api("io.opentelemetry.instrumentation:opentelemetry-grpc-1.5:0.9.0")
+    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-grpc-1.5:0.10.1")
+    api("io.opentelemetry.instrumentation:opentelemetry-grpc-1.5:0.10.1")
 
     compileOnly("io.grpc:grpc-core:1.5.0")
     compileOnly("io.grpc:grpc-protobuf:1.5.0")

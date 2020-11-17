@@ -17,6 +17,7 @@
 package org.hypertrace.agent.filter.opa.custom;
 
 import com.google.auto.service.AutoService;
+import io.opentelemetry.api.trace.Span;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -86,8 +87,7 @@ public class CustomOpaLib implements Filter {
   //  }
 
   @Override
-  public FilterResult evaluateRequestHeaders(
-      io.opentelemetry.trace.Span span, Map<String, String> headers) {
+  public FilterResult evaluateRequestHeaders(Span span, Map<String, String> headers) {
     // currently as per policy.rego, allowed list has precedence over denylist
     boolean allow =
         policyEvaluators.stream()
@@ -99,7 +99,7 @@ public class CustomOpaLib implements Filter {
   }
 
   @Override
-  public FilterResult evaluateRequestBody(io.opentelemetry.trace.Span span, String body) {
+  public FilterResult evaluateRequestBody(Span span, String body) {
     return ExecutionNotBlocked.INSTANCE;
   }
 }
