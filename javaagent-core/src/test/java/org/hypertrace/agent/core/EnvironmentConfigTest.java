@@ -41,7 +41,7 @@ class EnvironmentConfigTest {
     System.setProperty(EnvironmentConfig.CAPTURE_HTTP_BODY_PREFIX + "request", "true");
     System.setProperty(EnvironmentConfig.OPA_ADDRESS, "http://azkaban:9090");
     System.setProperty(EnvironmentConfig.OPA_POLL_PERIOD, "10");
-    System.setProperty(EnvironmentConfig.PROPAGATION_FORMATS, "b3,trace_context");
+    System.setProperty(EnvironmentConfig.PROPAGATION_FORMATS, "B3,TRACE_CONTEXT");
 
     AgentConfig.Builder configBuilder = AgentConfig.newBuilder();
     configBuilder.setServiceName(StringValue.newBuilder().setValue("foo"));

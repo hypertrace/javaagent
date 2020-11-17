@@ -73,7 +73,7 @@ public class EnvironmentConfig {
     if (propagationFormats != null) {
       String[] formats = propagationFormats.split(",");
       for (String format : formats) {
-        builder.addPropagationFormats(PropagationFormat.valueOf(format.toUpperCase()));
+        builder.addPropagationFormats(PropagationFormat.valueOf(format));
       }
     }
   }
