@@ -17,10 +17,14 @@
 package org.hypertrace.agent.core;
 
 import com.google.protobuf.BoolValue;
+import com.google.protobuf.Int32Value;
 import com.google.protobuf.StringValue;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.config.Config.DataCapture;
 import org.hypertrace.agent.config.Config.Message;
+import org.hypertrace.agent.config.Config.Opa;
+import org.hypertrace.agent.config.Config.Opa.Builder;
+import org.hypertrace.agent.config.Config.PropagationFormat;
 import org.hypertrace.agent.config.Config.Reporting;
 
 public class EnvironmentConfig {
@@ -32,9 +36,15 @@ public class EnvironmentConfig {
   public static final String CONFIG_FILE_PROPERTY = HT_PREFIX + "config.file";
   static final String SERVICE_NAME = HT_PREFIX + "service.name";
 
+  static final String PROPAGATION_FORMATS = HT_PREFIX + "propagation_formats";
+
   private static final String REPORTING_PREFIX = HT_PREFIX + "reporting.";
   static final String REPORTING_ADDRESS = REPORTING_PREFIX + "address";
   static final String REPORTING_SECURE = REPORTING_PREFIX + "secure";
+
+  private static final String OPA_PREFIX = REPORTING_PREFIX + "opa.";
+  static final String OPA_ADDRESS = OPA_PREFIX + "address";
+  static final String OPA_POLL_PERIOD = OPA_PREFIX + "poll.period";
 
   private static final String CAPTURE_PREFIX = HT_PREFIX + "data.capture.";
   public static final String CAPTURE_HTTP_HEADERS_PREFIX = CAPTURE_PREFIX + "http.headers.";
@@ -45,7 +55,7 @@ public class EnvironmentConfig {
   public static AgentConfig.Builder applyPropertiesAndEnvVars(AgentConfig.Builder builder) {
     String serviceName = getProperty(SERVICE_NAME);
     if (serviceName != null) {
-      builder.setServiceName(serviceName);
+      builder.setServiceName(StringValue.newBuilder().setValue(serviceName).build());
     }
 
     Reporting.Builder reportingBuilder = applyReporting(builder.getReporting().toBuilder());
@@ -54,7 +64,18 @@ public class EnvironmentConfig {
     DataCapture.Builder dataCaptureBuilder =
         setDefaultsToDataCapture(builder.getDataCapture().toBuilder());
     builder.setDataCapture(dataCaptureBuilder);
+    applyPropagationFormat(builder);
     return builder;
+  }
+
+  private static void applyPropagationFormat(AgentConfig.Builder builder) {
+    String propagationFormats = getProperty(PROPAGATION_FORMATS);
+    if (propagationFormats != null) {
+      String[] formats = propagationFormats.split(",");
+      for (String format : formats) {
+        builder.addPropagationFormats(PropagationFormat.valueOf(format));
+      }
+    }
   }
 
   private static Reporting.Builder applyReporting(Reporting.Builder builder) {
@@ -66,7 +87,20 @@ public class EnvironmentConfig {
     if (secure != null) {
       builder.setSecure(BoolValue.newBuilder().setValue(Boolean.valueOf(secure)).build());
     }
+    Builder opaBuilder = applyOpa(builder.getOpa().toBuilder());
+    builder.setOpa(opaBuilder);
+    return builder;
+  }
 
+  private static Opa.Builder applyOpa(Opa.Builder builder) {
+    String address = getProperty(OPA_ADDRESS);
+    if (address != null) {
+      builder.setAddress(StringValue.newBuilder().setValue(address).build());
+    }
+    String pollPeriod = getProperty(OPA_POLL_PERIOD);
+    if (pollPeriod != null) {
+      builder.setPollPeriod(Int32Value.newBuilder().setValue(Integer.parseInt(pollPeriod)).build());
+    }
     return builder;
   }
 

@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.BoolValue;
+import com.google.protobuf.Int32Value;
 import com.google.protobuf.StringValue;
 import com.google.protobuf.util.JsonFormat;
 import java.io.File;
@@ -29,6 +30,9 @@ import java.io.InputStream;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.config.Config.DataCapture;
 import org.hypertrace.agent.config.Config.Message;
+import org.hypertrace.agent.config.Config.Opa;
+import org.hypertrace.agent.config.Config.Opa.Builder;
+import org.hypertrace.agent.config.Config.PropagationFormat;
 import org.hypertrace.agent.config.Config.Reporting;
 
 /** {@link HypertraceConfig} loads a yaml config from file. */
@@ -38,8 +42,10 @@ public class HypertraceConfig {
 
   private static AgentConfig agentConfig;
 
+  static final String DEFAULT_SERVICE_NAME = "unknown";
   static final String DEFAULT_REPORTING_ADDRESS = "http://localhost:9411/api/v2/spans";
-  static final String DEFAULT_SERVICE_NAME = "default_service_name";
+  static final String DEFAULT_OPA_ADDRESS = "http://opa.traceableai:8181/";
+  static final int DEFAULT_OPA_POLL_PERIOD_SECONDS = 30;
 
   public static AgentConfig get() {
     if (agentConfig == null) {
@@ -104,8 +110,8 @@ public class HypertraceConfig {
   }
 
   private static AgentConfig.Builder applyDefaults(AgentConfig.Builder configBuilder) {
-    if (configBuilder.getServiceName().isEmpty()) {
-      configBuilder.setServiceName(DEFAULT_SERVICE_NAME);
+    if (configBuilder.getServiceName().getValue().isEmpty()) {
+      configBuilder.setServiceName(StringValue.newBuilder().setValue(DEFAULT_SERVICE_NAME).build());
     }
 
     Reporting.Builder reportingBuilder =
@@ -115,12 +121,29 @@ public class HypertraceConfig {
     DataCapture.Builder dataCaptureBuilder =
         setDefaultsToDataCapture(configBuilder.getDataCapture().toBuilder());
     configBuilder.setDataCapture(dataCaptureBuilder);
+
+    if (configBuilder.getPropagationFormatsList().isEmpty()) {
+      configBuilder.addPropagationFormats(PropagationFormat.TRACE_CONTEXT);
+    }
     return configBuilder;
   }
 
   private static Reporting.Builder applyReportingDefaults(Reporting.Builder builder) {
     if (!builder.hasAddress()) {
       builder.setAddress(StringValue.newBuilder().setValue(DEFAULT_REPORTING_ADDRESS).build());
+    }
+    Builder opaBuilder = applyOpaDefaults(builder.getOpa().toBuilder());
+    builder.setOpa(opaBuilder);
+    return builder;
+  }
+
+  private static Opa.Builder applyOpaDefaults(Opa.Builder builder) {
+    if (!builder.hasAddress()) {
+      builder.setAddress(StringValue.newBuilder().setValue(DEFAULT_OPA_ADDRESS).build());
+    }
+    if (!builder.hasPollPeriod()) {
+      builder.setPollPeriod(
+          Int32Value.newBuilder().setValue(DEFAULT_OPA_POLL_PERIOD_SECONDS).build());
     }
     return builder;
   }

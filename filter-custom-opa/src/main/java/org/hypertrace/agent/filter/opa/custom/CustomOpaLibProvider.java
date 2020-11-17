@@ -17,7 +17,10 @@
 package org.hypertrace.agent.filter.opa.custom;
 
 import com.google.auto.service.AutoService;
+import org.hypertrace.agent.config.Config.AgentConfig;
+import org.hypertrace.agent.config.Config.Reporting;
 import org.hypertrace.agent.core.EnvironmentConfig;
+import org.hypertrace.agent.core.HypertraceConfig;
 import org.hypertrace.agent.filter.FilterRegistry;
 import org.hypertrace.agent.filter.api.Filter;
 import org.hypertrace.agent.filter.spi.FilterProvider;
@@ -35,11 +38,12 @@ public class CustomOpaLibProvider implements FilterProvider {
 
   @Override
   public Filter create() {
-    String endpoint = EnvironmentConfig.getProperty("hypertrace.opa.endpoint");
-    String token = EnvironmentConfig.getProperty("hypertrace.reporting.token");
-    String pullInterval = EnvironmentConfig.getProperty("hypertrace.opa.pull_interval");
-    String skipVerify = EnvironmentConfig.getProperty("hypertrace.opa.skip_verify");
+    AgentConfig agentConfig = HypertraceConfig.get();
+    Reporting reporting = agentConfig.getReporting();
     return new CustomOpaLib(
-        endpoint, token, Boolean.parseBoolean(skipVerify), Integer.parseInt(pullInterval));
+        reporting.getOpa().getAddress().getValue(),
+        reporting.getToken().getValue(),
+        reporting.getSecure().getValue(),
+        reporting.getOpa().getPollPeriod().getValue());
   }
 }

@@ -18,7 +18,9 @@ package org.hypertrace.agent.core;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
 import org.hypertrace.agent.config.Config.AgentConfig;
+import org.hypertrace.agent.config.Config.PropagationFormat;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ClearSystemProperty;
@@ -29,11 +31,19 @@ public class HypertraceConfigTest {
   public void defaultValues() throws IOException {
     URL resource = getClass().getClassLoader().getResource("emptyconfig.yaml");
     AgentConfig agentConfig = HypertraceConfig.load(resource.getPath());
-    Assertions.assertEquals("default_service_name", agentConfig.getServiceName());
+    Assertions.assertEquals("unknown", agentConfig.getServiceName().getValue());
     Assertions.assertEquals(
         HypertraceConfig.DEFAULT_REPORTING_ADDRESS,
         agentConfig.getReporting().getAddress().getValue());
+    Assertions.assertEquals(
+        Arrays.asList(PropagationFormat.TRACE_CONTEXT), agentConfig.getPropagationFormatsList());
     Assertions.assertEquals(false, agentConfig.getReporting().getSecure().getValue());
+    Assertions.assertEquals(
+        HypertraceConfig.DEFAULT_OPA_ADDRESS,
+        agentConfig.getReporting().getOpa().getAddress().getValue());
+    Assertions.assertEquals(
+        HypertraceConfig.DEFAULT_OPA_POLL_PERIOD_SECONDS,
+        agentConfig.getReporting().getOpa().getPollPeriod().getValue());
     Assertions.assertEquals(
         true, agentConfig.getDataCapture().getHttpHeaders().getRequest().getValue());
     Assertions.assertEquals(
@@ -56,10 +66,15 @@ public class HypertraceConfigTest {
   public void config() throws IOException {
     URL resource = getClass().getClassLoader().getResource("config.yaml");
     AgentConfig agentConfig = HypertraceConfig.load(resource.getPath());
-    Assertions.assertEquals("service", agentConfig.getServiceName());
+    Assertions.assertEquals("service", agentConfig.getServiceName().getValue());
+    Assertions.assertEquals(
+        Arrays.asList(PropagationFormat.B3), agentConfig.getPropagationFormatsList());
     Assertions.assertEquals(
         "http://localhost:9411", agentConfig.getReporting().getAddress().getValue());
     Assertions.assertEquals(true, agentConfig.getReporting().getSecure().getValue());
+    Assertions.assertEquals(
+        "http://opa.localhost:8181/", agentConfig.getReporting().getOpa().getAddress().getValue());
+    Assertions.assertEquals(12, agentConfig.getReporting().getOpa().getPollPeriod().getValue());
     Assertions.assertEquals(
         true, agentConfig.getDataCapture().getHttpHeaders().getRequest().getValue());
     Assertions.assertEquals(
@@ -79,6 +94,6 @@ public class HypertraceConfigTest {
     AgentConfig agentConfig = HypertraceConfig.load(resource.getPath());
     Assertions.assertEquals(
         "http://nowhere.here", agentConfig.getReporting().getAddress().getValue());
-    Assertions.assertEquals("service", agentConfig.getServiceName());
+    Assertions.assertEquals("service", agentConfig.getServiceName().getValue());
   }
 }
