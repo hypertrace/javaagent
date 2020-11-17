@@ -10,9 +10,9 @@ subprojects {
         annotationProcessor("com.google.auto.service:auto-service:1.0-rc7")
         implementation("net.bytebuddy:byte-buddy:1.10.10")
 
-        implementation("io.opentelemetry:opentelemetry-api:0.9.1")
-        implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:0.9.0")
-        implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:0.9.0")
+        implementation("io.opentelemetry:opentelemetry-api:0.10.0")
+        implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:0.10.1")
+        implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:0.10.1")
         implementation(project(":javaagent-core"))
         implementation(project(":filter-api"))
     }

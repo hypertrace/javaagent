@@ -16,8 +16,6 @@
 
 package io.opentelemetry.instrumentation.hypertrace.servlet.v3_1;
 
-import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.trace.Tracer;
 
 /**
  * A helper class to hold instrumentation name. The advice class cannot access the constant defined
@@ -25,5 +23,4 @@ import io.opentelemetry.trace.Tracer;
  */
 public class InstrumentationName {
   public static final String[] INSTRUMENTATION_NAME = {"servlet", "servlet-3"};
-  public static final Tracer TRACER = OpenTelemetry.getTracer("org.hypertrace.agent.servlet");
 }

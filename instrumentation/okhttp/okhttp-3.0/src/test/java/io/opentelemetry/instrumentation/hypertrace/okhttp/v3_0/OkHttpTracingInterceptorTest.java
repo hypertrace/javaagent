@@ -16,6 +16,7 @@
 
 package io.opentelemetry.instrumentation.hypertrace.okhttp.v3_0;
 
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.List;
 import okhttp3.FormBody;
@@ -151,6 +152,8 @@ public class OkHttpTracingInterceptorTest extends AbstractInstrumenterTest {
             .post(requestBody)
             .build();
 
+    OpenTelemetry openTelemetry = OpenTelemetry.get();
+    System.out.println(openTelemetry);
     Response response = client.newCall(request).execute();
     response.close();
 

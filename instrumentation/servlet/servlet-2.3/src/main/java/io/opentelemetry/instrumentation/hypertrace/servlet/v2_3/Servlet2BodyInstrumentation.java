@@ -26,9 +26,9 @@ import static net.bytebuddy.matcher.ElementMatchers.not;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
 import com.google.auto.service.AutoService;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.instrumentation.hypertrace.servlet.common.ServletSpanDecorator;
 import io.opentelemetry.javaagent.tooling.Instrumenter;
-import io.opentelemetry.trace.Span;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -137,7 +137,7 @@ public class Servlet2BodyInstrumentation extends Instrumenter.Default {
 
       HttpServletRequest httpRequest = (HttpServletRequest) request;
       HttpServletResponse httpResponse = (HttpServletResponse) response;
-      Span currentSpan = InstrumentationName.TRACER.getCurrentSpan();
+      Span currentSpan = Span.current();
 
       rootStart = true;
       response = new BufferingHttpServletResponse(httpResponse);
@@ -180,7 +180,7 @@ public class Servlet2BodyInstrumentation extends Instrumenter.Default {
         }
 
         request.removeAttribute(ALREADY_LOADED);
-        Span currentSpan = InstrumentationName.TRACER.getCurrentSpan();
+        Span currentSpan = Span.current();
 
         BufferingHttpServletResponse bufferingResponse = (BufferingHttpServletResponse) response;
         BufferingHttpServletRequest bufferingRequest = (BufferingHttpServletRequest) request;

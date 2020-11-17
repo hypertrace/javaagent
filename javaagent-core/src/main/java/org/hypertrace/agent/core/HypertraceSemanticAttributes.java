@@ -16,35 +16,34 @@
 
 package org.hypertrace.agent.core;
 
-import static io.opentelemetry.common.AttributeKey.stringKey;
+import io.opentelemetry.api.common.AttributeKey;
 
-import io.opentelemetry.common.AttributeKey;
 
 public class HypertraceSemanticAttributes {
   private HypertraceSemanticAttributes() {}
 
   public static AttributeKey<String> httpRequestHeader(String header) {
-    return stringKey("http.request.header." + header);
+    return AttributeKey.stringKey("http.request.header." + header);
   }
 
   public static AttributeKey<String> httpResponseHeader(String header) {
-    return stringKey("http.response.header." + header);
+    return AttributeKey.stringKey("http.response.header." + header);
   }
 
-  public static final AttributeKey<String> HTTP_REQUEST_BODY = stringKey("http.request.body");
-  public static final AttributeKey<String> HTTP_RESPONSE_BODY = stringKey("http.response.body");
+  public static final AttributeKey<String> HTTP_REQUEST_BODY = AttributeKey.stringKey("http.request.body");
+  public static final AttributeKey<String> HTTP_RESPONSE_BODY = AttributeKey.stringKey("http.response.body");
 
   public static final AttributeKey<String> HTTP_REQUEST_SESSION_ID =
-      stringKey("http.request.session_id");
+      AttributeKey.stringKey("http.request.session_id");
 
-  public static final AttributeKey<String> RPC_REQUEST_BODY = stringKey("rpc.request.body");
-  public static final AttributeKey<String> RPC_RESPONSE_BODY = stringKey("rpc.response.body");
+  public static final AttributeKey<String> RPC_REQUEST_BODY = AttributeKey.stringKey("rpc.request.body");
+  public static final AttributeKey<String> RPC_RESPONSE_BODY = AttributeKey.stringKey("rpc.response.body");
 
   public static final AttributeKey<String> rpcRequestMetadata(String key) {
-    return stringKey("rpc.request.metadata." + key);
+    return AttributeKey.stringKey("rpc.request.metadata." + key);
   }
 
   public static final AttributeKey<String> rpcResponseMetadata(String key) {
-    return stringKey("rpc.response.metadata." + key);
+    return AttributeKey.stringKey("rpc.response.metadata." + key);
   }
 }

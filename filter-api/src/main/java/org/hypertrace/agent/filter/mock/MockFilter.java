@@ -16,7 +16,7 @@
 
 package org.hypertrace.agent.filter.mock;
 
-import io.opentelemetry.trace.Span;
+import io.opentelemetry.api.trace.Span;
 import java.util.Map;
 import org.hypertrace.agent.filter.api.ExecutionBlocked;
 import org.hypertrace.agent.filter.api.ExecutionNotBlocked;
