@@ -86,7 +86,7 @@ public abstract class AbstractInstrumenterTest {
   @BeforeAll
   public static void beforeAll() {
     if (classFileTransformer == null) {
-      classFileTransformer = AgentInstaller.installBytebuddyAgent(INSTRUMENTATION, false);
+      classFileTransformer = AgentInstaller.installBytebuddyAgent(INSTRUMENTATION, true);
     }
   }
 

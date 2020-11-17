@@ -18,7 +18,6 @@ package org.hypertrace.agent.core;
 
 import io.opentelemetry.api.common.AttributeKey;
 
-
 public class HypertraceSemanticAttributes {
   private HypertraceSemanticAttributes() {}
 
@@ -30,14 +29,18 @@ public class HypertraceSemanticAttributes {
     return AttributeKey.stringKey("http.response.header." + header);
   }
 
-  public static final AttributeKey<String> HTTP_REQUEST_BODY = AttributeKey.stringKey("http.request.body");
-  public static final AttributeKey<String> HTTP_RESPONSE_BODY = AttributeKey.stringKey("http.response.body");
+  public static final AttributeKey<String> HTTP_REQUEST_BODY =
+      AttributeKey.stringKey("http.request.body");
+  public static final AttributeKey<String> HTTP_RESPONSE_BODY =
+      AttributeKey.stringKey("http.response.body");
 
   public static final AttributeKey<String> HTTP_REQUEST_SESSION_ID =
       AttributeKey.stringKey("http.request.session_id");
 
-  public static final AttributeKey<String> RPC_REQUEST_BODY = AttributeKey.stringKey("rpc.request.body");
-  public static final AttributeKey<String> RPC_RESPONSE_BODY = AttributeKey.stringKey("rpc.response.body");
+  public static final AttributeKey<String> RPC_REQUEST_BODY =
+      AttributeKey.stringKey("rpc.request.body");
+  public static final AttributeKey<String> RPC_RESPONSE_BODY =
+      AttributeKey.stringKey("rpc.response.body");
 
   public static final AttributeKey<String> rpcRequestMetadata(String key) {
     return AttributeKey.stringKey("rpc.request.metadata." + key);

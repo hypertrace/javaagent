@@ -65,6 +65,9 @@ public class SparkJavaBodyInstrumentation extends Instrumenter.Default {
   @Override
   public String[] helperClassNames() {
     return new String[] {
+      "io.opentelemetry.instrumentation.servlet.ServletHttpServerTracer",
+      "io.opentelemetry.instrumentation.servlet.HttpServletRequestGetter",
+      "io.opentelemetry.javaagent.instrumentation.servlet.v3_0.Servlet3HttpServerTracer",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.ByteBufferData",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.CharBufferData",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.BufferedWriterWrapper",
@@ -75,6 +78,8 @@ public class SparkJavaBodyInstrumentation extends Instrumenter.Default {
       "io.opentelemetry.instrumentation.hypertrace.servlet.v3_1.BufferingHttpServletRequest",
       "io.opentelemetry.instrumentation.hypertrace.servlet.v3_1.BufferingHttpServletRequest$ServletInputStreamWrapper",
       "io.opentelemetry.instrumentation.hypertrace.servlet.v3_1.Servlet31Advice",
+      "io.opentelemetry.instrumentation.hypertrace.servlet.v3_1.InstrumentationName",
+      "io.opentelemetry.instrumentation.hypertrace.servlet.v3_1.BodyCaptureAsyncListener",
       // TODO Instrumentation name is not used in the advice method to check whether
       // instrumentation is enabled or not
       packageName + ".InstrumentationName",

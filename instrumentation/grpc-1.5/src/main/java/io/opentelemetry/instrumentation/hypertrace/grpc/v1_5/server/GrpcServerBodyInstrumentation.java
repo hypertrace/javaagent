@@ -48,6 +48,8 @@ public class GrpcServerBodyInstrumentation extends Instrumenter.Default {
       "io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.GrpcSpanDecorator",
       "io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.InstrumentationName",
       packageName + ".GrpcServerInterceptor",
+      packageName + ".GrpcServerInterceptor$TracingServerCall",
+      packageName + ".GrpcServerInterceptor$TracingServerCallListener",
       packageName + ".NoopServerCallListener"
     };
   }

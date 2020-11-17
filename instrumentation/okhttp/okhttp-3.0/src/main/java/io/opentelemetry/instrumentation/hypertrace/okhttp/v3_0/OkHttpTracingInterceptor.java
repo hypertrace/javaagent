@@ -16,10 +16,8 @@
 
 package io.opentelemetry.instrumentation.hypertrace.okhttp.v3_0;
 
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Tracer;
 import java.io.IOException;
 import java.util.function.Function;
 import okhttp3.Headers;

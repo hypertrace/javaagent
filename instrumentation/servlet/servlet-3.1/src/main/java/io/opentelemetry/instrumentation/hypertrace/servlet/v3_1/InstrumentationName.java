@@ -16,7 +16,6 @@
 
 package io.opentelemetry.instrumentation.hypertrace.servlet.v3_1;
 
-
 /**
  * A helper class to hold instrumentation name. The advice class cannot access the constant defined
  * in the instrumenter class.

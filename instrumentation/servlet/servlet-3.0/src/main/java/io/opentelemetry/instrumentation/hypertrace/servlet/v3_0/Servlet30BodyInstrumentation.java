@@ -28,6 +28,7 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import com.google.auto.service.AutoService;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.instrumentation.hypertrace.servlet.common.ServletSpanDecorator;
+import io.opentelemetry.javaagent.instrumentation.servlet.v3_0.Servlet3HttpServerTracer;
 import io.opentelemetry.javaagent.tooling.Instrumenter;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -79,6 +80,9 @@ public class Servlet30BodyInstrumentation extends Instrumenter.Default {
   @Override
   public String[] helperClassNames() {
     return new String[] {
+      "io.opentelemetry.instrumentation.servlet.ServletHttpServerTracer",
+      "io.opentelemetry.instrumentation.servlet.HttpServletRequestGetter",
+      "io.opentelemetry.javaagent.instrumentation.servlet.v3_0.Servlet3HttpServerTracer",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.ByteBufferData",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.CharBufferData",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.BufferedWriterWrapper",
@@ -132,7 +136,7 @@ public class Servlet30BodyInstrumentation extends Instrumenter.Default {
 
       HttpServletRequest httpRequest = (HttpServletRequest) request;
       HttpServletResponse httpResponse = (HttpServletResponse) response;
-      Span currentSpan = Span.current();
+      Span currentSpan = Servlet3HttpServerTracer.getCurrentServerSpan();
 
       rootStart = true;
       response = new BufferingHttpServletResponse(httpResponse);
@@ -173,7 +177,7 @@ public class Servlet30BodyInstrumentation extends Instrumenter.Default {
         }
 
         request.removeAttribute(ALREADY_LOADED);
-        Span currentSpan = Span.current();
+        Span currentSpan = Servlet3HttpServerTracer.getCurrentServerSpan();
 
         AtomicBoolean responseHandled = new AtomicBoolean(false);
         if (request.isAsyncStarted()) {

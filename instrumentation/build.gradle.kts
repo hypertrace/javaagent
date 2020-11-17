@@ -11,6 +11,7 @@ subprojects {
         implementation("net.bytebuddy:byte-buddy:1.10.10")
 
         implementation("io.opentelemetry:opentelemetry-api:0.10.0")
+        api("io.opentelemetry:opentelemetry-context:0.10.0")
         implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:0.10.1")
         implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:0.10.1")
         implementation(project(":javaagent-core"))
@@ -55,32 +56,21 @@ tasks {
 
         exclude("**/module-info.class")
 
-        // Prevents conflict with other SLF4J instances. Important for premain.
-        relocate("org.slf4j", "io.opentelemetry.javaagent.slf4j")
         // rewrite dependencies calling Logger.getLogger
         relocate("java.util.logging.Logger", "io.opentelemetry.javaagent.bootstrap.PatchLogger")
 
         // prevents conflict with library instrumentation
         relocate("io.opentelemetry.instrumentation.api", "io.opentelemetry.javaagent.shaded.instrumentation.api")
+        relocate("org.slf4j", "io.opentelemetry.javaagent.slf4j")
 
         // relocate OpenTelemetry API
-        relocate("io.opentelemetry.OpenTelemetry", "io.opentelemetry.javaagent.shaded.io.opentelemetry.OpenTelemetry")
-        relocate("io.opentelemetry.common", "io.opentelemetry.javaagent.shaded.io.opentelemetry.common")
-        relocate("io.opentelemetry.baggage", "io.opentelemetry.javaagent.shaded.io.opentelemetry.baggage")
+        relocate("io.opentelemetry.api", "io.opentelemetry.javaagent.shaded.io.opentelemetry.api")
         relocate("io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context")
-        relocate("io.opentelemetry.internal", "io.opentelemetry.javaagent.shaded.io.opentelemetry.internal")
-        relocate("io.opentelemetry.metrics", "io.opentelemetry.javaagent.shaded.io.opentelemetry.metrics")
-        relocate("io.opentelemetry.trace", "io.opentelemetry.javaagent.shaded.io.opentelemetry.trace")
-
-        relocate("org.slf4j", "io.opentelemetry.javaagent.slf4j")
 
         //opentelemetry rewrite library instrumentation dependencies
         relocate("io.opentelemetry.instrumentation", "io.opentelemetry.javaagent.shaded.instrumentation") {
-            exclude("io.opentelemetry.instrumentation.auto.**")
+            exclude("io.opentelemetry.javaagent.instrumentation.**")
             exclude("io.opentelemetry.instrumentation.hypertrace.**")
         }
-
-        // relocate OpenTelemetry API dependency
-        relocate("io.grpc", "io.opentelemetry.javaagent.shaded.io.grpc")
     }
 }
