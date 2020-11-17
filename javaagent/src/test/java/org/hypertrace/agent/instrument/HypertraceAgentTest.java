@@ -18,7 +18,6 @@ package org.hypertrace.agent.instrument;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.hypertrace.agent.config.Config.PropagationFormat;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -29,13 +28,6 @@ public class HypertraceAgentTest {
   public void propagationFormatList() {
     List<PropagationFormat> formats =
         Arrays.asList(PropagationFormat.B3, PropagationFormat.TRACE_CONTEXT);
-    System.out.println(formats.toString());
-    String collect =
-        formats.stream()
-            .map(v -> v.name().toLowerCase().replaceAll("_", ""))
-            .collect(Collectors.joining(","));
-    System.out.println(collect);
-
     Assertions.assertEquals("b3,tracecontext", HypertraceAgent.toOtelPropagators(formats));
   }
 }
