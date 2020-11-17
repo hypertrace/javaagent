@@ -39,7 +39,7 @@ public class HypertraceConfig {
   private static AgentConfig agentConfig;
 
   static final String DEFAULT_REPORTING_ADDRESS = "http://localhost:9411/api/v2/spans";
-  static final String DEFAULT_SERVICE_NAME = "default_service_name";
+  static final String DEFAULT_SERVICE_NAME = "unknown";
 
   public static AgentConfig get() {
     if (agentConfig == null) {
@@ -104,8 +104,8 @@ public class HypertraceConfig {
   }
 
   private static AgentConfig.Builder applyDefaults(AgentConfig.Builder configBuilder) {
-    if (configBuilder.getServiceName().isEmpty()) {
-      configBuilder.setServiceName(DEFAULT_SERVICE_NAME);
+    if (configBuilder.getServiceName().getValue().isEmpty()) {
+      configBuilder.setServiceName(StringValue.newBuilder().setValue(DEFAULT_SERVICE_NAME).build());
     }
 
     Reporting.Builder reportingBuilder =

@@ -36,10 +36,10 @@ class EnvironmentConfigTest {
     System.setProperty(EnvironmentConfig.CAPTURE_HTTP_BODY_PREFIX + "request", "true");
 
     AgentConfig.Builder configBuilder = AgentConfig.newBuilder();
-    configBuilder.setServiceName(StringValue.newBuilder().setValue("foo").getValue());
+    configBuilder.setServiceName(StringValue.newBuilder().setValue("foo"));
 
     AgentConfig agentConfig = EnvironmentConfig.applyPropertiesAndEnvVars(configBuilder).build();
-    Assertions.assertEquals("foo", agentConfig.getServiceName());
+    Assertions.assertEquals("foo", agentConfig.getServiceName().getValue());
     Assertions.assertEquals("http://:-)", agentConfig.getReporting().getAddress().getValue());
     Assertions.assertEquals(true, agentConfig.getReporting().getSecure().getValue());
     Assertions.assertEquals(

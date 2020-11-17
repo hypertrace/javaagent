@@ -46,6 +46,7 @@ public class HypertraceAgent {
     OpenTelemetryConfig.setDefault(OTEL_EXPORTER, "zipkin");
     OpenTelemetryConfig.setDefault(
         OTEL_EXPORTER_ZIPKIN_ENDPOINT, agentConfig.getReporting().getAddress().getValue());
-    OpenTelemetryConfig.setDefault(OTEL_EXPORTER_ZIPKIN_SERVICE_NAME, agentConfig.getServiceName());
+    OpenTelemetryConfig.setDefault(
+        OTEL_EXPORTER_ZIPKIN_SERVICE_NAME, agentConfig.getServiceName().getValue());
   }
 }

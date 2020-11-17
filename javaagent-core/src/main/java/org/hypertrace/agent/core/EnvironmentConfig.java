@@ -45,7 +45,7 @@ public class EnvironmentConfig {
   public static AgentConfig.Builder applyPropertiesAndEnvVars(AgentConfig.Builder builder) {
     String serviceName = getProperty(SERVICE_NAME);
     if (serviceName != null) {
-      builder.setServiceName(serviceName);
+      builder.setServiceName(StringValue.newBuilder().setValue(serviceName).build());
     }
 
     Reporting.Builder reportingBuilder = applyReporting(builder.getReporting().toBuilder());
