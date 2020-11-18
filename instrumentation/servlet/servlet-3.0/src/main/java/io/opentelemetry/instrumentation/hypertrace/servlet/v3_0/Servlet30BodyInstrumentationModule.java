@@ -29,9 +29,12 @@ import com.google.auto.service.AutoService;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.instrumentation.hypertrace.servlet.common.ServletSpanDecorator;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
-import io.opentelemetry.javaagent.tooling.Instrumenter;
+import io.opentelemetry.javaagent.tooling.InstrumentationModule;
+import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.servlet.ServletRequest;
@@ -47,10 +50,10 @@ import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.hypertrace.agent.filter.FilterRegistry;
 import org.hypertrace.agent.filter.api.FilterResult;
 
-@AutoService(Instrumenter.class)
-public class Servlet30BodyInstrumentation extends Instrumenter.Default {
+@AutoService(InstrumentationModule.class)
+public class Servlet30BodyInstrumentationModule extends InstrumentationModule {
 
-  public Servlet30BodyInstrumentation() {
+  public Servlet30BodyInstrumentationModule() {
     super(InstrumentationName.INSTRUMENTATION_NAME[0], InstrumentationName.INSTRUMENTATION_NAME[1]);
   }
 
@@ -61,20 +64,6 @@ public class Servlet30BodyInstrumentation extends Instrumenter.Default {
      * access current span in our advice.
      */
     return 1;
-  }
-
-  @Override
-  public ElementMatcher<ClassLoader> classLoaderMatcher() {
-    // Optimization for expensive typeMatcher.
-    // ReadListener was added in 3.1
-    return hasClassesNamed("javax.servlet.http.HttpServlet", "javax.servlet.AsyncEvent")
-        .and(not(hasClassesNamed("javax.servlet.ReadListener")));
-  }
-
-  @Override
-  public ElementMatcher<? super TypeDescription> typeMatcher() {
-    return safeHasSuperType(
-        namedOneOf("javax.servlet.FilterChain", "javax.servlet.http.HttpServlet"));
   }
 
   @Override
@@ -96,13 +85,35 @@ public class Servlet30BodyInstrumentation extends Instrumenter.Default {
   }
 
   @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    return singletonMap(
-        namedOneOf("doFilter", "service")
-            .and(takesArgument(0, named("javax.servlet.ServletRequest")))
-            .and(takesArgument(1, named("javax.servlet.ServletResponse")))
-            .and(isPublic()),
-        FilterAdvice.class.getName());
+  public List<TypeInstrumentation> typeInstrumentations() {
+    return Collections.singletonList(new Servlet30BodyInstrumentation());
+  }
+
+  private static class Servlet30BodyInstrumentation implements TypeInstrumentation {
+
+    @Override
+    public ElementMatcher<ClassLoader> classLoaderMatcher() {
+      // Optimization for expensive typeMatcher.
+      // ReadListener was added in 3.1
+      return hasClassesNamed("javax.servlet.http.HttpServlet", "javax.servlet.AsyncEvent")
+          .and(not(hasClassesNamed("javax.servlet.ReadListener")));
+    }
+
+    @Override
+    public ElementMatcher<? super TypeDescription> typeMatcher() {
+      return safeHasSuperType(
+          namedOneOf("javax.servlet.FilterChain", "javax.servlet.http.HttpServlet"));
+    }
+
+    @Override
+    public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
+      return singletonMap(
+          namedOneOf("doFilter", "service")
+              .and(takesArgument(0, named("javax.servlet.ServletRequest")))
+              .and(takesArgument(1, named("javax.servlet.ServletResponse")))
+              .and(isPublic()),
+          FilterAdvice.class.getName());
+    }
   }
 
   public static class FilterAdvice {

@@ -22,7 +22,10 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
 import com.google.auto.service.AutoService;
-import io.opentelemetry.javaagent.tooling.Instrumenter;
+import io.opentelemetry.javaagent.tooling.InstrumentationModule;
+import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
@@ -31,10 +34,10 @@ import net.bytebuddy.matcher.ElementMatcher;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 
-@AutoService(Instrumenter.class)
-public class OkHttp3BodyInstrumentation extends Instrumenter.Default {
+@AutoService(InstrumentationModule.class)
+public class OkHttp3BodyInstrumentationModule extends InstrumentationModule {
 
-  public OkHttp3BodyInstrumentation() {
+  public OkHttp3BodyInstrumentationModule() {
     super(InstrumentationName.INSTRUMENTATION_NAME[0], InstrumentationName.INSTRUMENTATION_NAME[1]);
   }
 
@@ -44,22 +47,29 @@ public class OkHttp3BodyInstrumentation extends Instrumenter.Default {
   }
 
   @Override
-  public ElementMatcher<TypeDescription> typeMatcher() {
-    return named("okhttp3.OkHttpClient");
-  }
-
-  @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    return singletonMap(
-        isConstructor().and(takesArgument(0, named("okhttp3.OkHttpClient$Builder"))),
-        OkHttp3BodyInstrumentation.class.getName() + "$OkHttp3Advice");
-  }
-
-  @Override
   public String[] helperClassNames() {
     return new String[] {
       packageName + ".InstrumentationName", packageName + ".OkHttpTracingInterceptor",
     };
+  }
+
+  @Override
+  public List<TypeInstrumentation> typeInstrumentations() {
+    return Collections.singletonList(new OkHttp3BodyInstrumentation());
+  }
+
+  private static final class OkHttp3BodyInstrumentation implements TypeInstrumentation {
+    @Override
+    public ElementMatcher<TypeDescription> typeMatcher() {
+      return named("okhttp3.OkHttpClient");
+    }
+
+    @Override
+    public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
+      return singletonMap(
+          isConstructor().and(takesArgument(0, named("okhttp3.OkHttpClient$Builder"))),
+          OkHttp3BodyInstrumentationModule.class.getName() + "$OkHttp3Advice");
+    }
   }
 
   public static class OkHttp3Advice {
