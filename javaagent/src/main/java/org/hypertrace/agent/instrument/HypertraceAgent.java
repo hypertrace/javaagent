@@ -85,9 +85,9 @@ public class HypertraceAgent {
       String[] splitAgentArg = arg.split("=");
       if (splitAgentArg.length != 2) {
         throw new IllegalArgumentException(
-            "Agent args is not well formed. Problem with: "
-                + arg
-                + ".Please use the format \"arg1=val1,arg2=val2,arg3=val3\"");
+            String.format(
+                "Agent args is not well formed: %s. Use the format \"arg1=val1,arg2=val2,arg3=val3\"",
+                arg));
       }
       argsMap.put(splitAgentArg[0], splitAgentArg[1]);
     }
