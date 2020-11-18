@@ -9,7 +9,7 @@ muzzle {
     pass {
         group = "javax.servlet"
         module = "servlet-api"
-        versions = "[2.3, 3.0)"
+        versions = "[2.3,)"
     }
     fail {
         group = "javax.servlet"
