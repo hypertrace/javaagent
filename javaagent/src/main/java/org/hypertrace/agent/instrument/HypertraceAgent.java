@@ -19,7 +19,10 @@ package org.hypertrace.agent.instrument;
 import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.javaagent.OpenTelemetryAgent;
 import java.lang.instrument.Instrumentation;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.config.Config.PropagationFormat;
@@ -41,6 +44,11 @@ public class HypertraceAgent {
   }
 
   public static void agentmain(String agentArgs, Instrumentation inst) {
+    Map<String, String> parsedArgs = parseAgentArgs(agentArgs);
+    for (Map.Entry<String, String> argEntry : parsedArgs.entrySet()) {
+      System.setProperty(argEntry.getKey(), argEntry.getValue());
+    }
+
     setDefaultConfig();
     OpenTelemetryAgent.premain(agentArgs, inst);
   }
@@ -64,5 +72,25 @@ public class HypertraceAgent {
     return propagationFormats.stream()
         .map(v -> v.name().toLowerCase().replaceAll("_", ""))
         .collect(Collectors.joining(","));
+  }
+
+  // Expected format is "arg1=val1,arg2=val2,arg3=val3"
+  private static Map<String, String> parseAgentArgs(String agentArgs) {
+    if (agentArgs == null) {
+      return Collections.emptyMap();
+    }
+    String[] agentArgsArr = agentArgs.split(",");
+    Map<String, String> argsMap = new HashMap<>(agentArgsArr.length);
+    for (String arg : agentArgsArr) {
+      String[] splitAgentArg = arg.split("=");
+      if (splitAgentArg.length != 2) {
+        throw new IllegalArgumentException(
+            "Agent args is not well formed. Problem with: "
+                + arg
+                + ".Please use the format \"arg1=val1,arg2=val2,arg3=val3\"");
+      }
+      argsMap.put(splitAgentArg[0], splitAgentArg[1]);
+    }
+    return argsMap;
   }
 }
