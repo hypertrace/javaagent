@@ -9,12 +9,12 @@ muzzle {
     pass {
         group = "javax.servlet"
         module = "servlet-api"
-        versions = "[2.3,)"
+        versions = "[2.3, 3.0)"
     }
     fail {
         group = "javax.servlet"
         module = "javax.servlet-api"
-        versions = "(,)"
+        versions = "(3.0.1,)"
     }
 }
 
