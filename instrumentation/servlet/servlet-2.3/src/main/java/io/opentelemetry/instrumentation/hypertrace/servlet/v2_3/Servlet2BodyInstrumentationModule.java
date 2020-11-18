@@ -29,7 +29,9 @@ import com.google.auto.service.AutoService;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.instrumentation.hypertrace.servlet.common.ServletSpanDecorator;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
-import io.opentelemetry.javaagent.tooling.Instrumenter;
+import io.opentelemetry.javaagent.tooling.InstrumentationModule;
+import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -52,31 +54,16 @@ import org.hypertrace.agent.filter.api.FilterResult;
  * version 2.2, however this implementation uses request and response wrappers that were introduced
  * in 2.3.
  */
-@AutoService(Instrumenter.class)
-public class Servlet2BodyInstrumentation extends Instrumenter.Default {
+@AutoService(InstrumentationModule.class)
+public class Servlet2BodyInstrumentationModule extends InstrumentationModule {
 
-  public Servlet2BodyInstrumentation() {
+  public Servlet2BodyInstrumentationModule() {
     super(InstrumentationName.INSTRUMENTATION_NAME[0], InstrumentationName.INSTRUMENTATION_NAME[1]);
   }
 
   @Override
   public int getOrder() {
     return 1;
-  }
-
-  // this is required to make sure servlet 2 instrumentation won't apply to servlet 3
-  @Override
-  public ElementMatcher<ClassLoader> classLoaderMatcher() {
-    // Request/response wrappers are available since servlet 2.3!
-    return hasClassesNamed(
-            "javax.servlet.http.HttpServlet", "javax.servlet.http.HttpServletRequestWrapper")
-        .and(not(hasClassesNamed("javax.servlet.AsyncEvent", "javax.servlet.AsyncListener")));
-  }
-
-  @Override
-  public ElementMatcher<TypeDescription> typeMatcher() {
-    return safeHasSuperType(
-        namedOneOf("javax.servlet.FilterChain", "javax.servlet.http.HttpServlet"));
   }
 
   @Override
@@ -102,13 +89,36 @@ public class Servlet2BodyInstrumentation extends Instrumenter.Default {
   }
 
   @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    return singletonMap(
-        namedOneOf("doFilter", "service")
-            .and(takesArgument(0, named("javax.servlet.ServletRequest")))
-            .and(takesArgument(1, named("javax.servlet.ServletResponse")))
-            .and(isPublic()),
-        Filter2Advice.class.getName());
+  public List<TypeInstrumentation> typeInstrumentations() {
+    return Collections.singletonList(new Servlet2BodyInstrumentation());
+  }
+
+  public static class Servlet2BodyInstrumentation implements TypeInstrumentation {
+
+    // this is required to make sure servlet 2 instrumentation won't apply to servlet 3
+    @Override
+    public ElementMatcher<ClassLoader> classLoaderMatcher() {
+      // Request/response wrappers are available since servlet 2.3!
+      return hasClassesNamed(
+              "javax.servlet.http.HttpServlet", "javax.servlet.http.HttpServletRequestWrapper")
+          .and(not(hasClassesNamed("javax.servlet.AsyncEvent", "javax.servlet.AsyncListener")));
+    }
+
+    @Override
+    public ElementMatcher<TypeDescription> typeMatcher() {
+      return safeHasSuperType(
+          namedOneOf("javax.servlet.FilterChain", "javax.servlet.http.HttpServlet"));
+    }
+
+    @Override
+    public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
+      return singletonMap(
+          namedOneOf("doFilter", "service")
+              .and(takesArgument(0, named("javax.servlet.ServletRequest")))
+              .and(takesArgument(1, named("javax.servlet.ServletResponse")))
+              .and(isPublic()),
+          Filter2Advice.class.getName());
+    }
   }
 
   public static class Filter2Advice {
