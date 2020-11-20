@@ -56,7 +56,9 @@ public class CgroupsReader {
         }
       }
     } catch (FileNotFoundException ex) {
-      log.warn("Failed to read container id, cgroup file does not exist.", ex);
+      // do not pass exception to logger because it prints stacktrace, we don't want that in non
+      // container environments
+      log.warn("Failed to read container id, cgroups file does not exist: {}", ex.getMessage());
     } catch (IOException ex) {
       log.warn("Unable to read container id", ex);
     }
