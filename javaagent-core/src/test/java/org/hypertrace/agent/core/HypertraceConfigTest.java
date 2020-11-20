@@ -16,11 +16,8 @@
 
 package org.hypertrace.agent.core;
 
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
 import com.google.protobuf.util.JsonFormat;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
