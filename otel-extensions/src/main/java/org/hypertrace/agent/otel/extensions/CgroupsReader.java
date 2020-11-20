@@ -52,7 +52,10 @@ public class CgroupsReader {
       String line;
       while ((line = br.readLine()) != null) {
         if (line.length() > CONTAINER_ID_LENGTH) {
-          return line.substring(line.length() - CONTAINER_ID_LENGTH);
+          String id = line.substring(line.length() - CONTAINER_ID_LENGTH);
+          if (!id.contains("/")) {
+            return id;
+          }
         }
       }
     } catch (FileNotFoundException ex) {
