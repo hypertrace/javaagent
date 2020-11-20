@@ -23,6 +23,7 @@ import com.google.protobuf.BoolValue;
 import com.google.protobuf.Int32Value;
 import com.google.protobuf.StringValue;
 import com.google.protobuf.util.JsonFormat;
+import com.google.protobuf.util.JsonFormat.Parser;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -103,13 +104,14 @@ public class HypertraceConfig {
     }
 
     AgentConfig.Builder configBuilder = AgentConfig.newBuilder();
+    Parser jsonParser = JsonFormat.parser().ignoringUnknownFields();
     try (InputStream fileInputStream = new FileInputStream(configFile)) {
       if (filename.toLowerCase().endsWith("json")) {
         Reader targetReader = new InputStreamReader(fileInputStream);
-        JsonFormat.parser().ignoringUnknownFields().merge(targetReader, configBuilder);
+        jsonParser.merge(targetReader, configBuilder);
       } else {
         String json = convertYamlToJson(fileInputStream);
-        JsonFormat.parser().ignoringUnknownFields().merge(json, configBuilder);
+        jsonParser.merge(json, configBuilder);
       }
       return EnvironmentConfig.applyPropertiesAndEnvVars(applyDefaults(configBuilder)).build();
     }
