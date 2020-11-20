@@ -113,6 +113,10 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
                 .map(attribute -> attribute.getValue().getStringValue())
                 .count()
             > 0);
+    // TODO test the container ID once we switch from Zipkin exporter
+    // Zipkin exporter does not add resource attributes to span
+    // https://github.com/open-telemetry/opentelemetry-java/issues/1970
+
     // OTEL BS smoke test app does not have an endpoint that uses content type what we capture
     // enable once we add smoke tests apps to our build.
     //    List<String> responseBodyAttributes =
