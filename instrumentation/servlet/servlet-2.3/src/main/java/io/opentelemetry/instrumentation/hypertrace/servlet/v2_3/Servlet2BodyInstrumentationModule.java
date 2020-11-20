@@ -71,7 +71,7 @@ public class Servlet2BodyInstrumentationModule extends InstrumentationModule {
   public ElementMatcher.Junction<ClassLoader> classLoaderMatcher() {
     // Request/response wrappers are available since servlet 2.3!
     return hasClassesNamed(
-        "javax.servlet.http.HttpServlet", "javax.servlet.http.HttpServletRequestWrapper")
+            "javax.servlet.http.HttpServlet", "javax.servlet.http.HttpServletRequestWrapper")
         .and(not(hasClassesNamed("javax.servlet.AsyncEvent", "javax.servlet.AsyncListener")));
   }
 
