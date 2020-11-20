@@ -16,6 +16,9 @@
 
 package org.hypertrace.agent.core;
 
+import com.google.protobuf.util.JsonFormat;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
@@ -23,6 +26,7 @@ import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.config.Config.PropagationFormat;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junitpioneer.jupiter.ClearSystemProperty;
 
 public class HypertraceConfigTest {
@@ -66,6 +70,25 @@ public class HypertraceConfigTest {
   public void config() throws IOException {
     URL resource = getClass().getClassLoader().getResource("config.yaml");
     AgentConfig agentConfig = HypertraceConfig.load(resource.getPath());
+    assertConfig(agentConfig);
+  }
+
+  @Test
+  public void jsonConfig(@TempDir File tempFolder) throws IOException {
+    URL resource = getClass().getClassLoader().getResource("config.yaml");
+    AgentConfig agentConfig = HypertraceConfig.load(resource.getPath());
+
+    String jsonConfig = JsonFormat.printer().print(agentConfig);
+    Assertions.assertTrue(!jsonConfig.contains("value"));
+    File jsonFile = new File(tempFolder, "config.jSon");
+    FileOutputStream fileOutputStream = new FileOutputStream(jsonFile);
+    fileOutputStream.write(jsonConfig.getBytes());
+
+    agentConfig = HypertraceConfig.load(jsonFile.getAbsolutePath());
+    assertConfig(agentConfig);
+  }
+
+  private void assertConfig(AgentConfig agentConfig) {
     Assertions.assertEquals("service", agentConfig.getServiceName().getValue());
     Assertions.assertEquals(
         Arrays.asList(PropagationFormat.B3), agentConfig.getPropagationFormatsList());
