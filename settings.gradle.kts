@@ -35,3 +35,4 @@ findProject(":instrumentation:grpc-1.5")?.name = "grpc-1.5"
 include("instrumentation:okhttp:okhttp-3.0")
 findProject(":instrumentation:okhttp:okhttp-3.0")?.name = "okhttp-3.0"
 include("filter-custom-opa")
+include("otel-extensions")
