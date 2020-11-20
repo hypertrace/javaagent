@@ -34,7 +34,7 @@ import org.testcontainers.containers.GenericContainer;
 //    key = "SMOKETEST_JAVAAGENT_PATH",
 //    value =
 //
-// "/Users/ploffay/projects/hypertrace/opentelemetry-java-agent/javaagent/build/libs/hypertrace-agent-0.2.2-SNAPSHOT-all.jar")
+// "/Users/ploffay/projects/hypertrace/javaagent/javaagent/build/libs/hypertrace-agent-0.3.2-all.jar")
 public class SpringBootSmokeTest extends AbstractSmokeTest {
 
   @Override
@@ -91,14 +91,14 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
     Assertions.assertEquals(response.body().string(), "Hi!");
     Assertions.assertEquals(1, countSpansByName(traces, "/greeting"));
     Assertions.assertEquals(1, countSpansByName(traces, "webcontroller.greeting"));
-    Assertions.assertEquals(
-        3,
+    Assertions.assertTrue(
         getSpanStream(traces)
-            .flatMap(span -> span.getAttributesList().stream())
-            .filter(attribute -> attribute.getKey().equals(OTEL_LIBRARY_VERSION_ATTRIBUTE))
-            .map(attribute -> attribute.getValue().getStringValue())
-            .filter(value -> value.equals(currentAgentVersion))
-            .count());
+                .flatMap(span -> span.getAttributesList().stream())
+                .filter(attribute -> attribute.getKey().equals(OTEL_LIBRARY_VERSION_ATTRIBUTE))
+                .map(attribute -> attribute.getValue().getStringValue())
+                .filter(value -> value.equals(currentAgentVersion))
+                .count()
+            > 0);
     Assertions.assertTrue(
         getSpanStream(traces)
                 .flatMap(span -> span.getAttributesList().stream())
