@@ -60,6 +60,12 @@ public class Servlet31BodyInstrumentationModule extends InstrumentationModule {
   }
 
   @Override
+  public ElementMatcher.Junction<ClassLoader> classLoaderMatcher() {
+    // Optimization for expensive typeMatcher.
+    return hasClassesNamed("javax.servlet.http.HttpServlet", "javax.servlet.ReadListener");
+  }
+
+  @Override
   public String[] helperClassNames() {
     return new String[] {
       "io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge",
@@ -88,12 +94,6 @@ public class Servlet31BodyInstrumentationModule extends InstrumentationModule {
   }
 
   private static final class Servlet31BodyInstrumentation implements TypeInstrumentation {
-
-    @Override
-    public ElementMatcher<ClassLoader> classLoaderMatcher() {
-      // Optimization for expensive typeMatcher.
-      return hasClassesNamed("javax.servlet.http.HttpServlet", "javax.servlet.ReadListener");
-    }
 
     @Override
     public ElementMatcher<? super TypeDescription> typeMatcher() {
