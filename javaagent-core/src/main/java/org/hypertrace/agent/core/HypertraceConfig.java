@@ -34,11 +34,15 @@ import org.hypertrace.agent.config.Config.Opa;
 import org.hypertrace.agent.config.Config.Opa.Builder;
 import org.hypertrace.agent.config.Config.PropagationFormat;
 import org.hypertrace.agent.config.Config.Reporting;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** {@link HypertraceConfig} loads a yaml config from file. */
 public class HypertraceConfig {
 
   private HypertraceConfig() {}
+
+  private static final Logger log = LoggerFactory.getLogger(HypertraceConfig.class);
 
   private static AgentConfig agentConfig;
 
@@ -53,6 +57,9 @@ public class HypertraceConfig {
         if (agentConfig == null) {
           try {
             agentConfig = load();
+            log.info(
+                "Config loaded: {}",
+                JsonFormat.printer().omittingInsignificantWhitespace().print(agentConfig));
           } catch (IOException e) {
             throw new RuntimeException("Could not load config", e);
           }
@@ -79,6 +86,7 @@ public class HypertraceConfig {
   }
 
   /** Reset the config, use only in tests. */
+  @VisibleForTesting
   public static void reset() {
     agentConfig = null;
   }

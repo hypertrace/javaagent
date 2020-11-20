@@ -36,7 +36,7 @@ public class EnvironmentConfig {
   public static final String CONFIG_FILE_PROPERTY = HT_PREFIX + "config.file";
   static final String SERVICE_NAME = HT_PREFIX + "service.name";
 
-  static final String PROPAGATION_FORMATS = HT_PREFIX + "propagation_formats";
+  static final String PROPAGATION_FORMATS = HT_PREFIX + "propagation.formats";
 
   private static final String REPORTING_PREFIX = HT_PREFIX + "reporting.";
   static final String REPORTING_ADDRESS = REPORTING_PREFIX + "address";
