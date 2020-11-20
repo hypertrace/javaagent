@@ -67,6 +67,14 @@ public class Servlet30BodyInstrumentationModule extends InstrumentationModule {
   }
 
   @Override
+  public ElementMatcher.Junction<ClassLoader> classLoaderMatcher() {
+    // Optimization for expensive typeMatcher.
+    // ReadListener was added in 3.1
+    return hasClassesNamed("javax.servlet.http.HttpServlet", "javax.servlet.AsyncEvent")
+        .and(not(hasClassesNamed("javax.servlet.ReadListener")));
+  }
+
+  @Override
   public String[] helperClassNames() {
     return new String[] {
       "io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge",
@@ -90,14 +98,6 @@ public class Servlet30BodyInstrumentationModule extends InstrumentationModule {
   }
 
   private static class Servlet30BodyInstrumentation implements TypeInstrumentation {
-
-    @Override
-    public ElementMatcher<ClassLoader> classLoaderMatcher() {
-      // Optimization for expensive typeMatcher.
-      // ReadListener was added in 3.1
-      return hasClassesNamed("javax.servlet.http.HttpServlet", "javax.servlet.AsyncEvent")
-          .and(not(hasClassesNamed("javax.servlet.ReadListener")));
-    }
 
     @Override
     public ElementMatcher<? super TypeDescription> typeMatcher() {

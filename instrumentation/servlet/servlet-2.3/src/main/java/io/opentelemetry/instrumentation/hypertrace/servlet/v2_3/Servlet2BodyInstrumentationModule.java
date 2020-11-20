@@ -66,6 +66,15 @@ public class Servlet2BodyInstrumentationModule extends InstrumentationModule {
     return 1;
   }
 
+  // this is required to make sure servlet 2 instrumentation won't apply to servlet 3
+  @Override
+  public ElementMatcher.Junction<ClassLoader> classLoaderMatcher() {
+    // Request/response wrappers are available since servlet 2.3!
+    return hasClassesNamed(
+            "javax.servlet.http.HttpServlet", "javax.servlet.http.HttpServletRequestWrapper")
+        .and(not(hasClassesNamed("javax.servlet.AsyncEvent", "javax.servlet.AsyncListener")));
+  }
+
   @Override
   public Map<String, String> contextStore() {
     return singletonMap("javax.servlet.ServletResponse", Integer.class.getName());
@@ -94,15 +103,6 @@ public class Servlet2BodyInstrumentationModule extends InstrumentationModule {
   }
 
   public static class Servlet2BodyInstrumentation implements TypeInstrumentation {
-
-    // this is required to make sure servlet 2 instrumentation won't apply to servlet 3
-    @Override
-    public ElementMatcher<ClassLoader> classLoaderMatcher() {
-      // Request/response wrappers are available since servlet 2.3!
-      return hasClassesNamed(
-              "javax.servlet.http.HttpServlet", "javax.servlet.http.HttpServletRequestWrapper")
-          .and(not(hasClassesNamed("javax.servlet.AsyncEvent", "javax.servlet.AsyncListener")));
-    }
 
     @Override
     public ElementMatcher<TypeDescription> typeMatcher() {

@@ -14,7 +14,7 @@ muzzle {
     fail {
         group = "javax.servlet"
         module = "javax.servlet-api"
-        versions = "(3.0.1,)"
+        versions = "(,)"
     }
 }
 
