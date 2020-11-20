@@ -42,9 +42,9 @@ public class CgroupsReader {
   }
 
   /**
-   * Get docker container id from local cgroup file.
+   * Read container ID from cgroups file.
    *
-   * @return docker container ID. Empty string if it can`t be found.
+   * @return docker container ID or empty string if not defined.
    */
   @SuppressWarnings("DefaultCharset")
   public String readContainerId() {
