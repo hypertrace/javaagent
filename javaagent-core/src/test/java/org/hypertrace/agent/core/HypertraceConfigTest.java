@@ -66,6 +66,17 @@ public class HypertraceConfigTest {
   public void config() throws IOException {
     URL resource = getClass().getClassLoader().getResource("config.yaml");
     AgentConfig agentConfig = HypertraceConfig.load(resource.getPath());
+    assertConfig(agentConfig);
+  }
+
+  @Test
+  public void jsonConfig() throws IOException {
+    URL resource = getClass().getClassLoader().getResource("config.jsOn");
+    AgentConfig agentConfig = HypertraceConfig.load(resource.getPath());
+    assertConfig(agentConfig);
+  }
+
+  private void assertConfig(AgentConfig agentConfig) {
     Assertions.assertEquals("service", agentConfig.getServiceName().getValue());
     Assertions.assertEquals(
         Arrays.asList(PropagationFormat.B3), agentConfig.getPropagationFormatsList());

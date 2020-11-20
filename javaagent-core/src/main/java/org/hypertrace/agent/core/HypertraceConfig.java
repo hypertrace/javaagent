@@ -27,6 +27,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.config.Config.DataCapture;
 import org.hypertrace.agent.config.Config.Message;
@@ -100,13 +102,17 @@ public class HypertraceConfig {
           String.format("Config file %s either does not exist or cannot be read", configFile));
     }
 
-    InputStream fileInputStream = new FileInputStream(configFile);
-    String json = convertYamlToJson(fileInputStream);
-
     AgentConfig.Builder configBuilder = AgentConfig.newBuilder();
-    JsonFormat.parser().ignoringUnknownFields().merge(json, configBuilder);
-
-    return EnvironmentConfig.applyPropertiesAndEnvVars(applyDefaults(configBuilder)).build();
+    try (InputStream fileInputStream = new FileInputStream(configFile)) {
+      if (filename.toLowerCase().endsWith("json")) {
+        Reader targetReader = new InputStreamReader(fileInputStream);
+        JsonFormat.parser().ignoringUnknownFields().merge(targetReader, configBuilder);
+      } else {
+        String json = convertYamlToJson(fileInputStream);
+        JsonFormat.parser().ignoringUnknownFields().merge(json, configBuilder);
+      }
+      return EnvironmentConfig.applyPropertiesAndEnvVars(applyDefaults(configBuilder)).build();
+    }
   }
 
   private static AgentConfig.Builder applyDefaults(AgentConfig.Builder configBuilder) {
