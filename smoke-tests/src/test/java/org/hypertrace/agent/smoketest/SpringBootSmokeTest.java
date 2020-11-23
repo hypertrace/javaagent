@@ -17,6 +17,7 @@
 package org.hypertrace.agent.smoketest;
 
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
+import io.opentelemetry.sdk.resources.ResourceAttributes;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,7 +35,7 @@ import org.testcontainers.containers.GenericContainer;
 //    key = "SMOKETEST_JAVAAGENT_PATH",
 //    value =
 //
-// "/Users/ploffay/projects/hypertrace/javaagent/javaagent/build/libs/hypertrace-agent-0.3.2-all.jar")
+// "/Users/ploffay/projects/hypertrace/javaagent/javaagent/build/libs/hypertrace-agent-0.3.3-SNAPSHOT-all.jar")
 public class SpringBootSmokeTest extends AbstractSmokeTest {
 
   @Override
@@ -76,7 +77,11 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
 
     Assertions.assertEquals(1, traces.size());
     Assertions.assertEquals(
-        "service.name", traces.get(0).getResourceSpans(0).getResource().getAttributes(0).getKey());
+        ResourceAttributes.SERVICE_NAME.getKey(),
+        traces.get(0).getResourceSpans(0).getResource().getAttributes(0).getKey());
+    Assertions.assertEquals(
+        ResourceAttributes.CONTAINER_ID.getKey(),
+        traces.get(0).getResourceSpans(0).getResource().getAttributes(1).getKey());
     // value is specified in resources/ht-config.yaml
     Assertions.assertEquals(
         "app_under_test",
@@ -113,9 +118,6 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
                 .map(attribute -> attribute.getValue().getStringValue())
                 .count()
             > 0);
-    // TODO test the container ID once we switch from Zipkin exporter
-    // Zipkin exporter does not add resource attributes to span
-    // https://github.com/open-telemetry/opentelemetry-java/issues/1970
 
     // OTEL BS smoke test app does not have an endpoint that uses content type what we capture
     // enable once we add smoke tests apps to our build.

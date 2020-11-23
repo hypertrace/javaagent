@@ -33,11 +33,11 @@ public class CgroupsReader {
 
   private final String cgroupsPath;
 
-  CgroupsReader() {
+  public CgroupsReader() {
     this.cgroupsPath = DEFAULT_CGROUPS_PATH;
   }
 
-  CgroupsReader(String cgroupsPath) {
+  public CgroupsReader(String cgroupsPath) {
     this.cgroupsPath = cgroupsPath;
   }
 

@@ -8,6 +8,7 @@ dependencies{
     testImplementation("com.squareup.okhttp3:okhttp:4.9.0")
     testImplementation("org.awaitility:awaitility:4.0.3")
     testImplementation("io.opentelemetry:opentelemetry-proto:0.10.0")
+    testImplementation("io.opentelemetry:opentelemetry-sdk:0.10.0")
     testImplementation("com.google.protobuf:protobuf-java-util:3.13.0")
 }
 
