@@ -17,6 +17,7 @@
 package org.hypertrace.agent.filter.opa.custom;
 
 import com.google.auto.service.AutoService;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import java.util.HashSet;
 import java.util.Map;
@@ -39,6 +40,8 @@ import org.slf4j.LoggerFactory;
 @AutoService(Filter.class)
 public class CustomOpaLib implements Filter {
   private static final Logger log = LoggerFactory.getLogger(CustomOpaLib.class);
+
+  private static AttributeKey<String> OPA_RESULT = AttributeKey.stringKey("traceableai.opa.result");
 
   private final OpaCommunicator opaCommunicator = new OpaCommunicator();
   private final Set<ICustomPolicyEvaluator> policyEvaluators = new HashSet<>();
@@ -95,6 +98,7 @@ public class CustomOpaLib implements Filter {
                 policyEvaluator ->
                     policyEvaluator.allow(opaCommunicator.getBlockingData(), headers))
             .anyMatch(Boolean::booleanValue);
+    span.setAttribute(OPA_RESULT, String.valueOf(allow));
     return allow ? ExecutionNotBlocked.INSTANCE : ExecutionBlocked.INSTANCE;
   }
 
