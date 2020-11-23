@@ -107,8 +107,8 @@ public class HypertraceConfig {
   static AgentConfig load(String filename) throws IOException {
     File configFile = new File(filename);
     if (!configFile.exists() || configFile.isDirectory() || !configFile.canRead()) {
-      throw new IllegalArgumentException(
-          String.format("Config file %s either does not exist or cannot be read", configFile));
+      log.error("Config file {} does not exist", filename);
+      return AgentConfig.newBuilder().build();
     }
 
     AgentConfig.Builder configBuilder = AgentConfig.newBuilder();
