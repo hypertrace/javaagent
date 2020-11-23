@@ -31,13 +31,11 @@ import io.opentelemetry.sdk.trace.TracerSdkManagement;
 @AutoService(TracerCustomizer.class)
 public class HypertraceTracerCustomizer implements TracerCustomizer {
 
-  public HypertraceTracerCustomizer() {
-    System.out.println("------>\n\n\n\n customizer");
-  }
-
   @Override
   public void configure(TracerSdkManagement tracerManagement) {
-    System.out.println("------>\n\n\n\n configuring SDK");
-    tracerManagement.addSpanProcessor(new AddTagsSpanProcessor());
+    String exporter = System.getProperty("otel.exporter");
+    if (exporter != null && exporter.contains("zipkin")) {
+      tracerManagement.addSpanProcessor(new AddTagsSpanProcessor());
+    }
   }
 }

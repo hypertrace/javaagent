@@ -36,7 +36,6 @@ public class AddTagsSpanProcessor implements SpanProcessor {
 
   @Override
   public void onStart(Context parentContext, ReadWriteSpan span) {
-    span.setAttribute("foo", "bar");
     if (containerId != null && !containerId.isEmpty()) {
       span.setAttribute(ResourceAttributes.CONTAINER_ID, containerId);
     }
