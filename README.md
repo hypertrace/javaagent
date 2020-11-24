@@ -48,6 +48,21 @@ The configuration precedence order
    2. environment variables, TODO add link to agent-config repo
    3. [configuration file](./example-config.yaml), specified `HT_CONFIG_FILE=example-config.yaml`
 
+### Disable instrumentation at startup
+
+Instrumentations can be disabled by `-Dotel.instrumentation.<instrumentation-name>.enabled=false`.
+
+The following instrumentation names disable only Hypertrace instrumentations, not core OpenTelemetry:
+
+* `ht` - all Hypertrace instrumentations
+* `servlet-ht` - Servlet, Spark Web
+* `okhttp-ht` - Okhttp
+* `grpc-ht` - Okhttp
+
+The Hypertrace instrumentations use also the core OpenTelemetry instrumentation names so for example
+`-Dotel.instrumentation.servlet.enabled=false` disables all servlet instrumentations including core
+OpenTelemetry and Hypertrace.
+
 ## Test
 
 Tests use docker via Testcontainers.org.

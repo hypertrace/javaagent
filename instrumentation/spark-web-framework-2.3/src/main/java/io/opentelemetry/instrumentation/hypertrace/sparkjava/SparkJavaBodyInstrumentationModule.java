@@ -25,6 +25,7 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import com.google.auto.service.AutoService;
 import io.opentelemetry.instrumentation.hypertrace.servlet.v3_1.Servlet31Advice;
 import io.opentelemetry.instrumentation.hypertrace.servlet.v3_1.Servlet31BodyInstrumentationModule;
+import io.opentelemetry.instrumentation.hypertrace.servlet.v3_1.Servlet31InstrumentationName;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.util.Collections;
@@ -43,7 +44,7 @@ import net.bytebuddy.matcher.ElementMatcher;
 public class SparkJavaBodyInstrumentationModule extends Servlet31BodyInstrumentationModule {
 
   public SparkJavaBodyInstrumentationModule() {
-    super(InstrumentationName.INSTRUMENTATION_NAME[0], InstrumentationName.INSTRUMENTATION_NAME[1]);
+    super(Servlet31InstrumentationName.PRIMARY, Servlet31InstrumentationName.OTHER);
   }
 
   @Override

@@ -74,10 +74,6 @@ public class Servlet31BodyInstrumentationModule extends InstrumentationModule {
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.BufferedWriterWrapper",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.BufferedReaderWrapper",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.ServletSpanDecorator",
-      // This class is extended in spark-web. The package name would be resolved to spark web
-      // package
-      // and it would cause failure.
-      //        packageName + ".InstrumentationName",
       "io.opentelemetry.instrumentation.hypertrace.servlet.v3_1.Servlet31InstrumentationName",
       "io.opentelemetry.instrumentation.hypertrace.servlet.v3_1.BufferingHttpServletResponse",
       "io.opentelemetry.instrumentation.hypertrace.servlet.v3_1.BufferingHttpServletResponse$BufferingServletOutputStream",
