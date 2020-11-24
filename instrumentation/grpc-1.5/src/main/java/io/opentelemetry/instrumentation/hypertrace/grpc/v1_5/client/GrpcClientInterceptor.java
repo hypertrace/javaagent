@@ -26,8 +26,8 @@ import io.grpc.ForwardingClientCallListener;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.GrpcInstrumentationName;
 import io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.GrpcSpanDecorator;
-import io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.InstrumentationName;
 import org.hypertrace.agent.core.HypertraceConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 
@@ -36,7 +36,8 @@ public class GrpcClientInterceptor implements ClientInterceptor {
   @Override
   public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
       MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
-    if (!HypertraceConfig.isInstrumentationEnabled(InstrumentationName.INSTRUMENTATION_NAME)) {
+    if (!HypertraceConfig.isInstrumentationEnabled(
+        GrpcInstrumentationName.PRIMARY, GrpcInstrumentationName.OTHER)) {
       return next.newCall(method, callOptions);
     }
 

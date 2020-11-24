@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.grpc.v1_5;
+package io.opentelemetry.instrumentation.hypertrace.servlet.v2_3;
 
-public class InstrumentationName {
-  public static final String[] INSTRUMENTATION_NAME = {"grpc"};
+public class Servlet2InstrumentationName {
+  public static final String PRIMARY = "servlet";
+  public static final String[] OTHER = {"servlet-2", "ht", "servlet-ht", "servlet-2-ht"};
 }

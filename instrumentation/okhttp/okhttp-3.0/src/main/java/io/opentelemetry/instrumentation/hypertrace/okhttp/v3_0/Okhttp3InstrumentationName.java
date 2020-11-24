@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.servlet.v2_3;
+package io.opentelemetry.instrumentation.hypertrace.okhttp.v3_0;
 
-public class InstrumentationName {
-  public static final String[] INSTRUMENTATION_NAME = {"servlet", "servlet-2"};
+public class Okhttp3InstrumentationName {
+  public static final String PRIMARY = "okhttp";
+  public static final String[] OTHER = {"okhttp-3", "ht", "okhttp-ht", "okhttp-3-ht"};
 }

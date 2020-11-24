@@ -38,7 +38,7 @@ import okhttp3.OkHttpClient;
 public class OkHttp3BodyInstrumentationModule extends InstrumentationModule {
 
   public OkHttp3BodyInstrumentationModule() {
-    super(InstrumentationName.INSTRUMENTATION_NAME[0], InstrumentationName.INSTRUMENTATION_NAME[1]);
+    super(Okhttp3InstrumentationName.PRIMARY, Okhttp3InstrumentationName.OTHER);
   }
 
   @Override
@@ -49,7 +49,7 @@ public class OkHttp3BodyInstrumentationModule extends InstrumentationModule {
   @Override
   public String[] helperClassNames() {
     return new String[] {
-      packageName + ".InstrumentationName", packageName + ".OkHttpTracingInterceptor",
+      packageName + ".Okhttp3InstrumentationName", packageName + ".OkHttpTracingInterceptor",
     };
   }
 

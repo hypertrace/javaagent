@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.okhttp.v3_0;
+package io.opentelemetry.instrumentation.hypertrace.grpc.v1_5;
 
-public class InstrumentationName {
-  public static final String[] INSTRUMENTATION_NAME = {"okhttp", "okhttp-3"};
+public class GrpcInstrumentationName {
+  public static final String PRIMARY = "grpc";
+  public static final String[] OTHER = {"ht", "grpc-ht"};
 }

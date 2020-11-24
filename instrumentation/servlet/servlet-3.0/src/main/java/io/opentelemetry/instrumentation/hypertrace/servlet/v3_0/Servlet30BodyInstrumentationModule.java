@@ -54,7 +54,7 @@ import org.hypertrace.agent.filter.api.FilterResult;
 public class Servlet30BodyInstrumentationModule extends InstrumentationModule {
 
   public Servlet30BodyInstrumentationModule() {
-    super(InstrumentationName.INSTRUMENTATION_NAME[0], InstrumentationName.INSTRUMENTATION_NAME[1]);
+    super(Servlet30InstrumentationName.PRIMARY, Servlet30InstrumentationName.OTHER);
   }
 
   @Override
@@ -83,7 +83,7 @@ public class Servlet30BodyInstrumentationModule extends InstrumentationModule {
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.BufferedWriterWrapper",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.BufferedReaderWrapper",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.ServletSpanDecorator",
-      packageName + ".InstrumentationName",
+      packageName + ".Servlet30InstrumentationName",
       packageName + ".BufferingHttpServletResponse",
       packageName + ".BufferingHttpServletResponse$BufferingServletOutputStream",
       packageName + ".BufferingHttpServletRequest",
@@ -127,7 +127,8 @@ public class Servlet30BodyInstrumentationModule extends InstrumentationModule {
         @Advice.Argument(value = 1, readOnly = false) ServletResponse response,
         @Advice.Local("rootStart") Boolean rootStart) {
 
-      if (!HypertraceConfig.isInstrumentationEnabled(InstrumentationName.INSTRUMENTATION_NAME)) {
+      if (!HypertraceConfig.isInstrumentationEnabled(
+          Servlet30InstrumentationName.PRIMARY, Servlet30InstrumentationName.OTHER)) {
         return null;
       }
       if (!(request instanceof HttpServletRequest) || !(response instanceof HttpServletResponse)) {

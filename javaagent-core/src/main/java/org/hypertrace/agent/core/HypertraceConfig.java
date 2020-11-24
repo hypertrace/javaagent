@@ -72,7 +72,7 @@ public class HypertraceConfig {
     return agentConfig;
   }
 
-  public static boolean isInstrumentationEnabled(String[] instrumentationNames) {
+  public static boolean isInstrumentationEnabled(String primaryName, String[] otherNames) {
     // the instNames is not used because the config does not support it at the moment.
 
     AgentConfig agentConfig = get();

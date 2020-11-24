@@ -45,7 +45,8 @@ public class Servlet31Advice {
       @Advice.Argument(value = 1, readOnly = false) ServletResponse response,
       @Advice.Local("rootStart") Boolean rootStart) {
 
-    if (!HypertraceConfig.isInstrumentationEnabled(InstrumentationName.INSTRUMENTATION_NAME)) {
+    if (!HypertraceConfig.isInstrumentationEnabled(
+        Servlet31InstrumentationName.PRIMARY, Servlet31InstrumentationName.OTHER)) {
       return null;
     }
     if (!(request instanceof HttpServletRequest) || !(response instanceof HttpServletResponse)) {
