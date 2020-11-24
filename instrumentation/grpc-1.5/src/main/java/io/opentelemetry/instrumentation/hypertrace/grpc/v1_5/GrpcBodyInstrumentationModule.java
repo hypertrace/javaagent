@@ -28,7 +28,7 @@ import java.util.List;
 public class GrpcBodyInstrumentationModule extends InstrumentationModule {
 
   public GrpcBodyInstrumentationModule() {
-    super("grpc");
+    super(GrpcInstrumentationName.PRIMARY, GrpcInstrumentationName.OTHER);
   }
 
   @Override
@@ -40,7 +40,7 @@ public class GrpcBodyInstrumentationModule extends InstrumentationModule {
   public String[] helperClassNames() {
     return new String[] {
       "io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.GrpcSpanDecorator",
-      "io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.InstrumentationName",
+      "io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.GrpcInstrumentationName",
       packageName + ".client.GrpcClientInterceptor",
       packageName + ".client.GrpcClientInterceptor$TracingClientCall",
       packageName + ".client.GrpcClientInterceptor$TracingClientCallListener",

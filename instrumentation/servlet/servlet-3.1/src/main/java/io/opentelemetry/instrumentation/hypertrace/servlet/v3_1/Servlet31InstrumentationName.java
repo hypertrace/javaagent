@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.servlet.v2_3;
+package io.opentelemetry.instrumentation.hypertrace.servlet.v3_1;
 
-public class InstrumentationName {
-  public static final String[] INSTRUMENTATION_NAME = {"servlet", "servlet-2"};
+/**
+ * A helper class to hold instrumentation name. The advice class cannot access the constant defined
+ * in the instrumenter class.
+ */
+public class Servlet31InstrumentationName {
+  public static final String PRIMARY = "servlet";
+  public static final String[] OTHER = {"servlet-3", "ht", "servlet-ht", "servlet-3-ht"};
 }

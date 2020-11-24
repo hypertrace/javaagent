@@ -16,6 +16,7 @@
 
 package io.opentelemetry.instrumentation.hypertrace.grpc.v1_5;
 
-public class InstrumentationName {
-  public static final String[] INSTRUMENTATION_NAME = {"grpc"};
+public class GrpcInstrumentationName {
+  public static final String PRIMARY = "grpc";
+  public static final String[] OTHER = {"ht", "grpc-ht"};
 }

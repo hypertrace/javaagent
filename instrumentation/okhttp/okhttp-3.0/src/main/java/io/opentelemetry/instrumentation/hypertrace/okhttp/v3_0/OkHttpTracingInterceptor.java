@@ -39,7 +39,8 @@ public class OkHttpTracingInterceptor implements Interceptor {
 
   @Override
   public Response intercept(Chain chain) throws IOException {
-    if (!HypertraceConfig.isInstrumentationEnabled(InstrumentationName.INSTRUMENTATION_NAME)) {
+    if (!HypertraceConfig.isInstrumentationEnabled(
+        Okhttp3InstrumentationName.PRIMARY, Okhttp3InstrumentationName.OTHER)) {
       return chain.proceed(chain.request());
     }
 

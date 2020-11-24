@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.sparkjava;
+package io.opentelemetry.instrumentation.hypertrace.servlet.v2_3;
 
-public class InstrumentationName {
-  public static final String[] INSTRUMENTATION_NAME = {"sparkjava", "sparkjava-2.4"};
+public class Servlet2InstrumentationName {
+  public static final String PRIMARY = "servlet";
+  public static final String[] OTHER = {"servlet-2", "ht", "servlet-ht", "servlet-2-ht"};
 }
