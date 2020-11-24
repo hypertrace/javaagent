@@ -47,6 +47,10 @@ public class HypertraceConfig {
 
   private static final Logger log = LoggerFactory.getLogger(HypertraceConfig.class);
 
+  // we could use a Set<Framework> but that would need to be synchronized
+  // so avoiding for perf reasons
+  private static volatile boolean servletCausingException;
+
   private static AgentConfig agentConfig;
 
   static final String DEFAULT_SERVICE_NAME = "unknown";
@@ -86,6 +90,32 @@ public class HypertraceConfig {
       return false;
     }
     return true;
+  }
+
+  public static boolean disableServletWrapperTypes() {
+    return servletCausingException;
+  }
+
+  /** Record any exception. This can result in disabling instrumentations. */
+  public static void recordException(Throwable throwable) {
+    if (!(throwable instanceof ClassCastException)) {
+      return;
+    }
+    String message = throwable.getMessage();
+    if (message == null || message.isEmpty() || !isHypertraceType(message)) {
+      return;
+    }
+    message = message.toLowerCase();
+    if (message.contains("servlet")) {
+      log.error(
+          "Hypertrace servlet type caused class cast exception. Disabling wrapping of servlet types",
+          throwable);
+      servletCausingException = true;
+    }
+  }
+
+  private static boolean isHypertraceType(String message) {
+    return message.contains("hypertrace");
   }
 
   /** Reset the config, use only in tests. */

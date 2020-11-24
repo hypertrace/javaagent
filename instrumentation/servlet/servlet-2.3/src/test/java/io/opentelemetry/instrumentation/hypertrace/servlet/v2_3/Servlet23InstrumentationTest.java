@@ -26,30 +26,41 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class Servlet23InstrumentationTest extends AbstractInstrumenterTest {
+  private static final String REQUEST_BODY = "hello";
+  private static final String REQUEST_HEADER = "requestheader";
+  private static final String REQUEST_HEADER_VALUE = "requestvalue";
+
+  private static Server server = new Server(0);
+  private static int serverPort;
+
+  @BeforeAll
+  public static void startServer() throws Exception {
+    ServletContextHandler handler = new ServletContextHandler();
+    handler.addServlet(TestServlet.class, "/test");
+    handler.addServlet(RequestCastServlet.class, "/cast");
+    server.setHandler(handler);
+    server.start();
+    serverPort = server.getConnectors()[0].getLocalPort();
+  }
+
+  @AfterAll
+  public static void stopServer() throws Exception {
+    server.stop();
+  }
 
   @Test
   public void postJson() throws Exception {
-    Server server = new Server(0);
-    ServletContextHandler handler = new ServletContextHandler();
-    handler.addServlet(TestServlet.class, "/test");
-
-    server.setHandler(handler);
-    server.start();
-
-    int serverPort = server.getConnectors()[0].getLocalPort();
-
-    String requestBody = "hello";
-    String requestHeader = "requestheader";
-    String requestHeaderValue = "requestvalue";
     Request request =
         new Request.Builder()
             .url(String.format("http://localhost:%d/test", serverPort))
-            .post(RequestBody.create(requestBody, MediaType.get("application/json")))
-            .header(requestHeader, requestHeaderValue)
+            .post(RequestBody.create(REQUEST_BODY, MediaType.get("application/json")))
+            .header(REQUEST_HEADER, REQUEST_HEADER_VALUE)
             .build();
     try (Response response = httpClient.newCall(request).execute()) {
       Assertions.assertEquals(200, response.code());
@@ -63,12 +74,12 @@ public class Servlet23InstrumentationTest extends AbstractInstrumenterTest {
     Assertions.assertEquals(1, spans.size());
     SpanData spanData = spans.get(0);
     Assertions.assertEquals(
-        requestBody, spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+        REQUEST_BODY, spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
     Assertions.assertEquals(
-        requestHeaderValue,
+        REQUEST_HEADER_VALUE,
         spanData
             .getAttributes()
-            .get(HypertraceSemanticAttributes.httpRequestHeader(requestHeader)));
+            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER)));
 
     Assertions.assertEquals(
         TestServlet.RESPONSE_BODY,
@@ -78,6 +89,59 @@ public class Servlet23InstrumentationTest extends AbstractInstrumenterTest {
         spanData
             .getAttributes()
             .get(HypertraceSemanticAttributes.httpResponseHeader(TestServlet.RESPONSE_HEADER)));
-    server.stop();
+  }
+
+  @Test
+  public void requestCast() throws Exception {
+    Request request =
+        new Request.Builder()
+            .url(String.format("http://localhost:%d/cast", serverPort))
+            .post(RequestBody.create(REQUEST_BODY, MediaType.get("application/json")))
+            .header(REQUEST_HEADER, REQUEST_HEADER_VALUE)
+            .build();
+    try (Response response = httpClient.newCall(request).execute()) {
+      Assertions.assertEquals(500, response.code());
+    }
+    TEST_WRITER.waitForTraces(1);
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    List<SpanData> spans = traces.get(0);
+    Assertions.assertEquals(1, spans.size());
+    SpanData spanData = spans.get(0);
+    Assertions.assertEquals(
+        REQUEST_HEADER_VALUE,
+        spanData
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER)));
+    Assertions.assertEquals(
+        TestServlet.RESPONSE_HEADER_VALUE,
+        spanData
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpResponseHeader(TestServlet.RESPONSE_HEADER)));
+
+    TEST_WRITER.clear();
+    try (Response response = httpClient.newCall(request).execute()) {
+      Assertions.assertEquals(200, response.code());
+      Assertions.assertEquals(TestServlet.RESPONSE_BODY, response.body().string());
+    }
+    traces = TEST_WRITER.getTraces();
+    spans = traces.get(0);
+    Assertions.assertEquals(1, spans.size());
+    spanData = spans.get(0);
+    Assertions.assertEquals(
+        REQUEST_HEADER_VALUE,
+        spanData
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER)));
+    // response headers are captured in wrapped types
+    //    Assertions.assertEquals(
+    //        TestServlet.RESPONSE_HEADER_VALUE,
+    //        spanData
+    //            .getAttributes()
+    //
+    // .get(HypertraceSemanticAttributes.httpResponseHeader(TestServlet.RESPONSE_HEADER)));
+    Assertions.assertNull(
+        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+    Assertions.assertNull(
+        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
   }
 }

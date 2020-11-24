@@ -28,6 +28,7 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Method;
+import java.util.concurrent.TimeUnit;
 import net.bytebuddy.agent.ByteBuddyAgent;
 import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.BeforeAll;
@@ -83,7 +84,8 @@ public abstract class AbstractInstrumenterTest {
   }
 
   private static ClassFileTransformer classFileTransformer;
-  protected OkHttpClient httpClient = new OkHttpClient.Builder().build();
+  protected OkHttpClient httpClient =
+      new OkHttpClient.Builder().callTimeout(30, TimeUnit.SECONDS).build();
 
   @BeforeAll
   public static void beforeAll() {
