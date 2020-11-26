@@ -23,7 +23,6 @@ import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
-import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.io.IOException;
@@ -38,11 +37,18 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.core.GlobalContextHolder;
 
-//@AutoService(InstrumentationModule.class)
+// @AutoService(InstrumentationModule.class)
 public class InputStreamReadAllInstrumentationModule extends InstrumentationModule {
 
   public InputStreamReadAllInstrumentationModule() {
     super("inputstream-readall");
+  }
+
+  @Override
+  public String[] helperClassNames() {
+    return new String[] {
+        "io.opentelemetry.instrumentation.hypertrace.apache.httpclient.InputStreamUtils"
+    };
   }
 
   @Override
@@ -55,10 +61,10 @@ public class InputStreamReadAllInstrumentationModule extends InstrumentationModu
    * 1. the instrumentation checks if stream is in the global map. The global map contains map of
    * original stream to buffered one.
    *
-   * 2. if the stream is then the body of the original method is skipped, if it
-   * is not it continues
+   * <p>2. if the stream is then the body of the original method is skipped, if it is not it
+   * continues
    *
-   * 3. the exit advice reads from buffered stream and returns result in promitive type
+   * <p>3. the exit advice reads from buffered stream and returns result in promitive type
    */
   static class InputStreamInstrumentation implements TypeInstrumentation {
 

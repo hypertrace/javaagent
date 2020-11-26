@@ -30,7 +30,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import java.nio.ByteBuffer;
+import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -205,8 +205,16 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
         return;
       }
 
-      SpanAndBuffer spanAndBuffer = new SpanAndBuffer(clientSpan, ByteBuffer.allocate(50000),
-          HypertraceSemanticAttributes.HTTP_RESPONSE_BODY);
+      long contentSize = thizz.getContentLength();
+      if (contentSize <= 0 || contentSize == Long.MAX_VALUE) {
+        contentSize = 128;
+      }
+
+      SpanAndBuffer spanAndBuffer =
+          new SpanAndBuffer(
+              clientSpan,
+              new ByteArrayOutputStream((int) contentSize),
+              HypertraceSemanticAttributes.HTTP_RESPONSE_BODY);
       GlobalContextHolder.objectToSpanAndBufferMap.put(inputStream, spanAndBuffer);
     }
   }

@@ -25,16 +25,14 @@ import static net.bytebuddy.matcher.ElementMatchers.returns;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
-import com.google.auto.service.AutoService;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.instrumentation.hypertrace.apache.httpclient.ApacheHttpClientInstrumentationName;
+import io.opentelemetry.instrumentation.hypertrace.apache.httpclient.InputStreamUtils;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -51,7 +49,7 @@ import org.hypertrace.agent.core.ContentTypeUtils;
 import org.hypertrace.agent.core.GlobalContextHolder;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 
-//@AutoService(InstrumentationModule.class)
+// @AutoService(InstrumentationModule.class)
 public class ApacheClientReadAllInstrumentationModule extends InstrumentationModule {
 
   public ApacheClientReadAllInstrumentationModule() {
@@ -89,14 +87,22 @@ public class ApacheClientReadAllInstrumentationModule extends InstrumentationMod
     @Override
     public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
       Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>();
-
       transformers.put(
           isMethod()
               .and(named("execute"))
               .and(not(isAbstract()))
               .and(takesArguments(1))
               .and(takesArgument(0, named("org.apache.http.client.methods.HttpUriRequest"))),
-          ApacheClientReadAllInstrumentationModule.HttpClient_ExecuteAdvice.class.getName());
+          HttpClient_ExecuteAdvice.class.getName());
+
+      transformers.put(
+          isMethod()
+              .and(named("execute"))
+              .and(not(isAbstract()))
+              .and(takesArguments(2))
+              .and(takesArgument(0, named("org.apache.http.client.methods.HttpUriRequest")))
+              .and(takesArgument(1, named("org.apache.http.protocol.HttpContext"))),
+          HttpClient_ExecuteAdvice.class.getName());
 
       transformers.put(
           isMethod()
@@ -105,7 +111,7 @@ public class ApacheClientReadAllInstrumentationModule extends InstrumentationMod
               .and(takesArguments(2))
               .and(takesArgument(0, named("org.apache.http.client.methods.HttpUriRequest")))
               .and(takesArgument(1, named("org.apache.http.client.ResponseHandler"))),
-          ApacheClientReadAllInstrumentationModule.HttpClient_ExecuteAdvice.class.getName());
+          HttpClient_ExecuteAdvice.class.getName());
 
       transformers.put(
           isMethod()
@@ -115,7 +121,47 @@ public class ApacheClientReadAllInstrumentationModule extends InstrumentationMod
               .and(takesArgument(0, named("org.apache.http.client.methods.HttpUriRequest")))
               .and(takesArgument(1, named("org.apache.http.client.ResponseHandler")))
               .and(takesArgument(2, named("org.apache.http.protocol.HttpContext"))),
-          ApacheClientReadAllInstrumentationModule.HttpClient_ExecuteAdvice.class.getName());
+          HttpClient_ExecuteAdvice.class.getName());
+
+      transformers.put(
+          isMethod()
+              .and(named("execute"))
+              .and(not(isAbstract()))
+              .and(takesArguments(2))
+              .and(takesArgument(0, named("org.apache.http.HttpHost")))
+              .and(takesArgument(1, named("org.apache.http.HttpRequest"))),
+          HttpClient_ExecuteAdvice.class.getName());
+
+      transformers.put(
+          isMethod()
+              .and(named("execute"))
+              .and(not(isAbstract()))
+              .and(takesArguments(3))
+              .and(takesArgument(0, named("org.apache.http.HttpHost")))
+              .and(takesArgument(1, named("org.apache.http.HttpRequest")))
+              .and(takesArgument(2, named("org.apache.http.protocol.HttpContext"))),
+          HttpClient_ExecuteAdvice.class.getName());
+
+      transformers.put(
+          isMethod()
+              .and(named("execute"))
+              .and(not(isAbstract()))
+              .and(takesArguments(3))
+              .and(takesArgument(0, named("org.apache.http.HttpHost")))
+              .and(takesArgument(1, named("org.apache.http.HttpRequest")))
+              .and(takesArgument(2, named("org.apache.http.client.ResponseHandler"))),
+          HttpClient_ExecuteAdvice.class.getName());
+
+      transformers.put(
+          isMethod()
+              .and(named("execute"))
+              .and(not(isAbstract()))
+              .and(takesArguments(4))
+              .and(takesArgument(0, named("org.apache.http.HttpHost")))
+              .and(takesArgument(1, named("org.apache.http.HttpRequest")))
+              .and(takesArgument(2, named("org.apache.http.client.ResponseHandler")))
+              .and(takesArgument(3, named("org.apache.http.protocol.HttpContext"))),
+          HttpClient_ExecuteAdvice.class.getName());
       return transformers;
     }
   }
@@ -133,20 +179,22 @@ public class ApacheClientReadAllInstrumentationModule extends InstrumentationMod
         }
 
         try {
-          ByteBuffer byteBuffer = ByteBuffer.allocate(100);
           InputStream inputStream = entity.getContent();
-          GlobalContextHolder.objectMap.put(entity, inputStream);
-          byte ch;
-          while ((ch = (byte) inputStream.read()) != -1) {
-            byteBuffer.put(ch);
+
+          long contentSize = entity.getContentLength();
+          if (contentSize <= 0 || contentSize == Long.MAX_VALUE) {
+            contentSize = 128;
           }
-          System.out.printf("Captured response body: %s\n", new String(byteBuffer.array()));
+          byte[] bodyBytes = InputStreamUtils.readToArr(inputStream, (int) contentSize);
+          System.out.printf("Captured response body: %s\n", new String(bodyBytes));
           currentSpan.setAttribute(
-              HypertraceSemanticAttributes.HTTP_RESPONSE_BODY.getKey(),
-              new String(byteBuffer.array()));
-          ByteArrayInputStream bufferedInputStream = new ByteArrayInputStream(byteBuffer.array());
+              HypertraceSemanticAttributes.HTTP_RESPONSE_BODY.getKey(), new String(bodyBytes));
+          ByteArrayInputStream bufferedInputStream = new ByteArrayInputStream(bodyBytes);
+
+          GlobalContextHolder.objectMap.put(entity, inputStream);
           GlobalContextHolder.inputStreamMap.put(inputStream, bufferedInputStream);
         } catch (IOException e) {
+          // TODO log
           e.printStackTrace();
         }
       } else {

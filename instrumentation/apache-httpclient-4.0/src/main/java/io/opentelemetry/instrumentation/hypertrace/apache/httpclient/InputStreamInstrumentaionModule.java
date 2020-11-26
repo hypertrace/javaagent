@@ -26,7 +26,6 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import java.io.ByteArrayOutputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -37,13 +36,12 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.core.GlobalContextHolder;
 import org.hypertrace.agent.core.GlobalContextHolder.SpanAndBuffer;
-import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 
 /**
  * Maybe we could add optimization to instrument the input streams only when certain classes are
  * present in classloader e.g. classes from frameworks that we instrument.
  */
- @AutoService(InstrumentationModule.class)
+@AutoService(InstrumentationModule.class)
 public class InputStreamInstrumentaionModule extends InstrumentationModule {
 
   public InputStreamInstrumentaionModule() {
@@ -52,9 +50,7 @@ public class InputStreamInstrumentaionModule extends InstrumentationModule {
 
   @Override
   public String[] helperClassNames() {
-    return new String[]{
-        packageName + ".InputStreamTracerHelper"
-    };
+    return new String[] {packageName + ".InputStreamUtils"};
   }
 
   @Override
@@ -103,11 +99,11 @@ public class InputStreamInstrumentaionModule extends InstrumentationModule {
         return;
       }
       if (read != -1) {
-        spanAndBuffer.buffer.put((byte) read);
+        spanAndBuffer.buffer.write((byte) read);
       } else if (read == -1) {
-        String body = new String(spanAndBuffer.buffer.array());
+        String body = spanAndBuffer.buffer.toString();
         // if span has already finished we start new one
-        InputStreamTracerHelper.addAttribute(spanAndBuffer.span, spanAndBuffer.attributeKey, body);
+        InputStreamUtils.addAttribute(spanAndBuffer.span, spanAndBuffer.attributeKey, body);
       }
     }
   }
@@ -123,10 +119,10 @@ public class InputStreamInstrumentaionModule extends InstrumentationModule {
         return;
       }
       if (read > 0) {
-        spanAndBuffer.buffer.put(b, 0, read);
+        spanAndBuffer.buffer.write(b, 0, read);
       } else if (read == -1) {
-        String body = new String(spanAndBuffer.buffer.array());
-        InputStreamTracerHelper.addAttribute(spanAndBuffer.span, spanAndBuffer.attributeKey, body);
+        String body = spanAndBuffer.buffer.toString();
+        InputStreamUtils.addAttribute(spanAndBuffer.span, spanAndBuffer.attributeKey, body);
       }
     }
   }
@@ -144,10 +140,10 @@ public class InputStreamInstrumentaionModule extends InstrumentationModule {
         return;
       }
       if (read > 0) {
-        spanAndBuffer.buffer.put(b, off, read);
+        spanAndBuffer.buffer.write(b, off, read);
       } else if (read == -1) {
-        String body = new String(spanAndBuffer.buffer.array());
-        InputStreamTracerHelper.addAttribute(spanAndBuffer.span, spanAndBuffer.attributeKey, body);
+        String body = spanAndBuffer.buffer.toString();
+        InputStreamUtils.addAttribute(spanAndBuffer.span, spanAndBuffer.attributeKey, body);
       }
     }
   }

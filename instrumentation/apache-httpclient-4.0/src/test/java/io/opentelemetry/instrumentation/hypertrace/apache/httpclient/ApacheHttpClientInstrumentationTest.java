@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
-import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -73,15 +72,15 @@ public class ApacheHttpClientInstrumentationTest extends AbstractInstrumenterTes
 
     // returns exception
     //    InputStream inputStream2 = response.getEntity().getContent();
-//    ByteBuffer buff = ByteBuffer.allocate(100);
-//    byte ch;
-//    while ((ch = (byte) inputStream.read()) != -1) {
-//      buff.put(ch);
-//    }
+    //    ByteBuffer buff = ByteBuffer.allocate(100);
+    //    byte ch;
+    //    while ((ch = (byte) inputStream.read()) != -1) {
+    //      buff.put(ch);
+    //    }
 
     String gotBody = readInputStream(inputStream);
 
-//    Assertions.assertEquals(expectedBody, new String(buff.array()));
+    //    Assertions.assertEquals(expectedBody, new String(buff.array()));
     System.out.println("test read body");
     System.out.println(gotBody);
     Assertions.assertEquals(expectedBody, gotBody);
