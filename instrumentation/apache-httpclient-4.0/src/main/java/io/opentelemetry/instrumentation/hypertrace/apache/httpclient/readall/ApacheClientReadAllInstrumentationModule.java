@@ -181,6 +181,8 @@ public class ApacheClientReadAllInstrumentationModule extends InstrumentationMod
       if (exception instanceof IllegalStateException) {
         Object originalInputStream = GlobalContextHolder.objectMap.get(thizz);
         if (originalInputStream != null) {
+          // TODO race condition
+          GlobalContextHolder.objectMap.remove(thizz);
           inputStream = (InputStream) originalInputStream;
           exception = null;
         }

@@ -27,6 +27,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -64,6 +65,8 @@ public class ApacheHttpClientInstrumentationTest extends AbstractInstrumenterTes
     System.out.println(response.getEntity());
     InputStream inputStream = response.getEntity().getContent();
 
+    String expectedBody = "{\"name\": \"james\"}";
+
     // returns exception
     //    InputStream inputStream2 = response.getEntity().getContent();
     ByteBuffer buff = ByteBuffer.allocate(100);
@@ -83,6 +86,22 @@ public class ApacheHttpClientInstrumentationTest extends AbstractInstrumenterTes
     Assertions.assertEquals(1, traces.get(0).size());
     SpanData span = traces.get(0).get(0);
     System.out.println(span);
+  }
+
+  @Test
+  public void getContent_throws_exception() throws IOException {
+    HttpClient client = new DefaultHttpClient();
+    HttpGet getRequest = new HttpGet();
+    getRequest.setURI(
+        URI.create(String.format("http://localhost:%d/get_json", testHttpServer.port())));
+    HttpResponse response = client.execute(getRequest);
+    HttpEntity entity = response.getEntity();
+    Assertions.assertNotNull(entity.getContent());
+    try {
+      entity.getContent();
+    } catch (Exception ex) {
+      Assertions.assertEquals(IllegalStateException.class, ex.getClass());
+    }
   }
 
   private String readInputStream(InputStream inputStream) throws IOException {
