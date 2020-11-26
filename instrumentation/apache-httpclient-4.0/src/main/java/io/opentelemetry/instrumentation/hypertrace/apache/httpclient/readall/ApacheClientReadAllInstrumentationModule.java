@@ -51,11 +51,11 @@ import org.hypertrace.agent.core.ContentTypeUtils;
 import org.hypertrace.agent.core.GlobalContextHolder;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 
-@AutoService(InstrumentationModule.class)
+//@AutoService(InstrumentationModule.class)
 public class ApacheClientReadAllInstrumentationModule extends InstrumentationModule {
 
   public ApacheClientReadAllInstrumentationModule() {
-    super(ApacheHttpClientInstrumentationName.PRIMARY, ApacheHttpClientInstrumentationName.OTHER);
+    super("httpclient-readall");
   }
 
   @Override

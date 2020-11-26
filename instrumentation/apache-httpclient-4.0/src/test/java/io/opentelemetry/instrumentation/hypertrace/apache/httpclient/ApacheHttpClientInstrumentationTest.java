@@ -16,6 +16,7 @@
 
 package io.opentelemetry.instrumentation.hypertrace.apache.httpclient;
 
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -60,6 +61,9 @@ public class ApacheHttpClientInstrumentationTest extends AbstractInstrumenterTes
     getRequest.setURI(
         URI.create(String.format("http://localhost:%d/get_json", testHttpServer.port())));
     HttpResponse response = client.execute(getRequest);
+    Assertions.assertEquals(200, response.getStatusLine().getStatusCode());
+
+    Span currentSpan = Span.current();
 
     // TODO add test when a different span is active
     System.out.println(response.getEntity());
@@ -69,21 +73,23 @@ public class ApacheHttpClientInstrumentationTest extends AbstractInstrumenterTes
 
     // returns exception
     //    InputStream inputStream2 = response.getEntity().getContent();
-    ByteBuffer buff = ByteBuffer.allocate(100);
-    byte ch;
-    while ((ch = (byte) inputStream.read()) != -1) {
-      buff.put(ch);
-    }
-    Assertions.assertEquals("{\"name\": \"james\"}", new String(buff.array()));
-    System.out.println("test read body");
-    System.out.println(new String(buff.array()));
+//    ByteBuffer buff = ByteBuffer.allocate(100);
+//    byte ch;
+//    while ((ch = (byte) inputStream.read()) != -1) {
+//      buff.put(ch);
+//    }
 
-    Assertions.assertEquals(200, response.getStatusLine().getStatusCode());
+    String gotBody = readInputStream(inputStream);
+
+//    Assertions.assertEquals(expectedBody, new String(buff.array()));
+    System.out.println("test read body");
+    System.out.println(gotBody);
+    Assertions.assertEquals(expectedBody, gotBody);
 
     TEST_WRITER.waitForTraces(1);
     List<List<SpanData>> traces = TEST_WRITER.getTraces();
     Assertions.assertEquals(1, traces.size());
-    Assertions.assertEquals(1, traces.get(0).size());
+    Assertions.assertEquals(2, traces.get(0).size());
     SpanData span = traces.get(0).get(0);
     System.out.println(span);
   }

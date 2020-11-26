@@ -23,8 +23,10 @@ import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
+import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
+import java.io.ByteArrayOutputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -41,11 +43,18 @@ import org.hypertrace.agent.core.HypertraceSemanticAttributes;
  * Maybe we could add optimization to instrument the input streams only when certain classes are
  * present in classloader e.g. classes from frameworks that we instrument.
  */
-// @AutoService(InstrumentationModule.class)
+ @AutoService(InstrumentationModule.class)
 public class InputStreamInstrumentaionModule extends InstrumentationModule {
 
   public InputStreamInstrumentaionModule() {
     super("inputstream");
+  }
+
+  @Override
+  public String[] helperClassNames() {
+    return new String[]{
+        packageName + ".InputStreamTracerHelper"
+    };
   }
 
   @Override
@@ -97,11 +106,8 @@ public class InputStreamInstrumentaionModule extends InstrumentationModule {
         spanAndBuffer.buffer.put((byte) read);
       } else if (read == -1) {
         String body = new String(spanAndBuffer.buffer.array());
-        System.out.printf("Captured response body: %s\n", body);
-        // TODO span has already been finished
-        // we could create a child span with a special tag to indicate that the attributes belong to
-        // the parent
-        spanAndBuffer.span.setAttribute(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, body);
+        // if span has already finished we start new one
+        InputStreamTracerHelper.addAttribute(spanAndBuffer.span, spanAndBuffer.attributeKey, body);
       }
     }
   }
@@ -119,12 +125,8 @@ public class InputStreamInstrumentaionModule extends InstrumentationModule {
       if (read > 0) {
         spanAndBuffer.buffer.put(b, 0, read);
       } else if (read == -1) {
-        // TODO span has already been finished
-        // we could create a child span with a special tag to indicate that the attributes belong to
-        // the parent
-        spanAndBuffer.span.setAttribute(
-            HypertraceSemanticAttributes.HTTP_RESPONSE_BODY,
-            new String(spanAndBuffer.buffer.array()));
+        String body = new String(spanAndBuffer.buffer.array());
+        InputStreamTracerHelper.addAttribute(spanAndBuffer.span, spanAndBuffer.attributeKey, body);
       }
     }
   }
@@ -144,12 +146,8 @@ public class InputStreamInstrumentaionModule extends InstrumentationModule {
       if (read > 0) {
         spanAndBuffer.buffer.put(b, off, read);
       } else if (read == -1) {
-        // TODO span has already been finished
-        // we could create a child span with a special tag to indicate that the attributes belong to
-        // the parent
-        spanAndBuffer.span.setAttribute(
-            HypertraceSemanticAttributes.HTTP_RESPONSE_BODY,
-            new String(spanAndBuffer.buffer.array()));
+        String body = new String(spanAndBuffer.buffer.array());
+        InputStreamTracerHelper.addAttribute(spanAndBuffer.span, spanAndBuffer.attributeKey, body);
       }
     }
   }

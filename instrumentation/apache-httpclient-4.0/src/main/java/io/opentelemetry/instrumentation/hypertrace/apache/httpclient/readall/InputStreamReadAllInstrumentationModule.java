@@ -38,7 +38,7 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.core.GlobalContextHolder;
 
-@AutoService(InstrumentationModule.class)
+//@AutoService(InstrumentationModule.class)
 public class InputStreamReadAllInstrumentationModule extends InstrumentationModule {
 
   public InputStreamReadAllInstrumentationModule() {
@@ -51,6 +51,15 @@ public class InputStreamReadAllInstrumentationModule extends InstrumentationModu
         new InputStreamReadAllInstrumentationModule.InputStreamInstrumentation());
   }
 
+  /**
+   * 1. the instrumentation checks if stream is in the global map. The global map contains map of
+   * original stream to buffered one.
+   *
+   * 2. if the stream is then the body of the original method is skipped, if it
+   * is not it continues
+   *
+   * 3. the exit advice reads from buffered stream and returns result in promitive type
+   */
   static class InputStreamInstrumentation implements TypeInstrumentation {
 
     @Override
@@ -85,11 +94,6 @@ public class InputStreamReadAllInstrumentationModule extends InstrumentationModu
     }
   }
 
-  /**
-   * 1. the instrumentation checks if stream is in the global map. The global map contains map of
-   * original stream to buffered one. 2. if it is then body of the original method is skipped, if it
-   * is not it continues 3. the exit advice changes return value to buffered stream.
-   */
   public static class InputStream_ReadNoArgsAdvice {
     @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = Advice.OnNonDefaultValue.class)
     public static boolean readStart(@Advice.This InputStream thizz) {

@@ -25,6 +25,7 @@ import static net.bytebuddy.matcher.ElementMatchers.returns;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
+import com.google.auto.service.AutoService;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
@@ -43,8 +44,9 @@ import org.apache.http.HttpResponse;
 import org.hypertrace.agent.core.ContentTypeUtils;
 import org.hypertrace.agent.core.GlobalContextHolder;
 import org.hypertrace.agent.core.GlobalContextHolder.SpanAndBuffer;
+import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 
-// @AutoService(InstrumentationModule.class)
+@AutoService(InstrumentationModule.class)
 public class ApacheClientInstrumentationModule extends InstrumentationModule {
 
   public ApacheClientInstrumentationModule() {
@@ -86,6 +88,15 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
               .and(not(isAbstract()))
               .and(takesArguments(2))
               .and(takesArgument(0, named("org.apache.http.client.methods.HttpUriRequest")))
+              .and(takesArgument(1, named("org.apache.http.protocol.HttpContext"))),
+          HttpClient_ExecuteAdvice.class.getName());
+
+      transformers.put(
+          isMethod()
+              .and(named("execute"))
+              .and(not(isAbstract()))
+              .and(takesArguments(2))
+              .and(takesArgument(0, named("org.apache.http.client.methods.HttpUriRequest")))
               .and(takesArgument(1, named("org.apache.http.client.ResponseHandler"))),
           HttpClient_ExecuteAdvice.class.getName());
 
@@ -98,6 +109,46 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
               .and(takesArgument(1, named("org.apache.http.client.ResponseHandler")))
               .and(takesArgument(2, named("org.apache.http.protocol.HttpContext"))),
           HttpClient_ExecuteAdvice.class.getName());
+
+      transformers.put(
+          isMethod()
+              .and(named("execute"))
+              .and(not(isAbstract()))
+              .and(takesArguments(2))
+              .and(takesArgument(0, named("org.apache.http.HttpHost")))
+              .and(takesArgument(1, named("org.apache.http.HttpRequest"))),
+          HttpClient_ExecuteAdvice.class.getName());
+
+      transformers.put(
+          isMethod()
+              .and(named("execute"))
+              .and(not(isAbstract()))
+              .and(takesArguments(3))
+              .and(takesArgument(0, named("org.apache.http.HttpHost")))
+              .and(takesArgument(1, named("org.apache.http.HttpRequest")))
+              .and(takesArgument(2, named("org.apache.http.protocol.HttpContext"))),
+          HttpClient_ExecuteAdvice.class.getName());
+
+      transformers.put(
+          isMethod()
+              .and(named("execute"))
+              .and(not(isAbstract()))
+              .and(takesArguments(3))
+              .and(takesArgument(0, named("org.apache.http.HttpHost")))
+              .and(takesArgument(1, named("org.apache.http.HttpRequest")))
+              .and(takesArgument(2, named("org.apache.http.client.ResponseHandler"))),
+          HttpClient_ExecuteAdvice.class.getName());
+
+      transformers.put(
+          isMethod()
+              .and(named("execute"))
+              .and(not(isAbstract()))
+              .and(takesArguments(4))
+              .and(takesArgument(0, named("org.apache.http.HttpHost")))
+              .and(takesArgument(1, named("org.apache.http.HttpRequest")))
+              .and(takesArgument(2, named("org.apache.http.client.ResponseHandler")))
+              .and(takesArgument(3, named("org.apache.http.protocol.HttpContext"))),
+          HttpClient_ExecuteAdvice.class.getName());
       return transformers;
     }
   }
@@ -109,7 +160,8 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
         Span currentSpan = Java8BytecodeBridge.currentSpan();
         HttpResponse httpResponse = (HttpResponse) response;
         HttpEntity entity = httpResponse.getEntity();
-        System.out.println("\n\nIt is entity");
+        System.out.println("Adding entity to map");
+        System.out.println(currentSpan);
         GlobalContextHolder.objectToSpanMap.put(entity, currentSpan);
       } else {
         System.out.println("\n\nIt is not HttpResponse #execute");
@@ -153,8 +205,8 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
         return;
       }
 
-      System.out.printf("InputStream %s:, will be buffered\n", thizz);
-      SpanAndBuffer spanAndBuffer = new SpanAndBuffer(clientSpan, ByteBuffer.allocate(100));
+      SpanAndBuffer spanAndBuffer = new SpanAndBuffer(clientSpan, ByteBuffer.allocate(50000),
+          HypertraceSemanticAttributes.HTTP_RESPONSE_BODY);
       GlobalContextHolder.objectToSpanAndBufferMap.put(inputStream, spanAndBuffer);
     }
   }

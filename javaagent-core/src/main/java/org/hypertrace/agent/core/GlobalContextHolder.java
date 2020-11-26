@@ -16,6 +16,7 @@
 
 package org.hypertrace.agent.core;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -32,10 +33,12 @@ public class GlobalContextHolder {
   public static class SpanAndBuffer {
     public final Span span;
     public final ByteBuffer buffer;
+    public final AttributeKey<String> attributeKey;
 
-    public SpanAndBuffer(Span span, ByteBuffer buffer) {
+    public SpanAndBuffer(Span span, ByteBuffer buffer, AttributeKey<String> attributeKey) {
       this.span = span;
       this.buffer = buffer;
+      this.attributeKey = attributeKey;
     }
   }
 }
