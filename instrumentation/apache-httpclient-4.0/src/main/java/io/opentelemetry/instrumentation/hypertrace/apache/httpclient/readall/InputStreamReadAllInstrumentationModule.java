@@ -47,7 +47,7 @@ public class InputStreamReadAllInstrumentationModule extends InstrumentationModu
   @Override
   public String[] helperClassNames() {
     return new String[] {
-        "io.opentelemetry.instrumentation.hypertrace.apache.httpclient.InputStreamUtils"
+      "io.opentelemetry.instrumentation.hypertrace.apache.httpclient.InputStreamUtils"
     };
   }
 
@@ -78,13 +78,13 @@ public class InputStreamReadAllInstrumentationModule extends InstrumentationModu
       Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>();
       transformers.put(
           namedOneOf("read").and(takesArguments(0)).and(isPublic()),
-          InputStreamReadAllInstrumentationModule.InputStream_ReadNoArgsAdvice.class.getName());
+          InputStream_ReadNoArgsAdvice.class.getName());
       transformers.put(
           namedOneOf("read")
               .and(takesArguments(1))
               .and(takesArgument(0, is(byte[].class)))
               .and(isPublic()),
-          InputStreamReadAllInstrumentationModule.InputStream_ReadByteArrayAdvice.class.getName());
+          InputStream_ReadByteArrayAdvice.class.getName());
       transformers.put(
           namedOneOf("read")
               .and(takesArguments(3))
@@ -92,10 +92,33 @@ public class InputStreamReadAllInstrumentationModule extends InstrumentationModu
               .and(takesArgument(1, is(int.class)))
               .and(takesArgument(2, is(int.class)))
               .and(isPublic()),
-          InputStreamReadAllInstrumentationModule.InputStream_ReadByteArrayOffsetAdvice.class
-              .getName());
+          InputStream_ReadByteArrayOffsetAdvice.class.getName());
       // TODO JDK9 defines #readAllBytes method
       // https://docs.oracle.com/javase/9/docs/api/java/io/InputStream.html#readAllBytes--
+      transformers.put(
+          namedOneOf("skip")
+              .and(takesArguments(1))
+              .and(takesArgument(0, is(long.class)))
+              .and(isPublic()),
+          InputStream_Skip.class.getName());
+      transformers.put(
+          namedOneOf("available").and(takesArguments(0)).and(isPublic()),
+          InputStream_Available.class.getName());
+      transformers.put(
+          namedOneOf("close").and(takesArguments(0)).and(isPublic()),
+          InputStream_Close.class.getName());
+      transformers.put(
+          namedOneOf("mark")
+              .and(takesArguments(1))
+              .and(takesArgument(0, is(int.class)))
+              .and(isPublic()),
+          InputStream_Mark.class.getName());
+      transformers.put(
+          namedOneOf("reset").and(takesArguments(0)).and(isPublic()),
+          InputStream_Reset.class.getName());
+      transformers.put(
+          namedOneOf("markSupported").and(takesArguments(0)).and(isPublic()),
+          InputStream_MarkSupported.class.getName());
       return transformers;
     }
   }
@@ -170,6 +193,135 @@ public class InputStreamReadAllInstrumentationModule extends InstrumentationModu
         return;
       }
       read = bufferedInputStream.read(b, off, len);
+    }
+  }
+
+  public static class InputStream_Skip {
+    @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = Advice.OnNonDefaultValue.class)
+    public static boolean enter(@Advice.This InputStream thizz) {
+      InputStream bufferedInputStream = GlobalContextHolder.inputStreamMap.get(thizz);
+      if (bufferedInputStream == null) {
+        return false;
+      }
+      return true;
+    }
+
+    @Advice.OnMethodExit()
+    public static void exit(
+        @Advice.This java.io.InputStream thizz,
+        @Advice.Argument(0) long n,
+        @Advice.Return(readOnly = false) long skipped)
+        throws IOException {
+      InputStream bufferedInputStream = GlobalContextHolder.inputStreamMap.get(thizz);
+      if (bufferedInputStream == null) {
+        return;
+      }
+      skipped = bufferedInputStream.skip(n);
+    }
+  }
+
+  public static class InputStream_Available {
+    @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = Advice.OnNonDefaultValue.class)
+    public static boolean enter(@Advice.This InputStream thizz) {
+      InputStream bufferedInputStream = GlobalContextHolder.inputStreamMap.get(thizz);
+      if (bufferedInputStream == null) {
+        return false;
+      }
+      return true;
+    }
+
+    @Advice.OnMethodExit()
+    public static void exit(
+        @Advice.This java.io.InputStream thizz, @Advice.Return(readOnly = false) long available)
+        throws IOException {
+      InputStream bufferedInputStream = GlobalContextHolder.inputStreamMap.get(thizz);
+      if (bufferedInputStream == null) {
+        return;
+      }
+      available = bufferedInputStream.available();
+    }
+  }
+
+  public static class InputStream_Close {
+    @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = Advice.OnNonDefaultValue.class)
+    public static boolean enter(@Advice.This InputStream thizz) {
+      InputStream bufferedInputStream = GlobalContextHolder.inputStreamMap.get(thizz);
+      if (bufferedInputStream == null) {
+        return false;
+      }
+      return true;
+    }
+
+    @Advice.OnMethodExit()
+    public static void exit(@Advice.This java.io.InputStream thizz) throws IOException {
+      InputStream bufferedInputStream = GlobalContextHolder.inputStreamMap.get(thizz);
+      if (bufferedInputStream == null) {
+        return;
+      }
+      bufferedInputStream.close();
+    }
+  }
+
+  public static class InputStream_Mark {
+    @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = Advice.OnNonDefaultValue.class)
+    public static boolean enter(@Advice.This InputStream thizz) {
+      InputStream bufferedInputStream = GlobalContextHolder.inputStreamMap.get(thizz);
+      if (bufferedInputStream == null) {
+        return false;
+      }
+      return true;
+    }
+
+    @Advice.OnMethodExit()
+    public static void exit(
+        @Advice.This java.io.InputStream thizz, @Advice.Argument(0) int readlimit) {
+      InputStream bufferedInputStream = GlobalContextHolder.inputStreamMap.get(thizz);
+      if (bufferedInputStream == null) {
+        return;
+      }
+      bufferedInputStream.mark(readlimit);
+    }
+  }
+
+  public static class InputStream_Reset {
+    @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = Advice.OnNonDefaultValue.class)
+    public static boolean enter(@Advice.This InputStream thizz) {
+      InputStream bufferedInputStream = GlobalContextHolder.inputStreamMap.get(thizz);
+      if (bufferedInputStream == null) {
+        return false;
+      }
+      return true;
+    }
+
+    @Advice.OnMethodExit()
+    public static void exit(@Advice.This java.io.InputStream thizz) throws IOException {
+      InputStream bufferedInputStream = GlobalContextHolder.inputStreamMap.get(thizz);
+      if (bufferedInputStream == null) {
+        return;
+      }
+      bufferedInputStream.reset();
+    }
+  }
+
+  public static class InputStream_MarkSupported {
+    @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = Advice.OnNonDefaultValue.class)
+    public static boolean enter(@Advice.This InputStream thizz) {
+      InputStream bufferedInputStream = GlobalContextHolder.inputStreamMap.get(thizz);
+      if (bufferedInputStream == null) {
+        return false;
+      }
+      return true;
+    }
+
+    @Advice.OnMethodExit()
+    public static void exit(
+        @Advice.This java.io.InputStream thizz,
+        @Advice.Return(readOnly = false) boolean markSupported) {
+      InputStream bufferedInputStream = GlobalContextHolder.inputStreamMap.get(thizz);
+      if (bufferedInputStream == null) {
+        return;
+      }
+      markSupported = bufferedInputStream.markSupported();
     }
   }
 }

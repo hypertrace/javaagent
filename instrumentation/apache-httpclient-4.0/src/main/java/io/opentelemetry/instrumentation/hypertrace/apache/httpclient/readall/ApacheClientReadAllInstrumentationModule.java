@@ -43,6 +43,7 @@ import net.bytebuddy.asm.Advice.Return;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.hypertrace.agent.core.ContentTypeUtils;
@@ -59,6 +60,13 @@ public class ApacheClientReadAllInstrumentationModule extends InstrumentationMod
   @Override
   public int getOrder() {
     return 1;
+  }
+
+  @Override
+  public String[] helperClassNames() {
+    return new String[] {
+      "io.opentelemetry.instrumentation.hypertrace.apache.httpclient.InputStreamUtils"
+    };
   }
 
   @Override
@@ -168,19 +176,19 @@ public class ApacheClientReadAllInstrumentationModule extends InstrumentationMod
 
   static class HttpClient_ExecuteAdvice {
     @OnMethodExit(suppress = Throwable.class)
-    public static void readEnd(@Return Object response) {
+    public static void exit(@Return Object response) {
       if (response instanceof HttpResponse) {
         Span currentSpan = Java8BytecodeBridge.currentSpan();
         HttpResponse httpResponse = (HttpResponse) response;
         HttpEntity entity = httpResponse.getEntity();
 
-        if (!ContentTypeUtils.shouldCapture(entity.getContentType().getValue())) {
+        Header contentType = entity.getContentType();
+        if (contentType == null || !ContentTypeUtils.shouldCapture(contentType.getValue())) {
           return;
         }
 
         try {
           InputStream inputStream = entity.getContent();
-
           long contentSize = entity.getContentLength();
           if (contentSize <= 0 || contentSize == Long.MAX_VALUE) {
             contentSize = 128;
@@ -213,7 +221,7 @@ public class ApacheClientReadAllInstrumentationModule extends InstrumentationMod
     public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
       Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>();
       transformers.put(
-          named("getContent").and(takesArguments(0)).and(returns(java.io.InputStream.class)),
+          named("getContent").and(takesArguments(0)).and(returns(InputStream.class)),
           ApacheClientReadAllInstrumentationModule.HttpEntity_GetContentAdvice.class.getName());
       return transformers;
     }
@@ -224,7 +232,7 @@ public class ApacheClientReadAllInstrumentationModule extends InstrumentationMod
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(
         @Advice.This HttpEntity thizz,
-        @Advice.Return(readOnly = false) java.io.InputStream inputStream,
+        @Advice.Return(readOnly = false) InputStream inputStream,
         @Advice.Thrown(readOnly = false) Throwable exception) {
       if (exception instanceof IllegalStateException) {
         Object originalInputStream = GlobalContextHolder.objectMap.get(thizz);

@@ -31,6 +31,7 @@ import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +40,7 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.hypertrace.agent.core.ContentTypeUtils;
@@ -155,7 +157,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
 
   static class HttpClient_ExecuteAdvice {
     @Advice.OnMethodExit(suppress = Throwable.class)
-    public static void readEnd(@Advice.Return Object response) {
+    public static void exit(@Advice.Return Object response) {
       if (response instanceof HttpResponse) {
         Span currentSpan = Java8BytecodeBridge.currentSpan();
         HttpResponse httpResponse = (HttpResponse) response;
@@ -179,7 +181,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
     public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
       Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>();
       transformers.put(
-          named("getContent").and(takesArguments(0)).and(returns(java.io.InputStream.class)),
+          named("getContent").and(takesArguments(0)).and(returns(InputStream.class)),
           HttpEntity_GetContentAdvice.class.getName());
       return transformers;
     }
@@ -189,7 +191,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
 
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void readEnd(
-        @Advice.Return java.io.InputStream inputStream, @Advice.This HttpEntity thizz) {
+        @Advice.Return InputStream inputStream, @Advice.This HttpEntity thizz) {
       // here the Span.current() has already been finished
       Span clientSpan = GlobalContextHolder.objectToSpanMap.get(thizz);
       // HttpEntity might be wrapped multiple times
@@ -201,7 +203,8 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
         return;
       }
 
-      if (!ContentTypeUtils.shouldCapture(thizz.getContentType().getValue())) {
+      Header contentType = thizz.getContentType();
+      if (contentType == null || !ContentTypeUtils.shouldCapture(contentType.getValue())) {
         return;
       }
 
