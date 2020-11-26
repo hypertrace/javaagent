@@ -24,6 +24,8 @@ include("instrumentation:servlet:servlet-3.1")
 findProject(":instrumentation:servlet:servlet-3.1")?.name = "servlet-3.1"
 include("instrumentation:spark-web-framework-2.3")
 findProject(":instrumentation:spark-web-framework-2.3")?.name = "spark-web-framework-2.3"
+include("instrumentation:apache-httpclient-4.0")
+findProject(":instrumentation:apache-httpclient-4.0")?.name = "apache-httpclient-4.0"
 include("smoke-tests")
 include("filter-api")
 include("javaagent-tooling")
