@@ -62,9 +62,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
 
   @Override
   public String[] helperClassNames() {
-    return new String[] {
-        packageName + ".ApacheHttpClientObjectRegistry"
-    };
+    return new String[] {packageName + ".ApacheHttpClientObjectRegistry"};
   }
 
   @Override
@@ -197,8 +195,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
   static class HttpEntity_GetContentAdvice {
 
     @Advice.OnMethodExit(suppress = Throwable.class)
-    public static void exit(
-        @Advice.Return InputStream inputStream, @Advice.This HttpEntity thizz) {
+    public static void exit(@Advice.Return InputStream inputStream, @Advice.This HttpEntity thizz) {
       // here the Span.current() has already been finished
       Span clientSpan = ApacheHttpClientObjectRegistry.objectToSpanMap.remove(thizz);
       // HttpEntity might be wrapped multiple times

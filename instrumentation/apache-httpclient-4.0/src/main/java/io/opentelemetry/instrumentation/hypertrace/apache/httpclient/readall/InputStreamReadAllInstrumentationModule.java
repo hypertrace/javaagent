@@ -45,10 +45,10 @@ public class InputStreamReadAllInstrumentationModule extends InstrumentationModu
     super("inputstream-readall");
   }
 
-   @Override
-   protected boolean defaultEnabled() {
-     return false;
-   }
+  @Override
+  protected boolean defaultEnabled() {
+    return false;
+  }
 
   @Override
   public String[] helperClassNames() {

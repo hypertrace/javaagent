@@ -93,7 +93,7 @@ public class InputStreamInstrumentaionModule extends InstrumentationModule {
 
   public static class InputStream_ReadNoArgsAdvice {
     @Advice.OnMethodExit(suppress = Throwable.class)
-    public static void readEnd(@Advice.This java.io.InputStream thizz, @Advice.Return int read) {
+    public static void exit(@Advice.This java.io.InputStream thizz, @Advice.Return int read) {
       SpanAndBuffer spanAndBuffer = GlobalObjectRegistry.objectToSpanAndBufferMap.get(thizz);
       if (spanAndBuffer == null) {
         return;
@@ -104,13 +104,14 @@ public class InputStreamInstrumentaionModule extends InstrumentationModule {
         String body = spanAndBuffer.buffer.toString();
         // if span has already finished we start new one
         InputStreamUtils.addAttribute(spanAndBuffer.span, spanAndBuffer.attributeKey, body);
+        GlobalObjectRegistry.objectToSpanAndBufferMap.remove(thizz);
       }
     }
   }
 
   public static class InputStream_ReadByteArrayAdvice {
     @Advice.OnMethodExit(suppress = Throwable.class)
-    public static void readEnd(
+    public static void exit(
         @Advice.This java.io.InputStream thizz,
         @Advice.Return int read,
         @Advice.Argument(0) byte b[]) {
@@ -123,13 +124,14 @@ public class InputStreamInstrumentaionModule extends InstrumentationModule {
       } else if (read == -1) {
         String body = spanAndBuffer.buffer.toString();
         InputStreamUtils.addAttribute(spanAndBuffer.span, spanAndBuffer.attributeKey, body);
+        GlobalObjectRegistry.objectToSpanAndBufferMap.remove(thizz);
       }
     }
   }
 
   public static class InputStream_ReadByteArrayOffsetAdvice {
     @Advice.OnMethodExit(suppress = Throwable.class)
-    public static void readEnd(
+    public static void exit(
         @Advice.This java.io.InputStream thizz,
         @Advice.Return int read,
         @Advice.Argument(0) byte b[],
@@ -144,6 +146,7 @@ public class InputStreamInstrumentaionModule extends InstrumentationModule {
       } else if (read == -1) {
         String body = spanAndBuffer.buffer.toString();
         InputStreamUtils.addAttribute(spanAndBuffer.span, spanAndBuffer.attributeKey, body);
+        GlobalObjectRegistry.objectToSpanAndBufferMap.remove(thizz);
       }
     }
   }
