@@ -18,6 +18,7 @@ package io.opentelemetry.instrumentation.hypertrace.apache.httpclient;
 
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.implementsInterface;
 import static net.bytebuddy.matcher.ElementMatchers.hasSuperType;
+import static net.bytebuddy.matcher.ElementMatchers.is;
 import static net.bytebuddy.matcher.ElementMatchers.isAbstract;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.named;
@@ -176,8 +177,8 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
         ApacheHttpClientUtils.addResponseHeaders(currentSpan, httpResponse.headerIterator());
 
         HttpEntity entity = httpResponse.getEntity();
-        // TODO check entity.isRepeatable() and read the full body
-        ApacheHttpClientUtils.traceEntity(currentSpan, entity);
+        ApacheHttpClientUtils.traceEntity(
+            currentSpan, HypertraceSemanticAttributes.HTTP_RESPONSE_BODY.getKey(), entity);
       } else {
         // TODO log error
         System.out.println("\n\nIt is not HttpResponse #execute");
@@ -194,14 +195,14 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
     @Override
     public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
       Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>();
+
+      transformers.put(
+          named("writeTo").and(takesArguments(1)).and(takesArgument(0, is(OutputStream.class))),
+          HttpEntity_WriteToAdvice.class.getName());
+
       transformers.put(
           named("getContent").and(takesArguments(0)).and(returns(InputStream.class)),
           HttpEntity_GetContentAdvice.class.getName());
-      transformers.put(
-          named("writeTo")
-              .and(takesArguments(1))
-              .and(takesArgument(0, named("java.io.OutputStream"))),
-          HttpEntity_WriteToAdvice.class.getName());
       return transformers;
     }
   }
@@ -248,9 +249,6 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void enter(
         @Advice.This HttpEntity thizz, @Advice.Argument(0) OutputStream outputStream) {
-
-      System.out.println("WriteTo");
-
       if (!ApacheHttpClientObjectRegistry.objectToSpanMap.containsKey(thizz)) {
         return;
       }
@@ -267,9 +265,6 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(
         @Advice.This HttpEntity thizz, @Advice.Argument(0) OutputStream outputStream) {
-
-      System.out.println("Captured via outputStream");
-
       Span clientSpan = ApacheHttpClientObjectRegistry.objectToSpanMap.remove(thizz);
       if (clientSpan == null) {
         return;

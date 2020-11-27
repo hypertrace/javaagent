@@ -60,11 +60,17 @@ public class ApacheHttpClientUtils {
     if (request instanceof HttpEntityEnclosingRequest) {
       HttpEntityEnclosingRequest entityRequest = (HttpEntityEnclosingRequest) request;
       HttpEntity entity = entityRequest.getEntity();
-      if (!entity.isRepeatable()) {
-        // non repeatable entities are captured via
-        // HttpEntity.writeTo(OutputStream) and OutputStream instrumentations
-        ApacheHttpClientUtils.traceEntity(currentSpan, entity);
-      }
+      ApacheHttpClientUtils.traceEntity(
+          currentSpan, HypertraceSemanticAttributes.HTTP_REQUEST_BODY.getKey(), entity);
+    }
+  }
+
+  public static void traceEntity(Span span, String bodyAttributeKey, HttpEntity entity) {
+    if (entity == null) {
+      return;
+    }
+
+    if (entity.isRepeatable()) {
       try {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         entity.writeTo(byteArrayOutputStream);
@@ -73,18 +79,15 @@ public class ApacheHttpClientUtils {
         String body =
             new String(
                 byteArrayOutputStream.toByteArray(), ContentEncodingUtils.toCharset(encoding));
-        System.out.printf("captured request readable body is %s\n", body);
-        currentSpan.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, body);
+        System.out.printf("captured %s readable body is %s\n", bodyAttributeKey, body);
+        span.setAttribute(bodyAttributeKey, body);
       } catch (IOException e) {
         log.error("Could not read request input stream from repeatable request entity/body", e);
       }
-    }
-  }
 
-  public static void traceEntity(Span span, HttpEntity httpEntity) {
-    if (httpEntity == null) {
       return;
     }
-    ApacheHttpClientObjectRegistry.objectToSpanMap.put(httpEntity, span);
+
+    ApacheHttpClientObjectRegistry.objectToSpanMap.put(entity, span);
   }
 }
