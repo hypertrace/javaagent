@@ -179,6 +179,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
         // TODO check entity.isRepeatable() and read the full body
         ApacheHttpClientUtils.traceEntity(currentSpan, entity);
       } else {
+        // TODO log error
         System.out.println("\n\nIt is not HttpResponse #execute");
       }
     }
@@ -247,6 +248,9 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void enter(
         @Advice.This HttpEntity thizz, @Advice.Argument(0) OutputStream outputStream) {
+
+      System.out.println("WriteTo");
+
       if (!ApacheHttpClientObjectRegistry.objectToSpanMap.containsKey(thizz)) {
         return;
       }
@@ -263,6 +267,9 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(
         @Advice.This HttpEntity thizz, @Advice.Argument(0) OutputStream outputStream) {
+
+      System.out.println("Captured via outputStream");
+
       Span clientSpan = ApacheHttpClientObjectRegistry.objectToSpanMap.remove(thizz);
       if (clientSpan == null) {
         return;
