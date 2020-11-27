@@ -37,7 +37,7 @@ public class InputStreamUtils {
    * child.
    */
   public static void addAttribute(Span span, AttributeKey<String> attributeKey, String value) {
-    System.out.printf("Captured body is %s\n", value);
+    System.out.printf("Captured %s body is %s\n", attributeKey.getKey() ,value);
     if (span.isRecording()) {
       span.setAttribute(attributeKey, value);
     } else {

@@ -26,6 +26,7 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -93,7 +94,7 @@ public class InputStreamInstrumentaionModule extends InstrumentationModule {
 
   public static class InputStream_ReadNoArgsAdvice {
     @Advice.OnMethodExit(suppress = Throwable.class)
-    public static void exit(@Advice.This java.io.InputStream thizz, @Advice.Return int read) {
+    public static void exit(@Advice.This InputStream thizz, @Advice.Return int read) {
       SpanAndBuffer spanAndBuffer = GlobalObjectRegistry.objectToSpanAndBufferMap.get(thizz);
       if (spanAndBuffer == null) {
         return;
@@ -112,9 +113,7 @@ public class InputStreamInstrumentaionModule extends InstrumentationModule {
   public static class InputStream_ReadByteArrayAdvice {
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void exit(
-        @Advice.This java.io.InputStream thizz,
-        @Advice.Return int read,
-        @Advice.Argument(0) byte b[]) {
+        @Advice.This InputStream thizz, @Advice.Return int read, @Advice.Argument(0) byte b[]) {
       SpanAndBuffer spanAndBuffer = GlobalObjectRegistry.objectToSpanAndBufferMap.get(thizz);
       if (spanAndBuffer == null) {
         return;
@@ -133,7 +132,7 @@ public class InputStreamInstrumentaionModule extends InstrumentationModule {
   public static class InputStream_ReadByteArrayOffsetAdvice {
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void exit(
-        @Advice.This java.io.InputStream thizz,
+        @Advice.This InputStream thizz,
         @Advice.Return int read,
         @Advice.Argument(0) byte b[],
         @Advice.Argument(1) int off,

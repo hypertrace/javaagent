@@ -18,12 +18,15 @@ package io.opentelemetry.instrumentation.hypertrace.apache.httpclient;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.function.Function;
 import org.apache.http.Header;
 import org.apache.http.HeaderIterator;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpMessage;
+import org.hypertrace.agent.core.ContentEncodingUtils;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,22 +60,22 @@ public class ApacheHttpClientUtils {
     if (request instanceof HttpEntityEnclosingRequest) {
       HttpEntityEnclosingRequest entityRequest = (HttpEntityEnclosingRequest) request;
       HttpEntity entity = entityRequest.getEntity();
-      //      if (entity.isRepeatable()) {
-      //        try {
-      //          ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-      //          entity.writeTo(byteArrayOutputStream);
-      //          String encoding =
-      //              entity.getContentEncoding() != null ? entity.getContentEncoding().getValue() :
-      // "";
-      //          String body = new String(byteArrayOutputStream.toByteArray(),
-      // ContentEncodingUtils.toCharset(encoding));
-      //          currentSpan.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, body);
-      //        } catch (IOException e) {
-      //          log.error("Could not read request input stream from repeatable request
-      // entity/body", e);
-      //        }
-      //        return;
-      //      }
+      if (entity.isRepeatable()) {
+        try {
+          ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+          entity.writeTo(byteArrayOutputStream);
+          String encoding =
+              entity.getContentEncoding() != null ? entity.getContentEncoding().getValue() : "";
+          String body =
+              new String(
+                  byteArrayOutputStream.toByteArray(), ContentEncodingUtils.toCharset(encoding));
+          System.out.printf("request readable body is %s\n", body);
+          currentSpan.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, body);
+        } catch (IOException e) {
+          log.error("Could not read request input stream from repeatable request entity/body", e);
+        }
+        return;
+      }
       ApacheHttpClientUtils.traceEntity(currentSpan, entity);
     }
   }

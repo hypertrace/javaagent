@@ -240,9 +240,41 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void enter(
         @Advice.This HttpEntity thizz, @Advice.Argument(0) OutputStream outputStream) {
-      ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+      if (!ApacheHttpClientObjectRegistry.objectToSpanMap.containsKey(thizz)) {
+        return;
+      }
 
+      // TODO proceed only if the entity wasn't read
       System.out.println("\n\n writeTo\n\n");
+      System.out.println(thizz.getClass().getName());
+      long contentSize = thizz.getContentLength();
+      if (contentSize <= 0 || contentSize == Long.MAX_VALUE) {
+        contentSize = ContentLengthUtils.DEFAULT;
+      }
+      ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream((int) contentSize);
+
+      GlobalObjectRegistry.objectMap.put(outputStream, byteArrayOutputStream);
+    }
+
+    @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
+    public static void exit(
+        @Advice.This HttpEntity thizz, @Advice.Argument(0) OutputStream outputStream) {
+      Span clientSpan = ApacheHttpClientObjectRegistry.objectToSpanMap.remove(thizz);
+      if (clientSpan == null) {
+        return;
+      }
+
+      String encoding =
+          thizz.getContentEncoding() != null ? thizz.getContentEncoding().getValue() : "";
+      Charset charset = ContentEncodingUtils.toCharset(encoding);
+
+      ByteArrayOutputStream bufferedOutStream =
+          (ByteArrayOutputStream) GlobalObjectRegistry.objectMap.remove(outputStream);
+      byte[] bodyBytes = bufferedOutStream.toByteArray();
+      String body = new String(bodyBytes, charset);
+      System.out.printf("request body via outputstream: %s\n", body);
+      // TODO add to span
+      //      InputStreamUtils.addAttribute(spanAndBuffer.span, spanAndBuffer.attributeKey, body);
     }
   }
 }
