@@ -45,7 +45,7 @@ public class InputStreamUtils {
       System.out.println(span);
       TRACER
           .spanBuilder("additional-data")
-          .setParent(Context.current().with(span))
+          .setParent(Context.root().with(span))
           .setAttribute(attributeKey, value)
           .startSpan()
           .end();
