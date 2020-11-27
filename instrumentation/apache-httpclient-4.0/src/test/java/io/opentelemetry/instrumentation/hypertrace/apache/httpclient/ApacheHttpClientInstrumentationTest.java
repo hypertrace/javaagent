@@ -133,37 +133,18 @@ public class ApacheHttpClientInstrumentationTest extends AbstractInstrumenterTes
   @Test
   public void postJson() throws IOException, TimeoutException, InterruptedException {
     StringEntity entity = new StringEntity(JSON);
-
-    HttpPost postRequest = new HttpPost();
-    postRequest.setEntity(entity);
-    postRequest.setHeader("Content-type", "application/json");
-    postRequest.setURI(
-        URI.create(String.format("http://localhost:%d/post", testHttpServer.port())));
-    HttpResponse response = client.execute(postRequest);
-    Assertions.assertEquals(204, response.getStatusLine().getStatusCode());
-
-    TEST_WRITER.waitForTraces(1);
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
-    Assertions.assertEquals(1, traces.size());
-    Assertions.assertEquals(1, traces.get(0).size());
-    SpanData clientSpan = traces.get(0).get(0);
-
-    Assertions.assertEquals(
-        "test-value",
-        clientSpan
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
-    Assertions.assertEquals(
-        JSON, clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
-    Assertions.assertNull(
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+    postJsonEntity(entity);
   }
 
   @Test
   public void postJsonNonRepeatableEntity()
       throws IOException, TimeoutException, InterruptedException {
     StringEntity entity = new NonRepeatableStringEntity(JSON);
+    postJsonEntity(entity);
+  }
 
+  public void postJsonEntity(HttpEntity entity)
+      throws TimeoutException, InterruptedException, IOException {
     HttpPost postRequest = new HttpPost();
     postRequest.setEntity(entity);
     postRequest.setHeader("Content-type", "application/json");
@@ -184,7 +165,8 @@ public class ApacheHttpClientInstrumentationTest extends AbstractInstrumenterTes
             .getAttributes()
             .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
     Assertions.assertEquals(
-        JSON, clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+        readInputStream(entity.getContent()),
+        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
     Assertions.assertNull(
         clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
   }
