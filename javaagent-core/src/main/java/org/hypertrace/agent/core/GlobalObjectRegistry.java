@@ -22,11 +22,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.WeakHashMap;
 
-public class GlobalContextHolder {
+public class GlobalObjectRegistry {
 
   public static final WeakHashMap<Object, SpanAndBuffer> objectToSpanAndBufferMap =
       new WeakHashMap<>();
-  public static final WeakHashMap<Object, Span> objectToSpanMap = new WeakHashMap<>();
   public static final WeakHashMap<InputStream, InputStream> inputStreamMap = new WeakHashMap<>();
   public static final WeakHashMap<Object, Object> objectMap = new WeakHashMap<>();
 

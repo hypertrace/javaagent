@@ -36,7 +36,7 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import org.hypertrace.agent.core.GlobalContextHolder;
+import org.hypertrace.agent.core.GlobalObjectRegistry;
 
 @AutoService(InstrumentationModule.class)
 public class InputStreamReadAllInstrumentationModule extends InstrumentationModule {
@@ -132,7 +132,7 @@ public class InputStreamReadAllInstrumentationModule extends InstrumentationModu
   public static class InputStream_ReadNoArgsAdvice {
     @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = Advice.OnNonDefaultValue.class)
     public static boolean readStart(@Advice.This InputStream thizz) {
-      InputStream bufferedInputStream = GlobalContextHolder.inputStreamMap.get(thizz);
+      InputStream bufferedInputStream = GlobalObjectRegistry.inputStreamMap.get(thizz);
       if (bufferedInputStream == null) {
         return false;
       }
@@ -144,7 +144,7 @@ public class InputStreamReadAllInstrumentationModule extends InstrumentationModu
     public static void readEnd(
         @Advice.This java.io.InputStream thizz, @Advice.Return(readOnly = false) int read)
         throws IOException {
-      InputStream bufferedInputStream = GlobalContextHolder.inputStreamMap.get(thizz);
+      InputStream bufferedInputStream = GlobalObjectRegistry.inputStreamMap.get(thizz);
       if (bufferedInputStream == null) {
         return;
       }
@@ -155,7 +155,7 @@ public class InputStreamReadAllInstrumentationModule extends InstrumentationModu
   public static class InputStream_ReadByteArrayAdvice {
     @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = Advice.OnNonDefaultValue.class)
     public static boolean readStart(@Advice.This InputStream thizz) {
-      InputStream bufferedInputStream = GlobalContextHolder.inputStreamMap.get(thizz);
+      InputStream bufferedInputStream = GlobalObjectRegistry.inputStreamMap.get(thizz);
       if (bufferedInputStream == null) {
         return false;
       }
@@ -168,7 +168,7 @@ public class InputStreamReadAllInstrumentationModule extends InstrumentationModu
         @Advice.Return(readOnly = false) int read,
         @Advice.Argument(value = 0, readOnly = false) byte b[])
         throws IOException {
-      InputStream bufferedInputStream = GlobalContextHolder.inputStreamMap.get(thizz);
+      InputStream bufferedInputStream = GlobalObjectRegistry.inputStreamMap.get(thizz);
       if (bufferedInputStream == null) {
         return;
       }
@@ -179,7 +179,7 @@ public class InputStreamReadAllInstrumentationModule extends InstrumentationModu
   public static class InputStream_ReadByteArrayOffsetAdvice {
     @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = Advice.OnNonDefaultValue.class)
     public static boolean readStart(@Advice.This InputStream thizz) {
-      InputStream bufferedInputStream = GlobalContextHolder.inputStreamMap.get(thizz);
+      InputStream bufferedInputStream = GlobalObjectRegistry.inputStreamMap.get(thizz);
       if (bufferedInputStream == null) {
         return false;
       }
@@ -194,7 +194,7 @@ public class InputStreamReadAllInstrumentationModule extends InstrumentationModu
         @Advice.Argument(1) int off,
         @Advice.Argument(2) int len)
         throws IOException {
-      InputStream bufferedInputStream = GlobalContextHolder.inputStreamMap.get(thizz);
+      InputStream bufferedInputStream = GlobalObjectRegistry.inputStreamMap.get(thizz);
       if (bufferedInputStream == null) {
         return;
       }
@@ -205,7 +205,7 @@ public class InputStreamReadAllInstrumentationModule extends InstrumentationModu
   public static class InputStream_Skip {
     @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = Advice.OnNonDefaultValue.class)
     public static boolean enter(@Advice.This InputStream thizz) {
-      InputStream bufferedInputStream = GlobalContextHolder.inputStreamMap.get(thizz);
+      InputStream bufferedInputStream = GlobalObjectRegistry.inputStreamMap.get(thizz);
       if (bufferedInputStream == null) {
         return false;
       }
@@ -218,7 +218,7 @@ public class InputStreamReadAllInstrumentationModule extends InstrumentationModu
         @Advice.Argument(0) long n,
         @Advice.Return(readOnly = false) long skipped)
         throws IOException {
-      InputStream bufferedInputStream = GlobalContextHolder.inputStreamMap.get(thizz);
+      InputStream bufferedInputStream = GlobalObjectRegistry.inputStreamMap.get(thizz);
       if (bufferedInputStream == null) {
         return;
       }
@@ -229,7 +229,7 @@ public class InputStreamReadAllInstrumentationModule extends InstrumentationModu
   public static class InputStream_Available {
     @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = Advice.OnNonDefaultValue.class)
     public static boolean enter(@Advice.This InputStream thizz) {
-      InputStream bufferedInputStream = GlobalContextHolder.inputStreamMap.get(thizz);
+      InputStream bufferedInputStream = GlobalObjectRegistry.inputStreamMap.get(thizz);
       if (bufferedInputStream == null) {
         return false;
       }
@@ -240,7 +240,7 @@ public class InputStreamReadAllInstrumentationModule extends InstrumentationModu
     public static void exit(
         @Advice.This java.io.InputStream thizz, @Advice.Return(readOnly = false) long available)
         throws IOException {
-      InputStream bufferedInputStream = GlobalContextHolder.inputStreamMap.get(thizz);
+      InputStream bufferedInputStream = GlobalObjectRegistry.inputStreamMap.get(thizz);
       if (bufferedInputStream == null) {
         return;
       }
@@ -251,7 +251,7 @@ public class InputStreamReadAllInstrumentationModule extends InstrumentationModu
   public static class InputStream_Close {
     @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = Advice.OnNonDefaultValue.class)
     public static boolean enter(@Advice.This InputStream thizz) {
-      InputStream bufferedInputStream = GlobalContextHolder.inputStreamMap.get(thizz);
+      InputStream bufferedInputStream = GlobalObjectRegistry.inputStreamMap.get(thizz);
       if (bufferedInputStream == null) {
         return false;
       }
@@ -260,7 +260,7 @@ public class InputStreamReadAllInstrumentationModule extends InstrumentationModu
 
     @Advice.OnMethodExit()
     public static void exit(@Advice.This java.io.InputStream thizz) throws IOException {
-      InputStream bufferedInputStream = GlobalContextHolder.inputStreamMap.get(thizz);
+      InputStream bufferedInputStream = GlobalObjectRegistry.inputStreamMap.get(thizz);
       if (bufferedInputStream == null) {
         return;
       }
@@ -271,7 +271,7 @@ public class InputStreamReadAllInstrumentationModule extends InstrumentationModu
   public static class InputStream_Mark {
     @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = Advice.OnNonDefaultValue.class)
     public static boolean enter(@Advice.This InputStream thizz) {
-      InputStream bufferedInputStream = GlobalContextHolder.inputStreamMap.get(thizz);
+      InputStream bufferedInputStream = GlobalObjectRegistry.inputStreamMap.get(thizz);
       if (bufferedInputStream == null) {
         return false;
       }
@@ -281,7 +281,7 @@ public class InputStreamReadAllInstrumentationModule extends InstrumentationModu
     @Advice.OnMethodExit()
     public static void exit(
         @Advice.This java.io.InputStream thizz, @Advice.Argument(0) int readlimit) {
-      InputStream bufferedInputStream = GlobalContextHolder.inputStreamMap.get(thizz);
+      InputStream bufferedInputStream = GlobalObjectRegistry.inputStreamMap.get(thizz);
       if (bufferedInputStream == null) {
         return;
       }
@@ -292,7 +292,7 @@ public class InputStreamReadAllInstrumentationModule extends InstrumentationModu
   public static class InputStream_Reset {
     @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = Advice.OnNonDefaultValue.class)
     public static boolean enter(@Advice.This InputStream thizz) {
-      InputStream bufferedInputStream = GlobalContextHolder.inputStreamMap.get(thizz);
+      InputStream bufferedInputStream = GlobalObjectRegistry.inputStreamMap.get(thizz);
       if (bufferedInputStream == null) {
         return false;
       }
@@ -301,7 +301,7 @@ public class InputStreamReadAllInstrumentationModule extends InstrumentationModu
 
     @Advice.OnMethodExit()
     public static void exit(@Advice.This java.io.InputStream thizz) throws IOException {
-      InputStream bufferedInputStream = GlobalContextHolder.inputStreamMap.get(thizz);
+      InputStream bufferedInputStream = GlobalObjectRegistry.inputStreamMap.get(thizz);
       if (bufferedInputStream == null) {
         return;
       }
@@ -312,7 +312,7 @@ public class InputStreamReadAllInstrumentationModule extends InstrumentationModu
   public static class InputStream_MarkSupported {
     @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = Advice.OnNonDefaultValue.class)
     public static boolean enter(@Advice.This InputStream thizz) {
-      InputStream bufferedInputStream = GlobalContextHolder.inputStreamMap.get(thizz);
+      InputStream bufferedInputStream = GlobalObjectRegistry.inputStreamMap.get(thizz);
       if (bufferedInputStream == null) {
         return false;
       }
@@ -323,7 +323,7 @@ public class InputStreamReadAllInstrumentationModule extends InstrumentationModu
     public static void exit(
         @Advice.This java.io.InputStream thizz,
         @Advice.Return(readOnly = false) boolean markSupported) {
-      InputStream bufferedInputStream = GlobalContextHolder.inputStreamMap.get(thizz);
+      InputStream bufferedInputStream = GlobalObjectRegistry.inputStreamMap.get(thizz);
       if (bufferedInputStream == null) {
         return;
       }

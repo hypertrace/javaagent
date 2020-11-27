@@ -48,7 +48,7 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.hypertrace.agent.core.ContentTypeUtils;
-import org.hypertrace.agent.core.GlobalContextHolder;
+import org.hypertrace.agent.core.GlobalObjectRegistry;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 
 @AutoService(InstrumentationModule.class)
@@ -205,8 +205,8 @@ public class ApacheClientReadAllInstrumentationModule extends InstrumentationMod
               HypertraceSemanticAttributes.HTTP_RESPONSE_BODY.getKey(), new String(bodyBytes));
           ByteArrayInputStream bufferedInputStream = new ByteArrayInputStream(bodyBytes);
 
-          GlobalContextHolder.objectMap.put(entity, inputStream);
-          GlobalContextHolder.inputStreamMap.put(inputStream, bufferedInputStream);
+          GlobalObjectRegistry.objectMap.put(entity, inputStream);
+          GlobalObjectRegistry.inputStreamMap.put(inputStream, bufferedInputStream);
         } catch (IOException e) {
           // TODO log
           e.printStackTrace();
@@ -241,10 +241,10 @@ public class ApacheClientReadAllInstrumentationModule extends InstrumentationMod
         @Advice.Return(readOnly = false) InputStream inputStream,
         @Advice.Thrown(readOnly = false) Throwable exception) {
       if (exception instanceof IllegalStateException) {
-        Object originalInputStream = GlobalContextHolder.objectMap.get(thizz);
+        Object originalInputStream = GlobalObjectRegistry.objectMap.get(thizz);
         if (originalInputStream != null) {
           // TODO race condition
-          GlobalContextHolder.objectMap.remove(thizz);
+          GlobalObjectRegistry.objectMap.remove(thizz);
           inputStream = (InputStream) originalInputStream;
           exception = null;
         }

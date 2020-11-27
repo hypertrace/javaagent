@@ -34,8 +34,8 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import org.hypertrace.agent.core.GlobalContextHolder;
-import org.hypertrace.agent.core.GlobalContextHolder.SpanAndBuffer;
+import org.hypertrace.agent.core.GlobalObjectRegistry;
+import org.hypertrace.agent.core.GlobalObjectRegistry.SpanAndBuffer;
 
 /**
  * Maybe we could add optimization to instrument the input streams only when certain classes are
@@ -94,7 +94,7 @@ public class InputStreamInstrumentaionModule extends InstrumentationModule {
   public static class InputStream_ReadNoArgsAdvice {
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void readEnd(@Advice.This java.io.InputStream thizz, @Advice.Return int read) {
-      SpanAndBuffer spanAndBuffer = GlobalContextHolder.objectToSpanAndBufferMap.get(thizz);
+      SpanAndBuffer spanAndBuffer = GlobalObjectRegistry.objectToSpanAndBufferMap.get(thizz);
       if (spanAndBuffer == null) {
         return;
       }
@@ -114,7 +114,7 @@ public class InputStreamInstrumentaionModule extends InstrumentationModule {
         @Advice.This java.io.InputStream thizz,
         @Advice.Return int read,
         @Advice.Argument(0) byte b[]) {
-      SpanAndBuffer spanAndBuffer = GlobalContextHolder.objectToSpanAndBufferMap.get(thizz);
+      SpanAndBuffer spanAndBuffer = GlobalObjectRegistry.objectToSpanAndBufferMap.get(thizz);
       if (spanAndBuffer == null) {
         return;
       }
@@ -135,7 +135,7 @@ public class InputStreamInstrumentaionModule extends InstrumentationModule {
         @Advice.Argument(0) byte b[],
         @Advice.Argument(1) int off,
         @Advice.Argument(2) int len) {
-      SpanAndBuffer spanAndBuffer = GlobalContextHolder.objectToSpanAndBufferMap.get(thizz);
+      SpanAndBuffer spanAndBuffer = GlobalObjectRegistry.objectToSpanAndBufferMap.get(thizz);
       if (spanAndBuffer == null) {
         return;
       }

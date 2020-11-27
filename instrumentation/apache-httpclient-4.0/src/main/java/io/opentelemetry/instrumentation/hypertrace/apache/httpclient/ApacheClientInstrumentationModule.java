@@ -44,8 +44,8 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.hypertrace.agent.core.ContentTypeUtils;
-import org.hypertrace.agent.core.GlobalContextHolder;
-import org.hypertrace.agent.core.GlobalContextHolder.SpanAndBuffer;
+import org.hypertrace.agent.core.GlobalObjectRegistry;
+import org.hypertrace.agent.core.GlobalObjectRegistry.SpanAndBuffer;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 
 @AutoService(InstrumentationModule.class)
@@ -58,6 +58,13 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
   @Override
   public int getOrder() {
     return 1;
+  }
+
+  @Override
+  public String[] helperClassNames() {
+    return new String[] {
+        packageName + ".ApacheHttpClientObjectRegistry"
+    };
   }
 
   @Override
@@ -164,7 +171,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
         HttpEntity entity = httpResponse.getEntity();
         System.out.println("Adding entity to map");
         System.out.println(currentSpan);
-        GlobalContextHolder.objectToSpanMap.put(entity, currentSpan);
+        ApacheHttpClientObjectRegistry.objectToSpanMap.put(entity, currentSpan);
       } else {
         System.out.println("\n\nIt is not HttpResponse #execute");
       }
@@ -190,10 +197,10 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
   static class HttpEntity_GetContentAdvice {
 
     @Advice.OnMethodExit(suppress = Throwable.class)
-    public static void readEnd(
+    public static void exit(
         @Advice.Return InputStream inputStream, @Advice.This HttpEntity thizz) {
       // here the Span.current() has already been finished
-      Span clientSpan = GlobalContextHolder.objectToSpanMap.get(thizz);
+      Span clientSpan = ApacheHttpClientObjectRegistry.objectToSpanMap.remove(thizz);
       // HttpEntity might be wrapped multiple times
       // this ensures that the advice runs only for the most outer one
       // the returned inputStream is put into globally accessible map
@@ -218,7 +225,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
               clientSpan,
               new ByteArrayOutputStream((int) contentSize),
               HypertraceSemanticAttributes.HTTP_RESPONSE_BODY);
-      GlobalContextHolder.objectToSpanAndBufferMap.put(inputStream, spanAndBuffer);
+      GlobalObjectRegistry.objectToSpanAndBufferMap.put(inputStream, spanAndBuffer);
     }
   }
 }
