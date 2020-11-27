@@ -120,7 +120,6 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
       if (callDepth > 0) {
         return false;
       }
-      System.out.println("\non enter");
       ApacheHttpClientUtils.traceRequest(request);
       return true;
     }
@@ -141,7 +140,6 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
       if (callDepth > 0) {
         return false;
       }
-      System.out.println("\non enter");
       ApacheHttpClientUtils.traceRequest(request);
       return true;
     }
@@ -156,18 +154,28 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
   }
 
   static class HttpClient_ExecuteAdvice_response {
+    @Advice.OnMethodEnter(suppress = Throwable.class)
+    public static boolean enter() {
+      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(HttpResponse.class);
+      if (callDepth > 0) {
+        return false;
+      }
+      return true;
+    }
+
     @Advice.OnMethodExit(suppress = Throwable.class)
-    public static void exit(@Advice.Return Object response) {
-      System.out.println("exit advice");
+    public static void exit(@Advice.Return Object response, @Advice.Enter boolean returnFromEnter) {
+      if (!returnFromEnter) {
+        return;
+      }
+
+      CallDepthThreadLocalMap.reset(HttpResponse.class);
       if (response instanceof HttpResponse) {
         HttpResponse httpResponse = (HttpResponse) response;
         Span currentSpan = Java8BytecodeBridge.currentSpan();
         ApacheHttpClientUtils.addResponseHeaders(currentSpan, httpResponse.headerIterator());
 
         HttpEntity entity = httpResponse.getEntity();
-        if (entity == null) {
-          return;
-        }
         // TODO check entity.isRepeatable() and read the full body
         ApacheHttpClientUtils.traceEntity(currentSpan, entity);
       } else {
@@ -202,7 +210,6 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void exit(@Advice.This HttpEntity thizz, @Advice.Return InputStream inputStream) {
       // here the Span.current() is finished for response entities
-      System.out.println("\n\n GetContent");
       Span clientSpan = ApacheHttpClientObjectRegistry.objectToSpanMap.remove(thizz);
       // HttpEntity might be wrapped multiple times
       // this ensures that the advice runs only for the most outer one
@@ -244,9 +251,6 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
         return;
       }
 
-      // TODO proceed only if the entity wasn't read
-      System.out.println("\n\n writeTo\n\n");
-      System.out.println(thizz.getClass().getName());
       long contentSize = thizz.getContentLength();
       if (contentSize <= 0 || contentSize == Long.MAX_VALUE) {
         contentSize = ContentLengthUtils.DEFAULT;
@@ -272,9 +276,8 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
           (ByteArrayOutputStream) GlobalObjectRegistry.objectMap.remove(outputStream);
       byte[] bodyBytes = bufferedOutStream.toByteArray();
       String body = new String(bodyBytes, charset);
-      System.out.printf("request body via outputstream: %s\n", body);
-      // TODO add to span
-      //      InputStreamUtils.addAttribute(spanAndBuffer.span, spanAndBuffer.attributeKey, body);
+      System.out.printf("Captured request body via outputstream: %s\n", body);
+      clientSpan.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, body);
     }
   }
 }

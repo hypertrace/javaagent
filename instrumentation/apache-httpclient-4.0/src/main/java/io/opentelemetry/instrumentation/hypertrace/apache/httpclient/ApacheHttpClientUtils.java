@@ -85,8 +85,6 @@ public class ApacheHttpClientUtils {
     if (httpEntity == null) {
       return;
     }
-    System.out.println("Adding entity to map");
-    System.out.println(span);
     ApacheHttpClientObjectRegistry.objectToSpanMap.put(httpEntity, span);
   }
 }
