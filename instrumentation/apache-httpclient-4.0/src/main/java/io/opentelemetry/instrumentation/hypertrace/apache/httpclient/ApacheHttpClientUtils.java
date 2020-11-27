@@ -60,23 +60,24 @@ public class ApacheHttpClientUtils {
     if (request instanceof HttpEntityEnclosingRequest) {
       HttpEntityEnclosingRequest entityRequest = (HttpEntityEnclosingRequest) request;
       HttpEntity entity = entityRequest.getEntity();
-      if (entity.isRepeatable()) {
-        try {
-          ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-          entity.writeTo(byteArrayOutputStream);
-          String encoding =
-              entity.getContentEncoding() != null ? entity.getContentEncoding().getValue() : "";
-          String body =
-              new String(
-                  byteArrayOutputStream.toByteArray(), ContentEncodingUtils.toCharset(encoding));
-          System.out.printf("request readable body is %s\n", body);
-          currentSpan.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, body);
-        } catch (IOException e) {
-          log.error("Could not read request input stream from repeatable request entity/body", e);
-        }
-        return;
+      if (!entity.isRepeatable()) {
+        // non repeatable entities are captured via
+        // HttpEntity.writeTo(OutputStream) and OutputStream instrumentations
+        ApacheHttpClientUtils.traceEntity(currentSpan, entity);
       }
-      ApacheHttpClientUtils.traceEntity(currentSpan, entity);
+      try {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        entity.writeTo(byteArrayOutputStream);
+        String encoding =
+            entity.getContentEncoding() != null ? entity.getContentEncoding().getValue() : "";
+        String body =
+            new String(
+                byteArrayOutputStream.toByteArray(), ContentEncodingUtils.toCharset(encoding));
+        System.out.printf("captured request readable body is %s\n", body);
+        currentSpan.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, body);
+      } catch (IOException e) {
+        log.error("Could not read request input stream from repeatable request entity/body", e);
+      }
     }
   }
 

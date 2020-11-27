@@ -42,7 +42,7 @@ import org.hypertrace.agent.core.GlobalObjectRegistry;
 public class InputStreamReadAllInstrumentationModule extends InstrumentationModule {
 
   public InputStreamReadAllInstrumentationModule() {
-    super("inputstream-readall");
+    super("httpclient-readall");
   }
 
   @Override

@@ -6,7 +6,7 @@ plugins {
 }
 
 muzzle {
-    // TODO this does not fail
+    // TODO this check fails, but it passes in OTEL
 //    fail {
 //        group = "commons-httpclient"
 //        module = "commons-httpclient"
