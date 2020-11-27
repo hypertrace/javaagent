@@ -17,6 +17,7 @@
 package io.opentelemetry.instrumentation.hypertrace.apache.httpclient;
 
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.implementsInterface;
+import static net.bytebuddy.matcher.ElementMatchers.hasSuperType;
 import static net.bytebuddy.matcher.ElementMatchers.isAbstract;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.named;
@@ -27,11 +28,13 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import com.google.auto.service.AutoService;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -43,6 +46,7 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpMessage;
 import org.apache.http.HttpResponse;
 import org.hypertrace.agent.core.ContentEncodingUtils;
 import org.hypertrace.agent.core.ContentLengthUtils;
@@ -65,7 +69,9 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
 
   @Override
   public String[] helperClassNames() {
-    return new String[] {packageName + ".ApacheHttpClientObjectRegistry"};
+    return new String[] {
+      packageName + ".ApacheHttpClientObjectRegistry", packageName + ".ApacheHttpClientUtils",
+    };
   }
 
   @Override
@@ -84,95 +90,86 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
     public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
       Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>();
 
+      // instrument response
       transformers.put(
-          isMethod()
-              .and(named("execute"))
-              .and(not(isAbstract()))
-              .and(takesArguments(1))
-              .and(takesArgument(0, named("org.apache.http.client.methods.HttpUriRequest"))),
-          HttpClient_ExecuteAdvice.class.getName());
+          isMethod().and(named("execute")).and(not(isAbstract())),
+          HttpClient_ExecuteAdvice_response.class.getName());
 
+      // instrument request
       transformers.put(
           isMethod()
               .and(named("execute"))
               .and(not(isAbstract()))
-              .and(takesArguments(2))
-              .and(takesArgument(0, named("org.apache.http.client.methods.HttpUriRequest")))
-              .and(takesArgument(1, named("org.apache.http.protocol.HttpContext"))),
-          HttpClient_ExecuteAdvice.class.getName());
+              .and(takesArgument(0, hasSuperType(named("org.apache.http.HttpMessage")))),
+          HttpClient_ExecuteAdvice_request0.class.getName());
+      transformers.put(
+          isMethod()
+              .and(named("execute"))
+              .and(not(isAbstract()))
+              .and(takesArgument(1, hasSuperType(named("org.apache.http.HttpMessage")))),
+          HttpClient_ExecuteAdvice_request1.class.getName());
 
-      transformers.put(
-          isMethod()
-              .and(named("execute"))
-              .and(not(isAbstract()))
-              .and(takesArguments(2))
-              .and(takesArgument(0, named("org.apache.http.client.methods.HttpUriRequest")))
-              .and(takesArgument(1, named("org.apache.http.client.ResponseHandler"))),
-          HttpClient_ExecuteAdvice.class.getName());
-
-      transformers.put(
-          isMethod()
-              .and(named("execute"))
-              .and(not(isAbstract()))
-              .and(takesArguments(3))
-              .and(takesArgument(0, named("org.apache.http.client.methods.HttpUriRequest")))
-              .and(takesArgument(1, named("org.apache.http.client.ResponseHandler")))
-              .and(takesArgument(2, named("org.apache.http.protocol.HttpContext"))),
-          HttpClient_ExecuteAdvice.class.getName());
-
-      transformers.put(
-          isMethod()
-              .and(named("execute"))
-              .and(not(isAbstract()))
-              .and(takesArguments(2))
-              .and(takesArgument(0, named("org.apache.http.HttpHost")))
-              .and(takesArgument(1, named("org.apache.http.HttpRequest"))),
-          HttpClient_ExecuteAdvice.class.getName());
-
-      transformers.put(
-          isMethod()
-              .and(named("execute"))
-              .and(not(isAbstract()))
-              .and(takesArguments(3))
-              .and(takesArgument(0, named("org.apache.http.HttpHost")))
-              .and(takesArgument(1, named("org.apache.http.HttpRequest")))
-              .and(takesArgument(2, named("org.apache.http.protocol.HttpContext"))),
-          HttpClient_ExecuteAdvice.class.getName());
-
-      transformers.put(
-          isMethod()
-              .and(named("execute"))
-              .and(not(isAbstract()))
-              .and(takesArguments(3))
-              .and(takesArgument(0, named("org.apache.http.HttpHost")))
-              .and(takesArgument(1, named("org.apache.http.HttpRequest")))
-              .and(takesArgument(2, named("org.apache.http.client.ResponseHandler"))),
-          HttpClient_ExecuteAdvice.class.getName());
-
-      transformers.put(
-          isMethod()
-              .and(named("execute"))
-              .and(not(isAbstract()))
-              .and(takesArguments(4))
-              .and(takesArgument(0, named("org.apache.http.HttpHost")))
-              .and(takesArgument(1, named("org.apache.http.HttpRequest")))
-              .and(takesArgument(2, named("org.apache.http.client.ResponseHandler")))
-              .and(takesArgument(3, named("org.apache.http.protocol.HttpContext"))),
-          HttpClient_ExecuteAdvice.class.getName());
       return transformers;
     }
   }
 
-  static class HttpClient_ExecuteAdvice {
+  static class HttpClient_ExecuteAdvice_request0 {
+    @Advice.OnMethodEnter(suppress = Throwable.class)
+    public static boolean enter(@Advice.Argument(0) HttpMessage request) {
+      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(HttpMessage.class);
+      if (callDepth > 0) {
+        return false;
+      }
+      System.out.println("\non enter");
+      ApacheHttpClientUtils.traceRequest(request);
+      return true;
+    }
+
+    @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
+    public static void exit(
+        @Advice.Enter boolean returnFromEnter, @Advice.Thrown Throwable throwable) {
+      if (returnFromEnter) {
+        CallDepthThreadLocalMap.reset(HttpMessage.class);
+      }
+    }
+  }
+
+  static class HttpClient_ExecuteAdvice_request1 {
+    @Advice.OnMethodEnter(suppress = Throwable.class)
+    public static boolean enter(@Advice.Argument(1) HttpMessage request) {
+      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(HttpMessage.class);
+      if (callDepth > 0) {
+        return false;
+      }
+      System.out.println("\non enter");
+      ApacheHttpClientUtils.traceRequest(request);
+      return true;
+    }
+
+    @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
+    public static void exit(
+        @Advice.Enter boolean returnFromEnter, @Advice.Thrown Throwable throwable) {
+      if (returnFromEnter) {
+        CallDepthThreadLocalMap.reset(HttpMessage.class);
+      }
+    }
+  }
+
+  static class HttpClient_ExecuteAdvice_response {
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void exit(@Advice.Return Object response) {
+      System.out.println("exit advice");
       if (response instanceof HttpResponse) {
-        Span currentSpan = Java8BytecodeBridge.currentSpan();
         HttpResponse httpResponse = (HttpResponse) response;
+        Span currentSpan = Java8BytecodeBridge.currentSpan();
+        ApacheHttpClientUtils.addResponseHeaders(currentSpan, httpResponse.headerIterator());
+
         HttpEntity entity = httpResponse.getEntity();
-        System.out.println("Adding entity to map");
-        System.out.println(currentSpan);
-        ApacheHttpClientObjectRegistry.objectToSpanMap.put(entity, currentSpan);
+        if (entity == null) {
+          return;
+        }
+        // TODO check entity.isRepeatable() and read the full body
+        ApacheHttpClientUtils.traceEntity(currentSpan, entity);
       } else {
         System.out.println("\n\nIt is not HttpResponse #execute");
       }
@@ -191,6 +188,11 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
       transformers.put(
           named("getContent").and(takesArguments(0)).and(returns(InputStream.class)),
           HttpEntity_GetContentAdvice.class.getName());
+      transformers.put(
+          named("writeTo")
+              .and(takesArguments(1))
+              .and(takesArgument(0, named("java.io.OutputStream"))),
+          HttpEntity_WriteToAdvice.class.getName());
       return transformers;
     }
   }
@@ -198,8 +200,9 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
   static class HttpEntity_GetContentAdvice {
 
     @Advice.OnMethodExit(suppress = Throwable.class)
-    public static void exit(@Advice.Return InputStream inputStream, @Advice.This HttpEntity thizz) {
-      // here the Span.current() has already been finished
+    public static void exit(@Advice.This HttpEntity thizz, @Advice.Return InputStream inputStream) {
+      // here the Span.current() is finished for response entities
+      System.out.println("\n\n GetContent");
       Span clientSpan = ApacheHttpClientObjectRegistry.objectToSpanMap.remove(thizz);
       // HttpEntity might be wrapped multiple times
       // this ensures that the advice runs only for the most outer one
@@ -230,6 +233,16 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
               HypertraceSemanticAttributes.HTTP_RESPONSE_BODY,
               charset);
       GlobalObjectRegistry.objectToSpanAndBufferMap.put(inputStream, spanAndBuffer);
+    }
+  }
+
+  static class HttpEntity_WriteToAdvice {
+    @Advice.OnMethodEnter(suppress = Throwable.class)
+    public static void enter(
+        @Advice.This HttpEntity thizz, @Advice.Argument(0) OutputStream outputStream) {
+      ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+      System.out.println("\n\n writeTo\n\n");
     }
   }
 }

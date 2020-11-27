@@ -103,8 +103,6 @@ public class InputStreamInstrumentaionModule extends InstrumentationModule {
       } else if (read == -1) {
         byte[] bodyBytes = spanAndBuffer.buffer.toByteArray();
         String body = new String(bodyBytes, spanAndBuffer.charset);
-
-        // if span has already finished we start new one
         InputStreamUtils.addAttribute(spanAndBuffer.span, spanAndBuffer.attributeKey, body);
         GlobalObjectRegistry.objectToSpanAndBufferMap.remove(thizz);
       }
@@ -124,7 +122,8 @@ public class InputStreamInstrumentaionModule extends InstrumentationModule {
       if (read > 0) {
         spanAndBuffer.buffer.write(b, 0, read);
       } else if (read == -1) {
-        String body = spanAndBuffer.buffer.toString();
+        byte[] bodyBytes = spanAndBuffer.buffer.toByteArray();
+        String body = new String(bodyBytes, spanAndBuffer.charset);
         InputStreamUtils.addAttribute(spanAndBuffer.span, spanAndBuffer.attributeKey, body);
         GlobalObjectRegistry.objectToSpanAndBufferMap.remove(thizz);
       }
@@ -146,7 +145,8 @@ public class InputStreamInstrumentaionModule extends InstrumentationModule {
       if (read > 0) {
         spanAndBuffer.buffer.write(b, off, read);
       } else if (read == -1) {
-        String body = spanAndBuffer.buffer.toString();
+        byte[] bodyBytes = spanAndBuffer.buffer.toByteArray();
+        String body = new String(bodyBytes, spanAndBuffer.charset);
         InputStreamUtils.addAttribute(spanAndBuffer.span, spanAndBuffer.attributeKey, body);
         GlobalObjectRegistry.objectToSpanAndBufferMap.remove(thizz);
       }

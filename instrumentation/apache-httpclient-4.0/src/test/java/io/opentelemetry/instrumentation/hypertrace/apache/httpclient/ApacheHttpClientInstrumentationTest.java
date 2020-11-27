@@ -25,13 +25,20 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.HTTP;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.hypertrace.agent.testing.TestHttpServer;
 import org.junit.jupiter.api.AfterAll;
@@ -42,6 +49,8 @@ import org.junit.jupiter.api.Test;
 public class ApacheHttpClientInstrumentationTest extends AbstractInstrumenterTest {
 
   private static final TestHttpServer testHttpServer = new TestHttpServer();
+
+  private final HttpClient client = new DefaultHttpClient();
 
   @BeforeAll
   public static void startServer() throws Exception {
@@ -54,15 +63,15 @@ public class ApacheHttpClientInstrumentationTest extends AbstractInstrumenterTes
   }
 
   @Test
-  public void test() throws IOException, TimeoutException, InterruptedException {
-    HttpClient client = new DefaultHttpClient();
+  public void getJson() throws IOException, TimeoutException, InterruptedException {
     HttpGet getRequest = new HttpGet();
+    getRequest.addHeader("foo", "bar");
     getRequest.setURI(
         URI.create(String.format("http://localhost:%d/get_json", testHttpServer.port())));
     HttpResponse response = client.execute(getRequest);
     Assertions.assertEquals(200, response.getStatusLine().getStatusCode());
 
-    Span currentSpan = Span.current();
+    Assertions.assertEquals(false, Span.current().isRecording());
 
     // TODO add test when a different span is active
     System.out.println(response.getEntity());
@@ -94,6 +103,42 @@ public class ApacheHttpClientInstrumentationTest extends AbstractInstrumenterTes
   }
 
   @Test
+  public void postUrlEncoded() throws IOException, TimeoutException, InterruptedException {
+    List<NameValuePair> nvps = new ArrayList<>();
+    nvps.add(new BasicNameValuePair("code", "22"));
+    nvps.add(new BasicNameValuePair("client_id", "50"));
+
+    HttpPost postRequest = new HttpPost();
+    postRequest.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
+    postRequest.setURI(
+        URI.create(String.format("http://localhost:%d/post", testHttpServer.port())));
+    HttpResponse response = client.execute(postRequest);
+    Assertions.assertEquals(204, response.getStatusLine().getStatusCode());
+
+    TEST_WRITER.waitForTraces(1);
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+  }
+
+  @Test
+  public void postUrlJson() throws IOException, TimeoutException, InterruptedException {
+    HttpPost postRequest = new HttpPost();
+
+    String json = "{\"id\":1,\"name\":\"John\"}";
+    StringEntity entity = new StringEntity(json);
+    postRequest.setEntity(entity);
+    postRequest.setHeader("Content-type", "application/json");
+
+    postRequest.setEntity(entity);
+    postRequest.setURI(
+        URI.create(String.format("http://localhost:%d/post", testHttpServer.port())));
+    HttpResponse response = client.execute(postRequest);
+    Assertions.assertEquals(204, response.getStatusLine().getStatusCode());
+
+    TEST_WRITER.waitForTraces(1);
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+  }
+
+  @Test
   public void getContent_throws_exception() throws IOException {
     HttpClient client = new DefaultHttpClient();
     HttpGet getRequest = new HttpGet();
@@ -116,7 +161,6 @@ public class ApacheHttpClientInstrumentationTest extends AbstractInstrumenterTes
         new BufferedReader(
             new InputStreamReader(inputStream, Charset.forName(StandardCharsets.UTF_8.name())))) {
       int c = 0;
-      // or reader.readLine()
       while ((c = reader.read()) != -1) {
         textBuilder.append((char) c);
       }

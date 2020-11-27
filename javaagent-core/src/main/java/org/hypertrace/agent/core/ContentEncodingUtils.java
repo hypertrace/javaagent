@@ -17,6 +17,7 @@
 package org.hypertrace.agent.core;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,17 +27,18 @@ public class ContentEncodingUtils {
   private static final Logger log = LoggerFactory.getLogger(ContentEncodingUtils.class);
 
   // default for HTTP 1.1 https://www.w3.org/International/articles/http-charset/index
-  private static final Charset DEFAULT = Charset.forName("ISO-8859-1");
+  private static final Charset DEFAULT_CHARSET = StandardCharsets.ISO_8859_1;
 
   public static Charset toCharset(String encoding) {
     if (encoding == null || encoding.isEmpty()) {
-      return DEFAULT;
+      return DEFAULT_CHARSET;
     }
     try {
       return Charset.forName(encoding);
     } catch (Exception e) {
-      log.error("Could not parse encoding {} to charset, using default {}", encoding, DEFAULT);
+      log.error(
+          "Could not parse encoding {} to charset, using default {}", encoding, DEFAULT_CHARSET);
     }
-    return DEFAULT;
+    return DEFAULT_CHARSET;
   }
 }
