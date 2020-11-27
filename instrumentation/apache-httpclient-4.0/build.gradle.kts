@@ -5,6 +5,29 @@ plugins {
     muzzle
 }
 
+muzzle {
+    // TODO this does not fail
+//    fail {
+//        group = "commons-httpclient"
+//        module = "commons-httpclient"
+//        versions = "[,4.0)"
+//        skipVersions.add("3.1-jenkins-1")
+//    }
+    pass {
+        group = "org.apache.httpcomponents"
+        module = "httpclient"
+        versions = "[4.0,)"
+        assertInverse = true
+    }
+    pass {
+        // We want to support the dropwizard clients too.
+        group = "io.dropwizard"
+        module = "dropwizard-client"
+        versions = "(,)"
+        assertInverse = true
+    }
+}
+
 afterEvaluate{
     byteBuddy {
         transformation(closureOf<net.bytebuddy.build.gradle.Transformation> {
