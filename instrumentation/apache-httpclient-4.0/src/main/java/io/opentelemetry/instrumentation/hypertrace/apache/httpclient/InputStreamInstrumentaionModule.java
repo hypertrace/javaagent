@@ -101,7 +101,9 @@ public class InputStreamInstrumentaionModule extends InstrumentationModule {
       if (read != -1) {
         spanAndBuffer.buffer.write((byte) read);
       } else if (read == -1) {
-        String body = spanAndBuffer.buffer.toString();
+        byte[] bodyBytes = spanAndBuffer.buffer.toByteArray();
+        String body = new String(bodyBytes, spanAndBuffer.charset);
+
         // if span has already finished we start new one
         InputStreamUtils.addAttribute(spanAndBuffer.span, spanAndBuffer.attributeKey, body);
         GlobalObjectRegistry.objectToSpanAndBufferMap.remove(thizz);

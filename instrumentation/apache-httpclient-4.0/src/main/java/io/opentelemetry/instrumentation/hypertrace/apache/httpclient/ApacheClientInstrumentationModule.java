@@ -32,6 +32,7 @@ import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -43,6 +44,8 @@ import net.bytebuddy.matcher.ElementMatcher;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.hypertrace.agent.core.ContentEncodingUtils;
+import org.hypertrace.agent.core.ContentLengthUtils;
 import org.hypertrace.agent.core.ContentTypeUtils;
 import org.hypertrace.agent.core.GlobalObjectRegistry;
 import org.hypertrace.agent.core.GlobalObjectRegistry.SpanAndBuffer;
@@ -214,14 +217,18 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
 
       long contentSize = thizz.getContentLength();
       if (contentSize <= 0 || contentSize == Long.MAX_VALUE) {
-        contentSize = 128;
+        contentSize = ContentLengthUtils.DEFAULT;
       }
 
+      String encoding =
+          thizz.getContentEncoding() != null ? thizz.getContentEncoding().getValue() : "";
+      Charset charset = ContentEncodingUtils.toCharset(encoding);
       SpanAndBuffer spanAndBuffer =
           new SpanAndBuffer(
               clientSpan,
               new ByteArrayOutputStream((int) contentSize),
-              HypertraceSemanticAttributes.HTTP_RESPONSE_BODY);
+              HypertraceSemanticAttributes.HTTP_RESPONSE_BODY,
+              charset);
       GlobalObjectRegistry.objectToSpanAndBufferMap.put(inputStream, spanAndBuffer);
     }
   }
