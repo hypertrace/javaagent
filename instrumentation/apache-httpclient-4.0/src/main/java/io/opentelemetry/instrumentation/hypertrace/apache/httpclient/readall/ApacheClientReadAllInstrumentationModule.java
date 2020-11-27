@@ -25,6 +25,7 @@ import static net.bytebuddy.matcher.ElementMatchers.returns;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
+import com.google.auto.service.AutoService;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.instrumentation.hypertrace.apache.httpclient.InputStreamUtils;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
@@ -50,11 +51,16 @@ import org.hypertrace.agent.core.ContentTypeUtils;
 import org.hypertrace.agent.core.GlobalContextHolder;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 
-// @AutoService(InstrumentationModule.class)
+@AutoService(InstrumentationModule.class)
 public class ApacheClientReadAllInstrumentationModule extends InstrumentationModule {
 
   public ApacheClientReadAllInstrumentationModule() {
     super("httpclient-readall");
+  }
+
+  @Override
+  protected boolean defaultEnabled() {
+    return false;
   }
 
   @Override

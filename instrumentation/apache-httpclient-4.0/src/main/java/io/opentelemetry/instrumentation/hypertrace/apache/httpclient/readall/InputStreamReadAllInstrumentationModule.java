@@ -23,6 +23,7 @@ import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
+import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.io.IOException;
@@ -37,12 +38,17 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.core.GlobalContextHolder;
 
-// @AutoService(InstrumentationModule.class)
+@AutoService(InstrumentationModule.class)
 public class InputStreamReadAllInstrumentationModule extends InstrumentationModule {
 
   public InputStreamReadAllInstrumentationModule() {
     super("inputstream-readall");
   }
+
+   @Override
+   protected boolean defaultEnabled() {
+     return false;
+   }
 
   @Override
   public String[] helperClassNames() {
