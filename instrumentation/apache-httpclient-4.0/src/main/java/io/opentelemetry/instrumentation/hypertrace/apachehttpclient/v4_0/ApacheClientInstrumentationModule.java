@@ -251,7 +251,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
               new ByteArrayOutputStream((int) contentSize),
               HypertraceSemanticAttributes.HTTP_RESPONSE_BODY,
               charset);
-      GlobalObjectRegistry.objectToSpanAndBufferMap.put(inputStream, spanAndBuffer);
+      GlobalObjectRegistry.inputStreamToSpanAndBufferMap.put(inputStream, spanAndBuffer);
     }
   }
 
@@ -269,7 +269,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
       }
       ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream((int) contentSize);
 
-      GlobalObjectRegistry.objectMap.put(outputStream, byteArrayOutputStream);
+      GlobalObjectRegistry.outputStreamToBufferMap.put(outputStream, byteArrayOutputStream);
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
@@ -285,7 +285,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
       Charset charset = ContentEncodingUtils.toCharset(encoding);
 
       ByteArrayOutputStream bufferedOutStream =
-          (ByteArrayOutputStream) GlobalObjectRegistry.objectMap.remove(outputStream);
+          (ByteArrayOutputStream) GlobalObjectRegistry.outputStreamToBufferMap.remove(outputStream);
       try {
         String requestBody = bufferedOutStream.toString(charset.name());
         System.out.printf("Captured request body via outputstream: %s\n", requestBody);

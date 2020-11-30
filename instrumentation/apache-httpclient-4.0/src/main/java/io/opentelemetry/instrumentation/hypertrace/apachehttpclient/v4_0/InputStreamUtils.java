@@ -68,53 +68,56 @@ public class InputStreamUtils {
   }
 
   public static void read(InputStream inputStream, int read) {
-    SpanAndBuffer spanAndBuffer = GlobalObjectRegistry.objectToSpanAndBufferMap.get(inputStream);
+    SpanAndBuffer spanAndBuffer =
+        GlobalObjectRegistry.inputStreamToSpanAndBufferMap.get(inputStream);
     if (spanAndBuffer == null) {
       return;
     }
     if (read != -1) {
-      spanAndBuffer.buffer.write((byte) read);
+      spanAndBuffer.byteArrayBuffer.write((byte) read);
     } else if (read == -1) {
       InputStreamUtils.addBody(
           spanAndBuffer.span,
           spanAndBuffer.attributeKey,
-          spanAndBuffer.buffer,
+          spanAndBuffer.byteArrayBuffer,
           spanAndBuffer.charset);
-      GlobalObjectRegistry.objectToSpanAndBufferMap.remove(inputStream);
+      GlobalObjectRegistry.inputStreamToSpanAndBufferMap.remove(inputStream);
     }
   }
 
   public static void read(InputStream inputStream, int read, byte[] b) {
-    SpanAndBuffer spanAndBuffer = GlobalObjectRegistry.objectToSpanAndBufferMap.get(inputStream);
+    SpanAndBuffer spanAndBuffer =
+        GlobalObjectRegistry.inputStreamToSpanAndBufferMap.get(inputStream);
     if (spanAndBuffer == null) {
       return;
     }
     if (read > 0) {
-      spanAndBuffer.buffer.write(b, 0, read);
+      spanAndBuffer.byteArrayBuffer.write(b, 0, read);
     } else if (read == -1) {
       InputStreamUtils.addBody(
           spanAndBuffer.span,
           spanAndBuffer.attributeKey,
-          spanAndBuffer.buffer,
+          spanAndBuffer.byteArrayBuffer,
           spanAndBuffer.charset);
-      GlobalObjectRegistry.objectToSpanAndBufferMap.remove(inputStream);
+      GlobalObjectRegistry.inputStreamToSpanAndBufferMap.remove(inputStream);
     }
   }
 
   public static void read(InputStream inputStream, int read, byte[] b, int off, int len) {
-    SpanAndBuffer spanAndBuffer = GlobalObjectRegistry.objectToSpanAndBufferMap.get(inputStream);
+    SpanAndBuffer spanAndBuffer =
+        GlobalObjectRegistry.inputStreamToSpanAndBufferMap.get(inputStream);
     if (spanAndBuffer == null) {
       return;
     }
     if (read > 0) {
-      spanAndBuffer.buffer.write(b, off, read);
+      spanAndBuffer.byteArrayBuffer.write(b, off, read);
     } else if (read == -1) {
       InputStreamUtils.addBody(
           spanAndBuffer.span,
           spanAndBuffer.attributeKey,
-          spanAndBuffer.buffer,
+          spanAndBuffer.byteArrayBuffer,
           spanAndBuffer.charset);
-      GlobalObjectRegistry.objectToSpanAndBufferMap.remove(inputStream);
+      GlobalObjectRegistry.inputStreamToSpanAndBufferMap.remove(inputStream);
     }
   }
 }

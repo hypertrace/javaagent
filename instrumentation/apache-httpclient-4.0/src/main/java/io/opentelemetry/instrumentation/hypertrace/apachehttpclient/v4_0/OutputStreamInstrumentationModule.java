@@ -43,12 +43,12 @@ import org.hypertrace.agent.core.GlobalObjectRegistry;
 
 /**
  * {@link OutputStream} instrumentation. The type matcher applies to all implementations. However
- * only streams that are in the {@link GlobalObjectRegistry#objectMap} are instrumented, otherwise
- * the instrumentation is noop.
+ * only streams that are in the {@link GlobalObjectRegistry#outputStreamToBufferMap} are
+ * instrumented, otherwise the instrumentation is noop.
  *
- * <p>If the stream is in the {@link GlobalObjectRegistry#objectMap} then arguments to write methods
- * are also passed to the buffered stream (value) from the map. The buffered stream is then used by
- * other instrumentations to capture body.
+ * <p>If the stream is in the {@link GlobalObjectRegistry#outputStreamToBufferMap} then arguments to
+ * write methods are also passed to the buffered stream (value) from the map. The buffered stream is
+ * then used by other instrumentations to capture body.
  */
 @AutoService(InstrumentationModule.class)
 public class OutputStreamInstrumentationModule extends InstrumentationModule {

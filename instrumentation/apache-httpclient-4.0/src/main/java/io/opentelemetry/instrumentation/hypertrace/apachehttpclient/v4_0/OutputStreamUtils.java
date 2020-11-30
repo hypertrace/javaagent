@@ -26,7 +26,7 @@ public class OutputStreamUtils {
   private OutputStreamUtils() {}
 
   public static boolean check(OutputStream outputStream) {
-    Object outStream = GlobalObjectRegistry.objectMap.get(outputStream);
+    Object outStream = GlobalObjectRegistry.outputStreamToBufferMap.get(outputStream);
     if (outStream == null) {
       return false;
     }
@@ -44,7 +44,7 @@ public class OutputStreamUtils {
       return;
     }
 
-    Object outStream = GlobalObjectRegistry.objectMap.get(thizzOutputStream);
+    Object outStream = GlobalObjectRegistry.outputStreamToBufferMap.get(thizzOutputStream);
     if (outStream == null) {
       return;
     }
@@ -59,7 +59,7 @@ public class OutputStreamUtils {
       return;
     }
 
-    Object outStream = GlobalObjectRegistry.objectMap.get(thizzOutputStream);
+    Object outStream = GlobalObjectRegistry.outputStreamToBufferMap.get(thizzOutputStream);
     if (outStream == null) {
       return;
     }
@@ -74,7 +74,7 @@ public class OutputStreamUtils {
     if (!retEnterAdvice) {
       return;
     }
-    Object outStream = GlobalObjectRegistry.objectMap.get(thizzOutputStream);
+    Object outStream = GlobalObjectRegistry.outputStreamToBufferMap.get(thizzOutputStream);
     if (outStream == null) {
       return;
     }
