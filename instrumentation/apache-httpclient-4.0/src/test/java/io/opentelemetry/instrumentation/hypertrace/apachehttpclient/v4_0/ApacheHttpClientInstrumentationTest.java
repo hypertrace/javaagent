@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.apache.httpclient;
+package io.opentelemetry.instrumentation.hypertrace.apachehttpclient.v4_0;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.trace.data.SpanData;

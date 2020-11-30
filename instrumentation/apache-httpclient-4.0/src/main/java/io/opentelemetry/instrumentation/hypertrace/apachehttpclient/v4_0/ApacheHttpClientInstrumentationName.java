@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.apache.httpclient;
+package io.opentelemetry.instrumentation.hypertrace.apachehttpclient.v4_0;
 
-import com.blogspot.mydailyjava.weaklockfree.WeakConcurrentMap;
-import io.opentelemetry.api.trace.Span;
-
-public class ApacheHttpClientObjectRegistry {
-
-  private ApacheHttpClientObjectRegistry() {}
-
-  public static final WeakConcurrentMap<Object, Span> objectToSpanMap =
-      new WeakConcurrentMap<>(false);
+public class ApacheHttpClientInstrumentationName {
+  public static final String PRIMARY = "httpclient";
+  public static final String[] OTHER = {
+    "apache-httpclient",
+    "apache-http-client",
+    "ht",
+    "httpclient-ht",
+    "apache-httpclient-ht",
+    "apache-http-client-ht"
+  };
 }
