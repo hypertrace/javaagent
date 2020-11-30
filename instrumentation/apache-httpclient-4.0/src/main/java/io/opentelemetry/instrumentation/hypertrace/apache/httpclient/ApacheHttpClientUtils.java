@@ -20,6 +20,8 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.function.Function;
 import org.apache.http.Header;
 import org.apache.http.HeaderIterator;
@@ -76,11 +78,15 @@ public class ApacheHttpClientUtils {
         entity.writeTo(byteArrayOutputStream);
         String encoding =
             entity.getContentEncoding() != null ? entity.getContentEncoding().getValue() : "";
-        String body =
-            new String(
-                byteArrayOutputStream.toByteArray(), ContentEncodingUtils.toCharset(encoding));
-        System.out.printf("captured %s readable body is %s\n", bodyAttributeKey, body);
-        span.setAttribute(bodyAttributeKey, body);
+
+        Charset charset = ContentEncodingUtils.toCharset(encoding);
+        try {
+          String body = byteArrayOutputStream.toString(charset.name());
+          System.out.printf("captured %s readable body is %s\n", bodyAttributeKey, body);
+          span.setAttribute(bodyAttributeKey, body);
+        } catch (UnsupportedEncodingException e) {
+          log.error("Could not parse charset from encoding {}", encoding, e);
+        }
       } catch (IOException e) {
         log.error("Could not read request input stream from repeatable request entity/body", e);
       }

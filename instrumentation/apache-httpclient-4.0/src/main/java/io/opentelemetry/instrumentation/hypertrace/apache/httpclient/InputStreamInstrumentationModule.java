@@ -43,9 +43,9 @@ import org.hypertrace.agent.core.GlobalObjectRegistry.SpanAndBuffer;
  * present in classloader e.g. classes from frameworks that we instrument.
  */
 @AutoService(InstrumentationModule.class)
-public class InputStreamInstrumentaionModule extends InstrumentationModule {
+public class InputStreamInstrumentationModule extends InstrumentationModule {
 
-  public InputStreamInstrumentaionModule() {
+  public InputStreamInstrumentationModule() {
     super("inputstream");
   }
 
@@ -102,9 +102,11 @@ public class InputStreamInstrumentaionModule extends InstrumentationModule {
       if (read != -1) {
         spanAndBuffer.buffer.write((byte) read);
       } else if (read == -1) {
-        byte[] bodyBytes = spanAndBuffer.buffer.toByteArray();
-        String body = new String(bodyBytes, spanAndBuffer.charset);
-        InputStreamUtils.addAttribute(spanAndBuffer.span, spanAndBuffer.attributeKey, body);
+        InputStreamUtils.addBody(
+            spanAndBuffer.span,
+            spanAndBuffer.attributeKey,
+            spanAndBuffer.buffer,
+            spanAndBuffer.charset);
         GlobalObjectRegistry.objectToSpanAndBufferMap.remove(thizz);
       }
     }
@@ -121,9 +123,11 @@ public class InputStreamInstrumentaionModule extends InstrumentationModule {
       if (read > 0) {
         spanAndBuffer.buffer.write(b, 0, read);
       } else if (read == -1) {
-        byte[] bodyBytes = spanAndBuffer.buffer.toByteArray();
-        String body = new String(bodyBytes, spanAndBuffer.charset);
-        InputStreamUtils.addAttribute(spanAndBuffer.span, spanAndBuffer.attributeKey, body);
+        InputStreamUtils.addBody(
+            spanAndBuffer.span,
+            spanAndBuffer.attributeKey,
+            spanAndBuffer.buffer,
+            spanAndBuffer.charset);
         GlobalObjectRegistry.objectToSpanAndBufferMap.remove(thizz);
       }
     }
@@ -144,9 +148,11 @@ public class InputStreamInstrumentaionModule extends InstrumentationModule {
       if (read > 0) {
         spanAndBuffer.buffer.write(b, off, read);
       } else if (read == -1) {
-        byte[] bodyBytes = spanAndBuffer.buffer.toByteArray();
-        String body = new String(bodyBytes, spanAndBuffer.charset);
-        InputStreamUtils.addAttribute(spanAndBuffer.span, spanAndBuffer.attributeKey, body);
+        InputStreamUtils.addBody(
+            spanAndBuffer.span,
+            spanAndBuffer.attributeKey,
+            spanAndBuffer.buffer,
+            spanAndBuffer.charset);
         GlobalObjectRegistry.objectToSpanAndBufferMap.remove(thizz);
       }
     }

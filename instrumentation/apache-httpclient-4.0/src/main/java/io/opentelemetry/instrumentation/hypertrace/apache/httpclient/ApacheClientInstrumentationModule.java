@@ -36,6 +36,7 @@ import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -276,10 +277,14 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
 
       ByteArrayOutputStream bufferedOutStream =
           (ByteArrayOutputStream) GlobalObjectRegistry.objectMap.remove(outputStream);
-      byte[] bodyBytes = bufferedOutStream.toByteArray();
-      String body = new String(bodyBytes, charset);
-      System.out.printf("Captured request body via outputstream: %s\n", body);
-      clientSpan.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, body);
+      try {
+        String requestBody = bufferedOutStream.toString(charset.name());
+        System.out.printf("Captured request body via outputstream: %s\n", requestBody);
+        clientSpan.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, requestBody);
+      } catch (UnsupportedEncodingException e) {
+        // should not happen, the charset has been parsed before
+        e.printStackTrace();
+      }
     }
   }
 }

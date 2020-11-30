@@ -24,10 +24,16 @@ import io.opentelemetry.context.Context;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class InputStreamUtils {
 
   private InputStreamUtils() {}
+
+  public static final Logger log = LoggerFactory.getLogger(InputStreamUtils.class);
 
   private static final Tracer TRACER =
       OpenTelemetry.getGlobalTracer("org.hypertrace.java.inputstream");
@@ -57,5 +63,15 @@ public class InputStreamUtils {
       buffer.write(ch);
     }
     return buffer.toByteArray();
+  }
+
+  public static void addBody(
+      Span span, AttributeKey<String> attributeKey, ByteArrayOutputStream buffer, Charset charset) {
+    try {
+      String body = buffer.toString(charset.name());
+      InputStreamUtils.addAttribute(span, attributeKey, body);
+    } catch (UnsupportedEncodingException e) {
+      log.error("Failed to parse encofing from charset {}", charset, e);
+    }
   }
 }
