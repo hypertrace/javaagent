@@ -22,6 +22,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
@@ -119,5 +120,15 @@ public class InputStreamUtils {
           spanAndBuffer.charset);
       GlobalObjectRegistry.inputStreamToSpanAndBufferMap.remove(inputStream);
     }
+  }
+
+  public static void readAll(InputStream inputStream, byte[] b) throws IOException {
+    SpanAndBuffer spanAndBuffer =
+        GlobalObjectRegistry.inputStreamToSpanAndBufferMap.get(inputStream);
+    if (spanAndBuffer == null) {
+      return;
+    }
+    spanAndBuffer.byteArrayBuffer.write(b);
+    GlobalObjectRegistry.inputStreamToSpanAndBufferMap.remove(inputStream);
   }
 }

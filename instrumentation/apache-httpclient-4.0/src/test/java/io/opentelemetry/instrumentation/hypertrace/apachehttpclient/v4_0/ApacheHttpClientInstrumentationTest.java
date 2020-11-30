@@ -220,8 +220,6 @@ public class ApacheHttpClientInstrumentationTest extends AbstractInstrumenterTes
 
     @Override
     public void writeTo(OutputStream outstream) throws IOException {
-      System.out.println("writeTo in:");
-      System.out.println(this.getClass().getName());
       super.writeTo(outstream);
     }
   }

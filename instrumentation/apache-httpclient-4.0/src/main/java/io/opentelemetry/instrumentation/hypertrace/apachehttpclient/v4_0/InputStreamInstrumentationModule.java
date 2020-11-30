@@ -26,6 +26,7 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
@@ -84,8 +85,9 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
               .and(takesArgument(2, is(int.class)))
               .and(isPublic()),
           InputStream_ReadByteArrayOffsetAdvice.class.getName());
-      // TODO JDK9 defines #readAllBytes method
-      // https://docs.oracle.com/javase/9/docs/api/java/io/InputStream.html#readAllBytes--
+      transformers.put(
+          namedOneOf("readAllBytes").and(takesArguments(0)).and(isPublic()),
+          InputStream_ReadAllBytes.class.getName());
       return transformers;
     }
   }
@@ -114,6 +116,14 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
         @Advice.Argument(1) int off,
         @Advice.Argument(2) int len) {
       InputStreamUtils.read(thizz, read, b, off, len);
+    }
+  }
+
+  public static class InputStream_ReadAllBytes {
+    @Advice.OnMethodExit(suppress = Throwable.class)
+    public static void exit(@Advice.This InputStream thizz, @Advice.Return byte[] b)
+        throws IOException {
+      InputStreamUtils.readAll(thizz, b);
     }
   }
 }

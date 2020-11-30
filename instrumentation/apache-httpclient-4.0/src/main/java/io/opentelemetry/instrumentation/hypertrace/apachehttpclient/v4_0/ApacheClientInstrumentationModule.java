@@ -187,9 +187,6 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
           ApacheHttpClientUtils.traceEntity(
               currentSpan, HypertraceSemanticAttributes.HTTP_RESPONSE_BODY.getKey(), entity);
         }
-      } else {
-        // TODO log error
-        System.out.println("\n\nIt is not HttpResponse #execute");
       }
     }
   }
@@ -222,7 +219,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void exit(@Advice.This HttpEntity thizz, @Advice.Return InputStream inputStream) {
       // here the Span.current() is finished for response entities
-      Span clientSpan = ApacheHttpClientObjectRegistry.objectToSpanMap.remove(thizz);
+      Span clientSpan = ApacheHttpClientObjectRegistry.httpEntityToSpanMap.remove(thizz);
       // HttpEntity might be wrapped multiple times
       // this ensures that the advice runs only for the most outer one
       // the returned inputStream is put into globally accessible map
@@ -259,7 +256,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void enter(
         @Advice.This HttpEntity thizz, @Advice.Argument(0) OutputStream outputStream) {
-      if (!ApacheHttpClientObjectRegistry.objectToSpanMap.containsKey(thizz)) {
+      if (!ApacheHttpClientObjectRegistry.httpEntityToSpanMap.containsKey(thizz)) {
         return;
       }
 
@@ -275,7 +272,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(
         @Advice.This HttpEntity thizz, @Advice.Argument(0) OutputStream outputStream) {
-      Span clientSpan = ApacheHttpClientObjectRegistry.objectToSpanMap.remove(thizz);
+      Span clientSpan = ApacheHttpClientObjectRegistry.httpEntityToSpanMap.remove(thizz);
       if (clientSpan == null) {
         return;
       }
@@ -285,14 +282,13 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
       Charset charset = ContentEncodingUtils.toCharset(encoding);
 
       ByteArrayOutputStream bufferedOutStream =
-          (ByteArrayOutputStream) GlobalObjectRegistry.outputStreamToBufferMap.remove(outputStream);
+          GlobalObjectRegistry.outputStreamToBufferMap.remove(outputStream);
       try {
         String requestBody = bufferedOutStream.toString(charset.name());
         System.out.printf("Captured request body via outputstream: %s\n", requestBody);
         clientSpan.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, requestBody);
       } catch (UnsupportedEncodingException e) {
         // should not happen, the charset has been parsed before
-        e.printStackTrace();
       }
     }
   }

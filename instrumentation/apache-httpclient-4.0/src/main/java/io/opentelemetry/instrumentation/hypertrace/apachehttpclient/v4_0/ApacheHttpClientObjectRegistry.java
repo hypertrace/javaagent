@@ -18,11 +18,12 @@ package io.opentelemetry.instrumentation.hypertrace.apachehttpclient.v4_0;
 
 import com.blogspot.mydailyjava.weaklockfree.WeakConcurrentMap;
 import io.opentelemetry.api.trace.Span;
+import org.apache.http.HttpEntity;
 
 public class ApacheHttpClientObjectRegistry {
 
   private ApacheHttpClientObjectRegistry() {}
 
-  public static final WeakConcurrentMap<Object, Span> objectToSpanMap =
+  public static final WeakConcurrentMap<HttpEntity, Span> httpEntityToSpanMap =
       new WeakConcurrentMap<>(false);
 }
