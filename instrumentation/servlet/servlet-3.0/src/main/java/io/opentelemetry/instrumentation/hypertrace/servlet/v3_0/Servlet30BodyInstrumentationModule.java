@@ -77,7 +77,6 @@ public class Servlet30BodyInstrumentationModule extends InstrumentationModule {
   @Override
   public String[] helperClassNames() {
     return new String[] {
-      "io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.ByteBufferData",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.CharBufferData",
       "io.opentelemetry.instrumentation.hypertrace.servlet.common.BufferedWriterWrapper",
