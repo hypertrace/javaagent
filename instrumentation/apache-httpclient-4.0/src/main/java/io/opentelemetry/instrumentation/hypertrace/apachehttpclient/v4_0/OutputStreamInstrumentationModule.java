@@ -16,15 +16,17 @@
 
 package io.opentelemetry.instrumentation.hypertrace.apachehttpclient.v4_0;
 
-import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.safeHasSuperType;
+import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.extendsClass;
 import static io.opentelemetry.javaagent.tooling.matcher.NameMatchers.namedOneOf;
 import static net.bytebuddy.matcher.ElementMatchers.is;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
+import static net.bytebuddy.matcher.ElementMatchers.nameStartsWith;
+import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.not;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import com.google.auto.service.AutoService;
-import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.io.IOException;
@@ -56,6 +58,11 @@ public class OutputStreamInstrumentationModule extends InstrumentationModule {
   }
 
   @Override
+  public String[] helperClassNames() {
+    return new String[] {packageName + ".OutputStreamUtils"};
+  }
+
+  @Override
   public List<TypeInstrumentation> typeInstrumentations() {
     return Collections.singletonList(new OutputStreamInstrumentation());
   }
@@ -64,7 +71,10 @@ public class OutputStreamInstrumentationModule extends InstrumentationModule {
 
     @Override
     public ElementMatcher<? super TypeDescription> typeMatcher() {
-      return safeHasSuperType(namedOneOf("java.io.OutputStream"));
+      // TODO exclude gradle classes in AgentBuilder SPI in AbstractTest
+      // The gradle classes are excluded only for test purposes
+      return extendsClass(named("java.io.OutputStream"))
+          .and(not(nameStartsWith("org.gradle.internal")));
     }
 
     @Override
@@ -97,16 +107,7 @@ public class OutputStreamInstrumentationModule extends InstrumentationModule {
   static class OutputStream_WriteIntAdvice {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static boolean enter(@Advice.This OutputStream thizz) {
-      Object outStream = GlobalObjectRegistry.objectMap.get(thizz);
-      if (outStream == null) {
-        return false;
-      }
-
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(OutputStream.class);
-      if (callDepth > 0) {
-        return false;
-      }
-      return true;
+      return OutputStreamUtils.check(thizz);
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
@@ -115,33 +116,14 @@ public class OutputStreamInstrumentationModule extends InstrumentationModule {
         @Advice.Argument(0) int b,
         @Advice.Enter boolean retEnterAdvice)
         throws IOException {
-      if (!retEnterAdvice) {
-        return;
-      }
-
-      Object outStream = GlobalObjectRegistry.objectMap.get(thizz);
-      if (outStream == null) {
-        return;
-      }
-      OutputStream outputStream = (OutputStream) outStream;
-      outputStream.write(b);
-      CallDepthThreadLocalMap.reset(OutputStream.class);
+      OutputStreamUtils.write(thizz, retEnterAdvice, b);
     }
   }
 
   static class OutputStream_WriteByteArrAdvice {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static boolean enter(@Advice.This OutputStream thizz) {
-      Object outStream = GlobalObjectRegistry.objectMap.get(thizz);
-      if (outStream == null) {
-        return false;
-      }
-
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(OutputStream.class);
-      if (callDepth > 0) {
-        return false;
-      }
-      return true;
+      return OutputStreamUtils.check(thizz);
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
@@ -150,33 +132,14 @@ public class OutputStreamInstrumentationModule extends InstrumentationModule {
         @Advice.Argument(0) byte b[],
         @Advice.Enter boolean retEnterAdvice)
         throws IOException {
-      if (!retEnterAdvice) {
-        return;
-      }
-
-      Object outStream = GlobalObjectRegistry.objectMap.get(thizz);
-      if (outStream == null) {
-        return;
-      }
-      OutputStream outputStream = (OutputStream) outStream;
-      outputStream.write(b);
-      CallDepthThreadLocalMap.reset(OutputStream.class);
+      OutputStreamUtils.write(thizz, retEnterAdvice, b);
     }
   }
 
   static class OutputStream_WriteByteArrOffsetAdvice {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static boolean enter(@Advice.This OutputStream thizz) {
-      Object outStream = GlobalObjectRegistry.objectMap.get(thizz);
-      if (outStream == null) {
-        return false;
-      }
-
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(OutputStream.class);
-      if (callDepth > 0) {
-        return false;
-      }
-      return true;
+      return OutputStreamUtils.check(thizz);
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
@@ -187,16 +150,7 @@ public class OutputStreamInstrumentationModule extends InstrumentationModule {
         @Advice.Argument(2) int len,
         @Advice.Enter boolean retEnterAdvice)
         throws IOException {
-      if (!retEnterAdvice) {
-        return;
-      }
-      Object outStream = GlobalObjectRegistry.objectMap.get(thizz);
-      if (outStream == null) {
-        return;
-      }
-      OutputStream outputStream = (OutputStream) outStream;
-      outputStream.write(b, off, len);
-      CallDepthThreadLocalMap.reset(OutputStream.class);
+      OutputStreamUtils.write(thizz, retEnterAdvice, b, off, len);
     }
   }
 }

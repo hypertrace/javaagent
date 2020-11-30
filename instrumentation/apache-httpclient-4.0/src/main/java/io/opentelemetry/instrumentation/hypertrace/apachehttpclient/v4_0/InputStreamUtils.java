@@ -22,8 +22,11 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import org.hypertrace.agent.core.GlobalObjectRegistry;
+import org.hypertrace.agent.core.GlobalObjectRegistry.SpanAndBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,6 +64,57 @@ public class InputStreamUtils {
       InputStreamUtils.addAttribute(span, attributeKey, body);
     } catch (UnsupportedEncodingException e) {
       log.error("Failed to parse encofing from charset {}", charset, e);
+    }
+  }
+
+  public static void read(InputStream inputStream, int read) {
+    SpanAndBuffer spanAndBuffer = GlobalObjectRegistry.objectToSpanAndBufferMap.get(inputStream);
+    if (spanAndBuffer == null) {
+      return;
+    }
+    if (read != -1) {
+      spanAndBuffer.buffer.write((byte) read);
+    } else if (read == -1) {
+      InputStreamUtils.addBody(
+          spanAndBuffer.span,
+          spanAndBuffer.attributeKey,
+          spanAndBuffer.buffer,
+          spanAndBuffer.charset);
+      GlobalObjectRegistry.objectToSpanAndBufferMap.remove(inputStream);
+    }
+  }
+
+  public static void read(InputStream inputStream, int read, byte[] b) {
+    SpanAndBuffer spanAndBuffer = GlobalObjectRegistry.objectToSpanAndBufferMap.get(inputStream);
+    if (spanAndBuffer == null) {
+      return;
+    }
+    if (read > 0) {
+      spanAndBuffer.buffer.write(b, 0, read);
+    } else if (read == -1) {
+      InputStreamUtils.addBody(
+          spanAndBuffer.span,
+          spanAndBuffer.attributeKey,
+          spanAndBuffer.buffer,
+          spanAndBuffer.charset);
+      GlobalObjectRegistry.objectToSpanAndBufferMap.remove(inputStream);
+    }
+  }
+
+  public static void read(InputStream inputStream, int read, byte[] b, int off, int len) {
+    SpanAndBuffer spanAndBuffer = GlobalObjectRegistry.objectToSpanAndBufferMap.get(inputStream);
+    if (spanAndBuffer == null) {
+      return;
+    }
+    if (read > 0) {
+      spanAndBuffer.buffer.write(b, off, read);
+    } else if (read == -1) {
+      InputStreamUtils.addBody(
+          spanAndBuffer.span,
+          spanAndBuffer.attributeKey,
+          spanAndBuffer.buffer,
+          spanAndBuffer.charset);
+      GlobalObjectRegistry.objectToSpanAndBufferMap.remove(inputStream);
     }
   }
 }

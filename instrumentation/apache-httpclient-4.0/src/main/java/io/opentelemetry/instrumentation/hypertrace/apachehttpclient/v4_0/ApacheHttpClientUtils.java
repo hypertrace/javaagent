@@ -94,6 +94,9 @@ public class ApacheHttpClientUtils {
       return;
     }
 
+    // request body is traced via HttpEntity.writeTo(OutputStream) and OutputStream instrumentation
+    // response body is traced via InputStream HttpEntity.getContent() and InputStream
+    // instrumentation
     ApacheHttpClientObjectRegistry.objectToSpanMap.put(entity, span);
   }
 }

@@ -197,10 +197,12 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
     public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
       Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>();
 
+      // instrumentation for request body along with OutputStream instrumentation
       transformers.put(
           named("writeTo").and(takesArguments(1)).and(takesArgument(0, is(OutputStream.class))),
           HttpEntity_WriteToAdvice.class.getName());
 
+      // instrumentation for response body along with InputStream instrumentation
       transformers.put(
           named("getContent").and(takesArguments(0)).and(returns(InputStream.class)),
           HttpEntity_GetContentAdvice.class.getName());

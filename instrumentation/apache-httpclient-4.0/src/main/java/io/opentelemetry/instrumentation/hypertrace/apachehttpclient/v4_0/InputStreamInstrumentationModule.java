@@ -35,8 +35,6 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import org.hypertrace.agent.core.GlobalObjectRegistry;
-import org.hypertrace.agent.core.GlobalObjectRegistry.SpanAndBuffer;
 
 /**
  * Maybe we could add optimization to instrument the input streams only when certain classes are
@@ -95,20 +93,7 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
   public static class InputStream_ReadNoArgsAdvice {
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void exit(@Advice.This InputStream thizz, @Advice.Return int read) {
-      SpanAndBuffer spanAndBuffer = GlobalObjectRegistry.objectToSpanAndBufferMap.get(thizz);
-      if (spanAndBuffer == null) {
-        return;
-      }
-      if (read != -1) {
-        spanAndBuffer.buffer.write((byte) read);
-      } else if (read == -1) {
-        InputStreamUtils.addBody(
-            spanAndBuffer.span,
-            spanAndBuffer.attributeKey,
-            spanAndBuffer.buffer,
-            spanAndBuffer.charset);
-        GlobalObjectRegistry.objectToSpanAndBufferMap.remove(thizz);
-      }
+      InputStreamUtils.read(thizz, read);
     }
   }
 
@@ -116,20 +101,7 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void exit(
         @Advice.This InputStream thizz, @Advice.Return int read, @Advice.Argument(0) byte b[]) {
-      SpanAndBuffer spanAndBuffer = GlobalObjectRegistry.objectToSpanAndBufferMap.get(thizz);
-      if (spanAndBuffer == null) {
-        return;
-      }
-      if (read > 0) {
-        spanAndBuffer.buffer.write(b, 0, read);
-      } else if (read == -1) {
-        InputStreamUtils.addBody(
-            spanAndBuffer.span,
-            spanAndBuffer.attributeKey,
-            spanAndBuffer.buffer,
-            spanAndBuffer.charset);
-        GlobalObjectRegistry.objectToSpanAndBufferMap.remove(thizz);
-      }
+      InputStreamUtils.read(thizz, read, b);
     }
   }
 
@@ -141,20 +113,7 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
         @Advice.Argument(0) byte b[],
         @Advice.Argument(1) int off,
         @Advice.Argument(2) int len) {
-      SpanAndBuffer spanAndBuffer = GlobalObjectRegistry.objectToSpanAndBufferMap.get(thizz);
-      if (spanAndBuffer == null) {
-        return;
-      }
-      if (read > 0) {
-        spanAndBuffer.buffer.write(b, off, read);
-      } else if (read == -1) {
-        InputStreamUtils.addBody(
-            spanAndBuffer.span,
-            spanAndBuffer.attributeKey,
-            spanAndBuffer.buffer,
-            spanAndBuffer.charset);
-        GlobalObjectRegistry.objectToSpanAndBufferMap.remove(thizz);
-      }
+      InputStreamUtils.read(thizz, read, b, off, len);
     }
   }
 }
