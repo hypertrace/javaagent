@@ -22,8 +22,6 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import org.slf4j.Logger;
@@ -54,15 +52,6 @@ public class InputStreamUtils {
           .startSpan()
           .end();
     }
-  }
-
-  public static byte[] readToArr(InputStream inputStream, int contentSize) throws IOException {
-    ByteArrayOutputStream buffer = new ByteArrayOutputStream(contentSize);
-    byte ch;
-    while ((ch = (byte) inputStream.read()) != -1) {
-      buffer.write(ch);
-    }
-    return buffer.toByteArray();
   }
 
   public static void addBody(

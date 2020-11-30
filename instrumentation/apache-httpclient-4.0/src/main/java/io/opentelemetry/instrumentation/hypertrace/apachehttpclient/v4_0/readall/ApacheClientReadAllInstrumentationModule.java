@@ -27,11 +27,12 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import com.google.auto.service.AutoService;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.instrumentation.hypertrace.apachehttpclient.v4_0.InputStreamUtils;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -71,7 +72,7 @@ public class ApacheClientReadAllInstrumentationModule extends InstrumentationMod
   @Override
   public String[] helperClassNames() {
     return new String[] {
-      "io.opentelemetry.instrumentation.hypertrace.apache.httpclient.InputStreamUtils"
+      "io.opentelemetry.instrumentation.hypertrace.apachehttpclient.v4_0.InputStreamUtils"
     };
   }
 
@@ -199,14 +200,22 @@ public class ApacheClientReadAllInstrumentationModule extends InstrumentationMod
           if (contentSize <= 0 || contentSize == Long.MAX_VALUE) {
             contentSize = 128;
           }
-          byte[] bodyBytes = InputStreamUtils.readToArr(inputStream, (int) contentSize);
+
+          BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+          ByteArrayOutputStream buffer = new ByteArrayOutputStream((int) contentSize);
+          byte ch;
+          while ((ch = (byte) bufferedInputStream.read()) != -1) {
+            buffer.write(ch);
+          }
+
+          byte[] bodyBytes = buffer.toByteArray();
           System.out.printf("Captured response body: %s\n", new String(bodyBytes));
           currentSpan.setAttribute(
               HypertraceSemanticAttributes.HTTP_RESPONSE_BODY.getKey(), new String(bodyBytes));
-          ByteArrayInputStream bufferedInputStream = new ByteArrayInputStream(bodyBytes);
+          ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bodyBytes);
 
           GlobalObjectRegistry.objectMap.put(entity, inputStream);
-          GlobalObjectRegistry.inputStreamMap.put(inputStream, bufferedInputStream);
+          GlobalObjectRegistry.inputStreamMap.put(inputStream, byteArrayInputStream);
         } catch (IOException e) {
           // TODO log
           e.printStackTrace();
