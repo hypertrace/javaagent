@@ -131,4 +131,22 @@ public class InputStreamUtils {
     spanAndBuffer.byteArrayBuffer.write(b);
     GlobalObjectRegistry.inputStreamToSpanAndBufferMap.remove(inputStream);
   }
+
+  public static void readNBytes(InputStream inputStream, int read, byte[] b, int off, int len) {
+    SpanAndBuffer spanAndBuffer =
+        GlobalObjectRegistry.inputStreamToSpanAndBufferMap.get(inputStream);
+    if (spanAndBuffer == null) {
+      return;
+    }
+    if (read == 0) {
+      InputStreamUtils.addBody(
+          spanAndBuffer.span,
+          spanAndBuffer.attributeKey,
+          spanAndBuffer.byteArrayBuffer,
+          spanAndBuffer.charset);
+      GlobalObjectRegistry.inputStreamToSpanAndBufferMap.remove(inputStream);
+    } else {
+      spanAndBuffer.byteArrayBuffer.write(b, off, read);
+    }
+  }
 }

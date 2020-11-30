@@ -88,6 +88,14 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
       transformers.put(
           namedOneOf("readAllBytes").and(takesArguments(0)).and(isPublic()),
           InputStream_ReadAllBytes.class.getName());
+      transformers.put(
+          namedOneOf("readNBytes")
+              .and(takesArguments(0))
+              .and(takesArgument(0, is(byte[].class)))
+              .and(takesArgument(1, is(int.class)))
+              .and(takesArgument(2, is(int.class)))
+              .and(isPublic()),
+          InputStream_ReadNBytes.class.getName());
       return transformers;
     }
   }
@@ -122,6 +130,19 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
   public static class InputStream_ReadAllBytes {
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void exit(@Advice.This InputStream thizz, @Advice.Return byte[] b)
+        throws IOException {
+      InputStreamUtils.readAll(thizz, b);
+    }
+  }
+
+  public static class InputStream_ReadNBytes {
+    @Advice.OnMethodExit(suppress = Throwable.class)
+    public static void exit(
+        @Advice.This InputStream thizz,
+        @Advice.Return int read,
+        @Advice.Argument(0) byte[] b,
+        @Advice.Argument(1) int off,
+        @Advice.Argument(2) int len)
         throws IOException {
       InputStreamUtils.readAll(thizz, b);
     }
