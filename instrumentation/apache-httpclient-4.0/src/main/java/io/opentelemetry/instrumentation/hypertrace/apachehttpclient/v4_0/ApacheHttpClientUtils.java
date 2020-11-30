@@ -28,7 +28,9 @@ import org.apache.http.HeaderIterator;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpMessage;
+import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.core.ContentEncodingUtils;
+import org.hypertrace.agent.core.HypertraceConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,8 +60,13 @@ public class ApacheHttpClientUtils {
 
   public static void traceRequest(HttpMessage request) {
     Span currentSpan = Span.current();
-    ApacheHttpClientUtils.addRequestHeaders(currentSpan, request.headerIterator());
-    if (request instanceof HttpEntityEnclosingRequest) {
+    AgentConfig agentConfig = HypertraceConfig.get();
+    if (agentConfig.getDataCapture().getHttpHeaders().getRequest().getValue()) {
+      ApacheHttpClientUtils.addRequestHeaders(currentSpan, request.headerIterator());
+    }
+
+    if (agentConfig.getDataCapture().getHttpBody().getRequest().getValue()
+        && request instanceof HttpEntityEnclosingRequest) {
       HttpEntityEnclosingRequest entityRequest = (HttpEntityEnclosingRequest) request;
       HttpEntity entity = entityRequest.getEntity();
       ApacheHttpClientUtils.traceEntity(

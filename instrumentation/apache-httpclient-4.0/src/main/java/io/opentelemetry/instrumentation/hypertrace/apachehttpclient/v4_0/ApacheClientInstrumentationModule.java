@@ -50,11 +50,13 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpMessage;
 import org.apache.http.HttpResponse;
+import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.core.ContentEncodingUtils;
 import org.hypertrace.agent.core.ContentLengthUtils;
 import org.hypertrace.agent.core.ContentTypeUtils;
 import org.hypertrace.agent.core.GlobalObjectRegistry;
 import org.hypertrace.agent.core.GlobalObjectRegistry.SpanAndBuffer;
+import org.hypertrace.agent.core.HypertraceConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 
 @AutoService(InstrumentationModule.class)
@@ -175,11 +177,16 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
       if (response instanceof HttpResponse) {
         HttpResponse httpResponse = (HttpResponse) response;
         Span currentSpan = Java8BytecodeBridge.currentSpan();
-        ApacheHttpClientUtils.addResponseHeaders(currentSpan, httpResponse.headerIterator());
+        AgentConfig agentConfig = HypertraceConfig.get();
+        if (agentConfig.getDataCapture().getHttpHeaders().getResponse().getValue()) {
+          ApacheHttpClientUtils.addResponseHeaders(currentSpan, httpResponse.headerIterator());
+        }
 
-        HttpEntity entity = httpResponse.getEntity();
-        ApacheHttpClientUtils.traceEntity(
-            currentSpan, HypertraceSemanticAttributes.HTTP_RESPONSE_BODY.getKey(), entity);
+        if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()) {
+          HttpEntity entity = httpResponse.getEntity();
+          ApacheHttpClientUtils.traceEntity(
+              currentSpan, HypertraceSemanticAttributes.HTTP_RESPONSE_BODY.getKey(), entity);
+        }
       } else {
         // TODO log error
         System.out.println("\n\nIt is not HttpResponse #execute");
