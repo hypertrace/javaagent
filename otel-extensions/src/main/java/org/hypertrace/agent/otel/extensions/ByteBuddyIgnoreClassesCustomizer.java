@@ -42,11 +42,13 @@ public class ByteBuddyIgnoreClassesCustomizer implements ByteBuddyAgentCustomize
               Class<?> classBeingRedefined,
               ProtectionDomain protectionDomain) {
 
-            String className =
-                classLoader == null
-                    ? typeDescription.getTypeName()
-                    : classLoader.getClass().getName();
-            return matchesIgnoredClassName(IGNORED_PACKAGES, className);
+            if (classLoader == null) {
+              String className = typeDescription.getTypeName();
+              return matchesIgnoredClassName(IGNORED_PACKAGES, className);
+            }
+
+            String classLoaderName = classLoader.getClass().getName();
+            return matchesIgnoredClassName(IGNORED_PACKAGES, classLoaderName);
           }
         });
   }
