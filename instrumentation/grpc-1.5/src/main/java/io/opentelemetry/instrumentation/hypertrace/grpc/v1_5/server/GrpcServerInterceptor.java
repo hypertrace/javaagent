@@ -31,7 +31,6 @@ import java.util.Map;
 import org.hypertrace.agent.core.HypertraceConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.hypertrace.agent.filter.FilterRegistry;
-import org.hypertrace.agent.filter.api.FilterResult;
 
 public class GrpcServerInterceptor implements ServerInterceptor {
 
@@ -52,9 +51,8 @@ public class GrpcServerInterceptor implements ServerInterceptor {
           mapHeaders, currentSpan, HypertraceSemanticAttributes::rpcRequestMetadata);
     }
 
-    FilterResult filterResult =
-        FilterRegistry.getFilter().evaluateRequestHeaders(currentSpan, mapHeaders);
-    if (filterResult.blockExecution()) {
+    boolean block = FilterRegistry.getFilter().evaluateRequestHeaders(currentSpan, mapHeaders);
+    if (block) {
       call.close(Status.PERMISSION_DENIED, new Metadata());
       @SuppressWarnings("unchecked")
       ServerCall.Listener<ReqT> noop = NoopServerCallListener.INSTANCE;

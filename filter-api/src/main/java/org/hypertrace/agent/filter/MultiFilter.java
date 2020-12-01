@@ -19,10 +19,7 @@ package org.hypertrace.agent.filter;
 import io.opentelemetry.api.trace.Span;
 import java.util.List;
 import java.util.Map;
-import org.hypertrace.agent.filter.api.ExecutionBlocked;
-import org.hypertrace.agent.filter.api.ExecutionNotBlocked;
 import org.hypertrace.agent.filter.api.Filter;
-import org.hypertrace.agent.filter.api.FilterResult;
 
 class MultiFilter implements Filter {
 
@@ -33,24 +30,24 @@ class MultiFilter implements Filter {
   }
 
   @Override
-  public FilterResult evaluateRequestHeaders(Span span, Map<String, String> headers) {
+  public boolean evaluateRequestHeaders(Span span, Map<String, String> headers) {
     boolean shouldBlock = false;
     for (Filter filter : filters) {
-      if (filter.evaluateRequestHeaders(span, headers).blockExecution()) {
+      if (filter.evaluateRequestHeaders(span, headers)) {
         shouldBlock = true;
       }
     }
-    return shouldBlock ? ExecutionBlocked.INSTANCE : ExecutionNotBlocked.INSTANCE;
+    return shouldBlock;
   }
 
   @Override
-  public FilterResult evaluateRequestBody(Span span, String body) {
+  public boolean evaluateRequestBody(Span span, String body) {
     boolean shouldBlock = false;
     for (Filter filter : filters) {
-      if (filter.evaluateRequestBody(span, body).blockExecution()) {
+      if (filter.evaluateRequestBody(span, body)) {
         shouldBlock = true;
       }
     }
-    return shouldBlock ? ExecutionBlocked.INSTANCE : ExecutionNotBlocked.INSTANCE;
+    return shouldBlock;
   }
 }

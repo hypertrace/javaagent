@@ -32,7 +32,7 @@ public interface Filter {
    * @param headers are used for blocking evaluation.
    * @return filter result
    */
-  FilterResult evaluateRequestHeaders(Span span, Map<String, String> headers);
+  boolean evaluateRequestHeaders(Span span, Map<String, String> headers);
 
   /**
    * Evaluate the execution.
@@ -40,5 +40,5 @@ public interface Filter {
    * @param body request body
    * @return filter result
    */
-  FilterResult evaluateRequestBody(Span span, String body);
+  boolean evaluateRequestBody(Span span, String body);
 }

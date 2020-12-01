@@ -48,7 +48,6 @@ import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.core.HypertraceConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.hypertrace.agent.filter.FilterRegistry;
-import org.hypertrace.agent.filter.api.FilterResult;
 
 @AutoService(InstrumentationModule.class)
 public class Servlet30BodyInstrumentationModule extends InstrumentationModule {
@@ -120,7 +119,7 @@ public class Servlet30BodyInstrumentationModule extends InstrumentationModule {
     private static final String ALREADY_LOADED = "__org.hypertrace.agent.on_start_executed";
     private static final String TRACER_NAME = "org.hypertrace.agent.servlet";
 
-    @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = FilterResult.class)
+    @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = Advice.OnNonDefaultValue.class)
     public static Object start(
         @Advice.Argument(value = 0, readOnly = false) ServletRequest request,
         @Advice.Argument(value = 1, readOnly = false) ServletResponse response,
@@ -165,11 +164,10 @@ public class Servlet30BodyInstrumentationModule extends InstrumentationModule {
         }
         headers.put(headerName, headerValue);
       }
-      FilterResult filterResult =
-          FilterRegistry.getFilter().evaluateRequestHeaders(currentSpan, headers);
-      if (filterResult.blockExecution()) {
+      boolean block = FilterRegistry.getFilter().evaluateRequestHeaders(currentSpan, headers);
+      if (block) {
         httpResponse.setStatus(403);
-        return filterResult;
+        return block;
       }
       return null;
     }
