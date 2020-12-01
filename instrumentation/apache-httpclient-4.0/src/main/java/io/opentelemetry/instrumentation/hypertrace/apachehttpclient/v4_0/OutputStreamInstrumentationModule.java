@@ -20,9 +20,7 @@ import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementM
 import static io.opentelemetry.javaagent.tooling.matcher.NameMatchers.namedOneOf;
 import static net.bytebuddy.matcher.ElementMatchers.is;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
-import static net.bytebuddy.matcher.ElementMatchers.nameStartsWith;
 import static net.bytebuddy.matcher.ElementMatchers.named;
-import static net.bytebuddy.matcher.ElementMatchers.not;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
@@ -66,10 +64,7 @@ public class OutputStreamInstrumentationModule extends InstrumentationModule {
 
     @Override
     public ElementMatcher<? super TypeDescription> typeMatcher() {
-      // TODO exclude gradle classes in AgentBuilder SPI in AbstractTest
-      // The gradle classes are excluded only for test purposes
-      return extendsClass(named("java.io.OutputStream"))
-          .and(not(nameStartsWith("org.gradle.internal")));
+      return extendsClass(named("java.io.OutputStream"));
     }
 
     @Override
