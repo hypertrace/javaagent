@@ -66,24 +66,6 @@ public class Servlet31BodyInstrumentationModule extends InstrumentationModule {
   }
 
   @Override
-  public String[] helperClassNames() {
-    return new String[] {
-      "io.opentelemetry.instrumentation.hypertrace.servlet.common.ByteBufferData",
-      "io.opentelemetry.instrumentation.hypertrace.servlet.common.CharBufferData",
-      "io.opentelemetry.instrumentation.hypertrace.servlet.common.BufferedWriterWrapper",
-      "io.opentelemetry.instrumentation.hypertrace.servlet.common.BufferedReaderWrapper",
-      "io.opentelemetry.instrumentation.hypertrace.servlet.common.ServletSpanDecorator",
-      "io.opentelemetry.instrumentation.hypertrace.servlet.v3_1.Servlet31InstrumentationName",
-      "io.opentelemetry.instrumentation.hypertrace.servlet.v3_1.BufferingHttpServletResponse",
-      "io.opentelemetry.instrumentation.hypertrace.servlet.v3_1.BufferingHttpServletResponse$BufferingServletOutputStream",
-      "io.opentelemetry.instrumentation.hypertrace.servlet.v3_1.BufferingHttpServletRequest",
-      "io.opentelemetry.instrumentation.hypertrace.servlet.v3_1.BufferingHttpServletRequest$ServletInputStreamWrapper",
-      "io.opentelemetry.instrumentation.hypertrace.servlet.v3_1.BodyCaptureAsyncListener",
-      "io.opentelemetry.instrumentation.hypertrace.servlet.v3_1.Servlet31Advice",
-    };
-  }
-
-  @Override
   public List<TypeInstrumentation> typeInstrumentations() {
     return Collections.singletonList(new Servlet31BodyInstrumentation());
   }
@@ -92,8 +74,7 @@ public class Servlet31BodyInstrumentationModule extends InstrumentationModule {
 
     @Override
     public ElementMatcher<? super TypeDescription> typeMatcher() {
-      return safeHasSuperType(
-          namedOneOf("javax.servlet.FilterChain", "javax.servlet.http.HttpServlet"));
+      return safeHasSuperType(namedOneOf("javax.servlet.Filter", "javax.servlet.http.HttpServlet"));
     }
 
     @Override

@@ -16,26 +16,26 @@
 
 package org.hypertrace.agent.testing;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.api.trace.propagation.HttpTraceContext;
+import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.javaagent.tooling.AgentInstaller;
 import io.opentelemetry.javaagent.tooling.config.ConfigInitializer;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
+import java.lang.reflect.Method;
 import net.bytebuddy.agent.ByteBuddyAgent;
 import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.slf4j.LoggerFactory;
 
 /**
- * Abstract test class that tests {@link io.opentelemetry.javaagent.tooling.Instrumenter} on the
- * classpath.
+ * Abstract test class that tests {@link io.opentelemetry.javaagent.tooling.InstrumentationModule}
+ * on the classpath.
  */
 public abstract class AbstractInstrumenterTest {
 
@@ -57,8 +57,8 @@ public abstract class AbstractInstrumenterTest {
 
     INSTRUMENTATION = ByteBuddyAgent.install();
 
-    ((Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(Level.WARN);
-    ((Logger) LoggerFactory.getLogger("io.opentelemetry")).setLevel(Level.DEBUG);
+    //    ((Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(Level.WARN);
+    //    ((Logger) LoggerFactory.getLogger("io.opentelemetry")).setLevel(Level.DEBUG);
 
     TEST_WRITER = new InMemoryExporter();
 
@@ -71,7 +71,8 @@ public abstract class AbstractInstrumenterTest {
         .getClass()
         .getSimpleName()
         .equals("NoopTextMapPropagator")) {
-      OpenTelemetry.setGlobalPropagators(
+      // Workaround https://github.com/open-telemetry/opentelemetry-java/pull/2096
+      setGlobalPropagators(
           DefaultContextPropagators.builder()
               .addTextMapPropagator(HttpTraceContext.getInstance())
               .build());
@@ -93,5 +94,29 @@ public abstract class AbstractInstrumenterTest {
   @BeforeEach
   public void beforeEach() {
     TEST_WRITER.clear();
+  }
+
+  public static void setGlobalPropagators(ContextPropagators propagators) {
+    OpenTelemetry.set(
+        OpenTelemetrySdk.builder()
+            .setResource(OpenTelemetrySdk.get().getResource())
+            .setClock(OpenTelemetrySdk.get().getClock())
+            .setMeterProvider(OpenTelemetry.getGlobalMeterProvider())
+            .setTracerProvider(unobfuscate(OpenTelemetry.getGlobalTracerProvider()))
+            .setPropagators(propagators)
+            .build());
+  }
+
+  private static TracerProvider unobfuscate(TracerProvider tracerProvider) {
+    if (tracerProvider.getClass().getName().endsWith("TracerSdkProvider")) {
+      return tracerProvider;
+    }
+    try {
+      Method unobfuscate = tracerProvider.getClass().getDeclaredMethod("unobfuscate");
+      unobfuscate.setAccessible(true);
+      return (TracerProvider) unobfuscate.invoke(tracerProvider);
+    } catch (Throwable t) {
+      return tracerProvider;
+    }
   }
 }

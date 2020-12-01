@@ -76,7 +76,7 @@ class MuzzlePlugin implements Plugin<Project> {
           ClassLoader userCL = createCompileDepsClassLoader(project, bootstrapProject)
           ClassLoader instrumentationCL = createInstrumentationClassloader(project, toolingProject)
           Method assertionMethod = instrumentationCL.loadClass('io.opentelemetry.javaagent.tooling.muzzle.matcher.MuzzleGradlePluginUtil')
-            .getMethod('assertInstrumentationMuzzled', ClassLoader.class, ClassLoader.class, boolean.class)
+                  .getMethod('assertInstrumentationMuzzled', ClassLoader.class, ClassLoader.class, boolean.class)
           assertionMethod.invoke(null, instrumentationCL, userCL, true)
         }
         println "Muzzle executing for $project"
@@ -88,7 +88,7 @@ class MuzzlePlugin implements Plugin<Project> {
       doLast {
         ClassLoader instrumentationCL = createInstrumentationClassloader(project, toolingProject)
         Method assertionMethod = instrumentationCL.loadClass('io.opentelemetry.javaagent.tooling.muzzle.matcher.MuzzleGradlePluginUtil')
-          .getMethod('printMuzzleReferences', ClassLoader.class)
+                .getMethod('printMuzzleReferences', ClassLoader.class)
         assertionMethod.invoke(null, instrumentationCL)
       }
     }
@@ -311,17 +311,17 @@ class MuzzlePlugin implements Plugin<Project> {
       }
 
       def draftVersion = versionString.contains("rc") ||
-        versionString.contains(".cr") ||
-        versionString.contains("alpha") ||
-        versionString.contains("beta") ||
-        versionString.contains("-b") ||
-        versionString.contains(".m") ||
-        versionString.contains("-m") ||
-        versionString.contains("-dev") ||
-        versionString.contains("-ea") ||
-        versionString.contains("-atlassian-") ||
-        versionString.contains("public_draft") ||
-        versionString.matches(GIT_SHA_PATTERN)
+              versionString.contains(".cr") ||
+              versionString.contains("alpha") ||
+              versionString.contains("beta") ||
+              versionString.contains("-b") ||
+              versionString.contains(".m") ||
+              versionString.contains("-m") ||
+              versionString.contains("-dev") ||
+              versionString.contains("-ea") ||
+              versionString.contains("-atlassian-") ||
+              versionString.contains("public_draft") ||
+              versionString.matches(GIT_SHA_PATTERN)
 
       return !draftVersion
     }
@@ -382,7 +382,7 @@ class MuzzlePlugin implements Plugin<Project> {
         try {
           // find all instrumenters, get muzzle, and assert
           Method assertionMethod = instrumentationCL.loadClass('io.opentelemetry.javaagent.tooling.muzzle.matcher.MuzzleGradlePluginUtil')
-            .getMethod('assertInstrumentationMuzzled', ClassLoader.class, ClassLoader.class, boolean.class)
+                  .getMethod('assertInstrumentationMuzzled', ClassLoader.class, ClassLoader.class, boolean.class)
           assertionMethod.invoke(null, instrumentationCL, userCL, muzzleDirective.assertPass)
         } finally {
           Thread.currentThread().contextClassLoader = ccl

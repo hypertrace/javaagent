@@ -37,21 +37,6 @@ public class GrpcBodyInstrumentationModule extends InstrumentationModule {
   }
 
   @Override
-  public String[] helperClassNames() {
-    return new String[] {
-      "io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.GrpcSpanDecorator",
-      "io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.GrpcInstrumentationName",
-      packageName + ".client.GrpcClientInterceptor",
-      packageName + ".client.GrpcClientInterceptor$TracingClientCall",
-      packageName + ".client.GrpcClientInterceptor$TracingClientCallListener",
-      packageName + ".server.GrpcServerInterceptor",
-      packageName + ".server.GrpcServerInterceptor$TracingServerCall",
-      packageName + ".server.GrpcServerInterceptor$TracingServerCallListener",
-      packageName + ".server.NoopServerCallListener"
-    };
-  }
-
-  @Override
   public List<TypeInstrumentation> typeInstrumentations() {
     return Arrays.asList(new GrpcClientBodyInstrumentation(), new GrpcServerBodyInstrumentation());
   }

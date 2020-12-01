@@ -84,6 +84,7 @@ public class Servlet31Advice {
             HypertraceSemanticAttributes.httpRequestHeader(headerName), headerValue);
       }
       headers.put(headerName, headerValue);
+      System.out.println("adding header");
     }
     FilterResult filterResult =
         FilterRegistry.getFilter().evaluateRequestHeaders(currentSpan, headers);

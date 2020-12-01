@@ -35,6 +35,7 @@ dependencies {
     implementation("org.ow2.asm", "asm", "7.0-beta")
     implementation("org.ow2.asm", "asm-tree", "7.0-beta")
     implementation("org.apache.httpcomponents:httpclient:4.5.10")
+    implementation("net.bytebuddy:byte-buddy-gradle-plugin:1.10.18")
 
     testImplementation("org.spockframework", "spock-core", "1.3-groovy-2.5")
     testImplementation("org.codehaus.groovy", "groovy-all", "2.5.8")

@@ -9,7 +9,7 @@ dependencies {
     // update the dependencies also in the instrumentations sub-projects
     // https://oss.jfrog.org/artifactory/oss-snapshot-local/io/opentelemetry/instrumentation/auto/
     // https://dl.bintray.com/open-telemetry/maven/
-    implementation("io.opentelemetry.javaagent", "opentelemetry-javaagent", version = "0.10.1", classifier = "all")
+    implementation("io.opentelemetry.javaagent", "opentelemetry-javaagent", version = "0.11.0", classifier = "all")
     implementation(project(":javaagent-core"))
     implementation(project(":filter-api"))
     implementation(project(":filter-custom-opa"))
