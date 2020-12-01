@@ -72,9 +72,8 @@ tasks {
             attributes.put("Implementation-Title", "javaagent")
             attributes.put("Implementation-Version", project.version)
             // TODO set version from a property
-            attributes.put("OpenTelemetry-Instrumentation-Version", "0.10.0")
+            attributes.put("OpenTelemetry-Instrumentation-Version", "0.11.0")
             attributes.put("Implementation-Vendor", "Hypertrace.org")
-            // TODO set to Github repository URL
             attributes.put("Implementation-Url", "https://github.com/hypertrace/javaagent")
             attributes.put("Main-Class", "io.opentelemetry.javaagent.OpenTelemetryAgent")
             attributes.put("Agent-Class",   "org.hypertrace.agent.instrument.HypertraceAgent")
