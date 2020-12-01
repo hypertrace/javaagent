@@ -16,7 +16,9 @@
 
 package org.hypertrace.agent.testing;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.server.Handler;
@@ -113,6 +115,15 @@ public class TestHttpServer implements AutoCloseable {
       super.handle(target, baseRequest, request, response);
 
       if (target.equals("/post") && "post".equalsIgnoreCase(request.getMethod())) {
+        // read the input stream to for sending on the client side
+        ServletInputStream inputStream = request.getInputStream();
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        int nRead;
+        while ((nRead = inputStream.read()) != -1) {
+          buffer.write((byte) nRead);
+        }
+        System.out.printf("Received: %s\n", buffer.toString());
+
         response.setStatus(204);
         baseRequest.setHandled(true);
       }

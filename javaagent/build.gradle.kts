@@ -46,6 +46,8 @@ tasks {
         relocate("org.checkerframework", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.com.checkerframework")
         relocate("org.yaml", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.org.yaml")
 
+        relocate("com.blogspot.mydailyjava", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.com.blogspot.mydailyjava")
+
         // used by the filter-custom-opa
         relocate("okhttp3", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.okhttp3")
         relocate("okio", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.okio")

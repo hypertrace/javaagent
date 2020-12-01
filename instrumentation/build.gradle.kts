@@ -34,6 +34,7 @@ dependencies{
     implementation(project(":instrumentation:spark-web-framework-2.3"))
     implementation(project(":instrumentation:grpc-1.5"))
     implementation(project(":instrumentation:okhttp:okhttp-3.0"))
+    implementation(project(":instrumentation:apache-httpclient-4.0"))
     implementation(project(":otel-extensions"))
 }
 
@@ -54,6 +55,8 @@ tasks {
         relocate("google.protobuf", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.google.protobuf")
         relocate("org.checkerframework", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.com.checkerframework")
         relocate("org.yaml", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.org.yaml")
+
+        relocate("com.blogspot.mydailyjava", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.com.blogspot.mydailyjava")
 
         exclude("**/module-info.class")
 
