@@ -48,7 +48,6 @@ import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.core.HypertraceConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.hypertrace.agent.filter.FilterRegistry;
-import org.hypertrace.agent.filter.api.FilterResult;
 
 @AutoService(InstrumentationModule.class)
 public class Servlet30BodyInstrumentationModule extends InstrumentationModule {
@@ -120,18 +119,18 @@ public class Servlet30BodyInstrumentationModule extends InstrumentationModule {
     private static final String ALREADY_LOADED = "__org.hypertrace.agent.on_start_executed";
     private static final String TRACER_NAME = "org.hypertrace.agent.servlet";
 
-    @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = FilterResult.class)
-    public static Object start(
+    @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = Advice.OnNonDefaultValue.class)
+    public static boolean start(
         @Advice.Argument(value = 0, readOnly = false) ServletRequest request,
         @Advice.Argument(value = 1, readOnly = false) ServletResponse response,
         @Advice.Local("rootStart") Boolean rootStart) {
 
       if (!HypertraceConfig.isInstrumentationEnabled(
           Servlet30InstrumentationName.PRIMARY, Servlet30InstrumentationName.OTHER)) {
-        return null;
+        return false;
       }
       if (!(request instanceof HttpServletRequest) || !(response instanceof HttpServletResponse)) {
-        return null;
+        return false;
       }
 
       // TODO run on every doFilter and check if user removed wrapper
@@ -139,7 +138,7 @@ public class Servlet30BodyInstrumentationModule extends InstrumentationModule {
 
       // run the instrumentation only for the root FilterChain.doFilter()
       if (request.getAttribute(ALREADY_LOADED) != null) {
-        return null;
+        return false;
       }
       request.setAttribute(ALREADY_LOADED, true);
 
@@ -165,13 +164,12 @@ public class Servlet30BodyInstrumentationModule extends InstrumentationModule {
         }
         headers.put(headerName, headerValue);
       }
-      FilterResult filterResult =
-          FilterRegistry.getFilter().evaluateRequestHeaders(currentSpan, headers);
-      if (filterResult.blockExecution()) {
+      boolean block = FilterRegistry.getFilter().evaluateRequestHeaders(currentSpan, headers);
+      if (block) {
         httpResponse.setStatus(403);
-        return filterResult;
+        return true;
       }
-      return null;
+      return false;
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)

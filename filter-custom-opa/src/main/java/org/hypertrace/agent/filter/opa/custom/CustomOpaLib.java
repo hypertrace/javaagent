@@ -27,10 +27,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.hypertrace.agent.filter.api.ExecutionBlocked;
-import org.hypertrace.agent.filter.api.ExecutionNotBlocked;
 import org.hypertrace.agent.filter.api.Filter;
-import org.hypertrace.agent.filter.api.FilterResult;
 import org.hypertrace.agent.filter.opa.custom.evaluator.ICustomPolicyEvaluator;
 import org.hypertrace.agent.filter.opa.custom.evaluator.IpAddressPolicyEvaluator;
 import org.slf4j.Logger;
@@ -90,7 +87,7 @@ public class CustomOpaLib implements Filter {
   //  }
 
   @Override
-  public FilterResult evaluateRequestHeaders(Span span, Map<String, String> headers) {
+  public boolean evaluateRequestHeaders(Span span, Map<String, String> headers) {
     // currently as per policy.rego, allowed list has precedence over denylist
     boolean allow =
         policyEvaluators.stream()
@@ -99,11 +96,11 @@ public class CustomOpaLib implements Filter {
                     policyEvaluator.allow(opaCommunicator.getBlockingData(), headers))
             .anyMatch(Boolean::booleanValue);
     span.setAttribute(OPA_RESULT, String.valueOf(allow));
-    return allow ? ExecutionNotBlocked.INSTANCE : ExecutionBlocked.INSTANCE;
+    return !allow;
   }
 
   @Override
-  public FilterResult evaluateRequestBody(Span span, String body) {
-    return ExecutionNotBlocked.INSTANCE;
+  public boolean evaluateRequestBody(Span span, String body) {
+    return true;
   }
 }

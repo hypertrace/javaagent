@@ -18,10 +18,7 @@ package org.hypertrace.agent.filter.mock;
 
 import io.opentelemetry.api.trace.Span;
 import java.util.Map;
-import org.hypertrace.agent.filter.api.ExecutionBlocked;
-import org.hypertrace.agent.filter.api.ExecutionNotBlocked;
 import org.hypertrace.agent.filter.api.Filter;
-import org.hypertrace.agent.filter.api.FilterResult;
 
 /** Mock filter, blocks execution if an attribute with "mockblock" key is present. */
 class MockFilter implements Filter {
@@ -29,16 +26,16 @@ class MockFilter implements Filter {
   MockFilter() {}
 
   @Override
-  public FilterResult evaluateRequestHeaders(Span span, Map<String, String> headers) {
+  public boolean evaluateRequestHeaders(Span span, Map<String, String> headers) {
     if (headers.containsKey("mockblock")) {
       span.setAttribute("hypertrace.mock.filter.result", "true");
-      return ExecutionBlocked.INSTANCE;
+      return true;
     }
-    return ExecutionNotBlocked.INSTANCE;
+    return false;
   }
 
   @Override
-  public FilterResult evaluateRequestBody(Span span, String body) {
-    return ExecutionNotBlocked.INSTANCE;
+  public boolean evaluateRequestBody(Span span, String body) {
+    return false;
   }
 }
