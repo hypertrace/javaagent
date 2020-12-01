@@ -1,6 +1,6 @@
 plugins {
     `java-library`
-    id("net.bytebuddy.byte-buddy-gradle-plugin")
+    id("net.bytebuddy.byte-buddy")
     id("io.opentelemetry.instrumentation.auto-instrumentation")
     muzzle
 }

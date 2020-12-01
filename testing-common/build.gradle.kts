@@ -17,8 +17,8 @@ dependencies {
     implementation("org.slf4j:log4j-over-slf4j:1.7.30")
     implementation("org.slf4j:jcl-over-slf4j:1.7.30")
     implementation("org.slf4j:jul-to-slf4j:1.7.30")
-    implementation("net.bytebuddy:byte-buddy:1.10.10")
-    implementation("net.bytebuddy:byte-buddy-agent:1.10.10")
+    implementation("net.bytebuddy:byte-buddy:1.10.18")
+    implementation("net.bytebuddy:byte-buddy-agent:1.10.18")
     implementation("com.google.auto.service:auto-service:1.0-rc7")
     implementation("org.eclipse.jetty:jetty-server:8.0.0.v20110901")
 }
