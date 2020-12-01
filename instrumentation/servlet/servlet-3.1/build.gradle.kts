@@ -1,6 +1,6 @@
 plugins {
     `java-library`
-    id("net.bytebuddy.byte-buddy-gradle-plugin") version "1.10.10"
+    id("net.bytebuddy.byte-buddy")
     id("io.opentelemetry.instrumentation.auto-instrumentation")
     muzzle
 }
@@ -19,21 +19,18 @@ muzzle {
     }
 }
 
-// afterEvaluate is needed for instrumenationMuzzle evaluation
 afterEvaluate{
-    byteBuddy {
-        transformation(closureOf<net.bytebuddy.build.gradle.Transformation> {
-            setTasks(setOf("compileJava", "compileScala", "compileKotlin"))
-            plugin = "io.opentelemetry.javaagent.tooling.muzzle.collector.MuzzleCodeGenerationPlugin"
-            setClassPath(project(":javaagent-tooling").configurations["instrumentationMuzzle"] + configurations.runtimeClasspath + sourceSets["main"].output)
-        })
-    }
+    io.opentelemetry.instrumentation.gradle.bytebuddy.ByteBuddyPluginConfigurator(project,
+            sourceSets.main.get(),
+            "io.opentelemetry.javaagent.tooling.muzzle.collector.MuzzleCodeGenerationPlugin",
+            project(":javaagent-tooling").configurations["instrumentationMuzzle"] + configurations.runtimeClasspath
+    ).configure()
 }
 
 dependencies {
     api(project(":instrumentation:servlet:servlet-common"))
 
-    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0:0.10.1")
+    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0:0.11.0")
 
     compileOnly("javax.servlet:javax.servlet-api:3.1.0")
 

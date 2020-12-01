@@ -1,6 +1,6 @@
 plugins {
     `java-library`
-    id("net.bytebuddy.byte-buddy-gradle-plugin") version "1.10.10"
+    id("net.bytebuddy.byte-buddy")
     id("io.opentelemetry.instrumentation.auto-instrumentation")
     muzzle
 }
@@ -15,21 +15,19 @@ muzzle {
 }
 
 afterEvaluate{
-    byteBuddy {
-        transformation(closureOf<net.bytebuddy.build.gradle.Transformation> {
-            setTasks(kotlin.collections.setOf("compileJava", "compileScala", "compileKotlin"))
-            plugin = "io.opentelemetry.javaagent.tooling.muzzle.collector.MuzzleCodeGenerationPlugin"
-            setClassPath(project(":javaagent-tooling").configurations["instrumentationMuzzle"] + configurations.runtimeClasspath + sourceSets["main"].output)
-        })
-    }
+    io.opentelemetry.instrumentation.gradle.bytebuddy.ByteBuddyPluginConfigurator(project,
+            sourceSets.main.get(),
+            "io.opentelemetry.javaagent.tooling.muzzle.collector.MuzzleCodeGenerationPlugin",
+            project(":javaagent-tooling").configurations["instrumentationMuzzle"] + configurations.runtimeClasspath
+    ).configure()
 }
 
 dependencies {
     api(project(":instrumentation:servlet:servlet-3.1"))
 
-    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-spark-web-framework-2.3:0.10.1")
-    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0:0.10.1")
-    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jetty-8.0:0.10.1")
+    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-spark-2.3:0.11.0")
+    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0:0.11.0")
+    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jetty-8.0:0.11.0")
 
     compileOnly("com.sparkjava:spark-core:2.3")
 

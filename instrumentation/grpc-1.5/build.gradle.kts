@@ -4,7 +4,7 @@ plugins {
     `java-library`
     idea
     id("com.google.protobuf") version "0.8.13"
-    id("net.bytebuddy.byte-buddy-gradle-plugin") version "1.10.10"
+    id("net.bytebuddy.byte-buddy")
     id("io.opentelemetry.instrumentation.auto-instrumentation")
     muzzle
 }
@@ -20,13 +20,11 @@ muzzle {
 }
 
 afterEvaluate{
-    byteBuddy {
-        transformation(closureOf<net.bytebuddy.build.gradle.Transformation> {
-            setTasks(kotlin.collections.setOf("compileJava", "compileScala", "compileKotlin"))
-            plugin = "io.opentelemetry.javaagent.tooling.muzzle.collector.MuzzleCodeGenerationPlugin"
-            setClassPath(project(":javaagent-tooling").configurations["instrumentationMuzzle"] + configurations.runtimeClasspath + sourceSets["main"].output)
-        })
-    }
+    io.opentelemetry.instrumentation.gradle.bytebuddy.ByteBuddyPluginConfigurator(project,
+            sourceSets.main.get(),
+            "io.opentelemetry.javaagent.tooling.muzzle.collector.MuzzleCodeGenerationPlugin",
+    project(":javaagent-tooling").configurations["instrumentationMuzzle"] + configurations.runtimeClasspath
+    ).configure()
 }
 
 idea {
@@ -56,8 +54,8 @@ protobuf {
 }
 
 dependencies {
-    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-grpc-1.5:0.10.1")
-    api("io.opentelemetry.instrumentation:opentelemetry-grpc-1.5:0.10.1")
+    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-grpc-1.5:0.11.0")
+    api("io.opentelemetry.instrumentation:opentelemetry-grpc-1.5:0.11.0")
 
     compileOnly("io.grpc:grpc-core:1.5.0")
     compileOnly("io.grpc:grpc-protobuf:1.5.0")

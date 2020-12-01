@@ -47,13 +47,6 @@ public class OkHttp3BodyInstrumentationModule extends InstrumentationModule {
   }
 
   @Override
-  public String[] helperClassNames() {
-    return new String[] {
-      packageName + ".Okhttp3InstrumentationName", packageName + ".OkHttpTracingInterceptor",
-    };
-  }
-
-  @Override
   public List<TypeInstrumentation> typeInstrumentations() {
     return Collections.singletonList(new OkHttp3BodyInstrumentation());
   }

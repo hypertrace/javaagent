@@ -80,22 +80,6 @@ public class Servlet2BodyInstrumentationModule extends InstrumentationModule {
   }
 
   @Override
-  public String[] helperClassNames() {
-    return new String[] {
-      "io.opentelemetry.instrumentation.hypertrace.servlet.common.ByteBufferData",
-      "io.opentelemetry.instrumentation.hypertrace.servlet.common.CharBufferData",
-      "io.opentelemetry.instrumentation.hypertrace.servlet.common.BufferedWriterWrapper",
-      "io.opentelemetry.instrumentation.hypertrace.servlet.common.BufferedReaderWrapper",
-      "io.opentelemetry.instrumentation.hypertrace.servlet.common.ServletSpanDecorator",
-      packageName + ".Servlet2InstrumentationName",
-      packageName + ".BufferingHttpServletResponse",
-      packageName + ".BufferingHttpServletResponse$BufferingServletOutputStream",
-      packageName + ".BufferingHttpServletRequest",
-      packageName + ".BufferingHttpServletRequest$ServletInputStreamWrapper",
-    };
-  }
-
-  @Override
   public List<TypeInstrumentation> typeInstrumentations() {
     return Collections.singletonList(new Servlet2BodyInstrumentation());
   }
@@ -104,8 +88,7 @@ public class Servlet2BodyInstrumentationModule extends InstrumentationModule {
 
     @Override
     public ElementMatcher<TypeDescription> typeMatcher() {
-      return safeHasSuperType(
-          namedOneOf("javax.servlet.FilterChain", "javax.servlet.http.HttpServlet"));
+      return safeHasSuperType(namedOneOf("javax.servlet.Filter", "javax.servlet.http.HttpServlet"));
     }
 
     @Override
