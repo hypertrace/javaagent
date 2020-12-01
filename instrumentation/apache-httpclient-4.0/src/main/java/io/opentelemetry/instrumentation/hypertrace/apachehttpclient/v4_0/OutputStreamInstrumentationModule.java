@@ -58,11 +58,6 @@ public class OutputStreamInstrumentationModule extends InstrumentationModule {
   }
 
   @Override
-  public String[] helperClassNames() {
-    return new String[] {packageName + ".OutputStreamUtils"};
-  }
-
-  @Override
   public List<TypeInstrumentation> typeInstrumentations() {
     return Collections.singletonList(new OutputStreamInstrumentation());
   }

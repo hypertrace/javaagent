@@ -70,13 +70,6 @@ public class ApacheClientReadAllInstrumentationModule extends InstrumentationMod
   }
 
   @Override
-  public String[] helperClassNames() {
-    return new String[] {
-      "io.opentelemetry.instrumentation.hypertrace.apachehttpclient.v4_0.InputStreamUtils"
-    };
-  }
-
-  @Override
   public List<TypeInstrumentation> typeInstrumentations() {
     return Arrays.asList(
         new ApacheClientReadAllInstrumentationModule.ApacheClientInstrumentation(),

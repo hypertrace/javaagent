@@ -72,13 +72,6 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
   }
 
   @Override
-  public String[] helperClassNames() {
-    return new String[] {
-      packageName + ".ApacheHttpClientObjectRegistry", packageName + ".ApacheHttpClientUtils",
-    };
-  }
-
-  @Override
   public List<TypeInstrumentation> typeInstrumentations() {
     return Arrays.asList(new HttpEntityInstrumentation(), new ApacheClientInstrumentation());
   }
