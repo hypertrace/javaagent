@@ -57,8 +57,9 @@ public abstract class AbstractInstrumenterTest {
 
     INSTRUMENTATION = ByteBuddyAgent.install();
 
-    //    ((Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(Level.WARN);
-    //    ((Logger) LoggerFactory.getLogger("io.opentelemetry")).setLevel(Level.DEBUG);
+    // TODO causes Caused by: java.lang.ClassCastException
+    //        ((Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(Level.WARN);
+    //        ((Logger) LoggerFactory.getLogger("io.opentelemetry")).setLevel(Level.DEBUG);
 
     TEST_WRITER = new InMemoryExporter();
 

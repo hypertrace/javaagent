@@ -31,7 +31,7 @@ dependencies{
     implementation(project(":instrumentation:servlet:servlet-2.3"))
     implementation(project(":instrumentation:servlet:servlet-3.0"))
     implementation(project(":instrumentation:servlet:servlet-3.1"))
-    implementation(project(":instrumentation:spark-web-framework-2.3"))
+    implementation(project(":instrumentation:spark-2.3"))
     implementation(project(":instrumentation:grpc-1.5"))
     implementation(project(":instrumentation:okhttp:okhttp-3.0"))
     implementation(project(":instrumentation:apache-httpclient-4.0"))
