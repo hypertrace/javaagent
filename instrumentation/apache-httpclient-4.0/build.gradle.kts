@@ -38,7 +38,7 @@ afterEvaluate{
 
 dependencies {
     implementation("org.apache.httpcomponents:httpclient:4.0")
-    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-apache-httpclient-4.0:0.10.1")
+    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-apache-httpclient-4.0:0.11.0")
 
     testImplementation(project(":testing-common"))
 }
