@@ -66,10 +66,7 @@ public class OutputStreamInstrumentationModule extends InstrumentationModule {
 
     @Override
     public ElementMatcher<? super TypeDescription> typeMatcher() {
-      // TODO exclude gradle classes in AgentBuilder SPI in AbstractTest
-      // The gradle classes are excluded only for test purposes
-      return extendsClass(named("java.io.OutputStream"))
-          .and(not(nameStartsWith("org.gradle.internal")));
+      return extendsClass(named("java.io.OutputStream"));
     }
 
     @Override
