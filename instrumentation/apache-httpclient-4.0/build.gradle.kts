@@ -1,12 +1,12 @@
 plugins {
     `java-library`
-    id("net.bytebuddy.byte-buddy-gradle-plugin") version "1.10.10"
+    id("net.bytebuddy.byte-buddy")
     id("io.opentelemetry.instrumentation.auto-instrumentation")
     muzzle
 }
 
 muzzle {
-    // TODO this check fails, but it passes in OTEL
+    // TODO this check fails, but it passes in OTEL https://github.com/hypertrace/javaagent/issues/144
 //    fail {
 //        group = "commons-httpclient"
 //        module = "commons-httpclient"
@@ -29,13 +29,11 @@ muzzle {
 }
 
 afterEvaluate{
-    byteBuddy {
-        transformation(closureOf<net.bytebuddy.build.gradle.Transformation> {
-            setTasks(kotlin.collections.setOf("compileJava", "compileScala", "compileKotlin"))
-            plugin = "io.opentelemetry.javaagent.tooling.muzzle.collector.MuzzleCodeGenerationPlugin"
-            setClassPath(project(":javaagent-tooling").configurations["instrumentationMuzzle"] + configurations.runtimeClasspath + sourceSets["main"].output)
-        })
-    }
+    io.opentelemetry.instrumentation.gradle.bytebuddy.ByteBuddyPluginConfigurator(project,
+            sourceSets.main.get(),
+            "io.opentelemetry.javaagent.tooling.muzzle.collector.MuzzleCodeGenerationPlugin",
+            project(":javaagent-tooling").configurations["instrumentationMuzzle"] + configurations.runtimeClasspath
+    ).configure()
 }
 
 dependencies {
