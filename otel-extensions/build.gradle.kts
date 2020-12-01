@@ -10,5 +10,6 @@ dependencies {
     implementation("com.google.auto.service:auto-service:1.0-rc7")
     annotationProcessor("com.google.auto.service:auto-service:1.0-rc7")
 
+    implementation("net.bytebuddy:byte-buddy:1.10.18")
     testImplementation("io.opentelemetry:opentelemetry-sdk:0.11.0")
 }
