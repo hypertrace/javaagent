@@ -32,7 +32,7 @@ public class ByteBuddyIgnoreClassesCustomizer implements ByteBuddyAgentCustomize
 
   @Override
   public AgentBuilder customize(AgentBuilder agentBuilder) {
-    agentBuilder.ignore(
+    return agentBuilder.ignore(
         new AgentBuilder.RawMatcher() {
           @Override
           public boolean matches(
@@ -50,8 +50,6 @@ public class ByteBuddyIgnoreClassesCustomizer implements ByteBuddyAgentCustomize
             return matchesIgnoredClassName(IGNORED_PACKAGES, className);
           }
         });
-
-    return null;
   }
 
   private static boolean matchesIgnoredClassName(String[] ignoredClasses, String className) {
