@@ -42,7 +42,6 @@ public class ByteBuddyIgnoreClassesCustomizer implements ByteBuddyAgentCustomize
               Class<?> classBeingRedefined,
               ProtectionDomain protectionDomain) {
 
-            if (classLoader == null) {}
             String className =
                 classLoader == null
                     ? typeDescription.getTypeName()
@@ -53,6 +52,10 @@ public class ByteBuddyIgnoreClassesCustomizer implements ByteBuddyAgentCustomize
   }
 
   private static boolean matchesIgnoredClassName(String[] ignoredClasses, String className) {
+    if (className == null) {
+      return false;
+    }
+
     for (String ignoredClass : ignoredClasses) {
       if (className.startsWith(ignoredClass)) {
         return true;
