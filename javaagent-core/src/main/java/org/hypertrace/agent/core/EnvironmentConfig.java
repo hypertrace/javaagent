@@ -81,7 +81,7 @@ public class EnvironmentConfig {
   private static Reporting.Builder applyReporting(Reporting.Builder builder) {
     String reporterAddress = getProperty(REPORTING_ADDRESS);
     if (reporterAddress != null) {
-      builder.setAddress(StringValue.newBuilder().setValue(reporterAddress).build());
+      builder.setEndpoint(StringValue.newBuilder().setValue(reporterAddress).build());
     }
     String secure = getProperty(REPORTING_SECURE);
     if (secure != null) {
@@ -95,11 +95,11 @@ public class EnvironmentConfig {
   private static Opa.Builder applyOpa(Opa.Builder builder) {
     String address = getProperty(OPA_ADDRESS);
     if (address != null) {
-      builder.setAddress(StringValue.newBuilder().setValue(address).build());
+      builder.setEndpoint(StringValue.newBuilder().setValue(address).build());
     }
     String pollPeriod = getProperty(OPA_POLL_PERIOD);
     if (pollPeriod != null) {
-      builder.setPollPeriod(Int32Value.newBuilder().setValue(Integer.parseInt(pollPeriod)).build());
+      builder.setPollPeriodSeconds(Int32Value.newBuilder().setValue(Integer.parseInt(pollPeriod)).build());
     }
     return builder;
   }
