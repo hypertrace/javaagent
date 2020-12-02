@@ -39,12 +39,12 @@ public class EnvironmentConfig {
   static final String PROPAGATION_FORMATS = HT_PREFIX + "propagation.formats";
 
   private static final String REPORTING_PREFIX = HT_PREFIX + "reporting.";
-  static final String REPORTING_ADDRESS = REPORTING_PREFIX + "address";
+  static final String REPORTING_ENDPOINT = REPORTING_PREFIX + "endpoint";
   static final String REPORTING_SECURE = REPORTING_PREFIX + "secure";
 
   private static final String OPA_PREFIX = REPORTING_PREFIX + "opa.";
-  static final String OPA_ADDRESS = OPA_PREFIX + "address";
-  static final String OPA_POLL_PERIOD = OPA_PREFIX + "poll.period";
+  static final String OPA_ENDPOINT = OPA_PREFIX + "endpoint";
+  static final String OPA_POLL_PERIOD = OPA_PREFIX + "poll.period.seconds";
 
   private static final String CAPTURE_PREFIX = HT_PREFIX + "data.capture.";
   public static final String CAPTURE_HTTP_HEADERS_PREFIX = CAPTURE_PREFIX + "http.headers.";
@@ -79,9 +79,9 @@ public class EnvironmentConfig {
   }
 
   private static Reporting.Builder applyReporting(Reporting.Builder builder) {
-    String reporterAddress = getProperty(REPORTING_ADDRESS);
+    String reporterAddress = getProperty(REPORTING_ENDPOINT);
     if (reporterAddress != null) {
-      builder.setAddress(StringValue.newBuilder().setValue(reporterAddress).build());
+      builder.setEndpoint(StringValue.newBuilder().setValue(reporterAddress).build());
     }
     String secure = getProperty(REPORTING_SECURE);
     if (secure != null) {
@@ -93,13 +93,14 @@ public class EnvironmentConfig {
   }
 
   private static Opa.Builder applyOpa(Opa.Builder builder) {
-    String address = getProperty(OPA_ADDRESS);
+    String address = getProperty(OPA_ENDPOINT);
     if (address != null) {
-      builder.setAddress(StringValue.newBuilder().setValue(address).build());
+      builder.setEndpoint(StringValue.newBuilder().setValue(address).build());
     }
     String pollPeriod = getProperty(OPA_POLL_PERIOD);
     if (pollPeriod != null) {
-      builder.setPollPeriod(Int32Value.newBuilder().setValue(Integer.parseInt(pollPeriod)).build());
+      builder.setPollPeriodSeconds(
+          Int32Value.newBuilder().setValue(Integer.parseInt(pollPeriod)).build());
     }
     return builder;
   }

@@ -133,7 +133,7 @@ public abstract class AbstractSmokeTest {
         .withEnv("HT_CONFIG_FILE", "/etc/ht-config.yaml")
         .withEnv("OTEL_BSP_MAX_EXPORT_BATCH", "1")
         .withEnv("OTEL_BSP_SCHEDULE_DELAY", "10")
-        .withEnv("HT_REPORTING_ADDRESS", OTEL_EXPORTER_ENDPOINT);
+        .withEnv("HT_REPORTING_ENDPOINT", OTEL_EXPORTER_ENDPOINT);
   }
 
   protected static int countSpansByName(

@@ -27,7 +27,7 @@ public class HypertraceAgentTest {
   @Test
   public void propagationFormatList() {
     List<PropagationFormat> formats =
-        Arrays.asList(PropagationFormat.B3, PropagationFormat.TRACE_CONTEXT);
+        Arrays.asList(PropagationFormat.B3, PropagationFormat.TRACECONTEXT);
     Assertions.assertEquals("b3,tracecontext", HypertraceAgent.toOtelPropagators(formats));
   }
 }

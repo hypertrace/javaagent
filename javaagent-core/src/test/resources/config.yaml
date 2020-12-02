@@ -2,11 +2,11 @@ serviceName: service
 propagationFormats:
   - B3
 reporting:
-  address: http://localhost:9411
+  endpoint: http://localhost:9411
   secure: true
   opa:
-    address: http://opa.localhost:8181/
-    pollPeriod: 12
+    endpoint: http://opa.localhost:8181/
+    pollPeriodSeconds: 12
 dataCapture:
   httpHeaders:
     request: true
