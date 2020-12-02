@@ -139,7 +139,7 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
         @Advice.Argument(1) int off,
         @Advice.Argument(2) int len)
         throws IOException {
-      InputStreamUtils.readAll(thizz, b);
+      InputStreamUtils.readNBytes(thizz, read, b, off, len);
     }
   }
 }
