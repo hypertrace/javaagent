@@ -4,12 +4,14 @@ plugins {
     id("org.hypertrace.publish-plugin")
 }
 
+val versions: Map<String, String> by extra
+
 dependencies {
     // pin released version or snapshot with pinned version
     // update the dependencies also in the instrumentations sub-projects
     // https://oss.jfrog.org/artifactory/oss-snapshot-local/io/opentelemetry/instrumentation/auto/
     // https://dl.bintray.com/open-telemetry/maven/
-    implementation("io.opentelemetry.javaagent", "opentelemetry-javaagent", version = "0.11.0", classifier = "all")
+    implementation("io.opentelemetry.javaagent", "opentelemetry-javaagent", version = "${versions["opentelemetry_java_agent"]}", classifier = "all")
     implementation(project(":javaagent-core"))
     implementation(project(":filter-api"))
     implementation(project(":filter-custom-opa"))
@@ -71,8 +73,7 @@ tasks {
         manifest {
             attributes.put("Implementation-Title", "javaagent")
             attributes.put("Implementation-Version", project.version)
-            // TODO set version from a property
-            attributes.put("OpenTelemetry-Instrumentation-Version", "0.11.0")
+            attributes.put("OpenTelemetry-Instrumentation-Version", "${versions["opentelemetry_java_agent"]}")
             attributes.put("Implementation-Vendor", "Hypertrace.org")
             attributes.put("Implementation-Url", "https://github.com/hypertrace/javaagent")
             attributes.put("Main-Class", "io.opentelemetry.javaagent.OpenTelemetryAgent")
