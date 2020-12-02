@@ -42,7 +42,7 @@ public class Servlet31Advice {
   public static boolean start(
       @Advice.Argument(value = 0, readOnly = false) ServletRequest request,
       @Advice.Argument(value = 1, readOnly = false) ServletResponse response,
-      @Advice.Local("rootStart") Boolean rootStart) {
+      @Advice.Local("rootStart") boolean rootStart) {
 
     if (!HypertraceConfig.isInstrumentationEnabled(
         Servlet31InstrumentationName.PRIMARY, Servlet31InstrumentationName.OTHER)) {
@@ -66,8 +66,10 @@ public class Servlet31Advice {
     Span currentSpan = Java8BytecodeBridge.currentSpan();
 
     rootStart = true;
-    response = new BufferingHttpServletResponse(httpResponse);
-    request = new BufferingHttpServletRequest(httpRequest, (HttpServletResponse) response);
+    if (!HypertraceConfig.disableServletWrapperTypes()) {
+      response = new BufferingHttpServletResponse(httpResponse);
+      request = new BufferingHttpServletRequest(httpRequest, (HttpServletResponse) response);
+    }
 
     ServletSpanDecorator.addSessionId(currentSpan, httpRequest);
 
@@ -83,7 +85,6 @@ public class Servlet31Advice {
             HypertraceSemanticAttributes.httpRequestHeader(headerName), headerValue);
       }
       headers.put(headerName, headerValue);
-      System.out.println("adding header");
     }
     boolean block = FilterRegistry.getFilter().evaluateRequestHeaders(currentSpan, headers);
     if (block) {
@@ -97,52 +98,61 @@ public class Servlet31Advice {
   public static void stopSpan(
       @Advice.Argument(0) ServletRequest request,
       @Advice.Argument(1) ServletResponse response,
-      @Advice.Local("rootStart") Boolean rootStart) {
-    if (rootStart != null) {
-      if (!(request instanceof BufferingHttpServletRequest)
-          || !(response instanceof BufferingHttpServletResponse)) {
-        return;
+      @Advice.Thrown Throwable throwable,
+      @Advice.Local("rootStart") boolean rootStart) {
+
+    HypertraceConfig.recordException(throwable);
+
+    if (!rootStart
+        || !(request instanceof HttpServletRequest)
+        || !(response instanceof HttpServletResponse)) {
+      return;
+    }
+
+    Span currentSpan = Java8BytecodeBridge.currentSpan();
+    HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+    // set response headers
+    AgentConfig agentConfig = HypertraceConfig.get();
+    if (agentConfig.getDataCapture().getHttpHeaders().getResponse().getValue()) {
+      for (String headerName : httpServletResponse.getHeaderNames()) {
+        String headerValue = httpServletResponse.getHeader(headerName);
+        currentSpan.setAttribute(
+            HypertraceSemanticAttributes.httpResponseHeader(headerName), headerValue);
       }
+    }
 
-      request.removeAttribute(ALREADY_LOADED);
-      Span currentSpan = Java8BytecodeBridge.currentSpan();
+    if (!(request instanceof BufferingHttpServletRequest)
+        || !(response instanceof BufferingHttpServletResponse)) {
+      return;
+    }
 
-      AtomicBoolean responseHandled = new AtomicBoolean(false);
-      if (request.isAsyncStarted()) {
-        try {
-          request
-              .getAsyncContext()
-              .addListener(new BodyCaptureAsyncListener(responseHandled, currentSpan));
-        } catch (IllegalStateException e) {
-          // org.eclipse.jetty.server.Request may throw an exception here if request became
-          // finished after check above. We just ignore that exception and move on.
-        }
+    request.removeAttribute(ALREADY_LOADED);
+
+    AtomicBoolean responseHandled = new AtomicBoolean(false);
+    if (request.isAsyncStarted()) {
+      try {
+        request
+            .getAsyncContext()
+            .addListener(new BodyCaptureAsyncListener(responseHandled, currentSpan));
+      } catch (IllegalStateException e) {
+        // org.eclipse.jetty.server.Request may throw an exception here if request became
+        // finished after check above. We just ignore that exception and move on.
       }
+    }
 
-      if (!request.isAsyncStarted() && responseHandled.compareAndSet(false, true)) {
-        BufferingHttpServletResponse bufferingResponse = (BufferingHttpServletResponse) response;
-        BufferingHttpServletRequest bufferingRequest = (BufferingHttpServletRequest) request;
+    if (!request.isAsyncStarted() && responseHandled.compareAndSet(false, true)) {
+      BufferingHttpServletResponse bufferingResponse = (BufferingHttpServletResponse) response;
+      BufferingHttpServletRequest bufferingRequest = (BufferingHttpServletRequest) request;
 
-        // set response headers
-        AgentConfig agentConfig = HypertraceConfig.get();
-        if (agentConfig.getDataCapture().getHttpHeaders().getResponse().getValue()) {
-          for (String headerName : bufferingResponse.getHeaderNames()) {
-            String headerValue = bufferingResponse.getHeader(headerName);
-            currentSpan.setAttribute(
-                HypertraceSemanticAttributes.httpResponseHeader(headerName), headerValue);
-          }
-        }
-        // Bodies are captured at the end after all user processing.
-        if (agentConfig.getDataCapture().getHttpBody().getRequest().getValue()) {
-          currentSpan.setAttribute(
-              HypertraceSemanticAttributes.HTTP_REQUEST_BODY,
-              bufferingRequest.getBufferedBodyAsString());
-        }
-        if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()) {
-          currentSpan.setAttribute(
-              HypertraceSemanticAttributes.HTTP_RESPONSE_BODY,
-              bufferingResponse.getBufferAsString());
-        }
+      // Bodies are captured at the end after all user processing.
+      if (agentConfig.getDataCapture().getHttpBody().getRequest().getValue()) {
+        currentSpan.setAttribute(
+            HypertraceSemanticAttributes.HTTP_REQUEST_BODY,
+            bufferingRequest.getBufferedBodyAsString());
+      }
+      if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()) {
+        currentSpan.setAttribute(
+            HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, bufferingResponse.getBufferAsString());
       }
     }
   }

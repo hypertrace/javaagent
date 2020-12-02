@@ -16,27 +16,15 @@
 
 package io.opentelemetry.instrumentation.hypertrace.servlet.v3_1;
 
-import java.io.IOException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public class TestServlet extends HttpServlet {
-
-  public static final String RESPONSE_BODY = "{\"key\": \"val\"}";
-  public static final String RESPONSE_HEADER = "responseheader";
-  public static final String RESPONSE_HEADER_VALUE = "responsevalue";
+public class RequestCastServlet extends TestServlet {
 
   @Override
   protected void service(HttpServletRequest req, HttpServletResponse resp) {
-    resp.setStatus(200);
-
-    resp.setContentType("application/json");
-    resp.setHeader(RESPONSE_HEADER, RESPONSE_HEADER_VALUE);
-    try {
-      resp.getWriter().print(RESPONSE_BODY);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    super.service(req, resp);
+    org.eclipse.jetty.server.Request jettyRequest = (org.eclipse.jetty.server.Request) req;
+    org.eclipse.jetty.server.Response jettyResponse = (org.eclipse.jetty.server.Response) resp;
   }
 }

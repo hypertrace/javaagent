@@ -110,7 +110,7 @@ public class Servlet2BodyInstrumentationModule extends InstrumentationModule {
     public static boolean start(
         @Advice.Argument(value = 0, readOnly = false) ServletRequest request,
         @Advice.Argument(value = 1, readOnly = false) ServletResponse response,
-        @Advice.Local("rootStart") Boolean rootStart) {
+        @Advice.Local("rootStart") boolean rootStart) {
 
       if (!HypertraceConfig.isInstrumentationEnabled(
           Servlet2InstrumentationName.PRIMARY, Servlet2InstrumentationName.OTHER)) {
@@ -134,8 +134,11 @@ public class Servlet2BodyInstrumentationModule extends InstrumentationModule {
       Span currentSpan = Java8BytecodeBridge.currentSpan();
 
       rootStart = true;
-      response = new BufferingHttpServletResponse(httpResponse);
-      request = new BufferingHttpServletRequest(httpRequest, (HttpServletResponse) response);
+
+      if (!HypertraceConfig.disableServletWrapperTypes()) {
+        response = new BufferingHttpServletResponse(httpResponse);
+        request = new BufferingHttpServletRequest(httpRequest, (HttpServletResponse) response);
+      }
 
       ServletSpanDecorator.addSessionId(currentSpan, httpRequest);
 
@@ -165,41 +168,48 @@ public class Servlet2BodyInstrumentationModule extends InstrumentationModule {
     public static void stopSpan(
         @Advice.Argument(0) ServletRequest request,
         @Advice.Argument(1) ServletResponse response,
-        @Advice.Local("rootStart") Boolean rootStart) {
-      if (rootStart != null) {
-        if (!(request instanceof BufferingHttpServletRequest)
-            || !(response instanceof BufferingHttpServletResponse)) {
-          return;
-        }
+        @Advice.Thrown Throwable throwable,
+        @Advice.Local("rootStart") boolean rootStart) {
 
-        request.removeAttribute(ALREADY_LOADED);
-        Span currentSpan = Java8BytecodeBridge.currentSpan();
+      HypertraceConfig.recordException(throwable);
 
-        BufferingHttpServletResponse bufferingResponse = (BufferingHttpServletResponse) response;
-        BufferingHttpServletRequest bufferingRequest = (BufferingHttpServletRequest) request;
+      if (!rootStart
+          || !(request instanceof BufferingHttpServletRequest)
+          || !(response instanceof BufferingHttpServletResponse)) {
+        return;
+      }
 
-        if (HypertraceConfig.get().getDataCapture().getHttpHeaders().getResponse().getValue()) {
-          // set response headers
-          Map<String, List<String>> bufferedHeaders = bufferingResponse.getBufferedHeaders();
-          for (Map.Entry<String, List<String>> nameToHeadersEntry : bufferedHeaders.entrySet()) {
-            String headerName = nameToHeadersEntry.getKey();
-            for (String headerValue : nameToHeadersEntry.getValue()) {
-              currentSpan.setAttribute(
-                  HypertraceSemanticAttributes.httpResponseHeader(headerName), headerValue);
-            }
+      if (!(request instanceof BufferingHttpServletRequest)
+          || !(response instanceof BufferingHttpServletResponse)) {
+        return;
+      }
+
+      request.removeAttribute(ALREADY_LOADED);
+      Span currentSpan = Java8BytecodeBridge.currentSpan();
+
+      BufferingHttpServletResponse bufferingResponse = (BufferingHttpServletResponse) response;
+      BufferingHttpServletRequest bufferingRequest = (BufferingHttpServletRequest) request;
+
+      if (HypertraceConfig.get().getDataCapture().getHttpHeaders().getResponse().getValue()) {
+        // set response headers
+        Map<String, List<String>> bufferedHeaders = bufferingResponse.getBufferedHeaders();
+        for (Map.Entry<String, List<String>> nameToHeadersEntry : bufferedHeaders.entrySet()) {
+          String headerName = nameToHeadersEntry.getKey();
+          for (String headerValue : nameToHeadersEntry.getValue()) {
+            currentSpan.setAttribute(
+                HypertraceSemanticAttributes.httpResponseHeader(headerName), headerValue);
           }
         }
-        // Bodies are captured at the end after all user processing.
-        if (HypertraceConfig.get().getDataCapture().getHttpBody().getRequest().getValue()) {
-          currentSpan.setAttribute(
-              HypertraceSemanticAttributes.HTTP_REQUEST_BODY,
-              bufferingRequest.getBufferedBodyAsString());
-        }
-        if (HypertraceConfig.get().getDataCapture().getHttpBody().getResponse().getValue()) {
-          currentSpan.setAttribute(
-              HypertraceSemanticAttributes.HTTP_RESPONSE_BODY,
-              bufferingResponse.getBufferAsString());
-        }
+      }
+      // Bodies are captured at the end after all user processing.
+      if (HypertraceConfig.get().getDataCapture().getHttpBody().getRequest().getValue()) {
+        currentSpan.setAttribute(
+            HypertraceSemanticAttributes.HTTP_REQUEST_BODY,
+            bufferingRequest.getBufferedBodyAsString());
+      }
+      if (HypertraceConfig.get().getDataCapture().getHttpBody().getResponse().getValue()) {
+        currentSpan.setAttribute(
+            HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, bufferingResponse.getBufferAsString());
       }
     }
   }
