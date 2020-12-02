@@ -50,8 +50,8 @@ public class HypertraceConfig {
   private static AgentConfig agentConfig;
 
   static final String DEFAULT_SERVICE_NAME = "unknown";
-  static final String DEFAULT_REPORTING_ADDRESS = "http://localhost:9411/api/v2/spans";
-  static final String DEFAULT_OPA_ADDRESS = "http://opa.traceableai:8181/";
+  static final String DEFAULT_REPORTING_ENDPOINT = "http://localhost:9411/api/v2/spans";
+  static final String DEFAULT_OPA_ENDPOINT = "http://opa.traceableai:8181/";
   static final int DEFAULT_OPA_POLL_PERIOD_SECONDS = 30;
 
   public static AgentConfig get() {
@@ -146,7 +146,7 @@ public class HypertraceConfig {
 
   private static Reporting.Builder applyReportingDefaults(Reporting.Builder builder) {
     if (!builder.hasEndpoint()) {
-      builder.setEndpoint(StringValue.newBuilder().setValue(DEFAULT_REPORTING_ADDRESS).build());
+      builder.setEndpoint(StringValue.newBuilder().setValue(DEFAULT_REPORTING_ENDPOINT).build());
     }
     Builder opaBuilder = applyOpaDefaults(builder.getOpa().toBuilder());
     builder.setOpa(opaBuilder);
@@ -155,7 +155,7 @@ public class HypertraceConfig {
 
   private static Opa.Builder applyOpaDefaults(Opa.Builder builder) {
     if (!builder.hasEndpoint()) {
-      builder.setEndpoint(StringValue.newBuilder().setValue(DEFAULT_OPA_ADDRESS).build());
+      builder.setEndpoint(StringValue.newBuilder().setValue(DEFAULT_OPA_ENDPOINT).build());
     }
     if (!builder.hasPollPeriodSeconds()) {
       builder.setPollPeriodSeconds(

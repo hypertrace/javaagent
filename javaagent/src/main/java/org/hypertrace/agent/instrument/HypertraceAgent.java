@@ -62,7 +62,7 @@ public class HypertraceAgent {
     OpenTelemetryConfig.setDefault(
         OTEL_PROPAGATORS, toOtelPropagators(agentConfig.getPropagationFormatsList()));
     OpenTelemetryConfig.setDefault(
-        OTEL_EXPORTER_ZIPKIN_ENDPOINT, agentConfig.getReporting().getAddress().getValue());
+        OTEL_EXPORTER_ZIPKIN_ENDPOINT, agentConfig.getReporting().getEndpoint().getValue());
     OpenTelemetryConfig.setDefault(
         OTEL_EXPORTER_ZIPKIN_SERVICE_NAME, agentConfig.getServiceName().getValue());
   }
@@ -70,7 +70,7 @@ public class HypertraceAgent {
   @VisibleForTesting
   static String toOtelPropagators(List<PropagationFormat> propagationFormats) {
     return propagationFormats.stream()
-        .map(v -> v.name().toLowerCase().replaceAll("_", ""))
+        .map(v -> v.name().toLowerCase())
         .collect(Collectors.joining(","));
   }
 

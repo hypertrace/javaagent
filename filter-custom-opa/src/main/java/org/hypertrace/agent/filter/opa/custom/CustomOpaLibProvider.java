@@ -41,9 +41,9 @@ public class CustomOpaLibProvider implements FilterProvider {
     AgentConfig agentConfig = HypertraceConfig.get();
     Reporting reporting = agentConfig.getReporting();
     return new CustomOpaLib(
-        reporting.getOpa().getAddress().getValue(),
+        reporting.getOpa().getEndpoint().getValue(),
         reporting.getToken().getValue(),
         reporting.getSecure().getValue(),
-        reporting.getOpa().getPollPeriod().getValue());
+        reporting.getOpa().getPollPeriodSeconds().getValue());
   }
 }
