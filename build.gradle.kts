@@ -29,7 +29,8 @@ subprojects {
 
     extra.set("versions", mapOf(
             "opentelemetry" to "0.11.0",
-            "opentelemetry_java_agent" to "0.11.0"
+            "opentelemetry_java_agent" to "0.11.0",
+            "byte_buddy" to "1.10.18"
     ))
 
     apply<JavaPlugin>()

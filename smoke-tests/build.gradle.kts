@@ -2,13 +2,15 @@ plugins {
     `java-library`
 }
 
+val versions: Map<String, String> by extra
+
 dependencies{
     testImplementation(project(":javaagent-core"))
     testImplementation("org.testcontainers:testcontainers:1.15.0")
     testImplementation("com.squareup.okhttp3:okhttp:4.9.0")
     testImplementation("org.awaitility:awaitility:4.0.3")
-    testImplementation("io.opentelemetry:opentelemetry-proto:0.11.0")
-    testImplementation("io.opentelemetry:opentelemetry-sdk:0.11.0")
+    testImplementation("io.opentelemetry:opentelemetry-proto:${versions["opentelemetry"]}")
+    testImplementation("io.opentelemetry:opentelemetry-sdk:${versions["opentelemetry"]}")
     testImplementation("com.google.protobuf:protobuf-java-util:3.13.0")
 }
 

@@ -22,12 +22,14 @@ afterEvaluate{
     ).configure()
 }
 
+val versions: Map<String, String> by extra
+
 dependencies {
     api(project(":instrumentation:servlet:servlet-3.1"))
 
-    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-spark-2.3:0.11.0")
-    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0:0.11.0")
-    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jetty-8.0:0.11.0")
+    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-spark-2.3:${versions["opentelemetry_java_agent"]}")
+    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0:${versions["opentelemetry_java_agent"]}")
+    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jetty-8.0:${versions["opentelemetry_java_agent"]}")
 
     compileOnly("com.sparkjava:spark-core:2.3")
 

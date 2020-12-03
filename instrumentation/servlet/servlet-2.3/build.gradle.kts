@@ -26,10 +26,12 @@ afterEvaluate{
     ).configure()
 }
 
+val versions: Map<String, String> by extra
+
 dependencies {
     api(project(":instrumentation:servlet:servlet-common"))
 
-    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-2.2:0.11.0")
+    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-2.2:${versions["opentelemetry_java_agent"]}")
 
     compileOnly("javax.servlet:servlet-api:2.3")
 

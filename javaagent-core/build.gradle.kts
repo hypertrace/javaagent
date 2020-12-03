@@ -21,8 +21,10 @@ idea {
     }
 }
 
+val versions: Map<String, String> by extra
+
 dependencies {
-    api("io.opentelemetry:opentelemetry-api:0.11.0")
+    api("io.opentelemetry:opentelemetry-api:${versions["opentelemetry"]}")
     implementation("org.slf4j:slf4j-api:1.7.30")
 
     api("com.google.protobuf:protobuf-java:3.11.4")
