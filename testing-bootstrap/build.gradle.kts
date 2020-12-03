@@ -7,9 +7,11 @@ plugins {
 // running tests, we simulate this by adding the jar produced by this project to the bootstrap
 // classpath.
 
+val versions: Map<String, String> by extra
+
 dependencies {
-    api("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:0.11.0")
-    api("io.opentelemetry.javaagent:opentelemetry-javaagent-api:0.11.0")
+    api("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:${versions["opentelemetry_java_agent"]}")
+    api("io.opentelemetry.javaagent:opentelemetry-javaagent-api:${versions["opentelemetry_java_agent"]}")
     implementation(project(":javaagent-core"))
     implementation(project(":filter-api"))
 }

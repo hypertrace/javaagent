@@ -53,8 +53,10 @@ protobuf {
     }
 }
 
+val versions: Map<String, String> by extra
+
 dependencies {
-    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-grpc-1.5:0.11.0")
+    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-grpc-1.5:${versions["opentelemetry_java_agent"]}")
     api("io.opentelemetry.instrumentation:opentelemetry-grpc-1.5:0.11.0")
 
     compileOnly("io.grpc:grpc-core:1.5.0")

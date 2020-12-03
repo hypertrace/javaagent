@@ -22,8 +22,10 @@ afterEvaluate{
     ).configure()
 }
 
+val versions: Map<String, String> by extra
+
 dependencies {
-    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-okhttp-3.0:0.11.0")
+    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-okhttp-3.0:${versions["opentelemetry_java_agent"]}")
 
     compileOnly("com.squareup.okhttp3:okhttp:3.0.0")
 

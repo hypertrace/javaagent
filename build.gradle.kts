@@ -27,6 +27,12 @@ subprojects {
     group = "org.hypertrace.agent"
     description = "Hypertrace OpenTelemetry Javaagent"
 
+    extra.set("versions", mapOf(
+            "opentelemetry" to "0.11.0",
+            "opentelemetry_java_agent" to "0.11.0",
+            "byte_buddy" to "1.10.18"
+    ))
+
     apply<JavaPlugin>()
     apply(plugin = "com.diffplug.spotless")
     apply(from = "$rootDir/gradle/spotless.gradle")
