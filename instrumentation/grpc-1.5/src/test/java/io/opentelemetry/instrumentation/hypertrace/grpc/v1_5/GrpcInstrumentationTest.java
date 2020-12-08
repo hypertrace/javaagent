@@ -54,8 +54,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
 /**
- * TODO the HTTP2 headers for client does not work for the first request - therefore the ordering
- * https://github.com/hypertrace/javaagent/issues/109#issuecomment-740918018
+ * TODO the HTTP2 headers for client does not work for the first request - therefore the explicit
+ * ordering https://github.com/hypertrace/javaagent/issues/109#issuecomment-740918018
  */
 @TestMethodOrder(OrderAnnotation.class)
 public class GrpcInstrumentationTest extends AbstractInstrumenterTest {

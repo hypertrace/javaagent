@@ -39,9 +39,9 @@ import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 
 @AutoService(InstrumentationModule.class)
-public class ClientHTTP2HeadersInstrumentationModule extends InstrumentationModule {
+public class Http2HeadersInstrumentationModule extends InstrumentationModule {
 
-  public ClientHTTP2HeadersInstrumentationModule() {
+  public Http2HeadersInstrumentationModule() {
     super(GrpcInstrumentationName.PRIMARY, GrpcInstrumentationName.OTHER);
   }
 
@@ -50,8 +50,15 @@ public class ClientHTTP2HeadersInstrumentationModule extends InstrumentationModu
     return Arrays.asList(new NettyUtilsInstrumentation());
   }
 
+  /**
+   * The server side HTTP2 headers are added in tracing gRPC interceptor. The headers are added to
+   * metadata in {@link GrpcUtils_convertHeaders_Advice}.
+   *
+   * <p>The client side HTTP2 headers are added directly to span in {@link
+   * Utils_convertClientHeaders_Advice}. TODO However it does not work for the first request
+   * https://github.com/hypertrace/javaagent/issues/109#issuecomment-740918018.
+   */
   class NettyUtilsInstrumentation implements TypeInstrumentation {
-
     @Override
     public ElementMatcher<? super TypeDescription> typeMatcher() {
       return failSafe(named("io.grpc.netty.Utils"));
