@@ -79,8 +79,6 @@ public class ClientHTTP2HeadersInstrumentationModule extends InstrumentationModu
         @Advice.Argument(4) Object method) {
 
       Span currentSpan = Java8BytecodeBridge.currentSpan();
-      System.out.println("\n\n Utils.convertHeaders exit");
-      System.out.println(currentSpan);
       if (scheme != null) {
         currentSpan.setAttribute(
             HypertraceSemanticAttributes.rpcRequestMetadata(GrpcSemanticAttributes.SCHEME),

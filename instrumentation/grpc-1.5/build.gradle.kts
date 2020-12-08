@@ -72,6 +72,4 @@ dependencies {
     testImplementation("io.grpc:grpc-protobuf:1.5.0")
     testImplementation("io.grpc:grpc-stub:1.5.0")
     testImplementation("io.grpc:grpc-netty:1.5.0")
-    // TODO remove if not needed
-    testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.1:${versions["opentelemetry_java_agent"]}")
 }

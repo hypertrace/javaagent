@@ -25,7 +25,6 @@ import io.grpc.ForwardingClientCall;
 import io.grpc.ForwardingClientCallListener;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
-import io.grpc.Status;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.GrpcInstrumentationName;
 import io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.GrpcSpanDecorator;
@@ -83,12 +82,6 @@ public class GrpcClientInterceptor implements ClientInterceptor {
     TracingClientCallListener(Listener<RespT> delegate, Span span) {
       super(delegate);
       this.span = span;
-    }
-
-    @Override
-    public void onClose(Status status, Metadata trailers) {
-      super.onClose(status, trailers);
-      System.out.println("\n\nclosing tracing listener");
     }
 
     @Override

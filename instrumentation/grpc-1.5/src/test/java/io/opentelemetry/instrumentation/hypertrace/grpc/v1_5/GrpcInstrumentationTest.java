@@ -54,47 +54,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
 /**
- * The current span in Utils.convertClientHeaders is DefaultSpan for the first request. The first
- * request uses io.grpc.internal.DelayedClientTransport and it is called from
- * io.grpc.stub.ClientCalls.blockingUnaryCall. Subsequent requests use
- * io.grpc.stub.ClientCalls.futureUnaryCall - see (1). The DelayedClientTransport calls network in a
- * separate branch after ClientCallImpl or gRPC interceptors. To propagate span to
- * Utils.convertClientHeaders it would have to be started in
- * io.grpc.stub.ClientCalls.blockingUnaryCall.
- *
- * <p>Span is not recording (Default) java.lang.Exception: Stack trace at
- * java.lang.Thread.dumpStack(Thread.java:1336) at
- * io.grpc.netty.Utils.convertClientHeaders(Utils.java:107) at
- * io.grpc.netty.NettyClientStream$Sink.writeHeaders(NettyClientStream.java:124) at
- * io.grpc.internal.AbstractClientStream.start(AbstractClientStream.java:132) at
- * io.grpc.internal.DelayedStream$4.run(DelayedStream.java:197) at
- * io.grpc.internal.DelayedStream.drainPendingCalls(DelayedStream.java:132) at
- * io.grpc.internal.DelayedStream.setStream(DelayedStream.java:101) at
- * io.grpc.internal.DelayedClientTransport$PendingStream.createRealStream(DelayedClientTransport.java:351)
- * at
- * io.grpc.internal.DelayedClientTransport$PendingStream.access$200(DelayedClientTransport.java:334)
- * at io.grpc.internal.DelayedClientTransport$5.run(DelayedClientTransport.java:293) at
- * io.grpc.stub.ClientCalls$ThreadlessExecutor.waitAndDrain(ClientCalls.java:575) (1) at
- *
- * <p>io.grpc.stub.ClientCalls.blockingUnaryCall(ClientCalls.java:120) at
- * org.hypertrace.example.GreeterGrpc$GreeterBlockingStub.sayHello(GreeterGrpc.java:172) at
- * io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.GrpcInstrumentationTest.serverRequestBlocking(GrpcInstrumentationTest.java:150)
- *
- * <p>Span is recording java.lang.Exception: Stack trace at
- * java.lang.Thread.dumpStack(Thread.java:1336) at
- * io.grpc.netty.Utils.convertClientHeaders(Utils.java:107) at
- * io.grpc.netty.NettyClientStream$Sink.writeHeaders(NettyClientStream.java:124) at
- * io.grpc.internal.AbstractClientStream.start(AbstractClientStream.java:132) at
- * io.grpc.internal.ClientCallImpl.start(ClientCallImpl.java:225) at
- * io.grpc.ForwardingClientCall.start(ForwardingClientCall.java:32) at
- * io.opentelemetry.instrumentation.grpc.v1_5.client.TracingClientInterceptor$TracingClientCall.start(TracingClientInterceptor.java:102)
- * at io.grpc.stub.ClientCalls.startCall(ClientCalls.java:261) at
- * io.grpc.stub.ClientCalls.asyncUnaryRequestCall(ClientCalls.java:237) at
- * io.grpc.stub.ClientCalls.futureUnaryCall(ClientCalls.java:171) at
- *
- * <p>io.grpc.stub.ClientCalls.blockingUnaryCall(ClientCalls.java:117) at
- * org.hypertrace.example.GreeterGrpc$GreeterBlockingStub.sayHello(GreeterGrpc.java:172) at
- * io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.GrpcInstrumentationTest.disabledInstrumentation_dynamicConfig(GrpcInstrumentationTest.java:182)
+ * TODO the HTTP2 headers for client does not work for the first request - therefore the ordering
+ * https://github.com/hypertrace/javaagent/issues/109#issuecomment-740918018
  */
 @TestMethodOrder(OrderAnnotation.class)
 public class GrpcInstrumentationTest extends AbstractInstrumenterTest {
