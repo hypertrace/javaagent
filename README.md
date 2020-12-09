@@ -14,10 +14,12 @@ and adds following capabilities:
 List of supported frameworks with additional capabilities:
 | Library/Framework                                                                                      | Versions        |
 |--------------------------------------------------------------------------------------------------------|-----------------|
+| [Apache HttpClient](https://hc.apache.org/index.html)                                                  | 4.0+            |
+| [gRPC](https://github.com/grpc/grpc-java)                                                              | 1.5+,             |
+| [JAX-RS Client](https://javaee.github.io/javaee-spec/javadocs/javax/ws/rs/client/package-summary.html) | 2.0+            |
+| [OkHttp](https://github.com/square/okhttp/)                                                            | 3.0+            |
 | [Servlet](https://javaee.github.io/javaee-spec/javadocs/javax/servlet/package-summary.html)            | 2.3+            |
 | [Spark Web Framework](https://github.com/perwendel/spark)                                              | 2.3+            |
-| [gRPC](https://github.com/grpc/grpc-java)                                                              | 1.5+            |
-| [OkHttp](https://github.com/square/okhttp/)                                                            | 3.0+            |
 
 ### Adding custom filter implementation
 
