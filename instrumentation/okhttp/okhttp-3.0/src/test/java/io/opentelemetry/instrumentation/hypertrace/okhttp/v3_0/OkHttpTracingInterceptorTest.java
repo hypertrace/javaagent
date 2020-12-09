@@ -113,7 +113,7 @@ public class OkHttpTracingInterceptorTest extends AbstractInstrumenterTest {
 
   @Test
   public void postUrlEncoded() throws Exception {
-    FormBody formBody = new FormBody.Builder().add("foo", "bar").build();
+    FormBody formBody = new FormBody.Builder().add("foo", "bar").add("baz", "far").build();
     Request request =
         new Builder()
             .url(String.format("http://localhost:%d/post", testHttpServer.port()))
@@ -134,7 +134,8 @@ public class OkHttpTracingInterceptorTest extends AbstractInstrumenterTest {
             .getAttributes()
             .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
     Assertions.assertEquals(
-        "foo=bar", clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+        "foo=bar&baz=far",
+        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
     Assertions.assertNull(
         clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
   }
