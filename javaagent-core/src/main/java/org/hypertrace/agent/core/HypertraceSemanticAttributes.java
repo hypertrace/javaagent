@@ -21,6 +21,14 @@ import io.opentelemetry.api.common.AttributeKey;
 public class HypertraceSemanticAttributes {
   private HypertraceSemanticAttributes() {}
 
+  /**
+   * Span name used for span that carries additional data (e.g. attributes) that should belong to
+   * its parent. The parent span cannot carry additional data because it has been already finished.
+   * This usually happens when capturing response body in RPC client instrumentations - the body is
+   * read after the client span is finished.
+   */
+  public static final String ADDITIONAL_DATA_SPAN_NAME = "additional-data";
+
   public static AttributeKey<String> httpRequestHeader(String header) {
     return AttributeKey.stringKey("http.request.header." + header);
   }
