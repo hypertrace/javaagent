@@ -42,7 +42,9 @@ import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 public class NettyHttp2HeadersInstrumentationModule extends InstrumentationModule {
 
   public NettyHttp2HeadersInstrumentationModule() {
-    super(GrpcInstrumentationName.PRIMARY, GrpcInstrumentationName.OTHER);
+    super(
+        GrpcInstrumentationName.PRIMARY,
+        Arrays.asList("grpc-netty-ht", GrpcInstrumentationName.OTHER).toArray(new String[0]));
   }
 
   @Override
