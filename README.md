@@ -59,7 +59,7 @@ The following instrumentation names disable only Hypertrace instrumentations, no
 * `ht` - all Hypertrace instrumentations
 * `servlet-ht` - Servlet, Spark Web
 * `okhttp-ht` - Okhttp
-* `grpc-ht` - Okhttp
+* `grpc-ht` - gRPC
 
 The Hypertrace instrumentations use also the core OpenTelemetry instrumentation names so for example
 `-Dotel.instrumentation.servlet.enabled=false` disables all servlet instrumentations including core
