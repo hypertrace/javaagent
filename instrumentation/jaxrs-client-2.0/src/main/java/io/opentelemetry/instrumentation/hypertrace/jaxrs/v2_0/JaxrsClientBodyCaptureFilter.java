@@ -68,7 +68,7 @@ public class JaxrsClientBodyCaptureFilter implements ClientRequestFilter, Client
         if (entity != null) {
           if (entity instanceof Form) {
             Form form = (Form) entity;
-            String content = getContent(form);
+            String content = getUrlEncodedContent(form);
             currentSpan.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, content);
           } else {
             currentSpan.setAttribute(
@@ -104,7 +104,7 @@ public class JaxrsClientBodyCaptureFilter implements ClientRequestFilter, Client
     }
   }
 
-  private String getContent(Form form) {
+  private static String getUrlEncodedContent(Form form) {
     MultivaluedMap<String, String> formMap = form.asMap();
     StringBuilder sb = new StringBuilder();
     if (formMap != null) {
@@ -122,7 +122,7 @@ public class JaxrsClientBodyCaptureFilter implements ClientRequestFilter, Client
     return sb.toString();
   }
 
-  private void captureHeaders(
+  private static void captureHeaders(
       Span span,
       Function<String, AttributeKey<String>> keySupplier,
       MultivaluedMap<String, String> headers) {

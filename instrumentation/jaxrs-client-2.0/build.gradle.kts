@@ -1,6 +1,5 @@
 plugins {
     `java-library`
-    id("com.google.protobuf") version "0.8.13"
     id("net.bytebuddy.byte-buddy")
     id("io.opentelemetry.instrumentation.auto-instrumentation")
     muzzle
