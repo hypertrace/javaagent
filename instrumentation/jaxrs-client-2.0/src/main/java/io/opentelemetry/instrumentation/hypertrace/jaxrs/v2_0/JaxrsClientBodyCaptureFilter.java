@@ -26,6 +26,7 @@ import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.client.ClientResponseContext;
 import javax.ws.rs.client.ClientResponseFilter;
+import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import org.hypertrace.agent.config.Config.AgentConfig;
@@ -65,8 +66,17 @@ public class JaxrsClientBodyCaptureFilter implements ClientRequestFilter, Client
 
         Object entity = requestContext.getEntity();
         if (entity != null) {
-          currentSpan.setAttribute(
-              HypertraceSemanticAttributes.HTTP_REQUEST_BODY, entity.toString());
+          if (entity instanceof Form) {
+            Form form = (Form) entity;
+            MultivaluedMap<String, String> formMap = form.asMap();
+            if (formMap != null) {
+              currentSpan.setAttribute(
+                  HypertraceSemanticAttributes.HTTP_REQUEST_BODY, formMap.toString());
+            }
+          } else {
+            currentSpan.setAttribute(
+                HypertraceSemanticAttributes.HTTP_REQUEST_BODY, entity.toString());
+          }
         }
       }
       requestContext.getEntity();

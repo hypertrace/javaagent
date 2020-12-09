@@ -23,7 +23,10 @@ import java.util.concurrent.TimeoutException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
@@ -117,6 +120,37 @@ public class JaxrsClientBodyInstrumentationTest extends AbstractInstrumenterTest
             .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
     Assertions.assertEquals(
         JSON, clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+    Assertions.assertNull(
+        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+  }
+
+  @Test
+  public void postUrlEncoded() throws TimeoutException, InterruptedException {
+    ClientBuilder clientBuilder = ClientBuilder.newBuilder();
+    Client client = clientBuilder.build();
+
+    WebTarget webTarget =
+        client.target(String.format("http://localhost:%d/post", testHttpServer.port()));
+    MultivaluedMap<String, String> formData = new MultivaluedHashMap<>();
+    formData.add("key1", "value1");
+    formData.add("key2", "value2");
+    Response response = webTarget.request().post(Entity.form(formData));
+    Assertions.assertEquals(204, response.getStatus());
+
+    TEST_WRITER.waitForTraces(1);
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    Assertions.assertEquals(1, traces.size());
+    Assertions.assertEquals(1, traces.get(0).size());
+    SpanData clientSpan = traces.get(0).get(0);
+
+    Assertions.assertEquals(
+        "test-value",
+        clientSpan
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
+    Assertions.assertEquals(
+        "{key1=[value1], key2=[value2]}",
+        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
     Assertions.assertNull(
         clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
   }
