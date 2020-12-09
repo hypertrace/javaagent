@@ -32,7 +32,7 @@ public class GrpcSemanticAttributes {
    *
    * <p>We cannot use prefix because e.g. ht.:path is not a valid key.
    */
-  private static final String SUFFIX = "ht";
+  private static final String SUFFIX = ".ht";
 
   public static final Metadata.Key<String> SCHEME_METADATA_KEY =
       Metadata.Key.of(SCHEME + SUFFIX, Metadata.ASCII_STRING_MARSHALLER);
