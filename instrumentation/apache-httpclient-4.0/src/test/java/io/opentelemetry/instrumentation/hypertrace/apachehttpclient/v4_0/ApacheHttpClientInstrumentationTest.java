@@ -105,7 +105,8 @@ public class ApacheHttpClientInstrumentationTest extends AbstractInstrumenterTes
   @Test
   public void postUrlEncoded() throws IOException, TimeoutException, InterruptedException {
     List<NameValuePair> nvps = new ArrayList<>();
-    nvps.add(new BasicNameValuePair("code", "22"));
+    nvps.add(new BasicNameValuePair("key1", "value1"));
+    nvps.add(new BasicNameValuePair("key2", "value2"));
 
     HttpPost postRequest = new HttpPost();
     postRequest.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
@@ -126,7 +127,8 @@ public class ApacheHttpClientInstrumentationTest extends AbstractInstrumenterTes
             .getAttributes()
             .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
     Assertions.assertEquals(
-        "code=22", clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+        "key1=value1&key2=value2",
+        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
     Assertions.assertNull(
         clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
   }
