@@ -28,6 +28,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -41,10 +42,16 @@ import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 @AutoService(InstrumentationModule.class)
 public class NettyHttp2HeadersInstrumentationModule extends InstrumentationModule {
 
+  private static final List<String> INSTRUMENTATION_NAMES = new ArrayList<>();
+
+  static {
+    INSTRUMENTATION_NAMES.add(GrpcInstrumentationName.PRIMARY);
+    INSTRUMENTATION_NAMES.addAll(Arrays.asList(GrpcInstrumentationName.OTHER));
+    INSTRUMENTATION_NAMES.add("grpc-netty-ht");
+  }
+
   public NettyHttp2HeadersInstrumentationModule() {
-    super(
-        GrpcInstrumentationName.PRIMARY,
-        Arrays.asList("grpc-netty-ht", GrpcInstrumentationName.OTHER).toArray(new String[0]));
+    super(INSTRUMENTATION_NAMES);
   }
 
   @Override
