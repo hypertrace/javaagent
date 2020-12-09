@@ -26,12 +26,27 @@ public class GrpcSemanticAttributes {
   public static final String AUTHORITY = ":authority";
   public static final String METHOD = ":method";
 
+  /**
+   * These metadata headers are added in Http2Headers instrumentation. We use different names than
+   * original HTTP2 header names to avoid any collisions with app code.
+   *
+   * <p>We cannot use prefix because e.g. ht.:path is not a valid key.
+   */
+  private static final String SUFFIX = "ht";
+
   public static final Metadata.Key<String> SCHEME_METADATA_KEY =
-      Metadata.Key.of(SCHEME, Metadata.ASCII_STRING_MARSHALLER);
+      Metadata.Key.of(SCHEME + SUFFIX, Metadata.ASCII_STRING_MARSHALLER);
   public static final Metadata.Key<String> PATH_METADATA_KEY =
-      Metadata.Key.of(PATH, Metadata.ASCII_STRING_MARSHALLER);
+      Metadata.Key.of(PATH + SUFFIX, Metadata.ASCII_STRING_MARSHALLER);
   public static final Metadata.Key<String> AUTHORITY_METADATA_KEY =
-      Metadata.Key.of(AUTHORITY, Metadata.ASCII_STRING_MARSHALLER);
+      Metadata.Key.of(AUTHORITY + SUFFIX, Metadata.ASCII_STRING_MARSHALLER);
   public static final Metadata.Key<String> METHOD_METADATA_KEY =
-      Metadata.Key.of(METHOD, Metadata.ASCII_STRING_MARSHALLER);
+      Metadata.Key.of(METHOD + SUFFIX, Metadata.ASCII_STRING_MARSHALLER);
+
+  public static String removeHypertracePrefix(String key) {
+    if (key.endsWith(SUFFIX)) {
+      return key.replace(SUFFIX, "");
+    }
+    return key;
+  }
 }

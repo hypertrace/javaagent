@@ -39,9 +39,9 @@ import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 
 @AutoService(InstrumentationModule.class)
-public class Http2HeadersInstrumentationModule extends InstrumentationModule {
+public class NettyHttp2HeadersInstrumentationModule extends InstrumentationModule {
 
-  public Http2HeadersInstrumentationModule() {
+  public NettyHttp2HeadersInstrumentationModule() {
     super(GrpcInstrumentationName.PRIMARY, GrpcInstrumentationName.OTHER);
   }
 
@@ -109,11 +109,17 @@ public class Http2HeadersInstrumentationModule extends InstrumentationModule {
     }
   }
 
+  /**
+   * There are multiple implementations of {@link Http2Headers}. Only some of them support getting
+   * authority, path etc. For instance {@code GrpcHttp2ResponseHeaders} throws unsupported exception
+   * when accessing authority etc. This header is used client response.
+   *
+   * @see {@link io.grpc.netty.GrpcHttp2HeadersUtils}
+   */
   static class GrpcUtils_convertHeaders_Advice {
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void exit(
-        @Advice.Argument(0) Http2Headers http2Headers,
-        @Advice.Return(readOnly = false) Metadata metadata) {
+        @Advice.Argument(0) Http2Headers http2Headers, @Advice.Return Metadata metadata) {
 
       if (http2Headers.authority() != null) {
         metadata.put(
