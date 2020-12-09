@@ -58,6 +58,7 @@ public class GrpcSpanDecorator {
       Key<String> stringKey = Key.of(key, Metadata.ASCII_STRING_MARSHALLER);
       Iterable<String> stringValues = metadata.getAll(stringKey);
       for (String stringValue : stringValues) {
+        key = GrpcSemanticAttributes.removeHypertracePrefix(key);
         span.setAttribute(keySupplier.apply(key), stringValue);
       }
     }
@@ -79,6 +80,7 @@ public class GrpcSpanDecorator {
       Key<String> stringKey = Key.of(key, Metadata.ASCII_STRING_MARSHALLER);
       Iterable<String> stringValues = metadata.getAll(stringKey);
       for (String stringValue : stringValues) {
+        key = GrpcSemanticAttributes.removeHypertracePrefix(key);
         mapHeaders.put(key, stringValue);
       }
     }

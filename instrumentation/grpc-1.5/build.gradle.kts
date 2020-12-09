@@ -16,6 +16,7 @@ muzzle {
         versions = "[1.5.0, 1.33.0)" // see https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/1453
         // for body capture via com.google.protobuf.util.JsonFormat
         extraDependency("io.grpc:grpc-protobuf:1.5.0")
+        extraDependency("io.grpc:grpc-netty:1.5.0")
     }
 }
 
@@ -57,11 +58,12 @@ val versions: Map<String, String> by extra
 
 dependencies {
     api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-grpc-1.5:${versions["opentelemetry_java_agent"]}")
-    api("io.opentelemetry.instrumentation:opentelemetry-grpc-1.5:0.11.0")
+    api("io.opentelemetry.instrumentation:opentelemetry-grpc-1.5:${versions["opentelemetry_java_agent"]}")
 
     compileOnly("io.grpc:grpc-core:1.5.0")
     compileOnly("io.grpc:grpc-protobuf:1.5.0")
     compileOnly("io.grpc:grpc-stub:1.5.0")
+    compileOnly("io.grpc:grpc-netty:1.5.0")
 
     implementation("javax.annotation:javax.annotation-api:1.3.2")
 
