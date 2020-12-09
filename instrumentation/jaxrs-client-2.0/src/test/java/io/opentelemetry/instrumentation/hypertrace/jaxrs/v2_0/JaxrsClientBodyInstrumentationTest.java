@@ -14,17 +14,20 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.okhttp.v3_0;
+package io.opentelemetry.instrumentation.hypertrace.jaxrs.v2_0;
 
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.List;
-import okhttp3.FormBody;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Request.Builder;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import java.util.concurrent.TimeoutException;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.hypertrace.agent.testing.TestHttpServer;
@@ -34,11 +37,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class OkHttpTracingInterceptorTest extends AbstractInstrumenterTest {
+public class JaxrsClientBodyInstrumentationTest extends AbstractInstrumenterTest {
 
+  private static final String JSON = "{\"id\":1,\"name\":\"John\"}";
   private static final TestHttpServer testHttpServer = new TestHttpServer();
-
-  private final OkHttpClient client = new OkHttpClient.Builder().followRedirects(true).build();
 
   @BeforeAll
   public static void startServer() throws Exception {
@@ -51,83 +53,96 @@ public class OkHttpTracingInterceptorTest extends AbstractInstrumenterTest {
   }
 
   @Test
-  public void getNoContent() throws Exception {
-    Request request =
-        new Builder()
-            .url(String.format("http://localhost:%d/get_no_content", testHttpServer.port()))
-            .header("test-request-header", "test-value")
-            .get()
-            .build();
+  public void getJson() throws TimeoutException, InterruptedException {
+    ClientBuilder clientBuilder = ClientBuilder.newBuilder();
+    Client client = clientBuilder.build();
 
-    Response response = client.newCall(request).execute();
+    Response response =
+        client
+            .target(String.format("http://localhost:%d/get_json", testHttpServer.port()))
+            .request()
+            .header("test-request-header", "test-header-value")
+            .get();
+    Assertions.assertEquals(200, response.getStatus());
+    // read entity has to happen before response.close()
+    String entity = response.readEntity(String.class);
+    Assertions.assertEquals(GetJsonHandler.RESPONSE_BODY, entity);
+    Assertions.assertEquals(false, Span.current().isRecording());
     response.close();
 
     TEST_WRITER.waitForTraces(1);
     List<List<SpanData>> traces = TEST_WRITER.getTraces();
     Assertions.assertEquals(1, traces.size());
-    Assertions.assertEquals(1, traces.get(0).size());
+    Assertions.assertEquals(2, traces.get(0).size());
     SpanData clientSpan = traces.get(0).get(0);
+
     Assertions.assertEquals(
         "test-value",
+        clientSpan
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
+    Assertions.assertEquals(
+        "test-header-value",
         clientSpan
             .getAttributes()
             .get(HypertraceSemanticAttributes.httpRequestHeader("test-request-header")));
-    Assertions.assertEquals(
-        "test-value",
-        clientSpan
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
     Assertions.assertNull(
         clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
-    Assertions.assertNull(
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
-  }
-
-  @Test
-  public void getJson() throws Exception {
-    Request request =
-        new Builder()
-            .url(String.format("http://localhost:%d/get_json", testHttpServer.port()))
-            .get()
-            .build();
-
-    Response response = client.newCall(request).execute();
-    response.close();
-
-    TEST_WRITER.waitForTraces(1);
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
-    Assertions.assertEquals(1, traces.size());
-    Assertions.assertEquals(1, traces.get(0).size());
-    SpanData clientSpan = traces.get(0).get(0);
-    Assertions.assertEquals(
-        "test-value",
-        clientSpan
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
-    Assertions.assertNull(
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+    SpanData responseBodySpan = traces.get(0).get(1);
     Assertions.assertEquals(
         GetJsonHandler.RESPONSE_BODY,
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+        responseBodySpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
   }
 
   @Test
-  public void postUrlEncoded() throws Exception {
-    FormBody formBody = new FormBody.Builder().add("key1", "value1").add("key2", "value2").build();
-    Request request =
-        new Builder()
-            .url(String.format("http://localhost:%d/post", testHttpServer.port()))
-            .post(formBody)
-            .build();
+  public void postJson() throws TimeoutException, InterruptedException {
+    ClientBuilder clientBuilder = ClientBuilder.newBuilder();
+    Client client = clientBuilder.build();
 
-    Response response = client.newCall(request).execute();
-    response.close();
+    Response response =
+        client
+            .target(String.format("http://localhost:%d/post", testHttpServer.port()))
+            .request()
+            .header("test-request-header", "test-header-value")
+            .post(Entity.entity(JSON, MediaType.APPLICATION_JSON_TYPE));
+    Assertions.assertEquals(204, response.getStatus());
 
     TEST_WRITER.waitForTraces(1);
     List<List<SpanData>> traces = TEST_WRITER.getTraces();
     Assertions.assertEquals(1, traces.size());
     Assertions.assertEquals(1, traces.get(0).size());
     SpanData clientSpan = traces.get(0).get(0);
+
+    Assertions.assertEquals(
+        "test-value",
+        clientSpan
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
+    Assertions.assertEquals(
+        JSON, clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+    Assertions.assertNull(
+        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+  }
+
+  @Test
+  public void postUrlEncoded() throws TimeoutException, InterruptedException {
+    ClientBuilder clientBuilder = ClientBuilder.newBuilder();
+    Client client = clientBuilder.build();
+
+    WebTarget webTarget =
+        client.target(String.format("http://localhost:%d/post", testHttpServer.port()));
+    MultivaluedMap<String, String> formData = new MultivaluedHashMap<>();
+    formData.add("key1", "value1");
+    formData.add("key2", "value2");
+    Response response = webTarget.request().post(Entity.form(formData));
+    Assertions.assertEquals(204, response.getStatus());
+
+    TEST_WRITER.waitForTraces(1);
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    Assertions.assertEquals(1, traces.size());
+    Assertions.assertEquals(1, traces.get(0).size());
+    SpanData clientSpan = traces.get(0).get(0);
+
     Assertions.assertEquals(
         "test-value",
         clientSpan
@@ -135,38 +150,6 @@ public class OkHttpTracingInterceptorTest extends AbstractInstrumenterTest {
             .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
     Assertions.assertEquals(
         "key1=value1&key2=value2",
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
-    Assertions.assertNull(
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
-  }
-
-  @Test
-  public void postRedirect() throws Exception {
-    String requestBodyStr = "{\"foo\": \"bar\"}";
-    RequestBody requestBody = RequestBody.create(requestBodyStr, MediaType.get("application/json"));
-    Request request =
-        new Builder()
-            .url(
-                String.format(
-                    "http://localhost:%d/post_redirect_to_get_no_content", testHttpServer.port()))
-            .post(requestBody)
-            .build();
-
-    Response response = client.newCall(request).execute();
-    response.close();
-
-    TEST_WRITER.waitForTraces(1);
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
-    Assertions.assertEquals(1, traces.size());
-    Assertions.assertEquals(1, traces.get(0).size());
-    SpanData clientSpan = traces.get(0).get(0);
-    Assertions.assertEquals(
-        "test-value",
-        clientSpan
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
-    Assertions.assertEquals(
-        requestBodyStr,
         clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
     Assertions.assertNull(
         clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));

@@ -39,3 +39,5 @@ findProject(":instrumentation:okhttp:okhttp-3.0")?.name = "okhttp-3.0"
 include("filter-custom-opa")
 include("otel-extensions")
 include("testing-bootstrap")
+include("instrumentation:jaxrs-client-2.0")
+findProject(":instrumentation:jaxrs-client-2.0")?.name = "jaxrs-client-2.0"

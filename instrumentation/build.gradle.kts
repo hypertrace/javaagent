@@ -37,6 +37,7 @@ dependencies{
     implementation(project(":instrumentation:grpc-1.5"))
     implementation(project(":instrumentation:okhttp:okhttp-3.0"))
     implementation(project(":instrumentation:apache-httpclient-4.0"))
+    implementation(project(":instrumentation:jaxrs-client-2.0"))
     implementation(project(":otel-extensions"))
 }
 

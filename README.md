@@ -14,10 +14,12 @@ and adds following capabilities:
 List of supported frameworks with additional capabilities:
 | Library/Framework                                                                                      | Versions        |
 |--------------------------------------------------------------------------------------------------------|-----------------|
+| [Apache HttpClient](https://hc.apache.org/index.html)                                                  | 4.0+            |
+| [gRPC](https://github.com/grpc/grpc-java)                                                              | 1.5+ to [1.32.0](https://github.com/hypertrace/javaagent/issues/70)        |
+| [JAX-RS Client](https://javaee.github.io/javaee-spec/javadocs/javax/ws/rs/client/package-summary.html) | 2.0+            |
+| [OkHttp](https://github.com/square/okhttp/)                                                            | 3.0+            |
 | [Servlet](https://javaee.github.io/javaee-spec/javadocs/javax/servlet/package-summary.html)            | 2.3+            |
 | [Spark Web Framework](https://github.com/perwendel/spark)                                              | 2.3+            |
-| [gRPC](https://github.com/grpc/grpc-java)                                                              | 1.5+            |
-| [OkHttp](https://github.com/square/okhttp/)                                                            | 3.0+            |
 
 ### Adding custom filter implementation
 
@@ -57,7 +59,7 @@ The following instrumentation names disable only Hypertrace instrumentations, no
 * `ht` - all Hypertrace instrumentations
 * `servlet-ht` - Servlet, Spark Web
 * `okhttp-ht` - Okhttp
-* `grpc-ht` - Okhttp
+* `grpc-ht` - gRPC
 
 The Hypertrace instrumentations use also the core OpenTelemetry instrumentation names so for example
 `-Dotel.instrumentation.servlet.enabled=false` disables all servlet instrumentations including core

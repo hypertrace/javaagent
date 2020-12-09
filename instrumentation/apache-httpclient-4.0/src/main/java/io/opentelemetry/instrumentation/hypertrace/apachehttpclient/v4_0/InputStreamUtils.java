@@ -28,6 +28,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import org.hypertrace.agent.core.GlobalObjectRegistry;
 import org.hypertrace.agent.core.GlobalObjectRegistry.SpanAndBuffer;
+import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +51,7 @@ public class InputStreamUtils {
       span.setAttribute(attributeKey, value);
     } else {
       TRACER
-          .spanBuilder("additional-data")
+          .spanBuilder(HypertraceSemanticAttributes.ADDITIONAL_DATA_SPAN_NAME)
           .setParent(Context.root().with(span))
           .setAttribute(attributeKey, value)
           .startSpan()
