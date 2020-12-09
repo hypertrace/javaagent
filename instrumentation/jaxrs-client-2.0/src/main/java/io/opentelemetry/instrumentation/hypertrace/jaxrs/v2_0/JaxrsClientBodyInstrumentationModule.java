@@ -39,11 +39,6 @@ import net.bytebuddy.matcher.ElementMatcher;
 @AutoService(InstrumentationModule.class)
 public class JaxrsClientBodyInstrumentationModule extends InstrumentationModule {
 
-  @Override
-  public int getOrder() {
-    return 1;
-  }
-
   public JaxrsClientBodyInstrumentationModule() {
     super(JaxrsClientBodyInstrumentationName.PRIMARY, JaxrsClientBodyInstrumentationName.OTHER);
   }
