@@ -149,7 +149,7 @@ public class JaxrsClientBodyInstrumentationTest extends AbstractInstrumenterTest
             .getAttributes()
             .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
     Assertions.assertEquals(
-        "{key1=[value1], key2=[value2]}",
+        "key1=value1&key2=value2",
         clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
     Assertions.assertNull(
         clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));

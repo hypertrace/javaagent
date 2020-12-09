@@ -68,11 +68,8 @@ public class JaxrsClientBodyCaptureFilter implements ClientRequestFilter, Client
         if (entity != null) {
           if (entity instanceof Form) {
             Form form = (Form) entity;
-            MultivaluedMap<String, String> formMap = form.asMap();
-            if (formMap != null) {
-              currentSpan.setAttribute(
-                  HypertraceSemanticAttributes.HTTP_REQUEST_BODY, formMap.toString());
-            }
+            String content = getContent(form);
+            currentSpan.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, content);
           } else {
             currentSpan.setAttribute(
                 HypertraceSemanticAttributes.HTTP_REQUEST_BODY, entity.toString());
@@ -105,6 +102,24 @@ public class JaxrsClientBodyCaptureFilter implements ClientRequestFilter, Client
     } catch (Exception ex) {
       log.error("Exception while getting response entity or headers", ex);
     }
+  }
+
+  private String getContent(Form form) {
+    MultivaluedMap<String, String> formMap = form.asMap();
+    StringBuilder sb = new StringBuilder();
+    if (formMap != null) {
+      for (Map.Entry<String, List<String>> entry : formMap.entrySet()) {
+        if (sb.length() > 0) {
+          sb.append("&");
+        }
+        for (String value : entry.getValue()) {
+          sb.append(entry.getKey());
+          sb.append("=");
+          sb.append(value);
+        }
+      }
+    }
+    return sb.toString();
   }
 
   private void captureHeaders(
