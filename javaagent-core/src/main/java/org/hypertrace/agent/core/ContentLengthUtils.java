@@ -21,4 +21,16 @@ public class ContentLengthUtils {
 
   // default content length
   public static final int DEFAULT = 128;
+
+  public static int parseLength(String lengthStr) {
+    if (lengthStr == null || lengthStr.isEmpty()) {
+      return DEFAULT;
+    }
+
+    try {
+      return Integer.parseInt(lengthStr);
+    } catch (Exception ex) {
+      return DEFAULT;
+    }
+  }
 }

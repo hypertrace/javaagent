@@ -19,7 +19,6 @@ package io.opentelemetry.instrumentation.hypertrace.jaxrs.v2_0;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
@@ -34,7 +33,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
@@ -163,7 +161,8 @@ public class JaxrsClientBodyInstrumentationTest extends AbstractInstrumenterTest
             .getAttributes()
             .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
     Assertions.assertEquals(
-        JSON, clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+        myDto.getJson(),
+        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
     Assertions.assertNull(
         clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
   }
@@ -202,28 +201,30 @@ public class JaxrsClientBodyInstrumentationTest extends AbstractInstrumenterTest
   public static class MyDto {
     public String name;
 
-    public String getName() {
-      return name;
-    }
-
-    public void setName(String name) {
-      this.name = name;
+    public String getJson() {
+      return "{name:\"" + name + "\"}";
     }
   }
 
   public static class MyDtoMessageBodyWriter implements MessageBodyWriter<MyDto> {
 
     @Override
-    public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations,
-        MediaType mediaType) {
+    public boolean isWriteable(
+        Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
       return true;
     }
 
     @Override
-    public void writeTo(MyDto myDto, Class<?> type, Type genericType, Annotation[] annotations,
-        MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
+    public void writeTo(
+        MyDto myDto,
+        Class<?> type,
+        Type genericType,
+        Annotation[] annotations,
+        MediaType mediaType,
+        MultivaluedMap<String, Object> httpHeaders,
+        OutputStream entityStream)
         throws IOException, WebApplicationException {
-      entityStream.write(myDto.name.getBytes());
+      entityStream.write((myDto.getJson()).getBytes());
     }
   }
 }

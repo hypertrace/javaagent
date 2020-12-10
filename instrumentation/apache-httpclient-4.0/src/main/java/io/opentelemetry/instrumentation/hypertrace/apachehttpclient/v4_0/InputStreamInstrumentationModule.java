@@ -36,9 +36,19 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
+import org.hypertrace.agent.core.GlobalObjectRegistry;
 
 /**
- * Maybe we could add optimization to instrument the input streams only when certain classes are
+ * {@link InputStream} instrumentation. The type matcher applies to all implementations. However
+ * only streams that are in the {@link GlobalObjectRegistry#inputStreamToSpanAndBufferMap} are
+ * instrumented, otherwise the instrumentation is noop.
+ *
+ * <p>If the stream is in the {@link GlobalObjectRegistry#inputStreamToSpanAndBufferMap} then result
+ * of read methods is also passed to the buffered stream (value) from the map. The instrumentation
+ * adds buffer to span from the map when read is finished (return -1), creates new span with buffer
+ * when the original span is not recording.
+ *
+ * <p>Maybe we could add optimization to instrument the input streams only when certain classes are
  * present in classloader e.g. classes from frameworks that we instrument.
  */
 @AutoService(InstrumentationModule.class)
