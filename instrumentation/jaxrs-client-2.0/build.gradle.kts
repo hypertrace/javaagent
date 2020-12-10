@@ -16,7 +16,8 @@ muzzle {
         group = "io.dropwizard"
         module = "dropwizard-client"
         versions = "[0.8.0,)"
-        assertInverse = true
+        // TODO this is set in OTEL
+//        assertInverse = true
     }
 }
 
@@ -31,6 +32,7 @@ afterEvaluate{
 val versions: Map<String, String> by extra
 
 dependencies {
+    api(project(":instrumentation:java-streams"))
     api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-client-2.0-common:${versions["opentelemetry_java_agent"]}")
 
     compileOnly("javax.ws.rs:javax.ws.rs-api:2.0.1")

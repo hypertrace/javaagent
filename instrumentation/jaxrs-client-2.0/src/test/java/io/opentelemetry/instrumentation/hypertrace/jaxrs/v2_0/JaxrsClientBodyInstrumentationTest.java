@@ -18,8 +18,13 @@ package io.opentelemetry.instrumentation.hypertrace.jaxrs.v2_0;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -28,6 +33,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.MessageBodyWriter;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.hypertrace.agent.testing.TestHttpServer;
@@ -99,6 +105,9 @@ public class JaxrsClientBodyInstrumentationTest extends AbstractInstrumenterTest
     ClientBuilder clientBuilder = ClientBuilder.newBuilder();
     Client client = clientBuilder.build();
 
+    MyDto myDto = new MyDto();
+    myDto.name = "foo";
+
     Response response =
         client
             .target(String.format("http://localhost:%d/post", testHttpServer.port()))
@@ -120,6 +129,40 @@ public class JaxrsClientBodyInstrumentationTest extends AbstractInstrumenterTest
             .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
     Assertions.assertEquals(
         JSON, clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+    Assertions.assertNull(
+        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+  }
+
+  @Test
+  public void postJsonDto() throws TimeoutException, InterruptedException {
+    ClientBuilder clientBuilder = ClientBuilder.newBuilder();
+    Client client = clientBuilder.register(MyDtoMessageBodyWriter.class).build();
+
+    MyDto myDto = new MyDto();
+    myDto.name = "name";
+
+    Response response =
+        client
+            .target(String.format("http://localhost:%d/post", testHttpServer.port()))
+            .request()
+            .header("test-request-header", "test-header-value")
+            .post(Entity.json(myDto));
+    Assertions.assertEquals(204, response.getStatus());
+
+    TEST_WRITER.waitForTraces(1);
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    Assertions.assertEquals(1, traces.size());
+    Assertions.assertEquals(1, traces.get(0).size());
+    SpanData clientSpan = traces.get(0).get(0);
+
+    Assertions.assertEquals(
+        "test-value",
+        clientSpan
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
+    Assertions.assertEquals(
+        myDto.getJson(),
+        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
     Assertions.assertNull(
         clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
   }
@@ -153,5 +196,35 @@ public class JaxrsClientBodyInstrumentationTest extends AbstractInstrumenterTest
         clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
     Assertions.assertNull(
         clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+  }
+
+  public static class MyDto {
+    public String name;
+
+    public String getJson() {
+      return "{name:\"" + name + "\"}";
+    }
+  }
+
+  public static class MyDtoMessageBodyWriter implements MessageBodyWriter<MyDto> {
+
+    @Override
+    public boolean isWriteable(
+        Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+      return true;
+    }
+
+    @Override
+    public void writeTo(
+        MyDto myDto,
+        Class<?> type,
+        Type genericType,
+        Annotation[] annotations,
+        MediaType mediaType,
+        MultivaluedMap<String, Object> httpHeaders,
+        OutputStream entityStream)
+        throws IOException, WebApplicationException {
+      entityStream.write((myDto.getJson()).getBytes());
+    }
   }
 }

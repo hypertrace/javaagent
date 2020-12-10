@@ -26,11 +26,8 @@ import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.client.ClientResponseContext;
 import javax.ws.rs.client.ClientResponseFilter;
-import javax.ws.rs.core.Form;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import org.hypertrace.agent.config.Config.AgentConfig;
-import org.hypertrace.agent.core.ContentTypeUtils;
 import org.hypertrace.agent.core.HypertraceConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.slf4j.Logger;
@@ -57,28 +54,8 @@ public class JaxrsClientBodyCaptureFilter implements ClientRequestFilter, Client
             HypertraceSemanticAttributes::httpRequestHeader,
             requestContext.getStringHeaders());
       }
-      if (requestContext.hasEntity()
-          && agentConfig.getDataCapture().getHttpBody().getRequest().getValue()) {
-        MediaType mediaType = requestContext.getMediaType();
-        if (mediaType == null || !ContentTypeUtils.shouldCapture(mediaType.toString())) {
-          return;
-        }
-
-        Object entity = requestContext.getEntity();
-        if (entity != null) {
-          if (entity instanceof Form) {
-            Form form = (Form) entity;
-            String content = getUrlEncodedContent(form);
-            currentSpan.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, content);
-          } else {
-            currentSpan.setAttribute(
-                HypertraceSemanticAttributes.HTTP_REQUEST_BODY, entity.toString());
-          }
-        }
-      }
-      requestContext.getEntity();
     } catch (Exception ex) {
-      log.error("Exception while getting request entity or headers", ex);
+      log.error("Exception while getting request headers", ex);
     }
   }
 
@@ -100,26 +77,8 @@ public class JaxrsClientBodyCaptureFilter implements ClientRequestFilter, Client
             responseContext.getHeaders());
       }
     } catch (Exception ex) {
-      log.error("Exception while getting response entity or headers", ex);
+      log.error("Exception while getting response headers", ex);
     }
-  }
-
-  private static String getUrlEncodedContent(Form form) {
-    MultivaluedMap<String, String> formMap = form.asMap();
-    StringBuilder sb = new StringBuilder();
-    if (formMap != null) {
-      for (Map.Entry<String, List<String>> entry : formMap.entrySet()) {
-        if (sb.length() > 0) {
-          sb.append("&");
-        }
-        for (String value : entry.getValue()) {
-          sb.append(entry.getKey());
-          sb.append("=");
-          sb.append(value);
-        }
-      }
-    }
-    return sb.toString();
   }
 
   private static void captureHeaders(

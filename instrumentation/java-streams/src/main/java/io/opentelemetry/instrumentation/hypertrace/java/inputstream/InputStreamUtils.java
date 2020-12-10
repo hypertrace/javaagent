@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.apachehttpclient.v4_0;
+package io.opentelemetry.instrumentation.hypertrace.java.inputstream;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;

@@ -39,8 +39,10 @@ afterEvaluate{
 val versions: Map<String, String> by extra
 
 dependencies {
-    implementation("org.apache.httpcomponents:httpclient:4.0")
+    api(project(":instrumentation:java-streams"))
     api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-apache-httpclient-4.0:${versions["opentelemetry_java_agent"]}")
+
+    implementation("org.apache.httpcomponents:httpclient:4.0")
 
     testImplementation(project(":testing-common"))
 }

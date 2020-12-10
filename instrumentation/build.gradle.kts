@@ -38,6 +38,7 @@ dependencies{
     implementation(project(":instrumentation:okhttp:okhttp-3.0"))
     implementation(project(":instrumentation:apache-httpclient-4.0"))
     implementation(project(":instrumentation:jaxrs-client-2.0"))
+    implementation(project(":instrumentation:java-streams"))
     implementation(project(":otel-extensions"))
 }
 

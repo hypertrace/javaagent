@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.apachehttpclient.v4_0;
+package io.opentelemetry.instrumentation.hypertrace.java.outputstream;
 
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import java.io.IOException;
