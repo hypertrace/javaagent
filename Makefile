@@ -1,10 +1,10 @@
 
 .PHONY: build
 build:
-	./gradlew build --stacktrace -x :smoke-tests:test
+	./gradlew build -x :smoke-tests:test --stacktrace
 
 .PHONY: smoke-test
-build:
+smoke-test:
 	./gradlew :smoke-tests:test --stacktrace
 
 .PHONY: muzzle
