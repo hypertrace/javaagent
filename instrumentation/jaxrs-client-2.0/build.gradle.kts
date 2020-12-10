@@ -16,7 +16,8 @@ muzzle {
         group = "io.dropwizard"
         module = "dropwizard-client"
         versions = "[0.8.0,)"
-        assertInverse = true
+        // TODO this is set in OTEL
+//        assertInverse = true
     }
 }
 
