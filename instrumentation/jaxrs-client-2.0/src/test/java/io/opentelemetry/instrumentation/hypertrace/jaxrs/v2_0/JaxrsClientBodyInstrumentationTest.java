@@ -23,6 +23,8 @@ import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Client;
@@ -69,6 +71,27 @@ public class JaxrsClientBodyInstrumentationTest extends AbstractInstrumenterTest
             .request()
             .header("test-request-header", "test-header-value")
             .get();
+    assertGetJson(response);
+  }
+
+  @Test
+  public void getJsonAsync() throws TimeoutException, InterruptedException, ExecutionException {
+    ClientBuilder clientBuilder = ClientBuilder.newBuilder();
+    Client client = clientBuilder.build();
+
+    Future<Response> responseFuture =
+        client
+            .target(String.format("http://localhost:%d/get_json", testHttpServer.port()))
+            .request()
+            .header("test-request-header", "test-header-value")
+            .async()
+            .get();
+
+    Response response = responseFuture.get();
+    assertGetJson(response);
+  }
+
+  public void assertGetJson(Response response) throws TimeoutException, InterruptedException {
     Assertions.assertEquals(200, response.getStatus());
     // read entity has to happen before response.close()
     String entity = response.readEntity(String.class);
@@ -134,19 +157,21 @@ public class JaxrsClientBodyInstrumentationTest extends AbstractInstrumenterTest
   }
 
   @Test
-  public void postJsonDto() throws TimeoutException, InterruptedException {
+  public void postJsonDtoAsync() throws TimeoutException, InterruptedException, ExecutionException {
     ClientBuilder clientBuilder = ClientBuilder.newBuilder();
     Client client = clientBuilder.register(MyDtoMessageBodyWriter.class).build();
 
     MyDto myDto = new MyDto();
     myDto.name = "name";
 
-    Response response =
+    Future<Response> post =
         client
             .target(String.format("http://localhost:%d/post", testHttpServer.port()))
             .request()
             .header("test-request-header", "test-header-value")
+            .async()
             .post(Entity.json(myDto));
+    Response response = post.get();
     Assertions.assertEquals(204, response.getStatus());
 
     TEST_WRITER.waitForTraces(1);
