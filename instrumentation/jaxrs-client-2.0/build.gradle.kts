@@ -31,13 +31,12 @@ afterEvaluate{
 val versions: Map<String, String> by extra
 
 dependencies {
+    api(project(":instrumentation:java-streams"))
     api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-client-2.0-common:${versions["opentelemetry_java_agent"]}")
-    api(project(":instrumentation:apache-httpclient-4.0"))
 
     compileOnly("javax.ws.rs:javax.ws.rs-api:2.0.1")
 
     testImplementation(project(":testing-common"))
     testImplementation("org.glassfish.jersey.core:jersey-client:2.27")
     testImplementation("org.glassfish.jersey.inject:jersey-hk2:2.27")
-
 }

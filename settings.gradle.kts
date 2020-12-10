@@ -41,3 +41,5 @@ include("otel-extensions")
 include("testing-bootstrap")
 include("instrumentation:jaxrs-client-2.0")
 findProject(":instrumentation:jaxrs-client-2.0")?.name = "jaxrs-client-2.0"
+include("instrumentation:java-streams")
+findProject(":instrumentation:java-streams")?.name = "java-streams"
