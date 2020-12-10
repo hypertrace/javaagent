@@ -16,9 +16,7 @@
 
 package io.opentelemetry.instrumentation.hypertrace.jaxrs.v2_0;
 
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.javaagent.instrumentation.jaxrsclient.v2_0.ClientTracingFilter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -46,9 +44,6 @@ public class JaxrsClientEntityInterceptor implements ReaderInterceptor, WriterIn
 
   private static final Logger log = LoggerFactory.getLogger(JaxrsClientEntityInterceptor.class);
 
-  private static final Tracer TRACER =
-      OpenTelemetry.getGlobalTracer("org.hypertrace.java.jaxrs.client");
-
   /** Writing response body to input stream */
   @Override
   public Object aroundReadFrom(ReaderInterceptorContext context)
@@ -69,6 +64,10 @@ public class JaxrsClientEntityInterceptor implements ReaderInterceptor, WriterIn
       return context.proceed();
     }
     Span currentSpan = (Span) spanObj;
+
+    // TODO as optimization the type could be checked here and if it is a primitive type e.g. String
+    // it could be read directly.
+    //    context.getType();
 
     InputStream entityStream = context.getInputStream();
     Object entity = null;
