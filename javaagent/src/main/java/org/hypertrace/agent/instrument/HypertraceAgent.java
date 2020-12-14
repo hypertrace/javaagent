@@ -39,6 +39,8 @@ public class HypertraceAgent {
   private static final String OTEL_DEFAULT_LOG_LEVEL =
       "io.opentelemetry.javaagent.slf4j.simpleLogger.defaultLogLevel";
 
+  private static HypertraceAgent instance;
+
   public static void premain(String agentArgs, Instrumentation inst) {
     agentmain(agentArgs, inst);
   }
@@ -49,6 +51,14 @@ public class HypertraceAgent {
       System.setProperty(argEntry.getKey(), argEntry.getValue());
     }
 
+    // TODO consider removing
+    // https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/1898
+    if (instance != null) {
+      System.out.println("Agent is already running. Will not attempt to attach");
+      return;
+    }
+
+    instance = new HypertraceAgent();
     setDefaultConfig();
     OpenTelemetryAgent.premain(agentArgs, inst);
   }
