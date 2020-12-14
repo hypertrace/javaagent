@@ -18,6 +18,7 @@ package io.opentelemetry.instrumentation.hypertrace.jaxrs.v2_0;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.javaagent.instrumentation.jaxrsclient.v2_0.ClientTracingFilter;
 import java.util.List;
 import java.util.Map;
@@ -39,12 +40,13 @@ public class JaxrsClientBodyCaptureFilter implements ClientRequestFilter, Client
 
   @Override
   public void filter(ClientRequestContext requestContext) {
-    Object spanObj = requestContext.getProperty(ClientTracingFilter.SPAN_PROPERTY_NAME);
-    if (!(spanObj instanceof Span)) {
+    Object contextObj = requestContext.getProperty(ClientTracingFilter.CONTEXT_PROPERTY_NAME);
+    if (!(contextObj instanceof Context)) {
       return;
     }
 
-    Span currentSpan = (Span) spanObj;
+    Context currentContext = (Context) contextObj;
+    Span currentSpan = Span.fromContext(currentContext);
     AgentConfig agentConfig = HypertraceConfig.get();
 
     try {
@@ -61,12 +63,13 @@ public class JaxrsClientBodyCaptureFilter implements ClientRequestFilter, Client
 
   @Override
   public void filter(ClientRequestContext requestContext, ClientResponseContext responseContext) {
-    Object spanObj = requestContext.getProperty(ClientTracingFilter.SPAN_PROPERTY_NAME);
-    if (!(spanObj instanceof Span)) {
+    Object contextObj = requestContext.getProperty(ClientTracingFilter.CONTEXT_PROPERTY_NAME);
+    if (!(contextObj instanceof Context)) {
       return;
     }
 
-    Span currentSpan = (Span) spanObj;
+    Context currentContext = (Context) contextObj;
+    Span currentSpan = Span.fromContext(currentContext);
     AgentConfig agentConfig = HypertraceConfig.get();
 
     try {
