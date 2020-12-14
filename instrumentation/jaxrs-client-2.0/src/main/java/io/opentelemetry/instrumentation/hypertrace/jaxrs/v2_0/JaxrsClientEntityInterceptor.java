@@ -17,6 +17,7 @@
 package io.opentelemetry.instrumentation.hypertrace.jaxrs.v2_0;
 
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.javaagent.instrumentation.jaxrsclient.v2_0.ClientTracingFilter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -46,34 +47,35 @@ public class JaxrsClientEntityInterceptor implements ReaderInterceptor, WriterIn
 
   /** Writing response body to input stream */
   @Override
-  public Object aroundReadFrom(ReaderInterceptorContext context)
+  public Object aroundReadFrom(ReaderInterceptorContext responseContext)
       throws IOException, WebApplicationException {
 
-    MediaType mediaType = context.getMediaType();
+    MediaType mediaType = responseContext.getMediaType();
     AgentConfig agentConfig = HypertraceConfig.get();
     if (mediaType == null
         || !ContentTypeUtils.shouldCapture(mediaType.toString())
         || !agentConfig.getDataCapture().getHttpBody().getResponse().getValue()) {
-      return context.proceed();
+      return responseContext.proceed();
     }
 
-    Object spanObj = context.getProperty(ClientTracingFilter.SPAN_PROPERTY_NAME);
-    if (!(spanObj instanceof Span)) {
+    Object contextObj = responseContext.getProperty(ClientTracingFilter.CONTEXT_PROPERTY_NAME);
+    if (!(contextObj instanceof Context)) {
       log.error(
           "Span object is not present in the context properties, response object will not be captured");
-      return context.proceed();
+      return responseContext.proceed();
     }
-    Span currentSpan = (Span) spanObj;
+    Context context = (Context) contextObj;
+    Span currentSpan = Span.fromContext(context);
 
     // TODO as optimization the type could be checked here and if it is a primitive type e.g. String
     // it could be read directly.
     //    context.getType();
 
-    InputStream entityStream = context.getInputStream();
+    InputStream entityStream = responseContext.getInputStream();
     Object entity = null;
     try {
-      String encodingStr = context.getHeaders().getFirst(HttpHeaders.CONTENT_ENCODING);
-      String contentLengthStr = context.getHeaders().getFirst(HttpHeaders.CONTENT_LENGTH);
+      String encodingStr = responseContext.getHeaders().getFirst(HttpHeaders.CONTENT_ENCODING);
+      String contentLengthStr = responseContext.getHeaders().getFirst(HttpHeaders.CONTENT_LENGTH);
       int contentLength = ContentLengthUtils.parseLength(contentLengthStr);
 
       ByteArrayOutputStream buffer = new ByteArrayOutputStream(contentLength);
@@ -84,7 +86,7 @@ public class JaxrsClientEntityInterceptor implements ReaderInterceptor, WriterIn
               buffer,
               HypertraceSemanticAttributes.HTTP_RESPONSE_BODY,
               ContentEncodingUtils.toCharset(encodingStr)));
-      entity = context.proceed();
+      entity = responseContext.proceed();
     } catch (Exception ex) {
       log.error("Exception while capturing response body", ex);
     }
@@ -93,33 +95,34 @@ public class JaxrsClientEntityInterceptor implements ReaderInterceptor, WriterIn
 
   /** Writing request body to output stream */
   @Override
-  public void aroundWriteTo(WriterInterceptorContext context)
+  public void aroundWriteTo(WriterInterceptorContext requestContext)
       throws IOException, WebApplicationException {
 
-    Object spanObj = context.getProperty(ClientTracingFilter.SPAN_PROPERTY_NAME);
-    if (!(spanObj instanceof Span)) {
+    Object contextObj = requestContext.getProperty(ClientTracingFilter.CONTEXT_PROPERTY_NAME);
+    if (!(contextObj instanceof Context)) {
       log.error(
           "Span object is not present in the context properties, request body will not be captured");
-      context.proceed();
+      requestContext.proceed();
       return;
     }
-    Span currentSpan = (Span) spanObj;
+    Context context = (Context) contextObj;
+    Span currentSpan = Span.fromContext(context);
 
     AgentConfig agentConfig = HypertraceConfig.get();
     if (agentConfig.getDataCapture().getHttpBody().getRequest().getValue()) {
-      MediaType mediaType = context.getMediaType();
+      MediaType mediaType = requestContext.getMediaType();
       if (mediaType == null || !ContentTypeUtils.shouldCapture(mediaType.toString())) {
-        context.proceed();
+        requestContext.proceed();
         return;
       }
     }
 
     // TODO length is not known
     ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-    OutputStream entityStream = context.getOutputStream();
+    OutputStream entityStream = requestContext.getOutputStream();
     try {
       GlobalObjectRegistry.outputStreamToBufferMap.put(entityStream, buffer);
-      context.proceed();
+      requestContext.proceed();
     } catch (Exception ex) {
       log.error("Failed to capture request body", ex);
     } finally {
