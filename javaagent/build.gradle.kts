@@ -32,11 +32,6 @@ tasks {
 
 
     shadowJar {
-        // shade to match with the package prefix for the classloader instrumentation
-        relocate("org.hypertrace.agent", "io.opentelemetry.javaagent.shaded.org.hypertrace.agent") {
-            exclude("org.hypertrace.agent.instrument.*")
-        }
-
         // config in javaagent-core uses protobuf and jackson
         // shade to the same location as OTEL, because the package prefix is used in classloader instrumentation
         // https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/master/javaagent-tooling/src/main/java/io/opentelemetry/javaagent/tooling/Constants.java#L25
