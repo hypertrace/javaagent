@@ -64,7 +64,7 @@ public class JaxrsClientBodyInstrumentationModule extends InstrumentationModule 
     public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
       return singletonMap(
           named("build").and(returns(hasInterface(named("javax.ws.rs.client.Client")))),
-          ClientBuilder_build_Advice.class.getName());
+          JaxrsClientBodyInstrumentationModule.class.getName() + "$ClientBuilder_build_Advice");
     }
   }
 

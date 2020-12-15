@@ -90,7 +90,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
       // instrument response
       transformers.put(
           isMethod().and(named("execute")).and(not(isAbstract())),
-          HttpClient_ExecuteAdvice_response.class.getName());
+          ApacheClientInstrumentationModule.class.getName() + "$HttpClient_ExecuteAdvice_response");
 
       // instrument request
       transformers.put(
@@ -98,13 +98,13 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
               .and(named("execute"))
               .and(not(isAbstract()))
               .and(takesArgument(0, hasSuperType(named("org.apache.http.HttpMessage")))),
-          HttpClient_ExecuteAdvice_request0.class.getName());
+          ApacheClientInstrumentationModule.class.getName() + "$HttpClient_ExecuteAdvice_request0");
       transformers.put(
           isMethod()
               .and(named("execute"))
               .and(not(isAbstract()))
               .and(takesArgument(1, hasSuperType(named("org.apache.http.HttpMessage")))),
-          HttpClient_ExecuteAdvice_request1.class.getName());
+          ApacheClientInstrumentationModule.class.getName() + "$HttpClient_ExecuteAdvice_request1");
 
       return transformers;
     }
@@ -197,12 +197,12 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
       // instrumentation for request body along with OutputStream instrumentation
       transformers.put(
           named("writeTo").and(takesArguments(1)).and(takesArgument(0, is(OutputStream.class))),
-          HttpEntity_WriteToAdvice.class.getName());
+          ApacheClientInstrumentationModule.class.getName() + "$HttpEntity_WriteToAdvice");
 
       // instrumentation for response body along with InputStream instrumentation
       transformers.put(
           named("getContent").and(takesArguments(0)).and(returns(InputStream.class)),
-          HttpEntity_GetContentAdvice.class.getName());
+          ApacheClientInstrumentationModule.class.getName() + "$HttpEntity_GetContentAdvice");
       return transformers;
     }
   }

@@ -75,13 +75,13 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
       Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>();
       transformers.put(
           namedOneOf("read").and(takesArguments(0)).and(isPublic()),
-          InputStream_ReadNoArgsAdvice.class.getName());
+          InputStreamInstrumentationModule.class.getName() + "$InputStream_ReadNoArgsAdvice");
       transformers.put(
           namedOneOf("read")
               .and(takesArguments(1))
               .and(takesArgument(0, is(byte[].class)))
               .and(isPublic()),
-          InputStream_ReadByteArrayAdvice.class.getName());
+          InputStreamInstrumentationModule.class.getName() + "$InputStream_ReadByteArrayAdvice");
       transformers.put(
           namedOneOf("read")
               .and(takesArguments(3))
@@ -89,7 +89,8 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
               .and(takesArgument(1, is(int.class)))
               .and(takesArgument(2, is(int.class)))
               .and(isPublic()),
-          InputStream_ReadByteArrayOffsetAdvice.class.getName());
+          InputStreamInstrumentationModule.class.getName()
+              + "$InputStream_ReadByteArrayOffsetAdvice");
       transformers.put(
           namedOneOf("readAllBytes").and(takesArguments(0)).and(isPublic()),
           InputStream_ReadAllBytes.class.getName());
@@ -100,7 +101,7 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
               .and(takesArgument(1, is(int.class)))
               .and(takesArgument(2, is(int.class)))
               .and(isPublic()),
-          InputStream_ReadNBytes.class.getName());
+          InputStreamInstrumentationModule.class.getName() + "$InputStream_ReadNBytes");
       return transformers;
     }
   }
