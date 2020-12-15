@@ -93,14 +93,13 @@ public class Servlet30BodyInstrumentationModule extends InstrumentationModule {
               .and(takesArgument(0, named("javax.servlet.ServletRequest")))
               .and(takesArgument(1, named("javax.servlet.ServletResponse")))
               .and(isPublic()),
-          FilterAdvice.class.getName());
+          Servlet30BodyInstrumentationModule.class.getName() + "$FilterAdvice");
     }
   }
 
   public static class FilterAdvice {
     // request attribute key injected at first filerChain.doFilter
     private static final String ALREADY_LOADED = "__org.hypertrace.agent.on_start_executed";
-    private static final String TRACER_NAME = "org.hypertrace.agent.servlet";
 
     @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = Advice.OnNonDefaultValue.class)
     public static boolean start(

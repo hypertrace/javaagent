@@ -75,13 +75,13 @@ public class OutputStreamInstrumentationModule extends InstrumentationModule {
               .and(takesArguments(1))
               .and(takesArgument(0, is(int.class)))
               .and(isPublic()),
-          OutputStream_WriteIntAdvice.class.getName());
+          OutputStreamInstrumentationModule.class.getName() + "$OutputStream_WriteIntAdvice");
       transformers.put(
           namedOneOf("write")
               .and(takesArguments(1))
               .and(takesArgument(0, is(byte[].class)))
               .and(isPublic()),
-          OutputStream_WriteByteArrAdvice.class.getName());
+          OutputStreamInstrumentationModule.class.getName() + "$OutputStream_WriteByteArrAdvice");
       transformers.put(
           namedOneOf("write")
               .and(takesArguments(3))
@@ -89,7 +89,8 @@ public class OutputStreamInstrumentationModule extends InstrumentationModule {
               .and(takesArgument(1, is(int.class)))
               .and(takesArgument(2, is(int.class)))
               .and(isPublic()),
-          OutputStream_WriteByteArrOffsetAdvice.class.getName());
+          OutputStreamInstrumentationModule.class.getName()
+              + "$OutputStream_WriteByteArrOffsetAdvice");
       return transformers;
     }
   }

@@ -98,7 +98,7 @@ public class Servlet2BodyInstrumentationModule extends InstrumentationModule {
               .and(takesArgument(0, named("javax.servlet.ServletRequest")))
               .and(takesArgument(1, named("javax.servlet.ServletResponse")))
               .and(isPublic()),
-          Filter2Advice.class.getName());
+          Servlet2BodyInstrumentationModule.class.getName() + "$Filter2Advice");
     }
   }
 
