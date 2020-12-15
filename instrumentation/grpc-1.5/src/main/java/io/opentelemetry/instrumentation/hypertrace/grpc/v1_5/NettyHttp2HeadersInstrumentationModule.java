@@ -97,22 +97,26 @@ public class NettyHttp2HeadersInstrumentationModule extends InstrumentationModul
       Span currentSpan = Java8BytecodeBridge.currentSpan();
       if (scheme != null) {
         currentSpan.setAttribute(
-            HypertraceSemanticAttributes.rpcRequestMetadata(GrpcSemanticAttributes.SCHEME),
+            HypertraceSemanticAttributes.rpcRequestMetadata(
+                GrpcSemanticAttributes.addColon(GrpcSemanticAttributes.SCHEME)),
             scheme.toString());
       }
       if (defaultPath != null) {
         currentSpan.setAttribute(
-            HypertraceSemanticAttributes.rpcRequestMetadata(GrpcSemanticAttributes.PATH),
+            HypertraceSemanticAttributes.rpcRequestMetadata(
+                GrpcSemanticAttributes.addColon(GrpcSemanticAttributes.PATH)),
             defaultPath.toString());
       }
       if (authority != null) {
         currentSpan.setAttribute(
-            HypertraceSemanticAttributes.rpcRequestMetadata(GrpcSemanticAttributes.AUTHORITY),
+            HypertraceSemanticAttributes.rpcRequestMetadata(
+                GrpcSemanticAttributes.addColon(GrpcSemanticAttributes.AUTHORITY)),
             authority.toString());
       }
       if (method != null) {
         currentSpan.setAttribute(
-            HypertraceSemanticAttributes.rpcRequestMetadata(GrpcSemanticAttributes.METHOD),
+            HypertraceSemanticAttributes.rpcRequestMetadata(
+                GrpcSemanticAttributes.addColon(GrpcSemanticAttributes.METHOD)),
             method.toString());
       }
     }

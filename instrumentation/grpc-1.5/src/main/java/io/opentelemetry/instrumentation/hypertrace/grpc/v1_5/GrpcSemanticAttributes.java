@@ -21,32 +21,37 @@ import io.grpc.Metadata;
 public class GrpcSemanticAttributes {
   private GrpcSemanticAttributes() {}
 
-  public static final String SCHEME = ":scheme";
-  public static final String PATH = ":path";
-  public static final String AUTHORITY = ":authority";
-  public static final String METHOD = ":method";
+  public static final String SCHEME = "scheme";
+  public static final String PATH = "path";
+  public static final String AUTHORITY = "authority";
+  public static final String METHOD = "method";
 
   /**
    * These metadata headers are added in Http2Headers instrumentation. We use different names than
    * original HTTP2 header names to avoid any collisions with app code.
    *
-   * <p>We cannot use prefix because e.g. ht.:path is not a valid key.
+   * <p>For valid characters in keys read
+   * https://grpc.github.io/grpc-java/javadoc/io/grpc/Metadata.Key.html
    */
-  private static final String SUFFIX = ".ht";
+  private static final String PREFIX = "ht.";
 
   public static final Metadata.Key<String> SCHEME_METADATA_KEY =
-      Metadata.Key.of(SCHEME + SUFFIX, Metadata.ASCII_STRING_MARSHALLER);
+      Metadata.Key.of(PREFIX + SCHEME, Metadata.ASCII_STRING_MARSHALLER);
   public static final Metadata.Key<String> PATH_METADATA_KEY =
-      Metadata.Key.of(PATH + SUFFIX, Metadata.ASCII_STRING_MARSHALLER);
+      Metadata.Key.of(PREFIX + PATH, Metadata.ASCII_STRING_MARSHALLER);
   public static final Metadata.Key<String> AUTHORITY_METADATA_KEY =
-      Metadata.Key.of(AUTHORITY + SUFFIX, Metadata.ASCII_STRING_MARSHALLER);
+      Metadata.Key.of(PREFIX + AUTHORITY, Metadata.ASCII_STRING_MARSHALLER);
   public static final Metadata.Key<String> METHOD_METADATA_KEY =
-      Metadata.Key.of(METHOD + SUFFIX, Metadata.ASCII_STRING_MARSHALLER);
+      Metadata.Key.of(PREFIX + METHOD, Metadata.ASCII_STRING_MARSHALLER);
 
-  public static String removeHypertracePrefix(String key) {
-    if (key.endsWith(SUFFIX)) {
-      return key.replace(SUFFIX, "");
+  public static String removeHypertracePrefixAndAddColon(String key) {
+    if (key.startsWith(PREFIX)) {
+      return addColon(key.replaceFirst(PREFIX, ""));
     }
     return key;
+  }
+
+  public static String addColon(String key) {
+    return ":" + key;
   }
 }
