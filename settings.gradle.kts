@@ -9,7 +9,7 @@ pluginManagement {
 }
 
 plugins {
-    id("org.hypertrace.version-settings") version "0.1.5"
+    id("org.hypertrace.version-settings") version "0.1.6"
 }
 
 include(":javaagent")
