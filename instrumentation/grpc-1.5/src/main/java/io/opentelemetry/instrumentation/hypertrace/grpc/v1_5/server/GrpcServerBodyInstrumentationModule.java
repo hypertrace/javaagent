@@ -14,30 +14,29 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.grpc.v1_5;
+package io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.server;
 
 import com.google.auto.service.AutoService;
-import io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.client.GrpcClientBodyInstrumentation;
-import io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.server.GrpcServerBodyInstrumentation;
+import io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.GrpcInstrumentationName;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @AutoService(InstrumentationModule.class)
-public class GrpcBodyInstrumentationModule extends InstrumentationModule {
+public class GrpcServerBodyInstrumentationModule extends InstrumentationModule {
 
-  public GrpcBodyInstrumentationModule() {
+  public GrpcServerBodyInstrumentationModule() {
     super(GrpcInstrumentationName.PRIMARY, GrpcInstrumentationName.OTHER);
   }
 
   @Override
   public int getOrder() {
-    return 1;
+    return -1;
   }
 
   @Override
   public List<TypeInstrumentation> typeInstrumentations() {
-    return Arrays.asList(new GrpcClientBodyInstrumentation(), new GrpcServerBodyInstrumentation());
+    return Collections.singletonList(new GrpcServerBodyInstrumentation());
   }
 }
