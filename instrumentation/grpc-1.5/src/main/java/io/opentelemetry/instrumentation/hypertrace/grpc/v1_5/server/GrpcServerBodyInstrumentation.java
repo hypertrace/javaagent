@@ -16,13 +16,17 @@
 
 package io.opentelemetry.instrumentation.hypertrace.grpc.v1_5.server;
 
+import static io.opentelemetry.javaagent.tooling.ClassLoaderMatcher.hasClassesNamed;
+import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.safeHasSuperType;
 import static java.util.Collections.singletonMap;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
+import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
-import io.grpc.ServerInterceptor;
+import io.grpc.ServerBuilder;
+import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import java.util.List;
 import java.util.Map;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
@@ -32,33 +36,34 @@ import net.bytebuddy.matcher.ElementMatcher;
 public class GrpcServerBodyInstrumentation implements TypeInstrumentation {
 
   @Override
+  public ElementMatcher<ClassLoader> classLoaderOptimization() {
+    return hasClassesNamed("io.grpc.ServerBuilder");
+  }
+
+  @Override
   public ElementMatcher<TypeDescription> typeMatcher() {
-    return named("io.grpc.internal.AbstractServerImplBuilder");
+    return safeHasSuperType(named("io.grpc.ServerBuilder"));
   }
 
   @Override
   public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
     return singletonMap(
-        isMethod().and(named("build")),
+        isMethod().and(isPublic()).and(named("build")).and(takesArguments(0)),
         GrpcServerBodyInstrumentation.class.getName() + "$AddInterceptorAdvice");
   }
 
   public static class AddInterceptorAdvice {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static void addInterceptor(
-        @Advice.FieldValue("interceptors") List<ServerInterceptor> interceptors) {
-      boolean shouldRegister = true;
-      for (ServerInterceptor interceptor : interceptors) {
-        if (interceptor instanceof GrpcServerInterceptor) {
-          shouldRegister = false;
-          break;
-        }
+    public static void onEnter(@Advice.This ServerBuilder<?> serverBuilder) {
+      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(GrpcServerInterceptor.class);
+      if (callDepth == 0) {
+        serverBuilder.intercept(new GrpcServerInterceptor());
       }
-      if (shouldRegister) {
-        // Interceptors run in the reverse order in which they are added
-        // OTEL interceptor is last
-        interceptors.add(interceptors.size() - 1, new GrpcServerInterceptor());
-      }
+    }
+
+    @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
+    public static void onExit() {
+      CallDepthThreadLocalMap.decrementCallDepth(GrpcServerInterceptor.class);
     }
   }
 }

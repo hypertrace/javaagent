@@ -13,7 +13,7 @@ muzzle {
     pass {
         group = "io.grpc"
         module = "grpc-core"
-        versions = "[1.5.0, 1.33.0)" // see https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/1453
+        versions = "[1.5.0,)"
         // for body capture via com.google.protobuf.util.JsonFormat
         extraDependency("io.grpc:grpc-protobuf:1.5.0")
         extraDependency("io.grpc:grpc-netty:1.5.0")
