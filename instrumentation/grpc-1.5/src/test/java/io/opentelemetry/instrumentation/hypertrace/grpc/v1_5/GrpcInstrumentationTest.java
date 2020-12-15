@@ -235,19 +235,26 @@ public class GrpcInstrumentationTest extends AbstractInstrumenterTest {
     Assertions.assertEquals(
         "http",
         span.getAttributes()
-            .get(HypertraceSemanticAttributes.rpcRequestMetadata(GrpcSemanticAttributes.SCHEME)));
+            .get(
+                HypertraceSemanticAttributes.rpcRequestMetadata(
+                    ":" + GrpcSemanticAttributes.SCHEME)));
     Assertions.assertEquals(
         "POST",
         span.getAttributes()
-            .get(HypertraceSemanticAttributes.rpcRequestMetadata(GrpcSemanticAttributes.METHOD)));
+            .get(
+                HypertraceSemanticAttributes.rpcRequestMetadata(
+                    ":" + GrpcSemanticAttributes.METHOD)));
     Assertions.assertEquals(
         String.format("localhost:%d", SERVER.getPort()),
         span.getAttributes()
             .get(
-                HypertraceSemanticAttributes.rpcRequestMetadata(GrpcSemanticAttributes.AUTHORITY)));
+                HypertraceSemanticAttributes.rpcRequestMetadata(
+                    ":" + GrpcSemanticAttributes.AUTHORITY)));
     Assertions.assertEquals(
         "/org.hypertrace.example.Greeter/SayHello",
         span.getAttributes()
-            .get(HypertraceSemanticAttributes.rpcRequestMetadata(GrpcSemanticAttributes.PATH)));
+            .get(
+                HypertraceSemanticAttributes.rpcRequestMetadata(
+                    ":" + GrpcSemanticAttributes.PATH)));
   }
 }
