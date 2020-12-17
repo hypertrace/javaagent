@@ -29,6 +29,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpMessage;
 import org.hypertrace.agent.config.Config.AgentConfig;
+import org.hypertrace.agent.core.BoundedByteArrayOutputStreamFactory;
 import org.hypertrace.agent.core.ContentEncodingUtils;
 import org.hypertrace.agent.core.HypertraceConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
@@ -81,7 +82,7 @@ public class ApacheHttpClientUtils {
 
     if (entity.isRepeatable()) {
       try {
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        ByteArrayOutputStream byteArrayOutputStream = BoundedByteArrayOutputStreamFactory.create();
         entity.writeTo(byteArrayOutputStream);
         String encoding =
             entity.getContentEncoding() != null ? entity.getContentEncoding().getValue() : "";
