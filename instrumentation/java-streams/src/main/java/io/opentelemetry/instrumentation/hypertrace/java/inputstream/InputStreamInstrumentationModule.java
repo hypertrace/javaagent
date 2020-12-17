@@ -55,7 +55,7 @@ import org.hypertrace.agent.core.GlobalObjectRegistry;
 public class InputStreamInstrumentationModule extends InstrumentationModule {
 
   public InputStreamInstrumentationModule() {
-    super("inputstream");
+    super("inputstream", "ht");
   }
 
   @Override
