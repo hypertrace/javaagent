@@ -46,6 +46,11 @@ public class HypertraceAgent {
   }
 
   public static void agentmain(String agentArgs, Instrumentation inst) {
+    if (isTraceableAgentLoaded()) {
+      System.out.println("Traceable agent is already running. Will not attempt to attach");
+      return;
+    }
+
     Map<String, String> parsedArgs = parseAgentArgs(agentArgs);
     for (Map.Entry<String, String> argEntry : parsedArgs.entrySet()) {
       System.setProperty(argEntry.getKey(), argEntry.getValue());
@@ -102,5 +107,14 @@ public class HypertraceAgent {
       argsMap.put(splitAgentArg[0], splitAgentArg[1]);
     }
     return argsMap;
+  }
+
+  private static boolean isTraceableAgentLoaded() {
+    try {
+      Class.forName("ai.traceable.agent.bootstrap.AgentContext", true, null);
+      return true;
+    } catch (Throwable e) {
+      return false;
+    }
   }
 }
