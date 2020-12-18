@@ -19,11 +19,13 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.common;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import org.hypertrace.agent.core.HypertraceConfig;
 
 public class ByteBufferData {
 
   private static final int MIN_BUFFER_SIZE = 128;
-  private static final int MAX_BUFFER_SIZE = 1048576; // 1MB
+  private static final int MAX_BUFFER_SIZE =
+      HypertraceConfig.get().getDataCapture().getBodyMaxSizeBytes().getValue();
   private static final int GROW_FACTOR = 4;
   private static final Charset ISO_8859_1 = StandardCharsets.ISO_8859_1;
   private Charset charset;

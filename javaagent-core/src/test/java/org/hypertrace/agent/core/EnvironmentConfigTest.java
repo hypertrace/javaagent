@@ -33,6 +33,7 @@ class EnvironmentConfigTest {
   @ClearSystemProperty(key = EnvironmentConfig.OPA_POLL_PERIOD)
   @ClearSystemProperty(key = EnvironmentConfig.PROPAGATION_FORMATS)
   @ClearSystemProperty(key = EnvironmentConfig.CAPTURE_HTTP_BODY_PREFIX + "request")
+  @ClearSystemProperty(key = EnvironmentConfig.CAPTURE_BODY_MAX_SIZE_BYTES)
   public void systemProperties() {
     // when tests are run in parallel the env vars/sys props set it junit-pioneer are visible to
     // parallel tests
@@ -42,6 +43,7 @@ class EnvironmentConfigTest {
     System.setProperty(EnvironmentConfig.OPA_ENDPOINT, "http://azkaban:9090");
     System.setProperty(EnvironmentConfig.OPA_POLL_PERIOD, "10");
     System.setProperty(EnvironmentConfig.PROPAGATION_FORMATS, "B3,TRACECONTEXT");
+    System.setProperty(EnvironmentConfig.CAPTURE_BODY_MAX_SIZE_BYTES, "512");
 
     AgentConfig.Builder configBuilder = AgentConfig.newBuilder();
     configBuilder.setServiceName(StringValue.newBuilder().setValue("foo"));
@@ -56,6 +58,7 @@ class EnvironmentConfigTest {
         "http://azkaban:9090", agentConfig.getReporting().getOpa().getEndpoint().getValue());
     Assertions.assertEquals(
         10, agentConfig.getReporting().getOpa().getPollPeriodSeconds().getValue());
+    Assertions.assertEquals(512, agentConfig.getDataCapture().getBodyMaxSizeBytes().getValue());
     Assertions.assertEquals(true, agentConfig.getReporting().getSecure().getValue());
     Assertions.assertEquals(
         true, agentConfig.getDataCapture().getHttpBody().getRequest().getValue());
