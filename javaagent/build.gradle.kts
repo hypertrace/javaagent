@@ -14,7 +14,6 @@ dependencies {
     implementation("io.opentelemetry.javaagent", "opentelemetry-javaagent", version = "${versions["opentelemetry_java_agent"]}", classifier = "all")
     implementation(project(":javaagent-core"))
     implementation(project(":filter-api"))
-    implementation(project(":filter-custom-opa"))
 }
 
 base.archivesBaseName = "hypertrace-agent"
@@ -44,10 +43,6 @@ tasks {
         relocate("org.yaml", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.org.yaml")
 
         relocate("com.blogspot.mydailyjava", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.com.blogspot.mydailyjava")
-
-        // used by the filter-custom-opa
-        relocate("okhttp3", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.okhttp3")
-        relocate("okio", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.okio")
 
         dependencies {
             exclude(dependency("org.codehaus.mojo:animal-sniffer-annotations"))
