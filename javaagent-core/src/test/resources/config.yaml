@@ -8,6 +8,7 @@ reporting:
     endpoint: http://opa.localhost:8181/
     pollPeriodSeconds: 12
 dataCapture:
+  bodyMaxSizeBytes: 16
   httpHeaders:
     request: true
     response: false

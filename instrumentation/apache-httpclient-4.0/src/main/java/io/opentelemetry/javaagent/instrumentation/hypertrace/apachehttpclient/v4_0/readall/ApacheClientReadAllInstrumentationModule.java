@@ -48,6 +48,7 @@ import net.bytebuddy.matcher.ElementMatcher;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.hypertrace.agent.core.BoundedByteArrayOutputStreamFactory;
 import org.hypertrace.agent.core.ContentTypeUtils;
 import org.hypertrace.agent.core.GlobalObjectRegistry;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
@@ -195,7 +196,8 @@ public class ApacheClientReadAllInstrumentationModule extends InstrumentationMod
           }
 
           BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
-          ByteArrayOutputStream buffer = new ByteArrayOutputStream((int) contentSize);
+          ByteArrayOutputStream buffer =
+              BoundedByteArrayOutputStreamFactory.create((int) contentSize);
           byte ch;
           while ((ch = (byte) bufferedInputStream.read()) != -1) {
             buffer.write(ch);

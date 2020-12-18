@@ -51,6 +51,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpMessage;
 import org.apache.http.HttpResponse;
 import org.hypertrace.agent.config.Config.AgentConfig;
+import org.hypertrace.agent.core.BoundedByteArrayOutputStreamFactory;
 import org.hypertrace.agent.core.ContentEncodingUtils;
 import org.hypertrace.agent.core.ContentLengthUtils;
 import org.hypertrace.agent.core.ContentTypeUtils;
@@ -238,7 +239,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
       SpanAndBuffer spanAndBuffer =
           new SpanAndBuffer(
               clientSpan,
-              new ByteArrayOutputStream((int) contentSize),
+              BoundedByteArrayOutputStreamFactory.create((int) contentSize),
               HypertraceSemanticAttributes.HTTP_RESPONSE_BODY,
               charset);
       GlobalObjectRegistry.inputStreamToSpanAndBufferMap.put(inputStream, spanAndBuffer);
@@ -257,7 +258,8 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
       if (contentSize <= 0 || contentSize == Long.MAX_VALUE) {
         contentSize = ContentLengthUtils.DEFAULT;
       }
-      ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream((int) contentSize);
+      ByteArrayOutputStream byteArrayOutputStream =
+          BoundedByteArrayOutputStreamFactory.create((int) contentSize);
 
       GlobalObjectRegistry.outputStreamToBufferMap.put(outputStream, byteArrayOutputStream);
     }

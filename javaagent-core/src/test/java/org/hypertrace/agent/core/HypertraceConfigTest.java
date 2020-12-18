@@ -49,6 +49,9 @@ public class HypertraceConfigTest {
         HypertraceConfig.DEFAULT_OPA_POLL_PERIOD_SECONDS,
         agentConfig.getReporting().getOpa().getPollPeriodSeconds().getValue());
     Assertions.assertEquals(
+        HypertraceConfig.DEFAULT_BODY_MAX_SIZE_BYTES,
+        agentConfig.getDataCapture().getBodyMaxSizeBytes().getValue());
+    Assertions.assertEquals(
         true, agentConfig.getDataCapture().getHttpHeaders().getRequest().getValue());
     Assertions.assertEquals(
         true, agentConfig.getDataCapture().getHttpHeaders().getResponse().getValue());
@@ -99,6 +102,7 @@ public class HypertraceConfigTest {
         "http://opa.localhost:8181/", agentConfig.getReporting().getOpa().getEndpoint().getValue());
     Assertions.assertEquals(
         12, agentConfig.getReporting().getOpa().getPollPeriodSeconds().getValue());
+    Assertions.assertEquals(16, agentConfig.getDataCapture().getBodyMaxSizeBytes().getValue());
     Assertions.assertEquals(
         true, agentConfig.getDataCapture().getHttpHeaders().getRequest().getValue());
     Assertions.assertEquals(

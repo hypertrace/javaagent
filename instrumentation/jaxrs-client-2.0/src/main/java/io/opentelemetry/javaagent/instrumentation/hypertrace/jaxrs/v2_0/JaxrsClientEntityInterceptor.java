@@ -31,6 +31,7 @@ import javax.ws.rs.ext.ReaderInterceptorContext;
 import javax.ws.rs.ext.WriterInterceptor;
 import javax.ws.rs.ext.WriterInterceptorContext;
 import org.hypertrace.agent.config.Config.AgentConfig;
+import org.hypertrace.agent.core.BoundedByteArrayOutputStreamFactory;
 import org.hypertrace.agent.core.ContentEncodingUtils;
 import org.hypertrace.agent.core.ContentLengthUtils;
 import org.hypertrace.agent.core.ContentTypeUtils;
@@ -78,7 +79,7 @@ public class JaxrsClientEntityInterceptor implements ReaderInterceptor, WriterIn
       String contentLengthStr = responseContext.getHeaders().getFirst(HttpHeaders.CONTENT_LENGTH);
       int contentLength = ContentLengthUtils.parseLength(contentLengthStr);
 
-      ByteArrayOutputStream buffer = new ByteArrayOutputStream(contentLength);
+      ByteArrayOutputStream buffer = BoundedByteArrayOutputStreamFactory.create(contentLength);
       GlobalObjectRegistry.inputStreamToSpanAndBufferMap.put(
           entityStream,
           new SpanAndBuffer(
@@ -118,7 +119,7 @@ public class JaxrsClientEntityInterceptor implements ReaderInterceptor, WriterIn
     }
 
     // TODO length is not known
-    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+    ByteArrayOutputStream buffer = BoundedByteArrayOutputStreamFactory.create();
     OutputStream entityStream = requestContext.getOutputStream();
     try {
       GlobalObjectRegistry.outputStreamToBufferMap.put(entityStream, buffer);

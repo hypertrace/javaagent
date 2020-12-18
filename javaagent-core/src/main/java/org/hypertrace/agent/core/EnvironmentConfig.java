@@ -47,6 +47,7 @@ public class EnvironmentConfig {
   static final String OPA_POLL_PERIOD = OPA_PREFIX + "poll.period.seconds";
 
   private static final String CAPTURE_PREFIX = HT_PREFIX + "data.capture.";
+  public static final String CAPTURE_BODY_MAX_SIZE_BYTES = CAPTURE_PREFIX + "body.max.size.bytes";
   public static final String CAPTURE_HTTP_HEADERS_PREFIX = CAPTURE_PREFIX + "http.headers.";
   public static final String CAPTURE_HTTP_BODY_PREFIX = CAPTURE_PREFIX + "http.body.";
   public static final String CAPTURE_RPC_METADATA_PREFIX = CAPTURE_PREFIX + "rpc.metadata.";
@@ -106,6 +107,11 @@ public class EnvironmentConfig {
   }
 
   private static DataCapture.Builder setDefaultsToDataCapture(DataCapture.Builder builder) {
+    String bodyMaxSizeBytes = getProperty(CAPTURE_BODY_MAX_SIZE_BYTES);
+    if (bodyMaxSizeBytes != null) {
+      builder.setBodyMaxSizeBytes(
+          Int32Value.newBuilder().setValue(Integer.valueOf(bodyMaxSizeBytes)).build());
+    }
     builder.setHttpHeaders(
         applyMessageDefaults(builder.getHttpHeaders().toBuilder(), CAPTURE_HTTP_HEADERS_PREFIX));
     builder.setHttpBody(

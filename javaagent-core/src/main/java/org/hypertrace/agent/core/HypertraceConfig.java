@@ -57,6 +57,8 @@ public class HypertraceConfig {
   static final String DEFAULT_REPORTING_ENDPOINT = "http://localhost:9411/api/v2/spans";
   static final String DEFAULT_OPA_ENDPOINT = "http://opa.traceableai:8181/";
   static final int DEFAULT_OPA_POLL_PERIOD_SECONDS = 30;
+  // 128 KiB
+  static final int DEFAULT_BODY_MAX_SIZE_BYTES = 128 * 1024;
 
   public static AgentConfig get() {
     if (agentConfig == null) {
@@ -199,6 +201,10 @@ public class HypertraceConfig {
     builder.setHttpBody(applyMessageDefaults(builder.getHttpBody().toBuilder()));
     builder.setRpcMetadata(applyMessageDefaults(builder.getRpcMetadata().toBuilder()));
     builder.setRpcBody(applyMessageDefaults(builder.getRpcBody().toBuilder()));
+    if (!builder.hasBodyMaxSizeBytes()) {
+      builder.setBodyMaxSizeBytes(
+          Int32Value.newBuilder().setValue(DEFAULT_BODY_MAX_SIZE_BYTES).build());
+    }
     return builder;
   }
 
