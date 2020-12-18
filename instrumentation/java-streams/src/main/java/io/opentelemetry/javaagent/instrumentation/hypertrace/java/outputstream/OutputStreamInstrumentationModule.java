@@ -17,7 +17,6 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.java.outputstream;
 
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.extendsClass;
-import static io.opentelemetry.javaagent.tooling.matcher.NameMatchers.namedOneOf;
 import static net.bytebuddy.matcher.ElementMatchers.is;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
@@ -71,19 +70,19 @@ public class OutputStreamInstrumentationModule extends InstrumentationModule {
     public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
       Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>();
       transformers.put(
-          namedOneOf("write")
+          named("write")
               .and(takesArguments(1))
               .and(takesArgument(0, is(int.class)))
               .and(isPublic()),
           OutputStreamInstrumentationModule.class.getName() + "$OutputStream_WriteIntAdvice");
       transformers.put(
-          namedOneOf("write")
+          named("write")
               .and(takesArguments(1))
               .and(takesArgument(0, is(byte[].class)))
               .and(isPublic()),
           OutputStreamInstrumentationModule.class.getName() + "$OutputStream_WriteByteArrAdvice");
       transformers.put(
-          namedOneOf("write")
+          named("write")
               .and(takesArguments(3))
               .and(takesArgument(0, is(byte[].class)))
               .and(takesArgument(1, is(int.class)))

@@ -17,7 +17,6 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.java.inputstream;
 
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.extendsClass;
-import static io.opentelemetry.javaagent.tooling.matcher.NameMatchers.namedOneOf;
 import static net.bytebuddy.matcher.ElementMatchers.is;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
@@ -75,16 +74,16 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
     public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
       Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>();
       transformers.put(
-          namedOneOf("read").and(takesArguments(0)).and(isPublic()),
+          named("read").and(takesArguments(0)).and(isPublic()),
           InputStreamInstrumentationModule.class.getName() + "$InputStream_ReadNoArgsAdvice");
       transformers.put(
-          namedOneOf("read")
+          named("read")
               .and(takesArguments(1))
               .and(takesArgument(0, is(byte[].class)))
               .and(isPublic()),
           InputStreamInstrumentationModule.class.getName() + "$InputStream_ReadByteArrayAdvice");
       transformers.put(
-          namedOneOf("read")
+          named("read")
               .and(takesArguments(3))
               .and(takesArgument(0, is(byte[].class)))
               .and(takesArgument(1, is(int.class)))
@@ -93,10 +92,10 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
           InputStreamInstrumentationModule.class.getName()
               + "$InputStream_ReadByteArrayOffsetAdvice");
       transformers.put(
-          namedOneOf("readAllBytes").and(takesArguments(0)).and(isPublic()),
+          named("readAllBytes").and(takesArguments(0)).and(isPublic()),
           InputStream_ReadAllBytes.class.getName());
       transformers.put(
-          namedOneOf("readNBytes")
+          named("readNBytes")
               .and(takesArguments(0))
               .and(takesArgument(0, is(byte[].class)))
               .and(takesArgument(1, is(int.class)))
