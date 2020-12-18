@@ -54,10 +54,17 @@ tasks {
             exclude(dependency("javax.annotation:javax.annotation-api"))
         }
 
-        // relocate following classes because javaagent-core uses OTEL APIs
-        relocate("io.opentelemetry.api", "io.opentelemetry.javaagent.shaded.io.opentelemetry.api")
-        relocate("io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context")
         relocate("org.slf4j", "io.opentelemetry.javaagent.slf4j")
+        // TODO causes data not being reported
+//        relocate("java.util.logging.Logger", "io.opentelemetry.javaagent.bootstrap.PatchLogger")
+
+        // prevents conflict with library instrumentation
+        relocate("io.opentelemetry.instrumentation.api", "io.opentelemetry.javaagent.shaded.instrumentation.api")
+
+        // relocate OpenTelemetry API
+        relocate("io.opentelemetry.api", "io.opentelemetry.javaagent.shaded.io.opentelemetry.api")
+        relocate("io.opentelemetry.spi", "io.opentelemetry.javaagent.shaded.io.opentelemetry.spi")
+        relocate("io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context")
 
         mergeServiceFiles {
             include("inst/META-INF/services/*")
