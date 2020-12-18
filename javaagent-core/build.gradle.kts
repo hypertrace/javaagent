@@ -25,6 +25,7 @@ val versions: Map<String, String> by extra
 
 dependencies {
     api("io.opentelemetry:opentelemetry-api:${versions["opentelemetry"]}")
+    api("io.opentelemetry.javaagent:opentelemetry-javaagent-api:${versions["opentelemetry_java_agent"]}")
     implementation("org.slf4j:slf4j-api:1.7.30")
 
     api("com.google.protobuf:protobuf-java:3.11.4")

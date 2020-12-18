@@ -18,6 +18,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -59,7 +60,8 @@ public class ApacheHttpClientUtils {
     }
   }
 
-  public static void traceRequest(HttpMessage request) {
+  public static void traceRequest(
+      ContextStore<HttpEntity, Span> contextStore, HttpMessage request) {
     Span currentSpan = Span.current();
     AgentConfig agentConfig = HypertraceConfig.get();
     if (agentConfig.getDataCapture().getHttpHeaders().getRequest().getValue()) {
@@ -71,11 +73,18 @@ public class ApacheHttpClientUtils {
       HttpEntityEnclosingRequest entityRequest = (HttpEntityEnclosingRequest) request;
       HttpEntity entity = entityRequest.getEntity();
       ApacheHttpClientUtils.traceEntity(
-          currentSpan, HypertraceSemanticAttributes.HTTP_REQUEST_BODY.getKey(), entity);
+          contextStore,
+          currentSpan,
+          HypertraceSemanticAttributes.HTTP_REQUEST_BODY.getKey(),
+          entity);
     }
   }
 
-  public static void traceEntity(Span span, String bodyAttributeKey, HttpEntity entity) {
+  public static void traceEntity(
+      ContextStore<HttpEntity, Span> contextStore,
+      Span span,
+      String bodyAttributeKey,
+      HttpEntity entity) {
     if (entity == null) {
       return;
     }
@@ -105,6 +114,6 @@ public class ApacheHttpClientUtils {
     // request body is traced via HttpEntity.writeTo(OutputStream) and OutputStream instrumentation
     // response body is traced via InputStream HttpEntity.getContent() and InputStream
     // instrumentation
-    ApacheHttpClientObjectRegistry.httpEntityToSpanMap.put(entity, span);
+    contextStore.put(entity, span);
   }
 }
