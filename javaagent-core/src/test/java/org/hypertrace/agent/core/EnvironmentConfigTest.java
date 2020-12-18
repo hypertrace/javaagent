@@ -31,6 +31,7 @@ class EnvironmentConfigTest {
   @ClearSystemProperty(key = EnvironmentConfig.REPORTING_SECURE)
   @ClearSystemProperty(key = EnvironmentConfig.OPA_ENDPOINT)
   @ClearSystemProperty(key = EnvironmentConfig.OPA_POLL_PERIOD)
+  @ClearSystemProperty(key = EnvironmentConfig.OPA_ENABLED)
   @ClearSystemProperty(key = EnvironmentConfig.PROPAGATION_FORMATS)
   @ClearSystemProperty(key = EnvironmentConfig.CAPTURE_HTTP_BODY_PREFIX + "request")
   @ClearSystemProperty(key = EnvironmentConfig.CAPTURE_BODY_MAX_SIZE_BYTES)
@@ -42,6 +43,7 @@ class EnvironmentConfigTest {
     System.setProperty(EnvironmentConfig.CAPTURE_HTTP_BODY_PREFIX + "request", "true");
     System.setProperty(EnvironmentConfig.OPA_ENDPOINT, "http://azkaban:9090");
     System.setProperty(EnvironmentConfig.OPA_POLL_PERIOD, "10");
+    System.setProperty(EnvironmentConfig.OPA_ENABLED, "true");
     System.setProperty(EnvironmentConfig.PROPAGATION_FORMATS, "B3,TRACECONTEXT");
     System.setProperty(EnvironmentConfig.CAPTURE_BODY_MAX_SIZE_BYTES, "512");
 
@@ -56,6 +58,7 @@ class EnvironmentConfigTest {
     Assertions.assertEquals("http://:-)", agentConfig.getReporting().getEndpoint().getValue());
     Assertions.assertEquals(
         "http://azkaban:9090", agentConfig.getReporting().getOpa().getEndpoint().getValue());
+    Assertions.assertEquals(true, agentConfig.getReporting().getOpa().getEnabled().getValue());
     Assertions.assertEquals(
         10, agentConfig.getReporting().getOpa().getPollPeriodSeconds().getValue());
     Assertions.assertEquals(512, agentConfig.getDataCapture().getBodyMaxSizeBytes().getValue());

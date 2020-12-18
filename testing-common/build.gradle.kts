@@ -14,6 +14,7 @@ dependencies {
     api("io.opentelemetry:opentelemetry-sdk:${versions["opentelemetry"]}")
     api("com.squareup.okhttp3:okhttp:4.9.0")
     implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${versions["opentelemetry_java_agent"]}")
+    implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-spi:${versions["opentelemetry_java_agent"]}")
     implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:${versions["opentelemetry_java_agent"]}")
     implementation("ch.qos.logback:logback-classic:1.2.3")
     implementation("org.slf4j:log4j-over-slf4j:1.7.30")

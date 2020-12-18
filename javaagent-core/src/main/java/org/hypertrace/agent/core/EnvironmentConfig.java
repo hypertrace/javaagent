@@ -45,6 +45,7 @@ public class EnvironmentConfig {
   private static final String OPA_PREFIX = REPORTING_PREFIX + "opa.";
   static final String OPA_ENDPOINT = OPA_PREFIX + "endpoint";
   static final String OPA_POLL_PERIOD = OPA_PREFIX + "poll.period.seconds";
+  static final String OPA_ENABLED = OPA_PREFIX + "enabled";
 
   private static final String CAPTURE_PREFIX = HT_PREFIX + "data.capture.";
   public static final String CAPTURE_BODY_MAX_SIZE_BYTES = CAPTURE_PREFIX + "body.max.size.bytes";
@@ -102,6 +103,10 @@ public class EnvironmentConfig {
     if (pollPeriod != null) {
       builder.setPollPeriodSeconds(
           Int32Value.newBuilder().setValue(Integer.parseInt(pollPeriod)).build());
+    }
+    String enabled = getProperty(OPA_ENABLED);
+    if (enabled != null) {
+      builder.setEnabled(BoolValue.newBuilder().setValue(Boolean.valueOf(enabled)).build());
     }
     return builder;
   }

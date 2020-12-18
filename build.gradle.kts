@@ -28,8 +28,8 @@ subprojects {
     description = "Hypertrace OpenTelemetry Javaagent"
 
     extra.set("versions", mapOf(
-            "opentelemetry" to "0.12.0",
-            "opentelemetry_java_agent" to "0.12.1",
+            "opentelemetry" to "0.13.1",
+            "opentelemetry_java_agent" to "0.13.0",
             "byte_buddy" to "1.10.18"
     ))
 

@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":filter-api"))
+    api(project(":filter-api"))
     implementation("org.slf4j:slf4j-api:1.7.30")
     implementation("com.squareup.okhttp3:okhttp:3.14.9")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.11.3")
