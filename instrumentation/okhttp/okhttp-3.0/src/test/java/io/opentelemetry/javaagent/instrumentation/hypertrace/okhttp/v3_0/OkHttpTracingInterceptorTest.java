@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.nstrumentation.hypertrace.okhttp.v3_0;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.okhttp.v3_0;
 
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.List;

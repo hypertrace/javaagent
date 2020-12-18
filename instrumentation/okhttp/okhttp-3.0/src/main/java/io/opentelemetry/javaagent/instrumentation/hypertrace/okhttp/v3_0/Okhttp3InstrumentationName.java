@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.nstrumentation.hypertrace.okhttp.v3_0;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.okhttp.v3_0;
 
 public class Okhttp3InstrumentationName {
   public static final String PRIMARY = "okhttp";
