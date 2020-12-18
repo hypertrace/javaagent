@@ -16,7 +16,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.java.inputstream;
 
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
@@ -39,7 +39,7 @@ public class InputStreamUtils {
   public static final Logger log = LoggerFactory.getLogger(InputStreamUtils.class);
 
   private static final Tracer TRACER =
-      OpenTelemetry.getGlobalTracer("org.hypertrace.java.inputstream");
+      GlobalOpenTelemetry.get().getTracer("org.hypertrace.java.inputstream");
 
   /**
    * Adds an attribute to span. If the span is ended it adds the attributed to a newly created
