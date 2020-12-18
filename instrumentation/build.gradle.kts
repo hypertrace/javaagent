@@ -62,12 +62,11 @@ tasks {
 
         exclude("**/module-info.class")
 
-        // rewrite dependencies calling Logger.getLogger
-        relocate("java.util.logging.Logger", "io.opentelemetry.javaagent.bootstrap.PatchLogger")
-
-        // prevents conflict with library instrumentation
+        // prevents conflict with library instrumentati
+//        relocate 'io.opentelemetry.instrumentation.api', 'io.opentelemetry.javaagent.shaded.instrumentation.api'
         relocate("io.opentelemetry.instrumentation.api", "io.opentelemetry.javaagent.shaded.instrumentation.api")
         relocate("org.slf4j", "io.opentelemetry.javaagent.slf4j")
+        relocate("java.util.logging.Logger", "io.opentelemetry.javaagent.bootstrap.PatchLogger")
 
         // relocate OpenTelemetry API
         relocate("io.opentelemetry.api", "io.opentelemetry.javaagent.shaded.io.opentelemetry.api")
