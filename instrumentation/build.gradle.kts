@@ -39,6 +39,7 @@ dependencies{
     implementation(project(":instrumentation:apache-httpclient-4.0"))
     implementation(project(":instrumentation:jaxrs-client-2.0"))
     implementation(project(":instrumentation:java-streams"))
+    implementation(project(":instrumentation:apache-httpasyncclient-4.1"))
     implementation(project(":otel-extensions"))
 }
 
