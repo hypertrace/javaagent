@@ -18,7 +18,6 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -60,12 +59,10 @@ public class ApacheHttpClientUtils {
     }
   }
 
-  public static void traceRequest(
-      ContextStore<HttpEntity, Span> contextStore, HttpMessage request) {
-    Span currentSpan = Span.current();
+  public static void traceRequest(Span span, HttpMessage request) {
     AgentConfig agentConfig = HypertraceConfig.get();
     if (agentConfig.getDataCapture().getHttpHeaders().getRequest().getValue()) {
-      ApacheHttpClientUtils.addRequestHeaders(currentSpan, request.headerIterator());
+      ApacheHttpClientUtils.addRequestHeaders(span, request.headerIterator());
     }
 
     if (agentConfig.getDataCapture().getHttpBody().getRequest().getValue()
@@ -73,18 +70,11 @@ public class ApacheHttpClientUtils {
       HttpEntityEnclosingRequest entityRequest = (HttpEntityEnclosingRequest) request;
       HttpEntity entity = entityRequest.getEntity();
       ApacheHttpClientUtils.traceEntity(
-          contextStore,
-          currentSpan,
-          HypertraceSemanticAttributes.HTTP_REQUEST_BODY.getKey(),
-          entity);
+          span, HypertraceSemanticAttributes.HTTP_REQUEST_BODY.getKey(), entity);
     }
   }
 
-  public static void traceEntity(
-      ContextStore<HttpEntity, Span> contextStore,
-      Span span,
-      String bodyAttributeKey,
-      HttpEntity entity) {
+  public static void traceEntity(Span span, String bodyAttributeKey, HttpEntity entity) {
     if (entity == null) {
       return;
     }
@@ -114,6 +104,6 @@ public class ApacheHttpClientUtils {
     // request body is traced via HttpEntity.writeTo(OutputStream) and OutputStream instrumentation
     // response body is traced via InputStream HttpEntity.getContent() and InputStream
     // instrumentation
-    contextStore.put(entity, span);
+    ApacheHttpClientObjectRegistry.entityToSpan.put(entity, span);
   }
 }

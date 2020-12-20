@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.apachehttpasyncclient;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v4_0;
 
-public class ApacheAsyncHttpClientInstrumentationName {
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.javaagent.instrumentation.api.WeakMap;
+import org.apache.http.HttpEntity;
 
-  public static final String PRIMARY = "apache-httpasyncclient";
-  public static final String[] OTHER = {
-    "apache-httpasyncclient-4.1",
-    "ht",
-    "apache-httpasyncclient-ht",
-    "apache-httpasyncclient-4.1-ht",
-  };
+public class ApacheHttpClientObjectRegistry {
+
+  public static final WeakMap<HttpEntity, Span> entityToSpan = WeakMap.Provider.newWeakMap();
 }

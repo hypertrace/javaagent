@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.instrumentation.hypertrace.apachehttpasyncclient;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpasyncclient;
 
 import static io.opentelemetry.javaagent.tooling.ClassLoaderMatcher.hasClassesNamed;
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.implementsInterface;
@@ -27,15 +27,12 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 import com.google.auto.service.AutoService;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.javaagent.instrumentation.apachehttpasyncclient.ApacheHttpAsyncClientInstrumentation;
 import io.opentelemetry.javaagent.instrumentation.apachehttpasyncclient.ApacheHttpAsyncClientInstrumentation.DelegatingRequestProducer;
-import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
-import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
+import io.opentelemetry.javaagent.instrumentation.apachehttpasyncclient.DelegatingRequestAccessor;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v4_0.ApacheHttpClientUtils;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -43,15 +40,11 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import org.apache.http.HttpEntity;
+import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
 import org.apache.http.nio.protocol.HttpAsyncRequestProducer;
-import org.hypertrace.agent.config.Config.AgentConfig;
-import org.hypertrace.agent.core.HypertraceConfig;
-import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 
- @AutoService(InstrumentationModule.class)
+@AutoService(InstrumentationModule.class)
 public class ApacheAsyncClientInstrumentationModule extends InstrumentationModule {
 
   public ApacheAsyncClientInstrumentationModule() {
@@ -60,12 +53,12 @@ public class ApacheAsyncClientInstrumentationModule extends InstrumentationModul
         ApacheAsyncHttpClientInstrumentationName.OTHER);
   }
 
-   @Override
-   public int getOrder() {
-     return 1;
-   }
+  @Override
+  public int getOrder() {
+    return 1;
+  }
 
-   @Override
+  @Override
   public List<TypeInstrumentation> typeInstrumentations() {
     return Collections.singletonList(new HttpAsyncClientInstrumentation());
   }
@@ -93,38 +86,44 @@ public class ApacheAsyncClientInstrumentationModule extends InstrumentationModul
                   takesArgument(1, named("org.apache.http.nio.protocol.HttpAsyncResponseConsumer")))
               .and(takesArgument(2, named("org.apache.http.protocol.HttpContext")))
               .and(takesArgument(3, named("org.apache.http.concurrent.FutureCallback"))),
-          ApacheAsyncClientInstrumentationModule.class.getName() + "$HttpAsyncClient_execute_Advice");
+          ApacheAsyncClientInstrumentationModule.class.getName()
+              + "$HttpAsyncClient_execute_Advice");
     }
   }
 
   public static class HttpAsyncClient_execute_Advice {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static void enter(@Advice.Argument(value = 0, readOnly = false) HttpAsyncRequestProducer requestProducer,  @Advice.Local("otelContext") Context context) {
+    public static void enter(
+        @Advice.Argument(value = 0, readOnly = false) HttpAsyncRequestProducer requestProducer) {
       System.out.println("on enter");
-      System.out.println(context);
-      try {
-
-        if (requestProducer instanceof DelegatingRequestProducer) {
-          DelegatingRequestProducer delegatingRequestProducer = (DelegatingRequestProducer) requestProducer;
-        }
-        System.out.println(Java8BytecodeBridge.currentSpan());
-//        requestProducer = new DelegatingRequestProducer()
-        System.out.println(requestProducer.getClass().getName());
-
-
-        HttpRequest httpRequest = requestProducer.generateRequest();
-
-
-        ContextStore<HttpEntity, Span> contextStore =
-            InstrumentationContext.get(HttpEntity.class, Span.class);
-        ApacheHttpClientUtils.traceRequest(contextStore, httpRequest);
-      } catch (Exception e) {
-
+      if (requestProducer instanceof DelegatingRequestProducer) {
+        DelegatingRequestProducer delegatingRequestProducer =
+            (DelegatingRequestProducer) requestProducer;
+        Context context = DelegatingRequestAccessor.get(delegatingRequestProducer);
+        requestProducer = new DelegatingCaptureBodyRequestProducer(context, requestProducer);
       }
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class)
-    public static void exit(@Advice.Return Object response) {
+    public static void exit(@Advice.Return Object response) {}
+  }
+
+  public static class DelegatingCaptureBodyRequestProducer extends DelegatingRequestProducer {
+
+    final Context context;
+
+    public DelegatingCaptureBodyRequestProducer(
+        Context context, HttpAsyncRequestProducer delegate) {
+      super(context, delegate);
+      this.context = context;
+    }
+
+    @Override
+    public HttpRequest generateRequest() throws IOException, HttpException {
+      System.out.println("generate request");
+      HttpRequest request = super.generateRequest();
+      ApacheHttpClientUtils.traceRequest(Span.fromContext(context), request);
+      return request;
     }
   }
 }

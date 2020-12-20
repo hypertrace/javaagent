@@ -30,8 +30,6 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 import com.google.auto.service.AutoService;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
@@ -72,13 +70,6 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
   @Override
   public int getOrder() {
     return 1;
-  }
-
-  @Override
-  protected Map<String, String> contextStore() {
-    Map<String, String> context = new HashMap<>();
-    context.put("org.apache.http.HttpEntity", Span.class.getName());
-    return context;
   }
 
   @Override
@@ -127,9 +118,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
       if (callDepth > 0) {
         return false;
       }
-      ContextStore<HttpEntity, Span> contextStore =
-          InstrumentationContext.get(HttpEntity.class, Span.class);
-      ApacheHttpClientUtils.traceRequest(contextStore, request);
+      ApacheHttpClientUtils.traceRequest(Java8BytecodeBridge.currentSpan(), request);
       return true;
     }
 
@@ -149,9 +138,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
       if (callDepth > 0) {
         return false;
       }
-      ContextStore<HttpEntity, Span> contextStore =
-          InstrumentationContext.get(HttpEntity.class, Span.class);
-      ApacheHttpClientUtils.traceRequest(contextStore, request);
+      ApacheHttpClientUtils.traceRequest(Java8BytecodeBridge.currentSpan(), request);
       return true;
     }
 
@@ -191,13 +178,8 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
 
         if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()) {
           HttpEntity entity = httpResponse.getEntity();
-          ContextStore<HttpEntity, Span> contextStore =
-              InstrumentationContext.get(HttpEntity.class, Span.class);
           ApacheHttpClientUtils.traceEntity(
-              contextStore,
-              currentSpan,
-              HypertraceSemanticAttributes.HTTP_RESPONSE_BODY.getKey(),
-              entity);
+              currentSpan, HypertraceSemanticAttributes.HTTP_RESPONSE_BODY.getKey(), entity);
         }
       }
     }
@@ -231,9 +213,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void exit(@Advice.This HttpEntity thizz, @Advice.Return InputStream inputStream) {
       // here the Span.current() is finished for response entities
-      ContextStore<HttpEntity, Span> contextStore =
-          InstrumentationContext.get(HttpEntity.class, Span.class);
-      Span clientSpan = contextStore.get(thizz);
+      Span clientSpan = ApacheHttpClientObjectRegistry.entityToSpan.get(thizz);
       // HttpEntity might be wrapped multiple times
       // this ensures that the advice runs only for the most outer one
       // the returned inputStream is put into globally accessible map
@@ -242,11 +222,15 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
       if (clientSpan == null) {
         return;
       }
+      System.out.println("\n\n GetContnet advice");
 
       Header contentType = thizz.getContentType();
+      System.out.println(contentType);
       if (contentType == null || !ContentTypeUtils.shouldCapture(contentType.getValue())) {
+        System.out.println("\n\n GetContnet advice -- return");
         return;
       }
+      System.out.println("\n\n GetContnet advice -- AAA");
 
       long contentSize = thizz.getContentLength();
       if (contentSize <= 0 || contentSize == Long.MAX_VALUE) {
@@ -262,6 +246,8 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
               BoundedByteArrayOutputStreamFactory.create((int) contentSize),
               HypertraceSemanticAttributes.HTTP_RESPONSE_BODY,
               charset);
+      System.out.println("\n\n GetContent advice -- End");
+      System.out.println(inputStream);
       GlobalObjectRegistry.inputStreamToSpanAndBufferMap.put(inputStream, spanAndBuffer);
     }
   }
@@ -270,9 +256,8 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void enter(
         @Advice.This HttpEntity thizz, @Advice.Argument(0) OutputStream outputStream) {
-      ContextStore<HttpEntity, Span> contextStore =
-          InstrumentationContext.get(HttpEntity.class, Span.class);
-      if (contextStore.get(thizz) == null) {
+      System.out.println("WriteTo \n\n\n\n");
+      if (ApacheHttpClientObjectRegistry.entityToSpan.get(thizz) == null) {
         return;
       }
 
@@ -289,9 +274,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(
         @Advice.This HttpEntity thizz, @Advice.Argument(0) OutputStream outputStream) {
-      ContextStore<HttpEntity, Span> contextStore =
-          InstrumentationContext.get(HttpEntity.class, Span.class);
-      Span clientSpan = contextStore.get(thizz);
+      Span clientSpan = ApacheHttpClientObjectRegistry.entityToSpan.get(thizz);
       if (clientSpan == null) {
         return;
       }
