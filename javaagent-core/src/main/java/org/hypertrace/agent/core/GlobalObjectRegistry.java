@@ -16,9 +16,9 @@
 
 package org.hypertrace.agent.core;
 
-import com.blogspot.mydailyjava.weaklockfree.WeakConcurrentMap;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.javaagent.instrumentation.api.WeakMap;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -27,17 +27,17 @@ import java.nio.charset.Charset;
 public class GlobalObjectRegistry {
 
   // original input stream to span and byte buffer
-  public static final WeakConcurrentMap<InputStream, SpanAndBuffer> inputStreamToSpanAndBufferMap =
-      new WeakConcurrentMap<>(false);
+  public static final WeakMap<InputStream, SpanAndBuffer> inputStreamToSpanAndBufferMap =
+      WeakMap.Provider.newWeakMap();
 
   // original output stream to byte buffer
-  public static final WeakConcurrentMap<OutputStream, ByteArrayOutputStream>
-      outputStreamToBufferMap = new WeakConcurrentMap<>(false);
+  public static final WeakMap<OutputStream, ByteArrayOutputStream> outputStreamToBufferMap =
+      WeakMap.Provider.newWeakMap();
 
   // original input stream to buffered one
-  public static final WeakConcurrentMap<InputStream, InputStream> inputStreamMap =
-      new WeakConcurrentMap<>(false);
-  public static final WeakConcurrentMap<Object, Object> objectMap = new WeakConcurrentMap<>(false);
+  public static final WeakMap<InputStream, InputStream> inputStreamMap =
+      WeakMap.Provider.newWeakMap();
+  public static final WeakMap<Object, Object> objectMap = WeakMap.Provider.newWeakMap();
 
   public static class SpanAndBuffer {
     public final Span span;
