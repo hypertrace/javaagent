@@ -36,6 +36,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.concurrent.FutureCallback;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
@@ -106,7 +107,8 @@ class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTes
   @Test
   public void postJson()
       throws IOException, TimeoutException, InterruptedException, ExecutionException {
-    StringEntity entity = new StringEntity(JSON);
+    StringEntity entity =
+        new StringEntity(JSON, ContentType.create(ContentType.APPLICATION_JSON.getMimeType()));
     postJsonEntity(entity);
   }
 

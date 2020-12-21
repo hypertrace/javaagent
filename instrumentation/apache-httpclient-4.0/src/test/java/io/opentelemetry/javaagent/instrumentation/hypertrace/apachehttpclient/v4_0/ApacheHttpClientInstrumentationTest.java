@@ -135,6 +135,7 @@ public class ApacheHttpClientInstrumentationTest extends AbstractInstrumenterTes
   @Test
   public void postJson() throws IOException, TimeoutException, InterruptedException {
     StringEntity entity = new StringEntity(JSON);
+    entity.setContentType("application/json");
     postJsonEntity(entity);
   }
 
@@ -142,6 +143,7 @@ public class ApacheHttpClientInstrumentationTest extends AbstractInstrumenterTes
   public void postJsonNonRepeatableEntity()
       throws IOException, TimeoutException, InterruptedException {
     StringEntity entity = new NonRepeatableStringEntity(JSON);
+    entity.setContentType("application/json");
     postJsonEntity(entity);
   }
 

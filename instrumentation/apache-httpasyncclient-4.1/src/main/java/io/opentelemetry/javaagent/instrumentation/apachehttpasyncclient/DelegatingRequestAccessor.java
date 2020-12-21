@@ -19,6 +19,10 @@ package io.opentelemetry.javaagent.instrumentation.apachehttpasyncclient;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.javaagent.instrumentation.apachehttpasyncclient.ApacheHttpAsyncClientInstrumentation.DelegatingRequestProducer;
 
+/**
+ * TODO remove once https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/1951
+ * is merged
+ */
 public class DelegatingRequestAccessor {
 
   public static Context get(DelegatingRequestProducer delegatingRequestProducer) {

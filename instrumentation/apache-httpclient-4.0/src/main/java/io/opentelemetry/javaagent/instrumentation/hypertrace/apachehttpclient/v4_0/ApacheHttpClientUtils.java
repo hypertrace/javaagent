@@ -33,6 +33,7 @@ import org.apache.http.HttpResponse;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.core.BoundedByteArrayOutputStreamFactory;
 import org.hypertrace.agent.core.ContentEncodingUtils;
+import org.hypertrace.agent.core.ContentTypeUtils;
 import org.hypertrace.agent.core.HypertraceConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.slf4j.Logger;
@@ -92,6 +93,11 @@ public class ApacheHttpClientUtils {
   public static void traceEntity(
       Span span, AttributeKey<String> bodyAttributeKey, HttpEntity entity) {
     if (entity == null) {
+      return;
+    }
+
+    Header contentType = entity.getContentType();
+    if (contentType == null || !ContentTypeUtils.shouldCapture(contentType.getValue())) {
       return;
     }
 

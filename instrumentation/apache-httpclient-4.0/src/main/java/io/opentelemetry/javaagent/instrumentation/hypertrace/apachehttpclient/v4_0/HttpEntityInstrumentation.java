@@ -36,12 +36,10 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.hypertrace.agent.core.BoundedByteArrayOutputStreamFactory;
 import org.hypertrace.agent.core.ContentEncodingUtils;
 import org.hypertrace.agent.core.ContentLengthUtils;
-import org.hypertrace.agent.core.ContentTypeUtils;
 import org.hypertrace.agent.core.GlobalObjectRegistry;
 import org.hypertrace.agent.core.GlobalObjectRegistry.SpanAndBuffer;
 
@@ -80,11 +78,6 @@ public class HttpEntityInstrumentation implements TypeInstrumentation {
       // The InputStream instrumentation then checks if the input stream is in the map and only
       // then intercepts the reads.
       if (clientSpan == null) {
-        return;
-      }
-
-      Header contentType = thizz.getContentType();
-      if (contentType == null || !ContentTypeUtils.shouldCapture(contentType.getValue())) {
         return;
       }
 
