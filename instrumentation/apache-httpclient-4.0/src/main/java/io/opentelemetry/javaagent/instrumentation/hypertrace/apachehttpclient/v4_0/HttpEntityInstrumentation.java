@@ -67,10 +67,12 @@ public class HttpEntityInstrumentation implements TypeInstrumentation {
   }
 
   static class HttpEntity_GetContentAdvice {
-
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void exit(@Advice.This HttpEntity thizz, @Advice.Return InputStream inputStream) {
       // here the Span.current() is finished for response entities
+      // TODO the entry from map is nto explicitly removed, It could be done by instrumenting
+      // CloseableHttpResponse
+      // instroduced in version 4.3
       SpanAndAttributeKey clientSpan = ApacheHttpClientObjectRegistry.entityToSpan.get(thizz);
       // HttpEntity might be wrapped multiple times
       // this ensures that the advice runs only for the most outer one
@@ -122,7 +124,7 @@ public class HttpEntityInstrumentation implements TypeInstrumentation {
     public static void exit(
         @Advice.This HttpEntity thizz, @Advice.Argument(0) OutputStream outputStream) {
       SpanAndAttributeKey spanAndAttributeKey =
-          ApacheHttpClientObjectRegistry.entityToSpan.get(thizz);
+          ApacheHttpClientObjectRegistry.entityToSpan.remove(thizz);
       if (spanAndAttributeKey == null) {
         return;
       }
