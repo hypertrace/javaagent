@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v4_0;
+package io.opentelemetry.instrumentation.hypertrace.apachehttpasyncclient;
 
-import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -26,39 +26,42 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.concurrent.FutureCallback;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.protocol.HTTP;
+import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
+import org.apache.http.impl.nio.client.HttpAsyncClients;
+import org.apache.http.message.BasicHeader;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.hypertrace.agent.testing.TestHttpServer;
 import org.hypertrace.agent.testing.TestHttpServer.GetJsonHandler;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class ApacheHttpClientInstrumentationTest extends AbstractInstrumenterTest {
+class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTest {
 
   private static final String JSON = "{\"id\":1,\"name\":\"John\"}";
   private static final TestHttpServer testHttpServer = new TestHttpServer();
 
-  private final HttpClient client = new DefaultHttpClient();
+  private static final CloseableHttpAsyncClient client = HttpAsyncClients.createDefault();
 
   @BeforeAll
   public static void startServer() throws Exception {
     testHttpServer.start();
+    client.start();
   }
 
   @AfterAll
@@ -67,17 +70,17 @@ public class ApacheHttpClientInstrumentationTest extends AbstractInstrumenterTes
   }
 
   @Test
-  public void getJson() throws IOException, TimeoutException, InterruptedException {
-    HttpGet getRequest = new HttpGet();
+  public void getJson()
+      throws ExecutionException, InterruptedException, TimeoutException, IOException {
+    HttpGet getRequest =
+        new HttpGet(String.format("http://localhost:%s/get_json", testHttpServer.port()));
     getRequest.addHeader("foo", "bar");
-    getRequest.setURI(
-        URI.create(String.format("http://localhost:%d/get_json", testHttpServer.port())));
-    HttpResponse response = client.execute(getRequest);
-    Assertions.assertEquals(200, response.getStatusLine().getStatusCode());
-    InputStream inputStream = response.getEntity().getContent();
-    Assertions.assertEquals(GetJsonHandler.RESPONSE_BODY, readInputStream(inputStream));
+    Future<HttpResponse> futureResponse = client.execute(getRequest, new NoopFutureCallback());
 
-    Assertions.assertEquals(false, Span.current().isRecording());
+    HttpResponse response = futureResponse.get();
+    Assertions.assertEquals(200, response.getStatusLine().getStatusCode());
+    String responseBody = readInputStream(response.getEntity().getContent());
+    Assertions.assertEquals(GetJsonHandler.RESPONSE_BODY, responseBody);
 
     TEST_WRITER.waitForTraces(1);
     List<List<SpanData>> traces = TEST_WRITER.getTraces();
@@ -102,59 +105,31 @@ public class ApacheHttpClientInstrumentationTest extends AbstractInstrumenterTes
   }
 
   @Test
-  public void postUrlEncoded() throws IOException, TimeoutException, InterruptedException {
-    List<NameValuePair> nvps = new ArrayList<>();
-    nvps.add(new BasicNameValuePair("key1", "value1"));
-    nvps.add(new BasicNameValuePair("key2", "value2"));
-
-    HttpPost postRequest = new HttpPost();
-    postRequest.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
-    postRequest.setURI(
-        URI.create(String.format("http://localhost:%d/post", testHttpServer.port())));
-    HttpResponse response = client.execute(postRequest);
-    Assertions.assertEquals(204, response.getStatusLine().getStatusCode());
-
-    TEST_WRITER.waitForTraces(1);
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
-    Assertions.assertEquals(1, traces.size());
-    Assertions.assertEquals(1, traces.get(0).size());
-    SpanData clientSpan = traces.get(0).get(0);
-
-    Assertions.assertEquals(
-        "test-value",
-        clientSpan
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
-    Assertions.assertEquals(
-        "key1=value1&key2=value2",
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
-    Assertions.assertNull(
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
-  }
-
-  @Test
-  public void postJson() throws IOException, TimeoutException, InterruptedException {
-    StringEntity entity = new StringEntity(JSON);
-    entity.setContentType("application/json");
+  public void postJson()
+      throws IOException, TimeoutException, InterruptedException, ExecutionException {
+    StringEntity entity =
+        new StringEntity(JSON, ContentType.create(ContentType.APPLICATION_JSON.getMimeType()));
     postJsonEntity(entity);
   }
 
   @Test
   public void postJsonNonRepeatableEntity()
-      throws IOException, TimeoutException, InterruptedException {
+      throws IOException, TimeoutException, InterruptedException, ExecutionException {
     StringEntity entity = new NonRepeatableStringEntity(JSON);
-    entity.setContentType("application/json");
     postJsonEntity(entity);
   }
 
   public void postJsonEntity(HttpEntity entity)
-      throws TimeoutException, InterruptedException, IOException {
+      throws TimeoutException, InterruptedException, IOException, ExecutionException {
     HttpPost postRequest = new HttpPost();
     postRequest.setEntity(entity);
     postRequest.setHeader("Content-type", "application/json");
     postRequest.setURI(
         URI.create(String.format("http://localhost:%d/post", testHttpServer.port())));
-    HttpResponse response = client.execute(postRequest);
+
+    Future<HttpResponse> responseFuture = client.execute(postRequest, new NoopFutureCallback());
+
+    HttpResponse response = responseFuture.get();
     Assertions.assertEquals(204, response.getStatusLine().getStatusCode());
 
     TEST_WRITER.waitForTraces(1);
@@ -163,32 +138,17 @@ public class ApacheHttpClientInstrumentationTest extends AbstractInstrumenterTes
     Assertions.assertEquals(1, traces.get(0).size());
     SpanData clientSpan = traces.get(0).get(0);
 
+    String requestBody = readInputStream(entity.getContent());
     Assertions.assertEquals(
         "test-value",
         clientSpan
             .getAttributes()
             .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
     Assertions.assertEquals(
-        readInputStream(entity.getContent()),
+        requestBody,
         clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
     Assertions.assertNull(
         clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
-  }
-
-  @Test
-  public void getContent_throws_exception() throws IOException {
-    HttpClient client = new DefaultHttpClient();
-    HttpGet getRequest = new HttpGet();
-    getRequest.setURI(
-        URI.create(String.format("http://localhost:%d/get_json", testHttpServer.port())));
-    HttpResponse response = client.execute(getRequest);
-    HttpEntity entity = response.getEntity();
-    Assertions.assertNotNull(entity.getContent());
-    try {
-      entity.getContent();
-    } catch (Exception ex) {
-      Assertions.assertEquals(IllegalStateException.class, ex.getClass());
-    }
   }
 
   private static String readInputStream(InputStream inputStream) throws IOException {
@@ -212,8 +172,57 @@ public class ApacheHttpClientInstrumentationTest extends AbstractInstrumenterTes
     }
 
     @Override
+    public Header getContentType() {
+      return new BasicHeader("Content-Type", "json");
+    }
+
+    @Override
     public boolean isRepeatable() {
       return false;
     }
+
+    @Override
+    public InputStream getContent() {
+      return new TestInputStream(this.content);
+    }
+  }
+
+  // TODO remove once https://github.com/hypertrace/javaagent/issues/189 is fixed
+  static class TestInputStream extends ByteArrayInputStream {
+
+    public TestInputStream(byte[] buf) {
+      super(buf);
+    }
+
+    @Override
+    public synchronized int read() {
+      return super.read();
+    }
+
+    @Override
+    public int read(@NotNull byte[] b) throws IOException {
+      return super.read(b);
+    }
+
+    @Override
+    public synchronized int read(byte[] b, int off, int len) {
+      return super.read(b, off, len);
+    }
+
+    @Override
+    public synchronized int available() {
+      return super.available();
+    }
+  }
+
+  static class NoopFutureCallback implements FutureCallback<HttpResponse> {
+    @Override
+    public void completed(HttpResponse result) {}
+
+    @Override
+    public void failed(Exception ex) {}
+
+    @Override
+    public void cancelled() {}
   }
 }

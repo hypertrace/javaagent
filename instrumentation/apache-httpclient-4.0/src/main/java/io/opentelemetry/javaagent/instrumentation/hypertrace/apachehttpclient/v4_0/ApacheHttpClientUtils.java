@@ -18,7 +18,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v4_0.ApacheHttpClientObjectRegistry.SpanAndAttributeKey;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -29,9 +29,11 @@ import org.apache.http.HeaderIterator;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpMessage;
+import org.apache.http.HttpResponse;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.core.BoundedByteArrayOutputStreamFactory;
 import org.hypertrace.agent.core.ContentEncodingUtils;
+import org.hypertrace.agent.core.ContentTypeUtils;
 import org.hypertrace.agent.core.HypertraceConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.slf4j.Logger;
@@ -60,12 +62,10 @@ public class ApacheHttpClientUtils {
     }
   }
 
-  public static void traceRequest(
-      ContextStore<HttpEntity, Span> contextStore, HttpMessage request) {
-    Span currentSpan = Span.current();
+  public static void traceRequest(Span span, HttpMessage request) {
     AgentConfig agentConfig = HypertraceConfig.get();
     if (agentConfig.getDataCapture().getHttpHeaders().getRequest().getValue()) {
-      ApacheHttpClientUtils.addRequestHeaders(currentSpan, request.headerIterator());
+      ApacheHttpClientUtils.addRequestHeaders(span, request.headerIterator());
     }
 
     if (agentConfig.getDataCapture().getHttpBody().getRequest().getValue()
@@ -73,19 +73,31 @@ public class ApacheHttpClientUtils {
       HttpEntityEnclosingRequest entityRequest = (HttpEntityEnclosingRequest) request;
       HttpEntity entity = entityRequest.getEntity();
       ApacheHttpClientUtils.traceEntity(
-          contextStore,
-          currentSpan,
-          HypertraceSemanticAttributes.HTTP_REQUEST_BODY.getKey(),
-          entity);
+          span, HypertraceSemanticAttributes.HTTP_REQUEST_BODY, entity);
+    }
+  }
+
+  public static void traceResponse(Span span, HttpResponse response) {
+    AgentConfig agentConfig = HypertraceConfig.get();
+    if (agentConfig.getDataCapture().getHttpHeaders().getResponse().getValue()) {
+      ApacheHttpClientUtils.addResponseHeaders(span, response.headerIterator());
+    }
+
+    if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()) {
+      HttpEntity entity = response.getEntity();
+      ApacheHttpClientUtils.traceEntity(
+          span, HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, entity);
     }
   }
 
   public static void traceEntity(
-      ContextStore<HttpEntity, Span> contextStore,
-      Span span,
-      String bodyAttributeKey,
-      HttpEntity entity) {
+      Span span, AttributeKey<String> bodyAttributeKey, HttpEntity entity) {
     if (entity == null) {
+      return;
+    }
+
+    Header contentType = entity.getContentType();
+    if (contentType == null || !ContentTypeUtils.shouldCapture(contentType.getValue())) {
       return;
     }
 
@@ -99,7 +111,6 @@ public class ApacheHttpClientUtils {
         Charset charset = ContentEncodingUtils.toCharset(encoding);
         try {
           String body = byteArrayOutputStream.toString(charset.name());
-          System.out.printf("captured %s readable body is %s\n", bodyAttributeKey, body);
           span.setAttribute(bodyAttributeKey, body);
         } catch (UnsupportedEncodingException e) {
           log.error("Could not parse charset from encoding {}", encoding, e);
@@ -111,9 +122,14 @@ public class ApacheHttpClientUtils {
       return;
     }
 
-    // request body is traced via HttpEntity.writeTo(OutputStream) and OutputStream instrumentation
+    // sync client: request body is traced via HttpEntity.writeTo(OutputStream) and OutputStream
+    // instrumentation
+    // async client: request body is traced via InputStream HttpEntity.getContent() and InputStream
+    // instrumentation
+
     // response body is traced via InputStream HttpEntity.getContent() and InputStream
     // instrumentation
-    contextStore.put(entity, span);
+    ApacheHttpClientObjectRegistry.entityToSpan.put(
+        entity, new SpanAndAttributeKey(span, bodyAttributeKey));
   }
 }

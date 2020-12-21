@@ -18,28 +18,17 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v
 
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.implementsInterface;
 import static net.bytebuddy.matcher.ElementMatchers.hasSuperType;
-import static net.bytebuddy.matcher.ElementMatchers.is;
 import static net.bytebuddy.matcher.ElementMatchers.isAbstract;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.not;
-import static net.bytebuddy.matcher.ElementMatchers.returns;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
-import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import com.google.auto.service.AutoService;
-import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -48,19 +37,8 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpMessage;
 import org.apache.http.HttpResponse;
-import org.hypertrace.agent.config.Config.AgentConfig;
-import org.hypertrace.agent.core.BoundedByteArrayOutputStreamFactory;
-import org.hypertrace.agent.core.ContentEncodingUtils;
-import org.hypertrace.agent.core.ContentLengthUtils;
-import org.hypertrace.agent.core.ContentTypeUtils;
-import org.hypertrace.agent.core.GlobalObjectRegistry;
-import org.hypertrace.agent.core.GlobalObjectRegistry.SpanAndBuffer;
-import org.hypertrace.agent.core.HypertraceConfig;
-import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 
 @AutoService(InstrumentationModule.class)
 public class ApacheClientInstrumentationModule extends InstrumentationModule {
@@ -72,13 +50,6 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
   @Override
   public int getOrder() {
     return 1;
-  }
-
-  @Override
-  protected Map<String, String> contextStore() {
-    Map<String, String> context = new HashMap<>();
-    context.put("org.apache.http.HttpEntity", Span.class.getName());
-    return context;
   }
 
   @Override
@@ -127,9 +98,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
       if (callDepth > 0) {
         return false;
       }
-      ContextStore<HttpEntity, Span> contextStore =
-          InstrumentationContext.get(HttpEntity.class, Span.class);
-      ApacheHttpClientUtils.traceRequest(contextStore, request);
+      ApacheHttpClientUtils.traceRequest(Java8BytecodeBridge.currentSpan(), request);
       return true;
     }
 
@@ -149,9 +118,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
       if (callDepth > 0) {
         return false;
       }
-      ContextStore<HttpEntity, Span> contextStore =
-          InstrumentationContext.get(HttpEntity.class, Span.class);
-      ApacheHttpClientUtils.traceRequest(contextStore, request);
+      ApacheHttpClientUtils.traceRequest(Java8BytecodeBridge.currentSpan(), request);
       return true;
     }
 
@@ -183,131 +150,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
       CallDepthThreadLocalMap.reset(HttpResponse.class);
       if (response instanceof HttpResponse) {
         HttpResponse httpResponse = (HttpResponse) response;
-        Span currentSpan = Java8BytecodeBridge.currentSpan();
-        AgentConfig agentConfig = HypertraceConfig.get();
-        if (agentConfig.getDataCapture().getHttpHeaders().getResponse().getValue()) {
-          ApacheHttpClientUtils.addResponseHeaders(currentSpan, httpResponse.headerIterator());
-        }
-
-        if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()) {
-          HttpEntity entity = httpResponse.getEntity();
-          ContextStore<HttpEntity, Span> contextStore =
-              InstrumentationContext.get(HttpEntity.class, Span.class);
-          ApacheHttpClientUtils.traceEntity(
-              contextStore,
-              currentSpan,
-              HypertraceSemanticAttributes.HTTP_RESPONSE_BODY.getKey(),
-              entity);
-        }
-      }
-    }
-  }
-
-  static class HttpEntityInstrumentation implements TypeInstrumentation {
-    @Override
-    public ElementMatcher<? super TypeDescription> typeMatcher() {
-      return implementsInterface(named("org.apache.http.HttpEntity"));
-    }
-
-    @Override
-    public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-      Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>();
-
-      // instrumentation for request body along with OutputStream instrumentation
-      transformers.put(
-          named("writeTo").and(takesArguments(1)).and(takesArgument(0, is(OutputStream.class))),
-          ApacheClientInstrumentationModule.class.getName() + "$HttpEntity_WriteToAdvice");
-
-      // instrumentation for response body along with InputStream instrumentation
-      transformers.put(
-          named("getContent").and(takesArguments(0)).and(returns(InputStream.class)),
-          ApacheClientInstrumentationModule.class.getName() + "$HttpEntity_GetContentAdvice");
-      return transformers;
-    }
-  }
-
-  static class HttpEntity_GetContentAdvice {
-
-    @Advice.OnMethodExit(suppress = Throwable.class)
-    public static void exit(@Advice.This HttpEntity thizz, @Advice.Return InputStream inputStream) {
-      // here the Span.current() is finished for response entities
-      ContextStore<HttpEntity, Span> contextStore =
-          InstrumentationContext.get(HttpEntity.class, Span.class);
-      Span clientSpan = contextStore.get(thizz);
-      // HttpEntity might be wrapped multiple times
-      // this ensures that the advice runs only for the most outer one
-      // the returned inputStream is put into globally accessible map
-      // The InputStream instrumentation then checks if the input stream is in the map and only
-      // then intercepts the reads.
-      if (clientSpan == null) {
-        return;
-      }
-
-      Header contentType = thizz.getContentType();
-      if (contentType == null || !ContentTypeUtils.shouldCapture(contentType.getValue())) {
-        return;
-      }
-
-      long contentSize = thizz.getContentLength();
-      if (contentSize <= 0 || contentSize == Long.MAX_VALUE) {
-        contentSize = ContentLengthUtils.DEFAULT;
-      }
-
-      String encoding =
-          thizz.getContentEncoding() != null ? thizz.getContentEncoding().getValue() : "";
-      Charset charset = ContentEncodingUtils.toCharset(encoding);
-      SpanAndBuffer spanAndBuffer =
-          new SpanAndBuffer(
-              clientSpan,
-              BoundedByteArrayOutputStreamFactory.create((int) contentSize),
-              HypertraceSemanticAttributes.HTTP_RESPONSE_BODY,
-              charset);
-      GlobalObjectRegistry.inputStreamToSpanAndBufferMap.put(inputStream, spanAndBuffer);
-    }
-  }
-
-  static class HttpEntity_WriteToAdvice {
-    @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static void enter(
-        @Advice.This HttpEntity thizz, @Advice.Argument(0) OutputStream outputStream) {
-      ContextStore<HttpEntity, Span> contextStore =
-          InstrumentationContext.get(HttpEntity.class, Span.class);
-      if (contextStore.get(thizz) == null) {
-        return;
-      }
-
-      long contentSize = thizz.getContentLength();
-      if (contentSize <= 0 || contentSize == Long.MAX_VALUE) {
-        contentSize = ContentLengthUtils.DEFAULT;
-      }
-      ByteArrayOutputStream byteArrayOutputStream =
-          BoundedByteArrayOutputStreamFactory.create((int) contentSize);
-
-      GlobalObjectRegistry.outputStreamToBufferMap.put(outputStream, byteArrayOutputStream);
-    }
-
-    @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
-    public static void exit(
-        @Advice.This HttpEntity thizz, @Advice.Argument(0) OutputStream outputStream) {
-      ContextStore<HttpEntity, Span> contextStore =
-          InstrumentationContext.get(HttpEntity.class, Span.class);
-      Span clientSpan = contextStore.get(thizz);
-      if (clientSpan == null) {
-        return;
-      }
-
-      String encoding =
-          thizz.getContentEncoding() != null ? thizz.getContentEncoding().getValue() : "";
-      Charset charset = ContentEncodingUtils.toCharset(encoding);
-
-      ByteArrayOutputStream bufferedOutStream =
-          GlobalObjectRegistry.outputStreamToBufferMap.remove(outputStream);
-      try {
-        String requestBody = bufferedOutStream.toString(charset.name());
-        System.out.printf("Captured request body via outputstream: %s\n", requestBody);
-        clientSpan.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, requestBody);
-      } catch (UnsupportedEncodingException e) {
-        // should not happen, the charset has been parsed before
+        ApacheHttpClientUtils.traceResponse(Java8BytecodeBridge.currentSpan(), httpResponse);
       }
     }
   }

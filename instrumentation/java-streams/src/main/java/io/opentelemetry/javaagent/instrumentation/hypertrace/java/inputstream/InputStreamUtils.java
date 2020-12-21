@@ -47,7 +47,6 @@ public class InputStreamUtils {
    * child.
    */
   public static void addAttribute(Span span, AttributeKey<String> attributeKey, String value) {
-    System.out.printf("Captured %s attribute: %s\n", attributeKey.getKey(), value);
     if (span.isRecording()) {
       span.setAttribute(attributeKey, value);
     } else {
@@ -148,5 +147,19 @@ public class InputStreamUtils {
       spanAndBuffer.byteArrayBuffer.write(b, off, read);
     }
     CallDepthThreadLocalMap.reset(InputStream.class);
+  }
+
+  public static void available(InputStream inputStream, int available) {
+    if (available != 0) {
+      return;
+    }
+    SpanAndBuffer spanAndBuffer =
+        GlobalObjectRegistry.inputStreamToSpanAndBufferMap.get(inputStream);
+    InputStreamUtils.addBody(
+        spanAndBuffer.span,
+        spanAndBuffer.attributeKey,
+        spanAndBuffer.byteArrayBuffer,
+        spanAndBuffer.charset);
+    GlobalObjectRegistry.inputStreamToSpanAndBufferMap.remove(inputStream);
   }
 }
