@@ -103,6 +103,9 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
               .and(takesArgument(2, is(int.class)))
               .and(isPublic()),
           InputStreamInstrumentationModule.class.getName() + "$InputStream_ReadNBytes");
+      transformers.put(
+          named("available").and(takesArguments(0)).and(isPublic()),
+          InputStreamInstrumentationModule.class.getName() + "$InputStream_Available");
       return transformers;
     }
   }
@@ -195,6 +198,13 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
         @Advice.Argument(2) int len,
         @Advice.Enter SpanAndBuffer spanAndBuffer) {
       InputStreamUtils.readNBytes(thizz, spanAndBuffer, read, b, off, len);
+    }
+  }
+
+  public static class InputStream_Available {
+    @Advice.OnMethodExit(suppress = Throwable.class)
+    public static void exit(@Advice.This InputStream thizz, @Advice.Return int available) {
+      InputStreamUtils.available(thizz, available);
     }
   }
 }

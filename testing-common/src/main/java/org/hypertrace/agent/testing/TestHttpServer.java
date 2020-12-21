@@ -122,7 +122,7 @@ public class TestHttpServer implements AutoCloseable {
         while ((nRead = inputStream.read()) != -1) {
           buffer.write((byte) nRead);
         }
-        System.out.printf("Received: %s\n", buffer.toString());
+        System.out.printf("Test server received: %s\n", buffer.toString());
 
         response.setStatus(204);
         baseRequest.setHandled(true);

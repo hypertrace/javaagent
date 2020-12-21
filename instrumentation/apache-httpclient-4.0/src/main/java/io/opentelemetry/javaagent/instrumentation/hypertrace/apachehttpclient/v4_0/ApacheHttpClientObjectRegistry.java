@@ -16,11 +16,22 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v4_0;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.api.WeakMap;
 import org.apache.http.HttpEntity;
 
 public class ApacheHttpClientObjectRegistry {
 
-  public static final WeakMap<HttpEntity, Span> entityToSpan = WeakMap.Provider.newWeakMap();
+  public static final WeakMap<HttpEntity, SpanAndAttributeKey> entityToSpan = WeakMap.Provider.newWeakMap();
+
+  public static class SpanAndAttributeKey {
+    public final Span span;
+    public final AttributeKey<String> attributeKey;
+
+    public SpanAndAttributeKey(Span span, AttributeKey<String> attributeKey) {
+      this.span = span;
+      this.attributeKey = attributeKey;
+    }
+  }
 }

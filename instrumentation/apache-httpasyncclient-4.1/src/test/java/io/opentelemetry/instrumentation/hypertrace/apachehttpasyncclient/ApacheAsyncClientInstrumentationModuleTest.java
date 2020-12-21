@@ -141,11 +141,12 @@ class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTes
     SpanData clientSpan = traces.get(0).get(0);
 
     String requestBody = readInputStream(entity.getContent());
-    //    Assertions.assertEquals(
-    //        "test-value",
-    //        clientSpan
-    //            .getAttributes()
-    //            .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
+    // TODO
+//        Assertions.assertEquals(
+//            "test-value",
+//            clientSpan
+//                .getAttributes()
+//                .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
     Assertions.assertEquals(
         requestBody,
         clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
@@ -184,7 +185,7 @@ class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTes
     }
 
     @Override
-    public InputStream getContent() throws IOException {
+    public InputStream getContent() {
       System.out.println("get content from nonRepeatable entity");
       return new TestInputStream(this.content);
     }
@@ -216,6 +217,11 @@ class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTes
     @Override
     public synchronized int read(byte[] b, int off, int len) {
       return super.read(b, off, len);
+    }
+
+    @Override
+    public synchronized int available() {
+      return super.available();
     }
   }
 }

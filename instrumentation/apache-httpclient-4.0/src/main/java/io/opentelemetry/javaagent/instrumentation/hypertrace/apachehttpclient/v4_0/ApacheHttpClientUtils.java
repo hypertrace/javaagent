@@ -18,6 +18,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v4_0.ApacheHttpClientObjectRegistry.SpanAndAttributeKey;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -70,11 +71,11 @@ public class ApacheHttpClientUtils {
       HttpEntityEnclosingRequest entityRequest = (HttpEntityEnclosingRequest) request;
       HttpEntity entity = entityRequest.getEntity();
       ApacheHttpClientUtils.traceEntity(
-          span, HypertraceSemanticAttributes.HTTP_REQUEST_BODY.getKey(), entity);
+          span, HypertraceSemanticAttributes.HTTP_REQUEST_BODY, entity);
     }
   }
 
-  public static void traceEntity(Span span, String bodyAttributeKey, HttpEntity entity) {
+  public static void traceEntity(Span span, AttributeKey<String> bodyAttributeKey, HttpEntity entity) {
     if (entity == null) {
       return;
     }
@@ -89,7 +90,6 @@ public class ApacheHttpClientUtils {
         Charset charset = ContentEncodingUtils.toCharset(encoding);
         try {
           String body = byteArrayOutputStream.toString(charset.name());
-          System.out.printf("captured %s readable body is %s\n", bodyAttributeKey, body);
           span.setAttribute(bodyAttributeKey, body);
         } catch (UnsupportedEncodingException e) {
           log.error("Could not parse charset from encoding {}", encoding, e);
@@ -101,9 +101,13 @@ public class ApacheHttpClientUtils {
       return;
     }
 
-    // request body is traced via HttpEntity.writeTo(OutputStream) and OutputStream instrumentation
+    // sync client: request body is traced via HttpEntity.writeTo(OutputStream) and OutputStream
+    // instrumentation
+    // async client: request body is traced via InputStream HttpEntity.getContent() and InputStream
+    // instrumentation
+
     // response body is traced via InputStream HttpEntity.getContent() and InputStream
     // instrumentation
-    ApacheHttpClientObjectRegistry.entityToSpan.put(entity, span);
+    ApacheHttpClientObjectRegistry.entityToSpan.put(entity, new SpanAndAttributeKey(span, bodyAttributeKey));
   }
 }
