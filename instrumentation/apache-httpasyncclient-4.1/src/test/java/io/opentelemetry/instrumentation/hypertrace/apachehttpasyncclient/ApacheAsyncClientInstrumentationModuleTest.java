@@ -22,7 +22,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -44,6 +43,7 @@ import org.apache.http.message.BasicHeader;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.hypertrace.agent.testing.TestHttpServer;
+import org.hypertrace.agent.testing.TestHttpServer.GetJsonHandler;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -69,30 +69,38 @@ class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTes
   }
 
   @Test
-  public void test() throws ExecutionException, InterruptedException, TimeoutException {
-
-    Future<HttpResponse> futureResponse =
-        client.execute(
-            new HttpGet(String.format("http://localhost:%s/get_json", testHttpServer.port())),
-            new FutureCallback<HttpResponse>() {
-              @Override
-              public void completed(HttpResponse result) {
-                System.out.println("commpleted");
-              }
-
-              @Override
-              public void failed(Exception ex) {}
-
-              @Override
-              public void cancelled() {}
-            });
+  public void getJson()
+      throws ExecutionException, InterruptedException, TimeoutException, IOException {
+    HttpGet getRequest =
+        new HttpGet(String.format("http://localhost:%s/get_json", testHttpServer.port()));
+    getRequest.addHeader("foo", "bar");
+    Future<HttpResponse> futureResponse = client.execute(getRequest, new NoopFutureCallback());
 
     HttpResponse response = futureResponse.get();
     Assertions.assertEquals(200, response.getStatusLine().getStatusCode());
+    String responseBody = readInputStream(response.getEntity().getContent());
+    Assertions.assertEquals(GetJsonHandler.RESPONSE_BODY, responseBody);
 
     TEST_WRITER.waitForTraces(1);
     List<List<SpanData>> traces = TEST_WRITER.getTraces();
     Assertions.assertEquals(1, traces.size());
+    Assertions.assertEquals(2, traces.get(0).size());
+    SpanData clientSpan = traces.get(0).get(0);
+
+    Assertions.assertEquals(
+        "test-value",
+        clientSpan
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
+    Assertions.assertEquals(
+        "bar",
+        clientSpan.getAttributes().get(HypertraceSemanticAttributes.httpRequestHeader("foo")));
+    Assertions.assertNull(
+        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+    SpanData responseBodySpan = traces.get(0).get(1);
+    Assertions.assertEquals(
+        GetJsonHandler.RESPONSE_BODY,
+        responseBodySpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
   }
 
   @Test
@@ -117,19 +125,7 @@ class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTes
     postRequest.setURI(
         URI.create(String.format("http://localhost:%d/post", testHttpServer.port())));
 
-    Future<HttpResponse> responseFuture =
-        client.execute(
-            postRequest,
-            new FutureCallback<HttpResponse>() {
-              @Override
-              public void completed(HttpResponse result) {}
-
-              @Override
-              public void failed(Exception ex) {}
-
-              @Override
-              public void cancelled() {}
-            });
+    Future<HttpResponse> responseFuture = client.execute(postRequest, new NoopFutureCallback());
 
     HttpResponse response = responseFuture.get();
     Assertions.assertEquals(204, response.getStatusLine().getStatusCode());
@@ -141,12 +137,11 @@ class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTes
     SpanData clientSpan = traces.get(0).get(0);
 
     String requestBody = readInputStream(entity.getContent());
-    // TODO
-//        Assertions.assertEquals(
-//            "test-value",
-//            clientSpan
-//                .getAttributes()
-//                .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
+    Assertions.assertEquals(
+        "test-value",
+        clientSpan
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
     Assertions.assertEquals(
         requestBody,
         clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
@@ -186,14 +181,7 @@ class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTes
 
     @Override
     public InputStream getContent() {
-      System.out.println("get content from nonRepeatable entity");
       return new TestInputStream(this.content);
-    }
-
-    @Override
-    public void writeTo(OutputStream outstream) throws IOException {
-      System.out.println("write to from nonRepeatable entity");
-      super.writeTo(outstream);
     }
   }
 
@@ -223,5 +211,16 @@ class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTes
     public synchronized int available() {
       return super.available();
     }
+  }
+
+  static class NoopFutureCallback implements FutureCallback<HttpResponse> {
+    @Override
+    public void completed(HttpResponse result) {}
+
+    @Override
+    public void failed(Exception ex) {}
+
+    @Override
+    public void cancelled() {}
   }
 }

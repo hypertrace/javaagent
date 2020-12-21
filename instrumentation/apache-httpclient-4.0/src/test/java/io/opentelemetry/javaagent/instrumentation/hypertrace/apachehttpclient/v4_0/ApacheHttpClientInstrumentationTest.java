@@ -22,7 +22,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -213,16 +212,6 @@ public class ApacheHttpClientInstrumentationTest extends AbstractInstrumenterTes
     @Override
     public boolean isRepeatable() {
       return false;
-    }
-
-    @Override
-    public InputStream getContent() throws IOException {
-      return super.getContent();
-    }
-
-    @Override
-    public void writeTo(OutputStream outstream) throws IOException {
-      super.writeTo(outstream);
     }
   }
 }

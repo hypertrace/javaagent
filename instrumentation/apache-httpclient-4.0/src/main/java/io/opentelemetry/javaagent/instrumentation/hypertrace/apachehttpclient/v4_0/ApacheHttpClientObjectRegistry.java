@@ -23,7 +23,8 @@ import org.apache.http.HttpEntity;
 
 public class ApacheHttpClientObjectRegistry {
 
-  public static final WeakMap<HttpEntity, SpanAndAttributeKey> entityToSpan = WeakMap.Provider.newWeakMap();
+  public static final WeakMap<HttpEntity, SpanAndAttributeKey> entityToSpan =
+      WeakMap.Provider.newWeakMap();
 
   public static class SpanAndAttributeKey {
     public final Span span;

@@ -23,7 +23,6 @@ import static net.bytebuddy.matcher.ElementMatchers.returns;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
-import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v4_0.ApacheHttpClientObjectRegistry.SpanAndAttributeKey;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.io.ByteArrayOutputStream;
@@ -45,7 +44,6 @@ import org.hypertrace.agent.core.ContentLengthUtils;
 import org.hypertrace.agent.core.ContentTypeUtils;
 import org.hypertrace.agent.core.GlobalObjectRegistry;
 import org.hypertrace.agent.core.GlobalObjectRegistry.SpanAndBuffer;
-import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 
 public class HttpEntityInstrumentation implements TypeInstrumentation {
 
@@ -84,15 +82,11 @@ public class HttpEntityInstrumentation implements TypeInstrumentation {
       if (clientSpan == null) {
         return;
       }
-      System.out.println("\n\n GetContent advice");
 
       Header contentType = thizz.getContentType();
-      System.out.println(contentType);
       if (contentType == null || !ContentTypeUtils.shouldCapture(contentType.getValue())) {
-        System.out.println("\n\n GetContent advice -- return");
         return;
       }
-      System.out.println("\n\n GetContent advice -- AAA");
 
       long contentSize = thizz.getContentLength();
       if (contentSize <= 0 || contentSize == Long.MAX_VALUE) {
@@ -108,8 +102,6 @@ public class HttpEntityInstrumentation implements TypeInstrumentation {
               BoundedByteArrayOutputStreamFactory.create((int) contentSize),
               clientSpan.attributeKey,
               charset);
-      System.out.println("\n\n GetContent advice -- End");
-      System.out.println(inputStream);
       GlobalObjectRegistry.inputStreamToSpanAndBufferMap.put(inputStream, spanAndBuffer);
     }
   }
@@ -119,7 +111,6 @@ public class HttpEntityInstrumentation implements TypeInstrumentation {
     public static void enter(
         @Advice.This HttpEntity thizz, @Advice.Argument(0) OutputStream outputStream) {
 
-      System.out.println("WriteTo advice\n\n\n");
       if (ApacheHttpClientObjectRegistry.entityToSpan.get(thizz) == null) {
         return;
       }
@@ -137,7 +128,8 @@ public class HttpEntityInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(
         @Advice.This HttpEntity thizz, @Advice.Argument(0) OutputStream outputStream) {
-      SpanAndAttributeKey spanAndAttributeKey = ApacheHttpClientObjectRegistry.entityToSpan.get(thizz);
+      SpanAndAttributeKey spanAndAttributeKey =
+          ApacheHttpClientObjectRegistry.entityToSpan.get(thizz);
       if (spanAndAttributeKey == null) {
         return;
       }
@@ -150,7 +142,6 @@ public class HttpEntityInstrumentation implements TypeInstrumentation {
           GlobalObjectRegistry.outputStreamToBufferMap.remove(outputStream);
       try {
         String requestBody = bufferedOutStream.toString(charset.name());
-        System.out.printf("Captured request body via outputstream: %s\n", requestBody);
         spanAndAttributeKey.span.setAttribute(spanAndAttributeKey.attributeKey, requestBody);
       } catch (UnsupportedEncodingException e) {
         // should not happen, the charset has been parsed before

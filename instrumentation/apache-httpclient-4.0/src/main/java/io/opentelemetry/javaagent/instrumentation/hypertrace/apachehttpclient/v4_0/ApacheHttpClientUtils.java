@@ -29,6 +29,7 @@ import org.apache.http.HeaderIterator;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpMessage;
+import org.apache.http.HttpResponse;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.core.BoundedByteArrayOutputStreamFactory;
 import org.hypertrace.agent.core.ContentEncodingUtils;
@@ -75,7 +76,21 @@ public class ApacheHttpClientUtils {
     }
   }
 
-  public static void traceEntity(Span span, AttributeKey<String> bodyAttributeKey, HttpEntity entity) {
+  public static void traceResponse(Span span, HttpResponse response) {
+    AgentConfig agentConfig = HypertraceConfig.get();
+    if (agentConfig.getDataCapture().getHttpHeaders().getResponse().getValue()) {
+      ApacheHttpClientUtils.addResponseHeaders(span, response.headerIterator());
+    }
+
+    if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()) {
+      HttpEntity entity = response.getEntity();
+      ApacheHttpClientUtils.traceEntity(
+          span, HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, entity);
+    }
+  }
+
+  public static void traceEntity(
+      Span span, AttributeKey<String> bodyAttributeKey, HttpEntity entity) {
     if (entity == null) {
       return;
     }
@@ -108,6 +123,7 @@ public class ApacheHttpClientUtils {
 
     // response body is traced via InputStream HttpEntity.getContent() and InputStream
     // instrumentation
-    ApacheHttpClientObjectRegistry.entityToSpan.put(entity, new SpanAndAttributeKey(span, bodyAttributeKey));
+    ApacheHttpClientObjectRegistry.entityToSpan.put(
+        entity, new SpanAndAttributeKey(span, bodyAttributeKey));
   }
 }

@@ -42,7 +42,11 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.nio.protocol.HttpAsyncRequestProducer;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.protocol.HttpCoreContext;
 
 @AutoService(InstrumentationModule.class)
 public class ApacheAsyncClientInstrumentationModule extends InstrumentationModule {
@@ -94,18 +98,17 @@ public class ApacheAsyncClientInstrumentationModule extends InstrumentationModul
   public static class HttpAsyncClient_execute_Advice {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void enter(
-        @Advice.Argument(value = 0, readOnly = false) HttpAsyncRequestProducer requestProducer) {
-      System.out.println("on enter");
+        @Advice.Argument(value = 0, readOnly = false) HttpAsyncRequestProducer requestProducer,
+        @Advice.Argument(value = 2) HttpContext httpContext,
+        @Advice.Argument(value = 3, readOnly = false) FutureCallback futureCallback) {
       if (requestProducer instanceof DelegatingRequestProducer) {
         DelegatingRequestProducer delegatingRequestProducer =
             (DelegatingRequestProducer) requestProducer;
         Context context = DelegatingRequestAccessor.get(delegatingRequestProducer);
         requestProducer = new DelegatingCaptureBodyRequestProducer(context, requestProducer);
+        futureCallback = new BodyCaptureDelegatingCallback(context, httpContext, futureCallback);
       }
     }
-
-    @Advice.OnMethodExit(suppress = Throwable.class)
-    public static void exit(@Advice.Return Object response) {}
   }
 
   public static class DelegatingCaptureBodyRequestProducer extends DelegatingRequestProducer {
@@ -120,10 +123,48 @@ public class ApacheAsyncClientInstrumentationModule extends InstrumentationModul
 
     @Override
     public HttpRequest generateRequest() throws IOException, HttpException {
-      System.out.println("generate request");
       HttpRequest request = super.generateRequest();
       ApacheHttpClientUtils.traceRequest(Span.fromContext(context), request);
       return request;
+    }
+  }
+
+  public static class BodyCaptureDelegatingCallback<T> implements FutureCallback<T> {
+
+    final Context context;
+    final FutureCallback<T> delegate;
+    final HttpContext httpContext;
+
+    public BodyCaptureDelegatingCallback(
+        Context context, HttpContext httpContext, FutureCallback<T> delegate) {
+      this.delegate = delegate;
+      this.context = context;
+      this.httpContext = httpContext;
+    }
+
+    @Override
+    public void completed(T result) {
+      HttpResponse httpResponse = getResponse(httpContext);
+      ApacheHttpClientUtils.traceResponse(Span.fromContext(context), httpResponse);
+      delegate.completed(result);
+    }
+
+    @Override
+    public void failed(Exception ex) {
+      HttpResponse httpResponse = getResponse(httpContext);
+      ApacheHttpClientUtils.traceResponse(Span.fromContext(context), httpResponse);
+      delegate.failed(ex);
+    }
+
+    @Override
+    public void cancelled() {
+      HttpResponse httpResponse = getResponse(httpContext);
+      ApacheHttpClientUtils.traceResponse(Span.fromContext(context), httpResponse);
+      delegate.cancelled();
+    }
+
+    private static HttpResponse getResponse(HttpContext context) {
+      return (HttpResponse) context.getAttribute(HttpCoreContext.HTTP_RESPONSE);
     }
   }
 }

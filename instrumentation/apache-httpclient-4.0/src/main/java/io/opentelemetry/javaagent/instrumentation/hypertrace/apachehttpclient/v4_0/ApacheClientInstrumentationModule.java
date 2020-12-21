@@ -25,7 +25,6 @@ import static net.bytebuddy.matcher.ElementMatchers.not;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
 import com.google.auto.service.AutoService;
-import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
@@ -38,12 +37,8 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpMessage;
 import org.apache.http.HttpResponse;
-import org.hypertrace.agent.config.Config.AgentConfig;
-import org.hypertrace.agent.core.HypertraceConfig;
-import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 
 @AutoService(InstrumentationModule.class)
 public class ApacheClientInstrumentationModule extends InstrumentationModule {
@@ -155,17 +150,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
       CallDepthThreadLocalMap.reset(HttpResponse.class);
       if (response instanceof HttpResponse) {
         HttpResponse httpResponse = (HttpResponse) response;
-        Span currentSpan = Java8BytecodeBridge.currentSpan();
-        AgentConfig agentConfig = HypertraceConfig.get();
-        if (agentConfig.getDataCapture().getHttpHeaders().getResponse().getValue()) {
-          ApacheHttpClientUtils.addResponseHeaders(currentSpan, httpResponse.headerIterator());
-        }
-
-        if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()) {
-          HttpEntity entity = httpResponse.getEntity();
-          ApacheHttpClientUtils.traceEntity(
-              currentSpan, HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, entity);
-        }
+        ApacheHttpClientUtils.traceResponse(Java8BytecodeBridge.currentSpan(), httpResponse);
       }
     }
   }
