@@ -1,12 +1,12 @@
 # Hotfixes for OpenTelemetry javaagent
 
-All fixes to the core [open-telemetry/opentelemetry-java-instrumentation](https://github.com/open-telemetry/opentelemetry-java-instrumentation)
+All fixes for the core [open-telemetry/opentelemetry-java-instrumentation](https://github.com/open-telemetry/opentelemetry-java-instrumentation)
 should be submitted to the upstream project. However, merge and release into upstream might take some time
-therefore urgent hotfixes can be submitted to a fork [hypertrace/opentelemetry-java-instrumentation](https://github.com/hypertrace/opentelemetry-java-instrumentation).
+therefore urgent hotfixes can be submitted to the fork [hypertrace/opentelemetry-java-instrumentation](https://github.com/hypertrace/opentelemetry-java-instrumentation).
 
-Changes to the fork are done in maintenance branches e.g. `v0.13.x` and locally tested and released from there.
+Changes to the fork are done in a maintenance branches e.g. `v0.13.x` and locally tested and released.
 The fixed artifacts are published to the [Hypertrace Binray](https://bintray.com/hypertrace/maven).
-Then just change the version(s) in gradle scripts in this repository to consume the fixed version.
+Then the released artifacts can be consumed by version(s) change in gradle scripts in this repository.
 
 ## Hotfix release of hypertrace/opentelemetry-java-instrumentation
 
