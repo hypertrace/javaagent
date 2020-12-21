@@ -14,6 +14,7 @@ and adds following capabilities:
 List of supported frameworks with additional capabilities:
 | Library/Framework                                                                                      | Versions        |
 |--------------------------------------------------------------------------------------------------------|-----------------|
+| [Apache HttpAsyncClient](https://hc.apache.org/index.html)                                             | 4.1+            |
 | [Apache HttpClient](https://hc.apache.org/index.html)                                                  | 4.0+            |
 | [gRPC](https://github.com/grpc/grpc-java)                                                              | 1.5+            |
 | [JAX-RS Client](https://javaee.github.io/javaee-spec/javadocs/javax/ws/rs/client/package-summary.html) | 2.0+            |
