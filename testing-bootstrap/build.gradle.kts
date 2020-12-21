@@ -14,6 +14,9 @@ dependencies {
     api("io.opentelemetry.javaagent:opentelemetry-javaagent-api:${versions["opentelemetry_java_agent"]}")
     implementation(project(":javaagent-core"))
     implementation(project(":filter-api"))
+
+    implementation("ch.qos.logback:logback-classic:1.2.3")
+    implementation("org.slf4j:slf4j-api:1.7.30")
 }
 
 tasks {

@@ -21,6 +21,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -69,12 +70,21 @@ public class InputStreamUtils {
     }
   }
 
-  public static void read(InputStream inputStream, int read) {
+  public static SpanAndBuffer check(InputStream inputStream) {
     SpanAndBuffer spanAndBuffer =
         GlobalObjectRegistry.inputStreamToSpanAndBufferMap.get(inputStream);
     if (spanAndBuffer == null) {
-      return;
+      return null;
     }
+
+    int callDepth = CallDepthThreadLocalMap.incrementCallDepth(InputStream.class);
+    if (callDepth > 0) {
+      return null;
+    }
+    return spanAndBuffer;
+  }
+
+  public static void read(InputStream inputStream, SpanAndBuffer spanAndBuffer, int read) {
     if (read != -1) {
       spanAndBuffer.byteArrayBuffer.write((byte) read);
     } else if (read == -1) {
@@ -85,14 +95,11 @@ public class InputStreamUtils {
           spanAndBuffer.charset);
       GlobalObjectRegistry.inputStreamToSpanAndBufferMap.remove(inputStream);
     }
+    CallDepthThreadLocalMap.reset(InputStream.class);
   }
 
-  public static void read(InputStream inputStream, int read, byte[] b) {
-    SpanAndBuffer spanAndBuffer =
-        GlobalObjectRegistry.inputStreamToSpanAndBufferMap.get(inputStream);
-    if (spanAndBuffer == null) {
-      return;
-    }
+  public static void read(
+      InputStream inputStream, SpanAndBuffer spanAndBuffer, int read, byte[] b) {
     if (read > 0) {
       spanAndBuffer.byteArrayBuffer.write(b, 0, read);
     } else if (read == -1) {
@@ -103,14 +110,11 @@ public class InputStreamUtils {
           spanAndBuffer.charset);
       GlobalObjectRegistry.inputStreamToSpanAndBufferMap.remove(inputStream);
     }
+    CallDepthThreadLocalMap.reset(InputStream.class);
   }
 
-  public static void read(InputStream inputStream, int read, byte[] b, int off, int len) {
-    SpanAndBuffer spanAndBuffer =
-        GlobalObjectRegistry.inputStreamToSpanAndBufferMap.get(inputStream);
-    if (spanAndBuffer == null) {
-      return;
-    }
+  public static void read(
+      InputStream inputStream, SpanAndBuffer spanAndBuffer, int read, byte[] b, int off, int len) {
     if (read > 0) {
       spanAndBuffer.byteArrayBuffer.write(b, off, read);
     } else if (read == -1) {
@@ -121,24 +125,18 @@ public class InputStreamUtils {
           spanAndBuffer.charset);
       GlobalObjectRegistry.inputStreamToSpanAndBufferMap.remove(inputStream);
     }
+    CallDepthThreadLocalMap.reset(InputStream.class);
   }
 
-  public static void readAll(InputStream inputStream, byte[] b) throws IOException {
-    SpanAndBuffer spanAndBuffer =
-        GlobalObjectRegistry.inputStreamToSpanAndBufferMap.get(inputStream);
-    if (spanAndBuffer == null) {
-      return;
-    }
+  public static void readAll(InputStream inputStream, SpanAndBuffer spanAndBuffer, byte[] b)
+      throws IOException {
     spanAndBuffer.byteArrayBuffer.write(b);
     GlobalObjectRegistry.inputStreamToSpanAndBufferMap.remove(inputStream);
+    CallDepthThreadLocalMap.reset(InputStream.class);
   }
 
-  public static void readNBytes(InputStream inputStream, int read, byte[] b, int off, int len) {
-    SpanAndBuffer spanAndBuffer =
-        GlobalObjectRegistry.inputStreamToSpanAndBufferMap.get(inputStream);
-    if (spanAndBuffer == null) {
-      return;
-    }
+  public static void readNBytes(
+      InputStream inputStream, SpanAndBuffer spanAndBuffer, int read, byte[] b, int off, int len) {
     if (read == 0) {
       InputStreamUtils.addBody(
           spanAndBuffer.span,
@@ -149,5 +147,6 @@ public class InputStreamUtils {
     } else {
       spanAndBuffer.byteArrayBuffer.write(b, off, read);
     }
+    CallDepthThreadLocalMap.reset(InputStream.class);
   }
 }

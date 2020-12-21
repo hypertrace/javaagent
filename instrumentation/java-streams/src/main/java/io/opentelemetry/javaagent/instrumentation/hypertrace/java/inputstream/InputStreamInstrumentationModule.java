@@ -37,6 +37,7 @@ import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.core.GlobalObjectRegistry;
+import org.hypertrace.agent.core.GlobalObjectRegistry.SpanAndBuffer;
 
 /**
  * {@link InputStream} instrumentation. The type matcher applies to all implementations. However
@@ -67,7 +68,7 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
 
     @Override
     public ElementMatcher<? super TypeDescription> typeMatcher() {
-      return extendsClass(named("java.io.InputStream"));
+      return extendsClass(named(InputStream.class.getName()));
     }
 
     @Override
@@ -93,7 +94,7 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
               + "$InputStream_ReadByteArrayOffsetAdvice");
       transformers.put(
           named("readAllBytes").and(takesArguments(0)).and(isPublic()),
-          InputStream_ReadAllBytes.class.getName());
+          InputStreamInstrumentationModule.class.getName() + "$InputStream_ReadAllBytes");
       transformers.put(
           named("readNBytes")
               .and(takesArguments(0))
@@ -107,50 +108,93 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
   }
 
   public static class InputStream_ReadNoArgsAdvice {
+    @Advice.OnMethodEnter(suppress = Throwable.class)
+    public static SpanAndBuffer enter(@Advice.This InputStream thizz) {
+      return InputStreamUtils.check(thizz);
+    }
+
     @Advice.OnMethodExit(suppress = Throwable.class)
-    public static void exit(@Advice.This InputStream thizz, @Advice.Return int read) {
-      InputStreamUtils.read(thizz, read);
+    public static void exit(
+        @Advice.This InputStream thizz,
+        @Advice.Return int read,
+        @Advice.Enter SpanAndBuffer spanAndBuffer) {
+      if (spanAndBuffer != null) {
+        InputStreamUtils.read(thizz, spanAndBuffer, read);
+      }
     }
   }
 
   public static class InputStream_ReadByteArrayAdvice {
+    @Advice.OnMethodEnter(suppress = Throwable.class)
+    public static SpanAndBuffer enter(@Advice.This InputStream thizz) {
+      return InputStreamUtils.check(thizz);
+    }
+
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void exit(
-        @Advice.This InputStream thizz, @Advice.Return int read, @Advice.Argument(0) byte b[]) {
-      InputStreamUtils.read(thizz, read, b);
+        @Advice.This InputStream thizz,
+        @Advice.Return int read,
+        @Advice.Argument(0) byte b[],
+        @Advice.Enter SpanAndBuffer spanAndBuffer) {
+      if (spanAndBuffer != null) {
+        InputStreamUtils.read(thizz, spanAndBuffer, read, b);
+      }
     }
   }
 
   public static class InputStream_ReadByteArrayOffsetAdvice {
+    @Advice.OnMethodEnter(suppress = Throwable.class)
+    public static SpanAndBuffer enter(@Advice.This InputStream thizz) {
+      return InputStreamUtils.check(thizz);
+    }
+
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void exit(
         @Advice.This InputStream thizz,
         @Advice.Return int read,
         @Advice.Argument(0) byte b[],
         @Advice.Argument(1) int off,
-        @Advice.Argument(2) int len) {
-      InputStreamUtils.read(thizz, read, b, off, len);
+        @Advice.Argument(2) int len,
+        @Advice.Enter SpanAndBuffer spanAndBuffer) {
+      if (spanAndBuffer != null) {
+        InputStreamUtils.read(thizz, spanAndBuffer, read, b, off, len);
+      }
     }
   }
 
   public static class InputStream_ReadAllBytes {
+    @Advice.OnMethodEnter(suppress = Throwable.class)
+    public static SpanAndBuffer enter(@Advice.This InputStream thizz) {
+      return InputStreamUtils.check(thizz);
+    }
+
     @Advice.OnMethodExit(suppress = Throwable.class)
-    public static void exit(@Advice.This InputStream thizz, @Advice.Return byte[] b)
+    public static void exit(
+        @Advice.This InputStream thizz,
+        @Advice.Return byte[] b,
+        @Advice.Enter SpanAndBuffer spanAndBuffer)
         throws IOException {
-      InputStreamUtils.readAll(thizz, b);
+      if (spanAndBuffer != null) {
+        InputStreamUtils.readAll(thizz, spanAndBuffer, b);
+      }
     }
   }
 
   public static class InputStream_ReadNBytes {
+    @Advice.OnMethodEnter(suppress = Throwable.class)
+    public static SpanAndBuffer enter(@Advice.This InputStream thizz) {
+      return InputStreamUtils.check(thizz);
+    }
+
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void exit(
         @Advice.This InputStream thizz,
         @Advice.Return int read,
         @Advice.Argument(0) byte[] b,
         @Advice.Argument(1) int off,
-        @Advice.Argument(2) int len)
-        throws IOException {
-      InputStreamUtils.readNBytes(thizz, read, b, off, len);
+        @Advice.Argument(2) int len,
+        @Advice.Enter SpanAndBuffer spanAndBuffer) {
+      InputStreamUtils.readNBytes(thizz, spanAndBuffer, read, b, off, len);
     }
   }
 }
