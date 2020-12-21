@@ -19,7 +19,6 @@ package io.opentelemetry.javaagent.instrumentation.apachehttpasyncclient;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.javaagent.instrumentation.apachehttpasyncclient.ApacheHttpAsyncClientInstrumentation.DelegatingRequestProducer;
 
-/** @author Pavol Loffay */
 public class DelegatingRequestAccessor {
 
   public static Context get(DelegatingRequestProducer delegatingRequestProducer) {

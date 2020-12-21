@@ -18,6 +18,7 @@ package io.opentelemetry.instrumentation.hypertrace.apachehttpasyncclient;
 
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -43,6 +44,7 @@ import org.apache.http.message.BasicHeader;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.hypertrace.agent.testing.TestHttpServer;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -184,14 +186,36 @@ class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTes
     @Override
     public InputStream getContent() throws IOException {
       System.out.println("get content from nonRepeatable entity");
-      return super.getContent();
-      //      return new ByteArrayInputStream(this.content);
+      return new TestInputStream(this.content);
     }
 
     @Override
     public void writeTo(OutputStream outstream) throws IOException {
       System.out.println("write to from nonRepeatable entity");
       super.writeTo(outstream);
+    }
+  }
+
+  // TODO remove once https://github.com/hypertrace/javaagent/issues/189 is fixed
+  static class TestInputStream extends ByteArrayInputStream {
+
+    public TestInputStream(byte[] buf) {
+      super(buf);
+    }
+
+    @Override
+    public synchronized int read() {
+      return super.read();
+    }
+
+    @Override
+    public int read(@NotNull byte[] b) throws IOException {
+      return super.read(b);
+    }
+
+    @Override
+    public synchronized int read(byte[] b, int off, int len) {
+      return super.read(b, off, len);
     }
   }
 }

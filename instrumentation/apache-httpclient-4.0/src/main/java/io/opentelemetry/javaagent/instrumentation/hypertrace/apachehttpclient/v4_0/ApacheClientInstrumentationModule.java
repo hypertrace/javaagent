@@ -256,7 +256,6 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void enter(
         @Advice.This HttpEntity thizz, @Advice.Argument(0) OutputStream outputStream) {
-      System.out.println("WriteTo \n\n\n\n");
       if (ApacheHttpClientObjectRegistry.entityToSpan.get(thizz) == null) {
         return;
       }
