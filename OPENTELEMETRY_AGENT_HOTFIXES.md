@@ -10,7 +10,7 @@ Then just change the version(s) in gradle scripts in this repository to consume 
 
 ## Hotfix release of hypertrace/opentelemetry-java-instrumentation
 
-This [commit](https://github.com/hypertrace/opentelemetry-java-instrumentation/commit/dfb7fcfdff3f04a3076f27dc9962d426180d14a7)
+This [commit](https://github.com/hypertrace/opentelemetry-java-instrumentation/commit/88c2b113d0cc2fad01ddde9cccdab3b09cbfb6da)
 shows an example of release configuration for `javaagent` artifact. 
 
 ```bash
