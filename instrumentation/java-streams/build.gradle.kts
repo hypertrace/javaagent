@@ -1,6 +1,14 @@
 plugins {
     `java-library`
     id("net.bytebuddy.byte-buddy")
+    id("io.opentelemetry.instrumentation.auto-instrumentation")
+    muzzle
+}
+
+muzzle {
+    pass {
+        coreJdk()
+    }
 }
 
 afterEvaluate{
@@ -9,4 +17,8 @@ afterEvaluate{
             "io.opentelemetry.javaagent.tooling.muzzle.collector.MuzzleCodeGenerationPlugin",
             project(":javaagent-tooling").configurations["instrumentationMuzzle"] + configurations.runtimeClasspath
     ).configure()
+}
+
+dependencies {
+    testImplementation(project(":testing-common"))
 }

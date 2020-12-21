@@ -63,7 +63,7 @@ public class OutputStreamInstrumentationModule extends InstrumentationModule {
 
     @Override
     public ElementMatcher<? super TypeDescription> typeMatcher() {
-      return extendsClass(named("java.io.OutputStream"));
+      return extendsClass(named(OutputStream.class.getName()));
     }
 
     @Override

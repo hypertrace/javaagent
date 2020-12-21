@@ -16,6 +16,8 @@
 
 package org.hypertrace.agent.testing;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.javaagent.spi.ComponentInstaller;
@@ -30,12 +32,16 @@ import net.bytebuddy.agent.ByteBuddyAgent;
 import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.slf4j.LoggerFactory;
 
 /**
  * Abstract test class that tests {@link io.opentelemetry.javaagent.tooling.InstrumentationModule}
  * on the classpath.
  */
 public abstract class AbstractInstrumenterTest {
+
+  private static final org.slf4j.Logger log =
+      LoggerFactory.getLogger(AbstractInstrumenterTest.class);
 
   private static final ComponentInstaller COMPONENT_INSTALLER;
 
@@ -59,8 +65,8 @@ public abstract class AbstractInstrumenterTest {
     INSTRUMENTATION = ByteBuddyAgent.install();
 
     // TODO causes Caused by: java.lang.ClassCastException
-    //        ((Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(Level.WARN);
-    //        ((Logger) LoggerFactory.getLogger("io.opentelemetry")).setLevel(Level.DEBUG);
+    ((Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(Level.WARN);
+    ((Logger) LoggerFactory.getLogger("io.opentelemetry")).setLevel(Level.DEBUG);
 
     COMPONENT_INSTALLER = new TestOpenTelemetryInstaller(TEST_WRITER);
     OpenTelemetrySdk.getGlobalTracerManagement().addSpanProcessor(TEST_WRITER);
