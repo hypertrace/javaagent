@@ -13,6 +13,14 @@ muzzle {
     }
 }
 
+afterEvaluate{
+    io.opentelemetry.instrumentation.gradle.bytebuddy.ByteBuddyPluginConfigurator(project,
+            sourceSets.main.get(),
+            "io.opentelemetry.javaagent.tooling.muzzle.collector.MuzzleCodeGenerationPlugin",
+            project(":javaagent-tooling").configurations["instrumentationMuzzle"] + configurations.runtimeClasspath
+    ).configure()
+}
+
 val versions: Map<String, String> by extra
 
 dependencies {
@@ -22,6 +30,6 @@ dependencies {
 
     testImplementation(project(":testing-common"))
     testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.0:${versions["opentelemetry_java_agent"]}")
-//    testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.1:${versions["opentelemetry_java_agent"]}")
+    testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.1:${versions["opentelemetry_java_agent"]}")
 }
 
