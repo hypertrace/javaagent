@@ -1,0 +1,111 @@
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Issuer
+metadata:
+  name: selfsigned
+  namespace: hypertrace
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: hypertrace-javaagent-webhook-certs
+  namespace: hypertrace
+spec:
+  secretName: hypertrace-javaagent-webhook-certs
+  dnsNames:
+    - hypertrace-javaagent-webhook.hypertrace
+    - hypertrace-javaagent-webhook.hypertrace.svc
+    - hypertrace-javaagent-webhook.hypertrace.svc.cluster.local
+  issuerRef:
+    name: selfsigned
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hypertrace-javaagent-webhook
+  namespace: hypertrace
+  labels:
+    app: hypertrace-javaagent-webhook
+spec:
+  publishNotReadyAddresses: true
+  ports:
+    - port: 443
+      targetPort: 8443
+  selector:
+    app: hypertrace-javaagent-webhook
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hypertrace-javaagent-webhook
+  namespace: hypertrace
+  labels:
+    app: hypertrace-javaagent-webhook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hypertrace-javaagent-webhook
+  template:
+    metadata:
+      name: hypertrace-javaagent-webhook
+      annotations:
+        sidecar.istio.io/inject: "false"
+      labels:
+        app: hypertrace-javaagent-webhook
+    spec:
+      containers:
+        - name: javaagent-webhook
+          image: hypertrace/javaagent-webhook:latest
+          imagePullPolicy: Always
+          env:
+            - name: HYPERTRACE_JAVAAGENT_IMAGE
+              value: "hypertrace/javaagent:latest"
+            # - name: HT_REPORTING_ENDPOINT
+            #   value: "http://collector.traceableai:9411/api/v2/spans"
+          resources:
+            limits:
+              cpu: 500m
+              memory: 128Mi
+            requests:
+              cpu: 250m
+              memory: 64Mi
+          volumeMounts:
+            - name: ssl-cert
+              mountPath: "/app/ssl"
+              readOnly: true
+      volumes:
+        - name: ssl-cert
+          secret:
+            secretName: hypertrace-javaagent-webhook-certs
+---
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: hypertrace-javaagent-webhook
+  annotations:
+    cert-manager.io/inject-ca-from: hypertrace/hypertrace-javaagent-webhook-certs
+  labels:
+    app: hypertrace-javaagent-webhook
+webhooks:
+  - name: hypertrace-javaagent-webhook.hypertrace.svc.cluster.local
+    clientConfig:
+      service:
+        name: hypertrace-javaagent-webhook
+        namespace: hypertrace
+        path: "/mutate"
+        port: 443
+    rules:
+      - operations: ["CREATE"]
+        apiGroups: [""]
+        apiVersions: ["v1"]
+        resources: ["pods"]
+    sideEffects: None
+    timeoutSeconds: 5
+    reinvocationPolicy: Never
+    failurePolicy: Ignore
+    namespaceSelector:
+      matchLabels:
+        hypertrace-javaagent-injection: enabled
