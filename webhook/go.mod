@@ -1,6 +1,6 @@
 module github.com/hypertrace/javaagent-webhook
 
-go 1.12
+go 1.15
 
 require (
 	github.com/stretchr/testify v1.3.0

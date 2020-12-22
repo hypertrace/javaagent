@@ -1,5 +1,4 @@
 FROM golang:1.15.6-alpine AS build
-ENV GO111MODULE on
 ENV CGO_ENABLED 0
 
 RUN apk add git make openssl

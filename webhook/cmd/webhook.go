@@ -53,13 +53,11 @@ func addVolume(pod *corev1.Pod) (patch []patchOperation) {
 		value = []corev1.Volume{volume}
 	}
 
-	patch = append(patch, patchOperation{
+	return append(patch, patchOperation{
 		Op:    "add",
 		Path:  path,
 		Value: value,
 	})
-
-	return patch
 }
 
 func getServiceName(pod *corev1.Pod) (serviceName string) {
@@ -135,13 +133,11 @@ func updateContainers(pod *corev1.Pod) (patch []patchOperation) {
 		modifiedContainers = append(modifiedContainers, container)
 	}
 
-	patch = append(patch, patchOperation{
+	return append(patch, patchOperation{
 		Op:    "replace",
 		Path:  "/spec/containers",
 		Value: modifiedContainers,
 	})
-
-	return patch
 }
 
 func addInitContainer(pod *corev1.Pod) (patch []patchOperation) {
@@ -168,13 +164,11 @@ func addInitContainer(pod *corev1.Pod) (patch []patchOperation) {
 		value = []corev1.Container{initContainer}
 	}
 
-	patch = append(patch, patchOperation{
+	return append(patch, patchOperation{
 		Op:    "add",
 		Path:  path,
 		Value: value,
 	})
-
-	return patch
 }
 
 // Mutate mutates

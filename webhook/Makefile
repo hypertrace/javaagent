@@ -1,7 +1,6 @@
 NAME = javaagent-webhook
-IMAGE_PREFIX = hypertrace
-
-export GO111MODULE=on
+DOCKER_NAMESPACE ?= hypertrace
+DOCKER_TAG ?= $$(git log --abbrev-commit --format=%h -s | head -n 1)
 
 app: deps
 	go build -v -o $(NAME) ./cmd/
@@ -13,6 +12,6 @@ test: deps
 	go test -v ./... -cover
 
 docker:
-	docker build --no-cache -t $(IMAGE_PREFIX)/$(NAME):latest .
+	docker build --no-cache -t $(DOCKER_NAMESPACE)/$(NAME):$(DOCKER_TAG) .
 
 .PHONY: docker
