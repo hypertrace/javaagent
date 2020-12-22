@@ -45,3 +45,5 @@ include("instrumentation:java-streams")
 findProject(":instrumentation:java-streams")?.name = "java-streams"
 include("instrumentation:apache-httpasyncclient-4.1")
 findProject(":instrumentation:apache-httpasyncclient-4.1")?.name = "apache-httpasyncclient-4.1"
+include("instrumentation:vertx-web-3.0")
+findProject(":instrumentation:vertx-web-3.0")?.name = "vertx-web-3.0"
