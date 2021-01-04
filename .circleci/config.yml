@@ -70,6 +70,7 @@ jobs:
       - setup_build_environment
       - run: echo "Releasing version" && ./gradlew printVersion
       - run: ./gradlew publish
+      - run: ./gradlew dockerBuildImages
       - run:
           name: "Copy artifacts to workspace"
           command: |
