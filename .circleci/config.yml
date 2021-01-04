@@ -14,6 +14,12 @@ commands:
             - v1-dependencies-{{ checksum "/tmp/checksum.txt" }}
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
+  docker_login:
+    description: "Login to dockerhub with readonly credentials"
+    steps:
+      - run:
+          name: Dockerhub login
+          command: echo $DOCKERHUB_PASSWORD | docker login --username $DOCKERHUB_USERNAME --password-stdin
   populate_and_save_cache:
     description: "Downloads all gradle dependencies and uploads cache for later use"
     steps:
@@ -70,6 +76,7 @@ jobs:
       - setup_build_environment
       - setup_remote_docker:
           version: 19.03.13
+      - docker_login
       - run: echo "Releasing version" && ./gradlew printVersion
       - run: ./gradlew publish
       - run: DOCKER_TAG=${CIRCLE_TAG} make docker docker-push
