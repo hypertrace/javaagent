@@ -68,6 +68,8 @@ jobs:
       - image: cimg/openjdk:11.0
     steps:
       - setup_build_environment
+      - setup_remote_docker:
+          version: 19.03.13
       - run: echo "Releasing version" && ./gradlew printVersion
       - run: ./gradlew publish
       - run: DOCKER_TAG=${CIRCLE_TAG} make docker docker-push
