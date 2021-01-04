@@ -22,10 +22,13 @@ muzzle:
 .PHONY: docker
 docker: assemble
 	docker build -f javaagent/Dockerfile javaagent/ -t ${DOCKER_IMAGE}:${DOCKER_TAG}
+	# use also 'latest' tag if the tag is on the main branch
+	@git branch -a --contains ${DOCKER_TAG} | grep main && docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest || echo "skipping latest; not on the main branch"
 
 .PHONY: docker-push
 docker-push:
 	docker push ${DOCKER_IMAGE}:${DOCKER_TAG}
+	@git branch -a --contains ${DOCKER_TAG} | grep main && docker push ${DOCKER_IMAGE}:latest || echo "skipping latest; not on the main branch"
 
 .PHONY: test
 test:
