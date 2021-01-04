@@ -1,5 +1,13 @@
 version: 2.1
 
+executors:
+  gradle_docker:
+    docker:
+      - image: cimg/openjdk:11.0
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
+
 commands:
   setup_build_environment:
     description: "Checkout, update submodules, restore the cache, and setup docker"
@@ -70,8 +78,7 @@ jobs:
       - run: make muzzle
 
   release-bintray-publish:
-    docker:
-      - image: cimg/openjdk:11.0
+    executor: gradle_docker
     steps:
       - setup_build_environment
       - setup_remote_docker:
