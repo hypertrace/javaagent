@@ -24,7 +24,7 @@ docker: assemble
 	docker build -f javaagent/Dockerfile javaagent/ -t ${DOCKER_IMAGE}:${DOCKER_TAG}
 
 .PHONY: docker-push
-docker-push: assemble
+docker-push:
 	docker push ${DOCKER_IMAGE}:${DOCKER_TAG}
 
 .PHONY: test
