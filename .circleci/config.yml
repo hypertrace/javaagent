@@ -70,7 +70,7 @@ jobs:
       - setup_build_environment
       - run: echo "Releasing version" && ./gradlew printVersion
       - run: ./gradlew publish
-      - run: ./gradlew dockerBuildImages
+      - run: DOCKER_TAG=${CIRCLE_TAG} make docker docker-push
       - run:
           name: "Copy artifacts to workspace"
           command: |

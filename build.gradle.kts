@@ -3,7 +3,6 @@ plugins {
     id("com.diffplug.spotless") version "5.2.0" apply false
     id("org.hypertrace.publish-plugin") version "0.3.3" apply false
     id("org.hypertrace.ci-utils-plugin") version "0.1.4"
-    id("org.hypertrace.docker-publish-plugin") version "0.8.0" apply false
 }
 
 allprojects {
