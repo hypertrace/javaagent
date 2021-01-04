@@ -27,7 +27,7 @@ commands:
     steps:
       - run:
           name: Dockerhub login
-          command: echo $DOCKERHUB_PASSWORD | docker login --username $DOCKERHUB_USERNAME --password-stdin
+          command: echo $DOCKER_USERNAME | docker login --username $DOCKER_PASSWORD --password-stdin
   populate_and_save_cache:
     description: "Downloads all gradle dependencies and uploads cache for later use"
     steps:
