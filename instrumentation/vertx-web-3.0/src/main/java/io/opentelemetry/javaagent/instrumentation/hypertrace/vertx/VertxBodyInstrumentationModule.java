@@ -25,7 +25,6 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.not;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
-import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import io.vertx.core.Handler;
@@ -38,7 +37,7 @@ import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
-@AutoService(InstrumentationModule.class)
+// @AutoService(InstrumentationModule.class)
 public class VertxBodyInstrumentationModule extends InstrumentationModule {
 
   public VertxBodyInstrumentationModule() {
@@ -74,7 +73,7 @@ public class VertxBodyInstrumentationModule extends InstrumentationModule {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void wrapHandler(
         @Advice.Argument(value = 0, readOnly = false) Handler<RoutingContext> handler) {
-      System.out.println("Route handler advice exit");
+      handler = new BodyCaptureRoutingContext(handler);
     }
   }
 }

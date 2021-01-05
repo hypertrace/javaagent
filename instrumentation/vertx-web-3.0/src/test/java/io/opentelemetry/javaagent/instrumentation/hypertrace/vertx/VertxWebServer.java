@@ -18,9 +18,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.vertx;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
 
 public class VertxWebServer extends AbstractVerticle {
 
@@ -32,12 +30,18 @@ public class VertxWebServer extends AbstractVerticle {
     router
         .route("/success")
         .handler(
-            new Handler<RoutingContext>() {
-              @Override
-              public void handle(RoutingContext ctx) {
-                ctx.response().setStatusCode(200).end("success");
-              }
-            });
+            ctx ->
+                ctx.request()
+                    .bodyHandler(
+                        h -> {
+                          System.out.printf("vertx received: %s\n", new String(h.getBytes()));
+                          // TODO test chunked
+                          //                          ctx.response().setChunked(true);
+                          ////                          ctx.response().setWriteQueueMaxSize()
+                          //                          ctx.response().write("chunk1");
+                          //                          ctx.response().write("chunk2");
+                          ctx.response().setStatusCode(200).end("success");
+                        }));
     vertx
         .createHttpServer()
         .requestHandler(router::accept)

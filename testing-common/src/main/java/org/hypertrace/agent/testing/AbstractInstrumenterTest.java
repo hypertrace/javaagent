@@ -75,7 +75,11 @@ public abstract class AbstractInstrumenterTest {
 
   private static ClassFileTransformer classFileTransformer;
   protected OkHttpClient httpClient =
-      new OkHttpClient.Builder().callTimeout(30, TimeUnit.SECONDS).build();
+      new OkHttpClient.Builder()
+          .callTimeout(30, TimeUnit.SECONDS)
+          .connectTimeout(30, TimeUnit.SECONDS)
+          .readTimeout(30, TimeUnit.SECONDS)
+          .build();
 
   @BeforeAll
   public static void beforeAll() {

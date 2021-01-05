@@ -28,7 +28,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import okhttp3.MediaType;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.junit.jupiter.api.AfterAll;
@@ -77,20 +79,23 @@ class VertxBodyInstrumentationModuleTest extends AbstractInstrumenterTest {
 
   @AfterAll
   public static void stopServer() {
+    System.out.println("Closing vertx");
     vertx.close();
+    System.out.println("vertx closed");
   }
 
   @Test
-  public void test() throws InterruptedException, IOException {
+  public void test() throws IOException {
     Request request =
         new Request.Builder()
             .url(String.format("http://localhost:%d/success", port))
-            .get()
-            //            .post(RequestBody.create(REQUEST_BODY, MediaType.get("application/json")))
-            //            .header(REQUEST_HEADER, REQUEST_HEADER_VALUE)
+            .post(RequestBody.create("{\"foo\": \"bar\"}", MediaType.get("application/json")))
             .build();
     try (Response response = httpClient.newCall(request).execute()) {
       Assertions.assertEquals(200, response.code());
+      Assertions.assertEquals("success", response.body().string());
+      // TODO test
+      //      Assertions.assertEquals("chunk1chunk2success", response.body().string());
     }
 
     List<List<SpanData>> traces = TEST_WRITER.getTraces();
