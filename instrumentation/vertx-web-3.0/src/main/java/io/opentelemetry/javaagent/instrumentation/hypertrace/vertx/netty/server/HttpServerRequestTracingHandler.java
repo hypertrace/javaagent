@@ -16,21 +16,37 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.vertx.netty.server;
 
+import static io.opentelemetry.javaagent.instrumentation.hypertrace.vertx.netty.server.HttpServerResponseTracingHandler.getContentLength;
+import static io.opentelemetry.javaagent.instrumentation.hypertrace.vertx.netty.server.HttpServerResponseTracingHandler.getContentType;
+
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.http.FullHttpMessage;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpMessage;
 import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.util.Attribute;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.vertx.netty.AttributeKeys;
 import io.opentelemetry.javaagent.instrumentation.netty.v4_0.server.NettyHttpServerTracer;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Map;
+import org.hypertrace.agent.core.BoundedByteArrayOutputStream;
+import org.hypertrace.agent.core.BoundedByteArrayOutputStreamFactory;
+import org.hypertrace.agent.core.ContentLengthUtils;
+import org.hypertrace.agent.core.ContentTypeCharsetUtils;
+import org.hypertrace.agent.core.ContentTypeUtils;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapter {
+
+  private static final Logger log = LoggerFactory.getLogger(HttpServerResponseTracingHandler.class);
 
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) {
@@ -44,11 +60,39 @@ public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapte
     Span span = Span.fromContext(context);
 
     if (msg instanceof HttpRequest) {
-      processHttpMessage(span, (HttpMessage) msg);
+      HttpMessage httpMessage = (HttpMessage) msg;
+      // TODO add blocking
+      // TODO maybe block once the full body is retrieved
+      //      if (true) {
+      //        DefaultFullHttpResponse blockResponse = new DefaultFullHttpResponse(
+      //            httpMessage.getProtocolVersion(), HttpResponseStatus.FORBIDDEN);
+      ////        blockResponse.headers().add("Connection",  "Keep-Alive");
+      //        ctx.writeAndFlush(blockResponse)
+      //            .addListener(ChannelFutureListener.CLOSE);
+      //        ReferenceCountUtil.release(msg);
+      //        return;
+      //      }
+
+      CharSequence contentType = getContentType(httpMessage);
+      if (contentType != null && ContentTypeUtils.shouldCapture(contentType.toString())) {
+        CharSequence contentLengthHeader = getContentLength(httpMessage);
+        int contentLength = ContentLengthUtils.parseLength(contentLengthHeader);
+
+        String charsetString = ContentTypeUtils.parseCharset(contentType.toString());
+        Charset charset = ContentTypeCharsetUtils.toCharset(charsetString);
+
+        // set the buffer to capture response body
+        // the buffer is used byt captureBody method
+        Attribute<BoundedByteArrayOutputStream> bufferAttr =
+            ctx.channel().attr(AttributeKeys.REQUEST_BODY_BUFFER);
+        bufferAttr.set(BoundedByteArrayOutputStreamFactory.create(contentLength, charset));
+      }
+
+      processHttpMessage(span, httpMessage);
     }
 
     if (msg instanceof HttpContent) {
-      processHttpContent(span, (HttpContent) msg);
+      captureBody(span, channel, (HttpContent) msg);
     }
 
     ctx.fireChannelRead(msg);
@@ -59,11 +103,46 @@ public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapte
       span.setAttribute(
           HypertraceSemanticAttributes.httpRequestHeader(entry.getKey()), entry.getValue());
     }
+  }
 
-    if (httpMessage instanceof FullHttpMessage) {
-      System.out.println("it is full request message\n\n\n");
-      FullHttpMessage fullMessage = (FullHttpMessage) httpMessage;
-      System.out.printf("Request Body: %s", new String(fullMessage.content().array()));
+  private static void captureBody(Span span, Channel channel, HttpContent httpContent) {
+    Attribute<BoundedByteArrayOutputStream> bufferAttr =
+        channel.attr(AttributeKeys.REQUEST_BODY_BUFFER);
+    ByteArrayOutputStream buffer = bufferAttr.get();
+    if (buffer == null) {
+      // not capturing body e.g. unknown content type
+      return;
+    }
+
+    System.out.println(httpContent.content().getClass().getName());
+    System.out.println(httpContent.content().capacity());
+
+    if (httpContent.content().hasArray()) {
+      byte[] array = httpContent.content().array();
+      try {
+        buffer.write(array);
+      } catch (IOException e) {
+        log.error("Failed to write body array to buffer", e);
+      }
+      System.out.printf("response content array: %s\n", new String(array));
+    } else {
+      final ByteArrayOutputStream finalBuffer = buffer;
+      httpContent
+          .content()
+          .forEachByte(
+              value -> {
+                finalBuffer.write(value);
+                return true;
+              });
+      System.out.printf(
+          "response content forEachByte: %s\n", new String(httpContent.content().array()));
+    }
+
+    if (httpContent instanceof LastHttpContent) {
+      System.out.println("It is the last content");
+      // TODO set encoding
+      bufferAttr.remove();
+      span.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, buffer.toString());
     }
   }
 

@@ -18,7 +18,6 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.vertx.netty;
 
 import io.netty.util.AttributeKey;
 import io.opentelemetry.javaagent.instrumentation.api.WeakMap;
-import java.io.ByteArrayOutputStream;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.hypertrace.agent.core.BoundedByteArrayOutputStream;
@@ -42,7 +41,7 @@ public class AttributeKeys {
   public static final AttributeKey<BoundedByteArrayOutputStream> RESPONSE_BODY_BUFFER =
       attributeKey(AttributeKeys.class.getName() + ".response-body-buffer");
 
-  public static final AttributeKey<ByteArrayOutputStream> REQUEST_BODY_BUFFER =
+  public static final AttributeKey<BoundedByteArrayOutputStream> REQUEST_BODY_BUFFER =
       attributeKey(AttributeKeys.class.getName() + ".request-body-buffer");
 
   /**

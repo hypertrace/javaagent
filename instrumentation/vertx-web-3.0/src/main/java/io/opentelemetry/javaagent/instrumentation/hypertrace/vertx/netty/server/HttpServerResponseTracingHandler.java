@@ -37,6 +37,7 @@ import io.opentelemetry.javaagent.instrumentation.hypertrace.vertx.netty.Attribu
 import io.opentelemetry.javaagent.instrumentation.netty.v4_0.server.NettyHttpServerTracer;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.Map;
 import org.hypertrace.agent.core.BoundedByteArrayOutputStream;
@@ -105,7 +106,7 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
   private static void captureBody(Span span, Channel channel, HttpContent httpContent) {
     Attribute<BoundedByteArrayOutputStream> bufferAttr =
         channel.attr(AttributeKeys.RESPONSE_BODY_BUFFER);
-    ByteArrayOutputStream buffer = bufferAttr.get();
+    BoundedByteArrayOutputStream buffer = bufferAttr.get();
     if (buffer == null) {
       // not capturing body e.g. unknown content type
       return;
@@ -139,7 +140,12 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
       System.out.println("It is the last content");
       // TODO set encoding
       bufferAttr.remove();
-      span.setAttribute(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, buffer.toString());
+      try {
+        span.setAttribute(
+            HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, buffer.toStringWithSuppliedCharset());
+      } catch (UnsupportedEncodingException e) {
+        // charset was parsed before
+      }
     }
   }
 
