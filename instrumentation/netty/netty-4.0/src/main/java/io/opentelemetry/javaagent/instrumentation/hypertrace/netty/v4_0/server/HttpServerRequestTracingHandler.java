@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.vertx.netty.server;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.server;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -25,7 +25,7 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.util.Attribute;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.vertx.netty.AttributeKeys;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.AttributeKeys;
 import io.opentelemetry.javaagent.instrumentation.netty.v4_0.server.NettyHttpServerTracer;
 import java.nio.charset.Charset;
 import java.util.Map;

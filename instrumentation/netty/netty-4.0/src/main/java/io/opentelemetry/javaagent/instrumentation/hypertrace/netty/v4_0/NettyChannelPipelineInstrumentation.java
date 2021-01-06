@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.vertx.netty;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0;
 
 import static io.opentelemetry.javaagent.tooling.ClassLoaderMatcher.hasClassesNamed;
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.implementsInterface;
@@ -29,9 +29,9 @@ import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.vertx.netty.server.HttpServerRequestTracingHandler;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.vertx.netty.server.HttpServerResponseTracingHandler;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.vertx.netty.server.HttpServerTracingHandler;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.server.HttpServerRequestTracingHandler;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.server.HttpServerResponseTracingHandler;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.server.HttpServerTracingHandler;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.util.HashMap;
 import java.util.Map;
@@ -109,6 +109,7 @@ public class NettyChannelPipelineInstrumentation implements TypeInstrumentation 
               HttpServerResponseTracingHandler.class.getName(),
               new HttpServerResponseTracingHandler());
         }
+        // TODO add client instrumentation
         //        else
         // Client pipeline handlers
         //          if (handler instanceof HttpClientCodec) {

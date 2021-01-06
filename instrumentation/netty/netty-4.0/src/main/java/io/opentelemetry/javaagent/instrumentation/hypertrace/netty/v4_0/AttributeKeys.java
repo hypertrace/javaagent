@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.vertx.netty;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0;
 
 import io.netty.util.AttributeKey;
 import io.opentelemetry.javaagent.instrumentation.api.WeakMap;

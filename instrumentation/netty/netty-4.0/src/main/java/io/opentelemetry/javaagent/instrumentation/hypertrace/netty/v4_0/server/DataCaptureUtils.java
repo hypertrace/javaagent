@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.vertx.netty.server;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.server;
 
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpContent;

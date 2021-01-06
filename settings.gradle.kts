@@ -47,3 +47,5 @@ include("instrumentation:apache-httpasyncclient-4.1")
 findProject(":instrumentation:apache-httpasyncclient-4.1")?.name = "apache-httpasyncclient-4.1"
 include("instrumentation:vertx-web-3.0")
 findProject(":instrumentation:vertx-web-3.0")?.name = "vertx-web-3.0"
+include("instrumentation:netty:netty-4.0")
+findProject(":instrumentation:netty:netty-4.0")?.name = "netty-4.0"

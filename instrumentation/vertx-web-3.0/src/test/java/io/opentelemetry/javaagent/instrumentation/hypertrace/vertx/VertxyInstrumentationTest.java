@@ -39,7 +39,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-class VertxBodyInstrumentationModuleTest extends AbstractInstrumenterTest {
+class VertxyInstrumentationTest extends AbstractInstrumenterTest {
 
   public static final String CONFIG_HTTP_SERVER_PORT = "http.server.port";
   private static final String REQUEST_BODY = "{\"foo\": \"bar\"}";

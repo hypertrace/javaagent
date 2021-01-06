@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.vertx.netty;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0;
 
 import static io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_LENGTH;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
@@ -57,10 +57,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class NettyInstrumentationModuleTest extends AbstractInstrumenterTest {
+public class Netty40ServerInstrumentationTest extends AbstractInstrumenterTest {
 
   private static final LoggingHandler LOGGING_HANDLER =
-      new LoggingHandler(NettyInstrumentationModuleTest.class, LogLevel.DEBUG);
+      new LoggingHandler(Netty40ServerInstrumentationTest.class, LogLevel.DEBUG);
 
   public static final String REQUEST_HEADER_NAME = "reqheader";
   public static final String REQUEST_HEADER_VALUE = "reqheadervalue";

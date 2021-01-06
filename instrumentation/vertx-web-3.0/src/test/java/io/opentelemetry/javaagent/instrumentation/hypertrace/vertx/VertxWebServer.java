@@ -32,7 +32,7 @@ public class VertxWebServer extends AbstractVerticle {
 
   @Override
   public void start(Future<Void> startFuture) {
-    int port = config().getInteger(VertxBodyInstrumentationModuleTest.CONFIG_HTTP_SERVER_PORT);
+    int port = config().getInteger(VertxyInstrumentationTest.CONFIG_HTTP_SERVER_PORT);
     Router router = Router.router(vertx);
 
     router

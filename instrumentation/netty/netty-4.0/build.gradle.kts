@@ -7,9 +7,27 @@ plugins {
 
 muzzle {
     pass {
+        group = "io.netty"
+        module = "netty-codec-http"
+        versions = "[4.0.0.Final,4.1.0.Final)"
+        assertInverse = true
+    }
+    pass {
+        group = "io.netty"
+        module = "netty-all"
+        versions = "[4.0.0.Final,4.1.0.Final)"
+        assertInverse = true
+    }
+    fail {
+        group = "io.netty"
+        module = "netty"
+        versions = "[,]"
+    }
+    pass {
         group = "io.vertx"
-        module = "vertx-web"
-        versions = "[3.0.0,)"
+        module = "vertx-core"
+        versions = "[2.0.0,3.3.0)"
+        assertInverse = true
     }
 }
 
@@ -24,12 +42,10 @@ afterEvaluate{
 val versions: Map<String, String> by extra
 
 dependencies {
-    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-vertx-web-3.0:${versions["opentelemetry_java_agent"]}")
+    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.0:${versions["opentelemetry_java_agent"]}")
 
-    implementation("io.vertx:vertx-web:3.0.0")
+    implementation("io.netty:netty-codec-http:4.0.0.Final")
 
     testImplementation(project(":testing-common"))
-    testImplementation(project(":instrumentation:netty:netty-4.0"))
-    testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.0:${versions["opentelemetry_java_agent"]}")
 }
 
