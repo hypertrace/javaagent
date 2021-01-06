@@ -85,6 +85,13 @@ public class NettyChannelPipelineInstrumentation implements TypeInstrumentation 
       CallDepthThreadLocalMap.reset(ChannelHandler.class);
 
       try {
+        //        if (handler instanceof
+        // io.opentelemetry.javaagent.instrumentation.netty.v4_0.server.HttpServerResponseTracingHandler) {
+        //          System.out.println("Removing\n\n");
+        //
+        // pipeline.remove(io.opentelemetry.javaagent.instrumentation.netty.v4_0.server.HttpServerResponseTracingHandler.class.getName());
+        //        }
+
         // Server pipeline handlers
         if (handler instanceof HttpServerCodec) {
           pipeline.addLast(
@@ -97,7 +104,12 @@ public class NettyChannelPipelineInstrumentation implements TypeInstrumentation 
               new HttpServerRequestTracingHandler());
         } else if (handler instanceof HttpResponseEncoder) {
           System.out.println("\n\nAdding response handler");
-          pipeline.addLast(
+          // replace OTEL response handler because it closes request span before body (especially
+          // chunked) is captured
+          pipeline.replace(
+              io.opentelemetry.javaagent.instrumentation.netty.v4_0.server
+                  .HttpServerResponseTracingHandler.class
+                  .getName(),
               HttpServerResponseTracingHandler.class.getName(),
               new HttpServerResponseTracingHandler());
         }

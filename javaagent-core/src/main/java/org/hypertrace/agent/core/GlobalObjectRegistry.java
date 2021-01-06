@@ -31,7 +31,7 @@ public class GlobalObjectRegistry {
       WeakMap.Provider.newWeakMap();
 
   // original output stream to byte buffer
-  public static final WeakMap<OutputStream, ByteArrayOutputStream> outputStreamToBufferMap =
+  public static final WeakMap<OutputStream, BoundedByteArrayOutputStream> outputStreamToBufferMap =
       WeakMap.Provider.newWeakMap();
 
   // original input stream to buffered one

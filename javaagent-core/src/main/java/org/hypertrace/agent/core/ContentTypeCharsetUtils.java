@@ -21,10 +21,10 @@ import java.nio.charset.StandardCharsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ContentEncodingUtils {
-  private ContentEncodingUtils() {}
+public class ContentTypeCharsetUtils {
+  private ContentTypeCharsetUtils() {}
 
-  private static final Logger log = LoggerFactory.getLogger(ContentEncodingUtils.class);
+  private static final Logger log = LoggerFactory.getLogger(ContentTypeCharsetUtils.class);
 
   // default for HTTP 1.1 https://www.w3.org/International/articles/http-charset/index
   private static final Charset DEFAULT_CHARSET = StandardCharsets.ISO_8859_1;

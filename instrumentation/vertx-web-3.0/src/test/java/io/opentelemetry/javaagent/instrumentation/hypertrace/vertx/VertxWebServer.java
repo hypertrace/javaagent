@@ -22,26 +22,50 @@ import io.vertx.ext.web.Router;
 
 public class VertxWebServer extends AbstractVerticle {
 
+  private static final String CHUNK1 = "chunk1";
+  private static final String CHUNK2 = "chunk2";
+  private static final String CHUNK3 = "chunk3";
+  public static final String RESPONSE_BODY = CHUNK1 + CHUNK2 + CHUNK3;
+
+  public static final String RESPONSE_HEADER_NAME = "vertxheader";
+  public static final String RESPONSE_HEADER_VALUE = "vertxheader";
+
   @Override
   public void start(Future<Void> startFuture) {
     int port = config().getInteger(VertxBodyInstrumentationModuleTest.CONFIG_HTTP_SERVER_PORT);
     Router router = Router.router(vertx);
 
     router
-        .route("/success")
+        .route("/return_chunked")
         .handler(
             ctx ->
                 ctx.request()
                     .bodyHandler(
                         h -> {
                           System.out.printf("vertx received: %s\n", new String(h.getBytes()));
-                          // TODO test chunked
-                          //                          ctx.response().setChunked(true);
-                          ////                          ctx.response().setWriteQueueMaxSize()
-                          //                          ctx.response().write("chunk1");
-                          //                          ctx.response().write("chunk2");
-                          ctx.response().setStatusCode(200).end("success");
+                          ctx.response()
+                              .putHeader("content-Type", "application/json; charset=utf-8");
+                          ctx.response().putHeader(RESPONSE_HEADER_NAME, RESPONSE_HEADER_VALUE);
+                          ctx.response().setChunked(true);
+                          ctx.response().write(CHUNK1);
+                          ctx.response().write(CHUNK2);
+                          ctx.response().setStatusCode(200).end(CHUNK3);
                         }));
+
+    router
+        .route("/return_no_chunked")
+        .handler(
+            ctx ->
+                ctx.request()
+                    .bodyHandler(
+                        h -> {
+                          System.out.printf("vertx received: %s\n", new String(h.getBytes()));
+                          ctx.response()
+                              .putHeader("content-Type", "application/json; charset=utf-8");
+                          ctx.response().putHeader(RESPONSE_HEADER_NAME, RESPONSE_HEADER_VALUE);
+                          ctx.response().setStatusCode(200).end(RESPONSE_BODY);
+                        }));
+
     vertx
         .createHttpServer()
         .requestHandler(router::accept)

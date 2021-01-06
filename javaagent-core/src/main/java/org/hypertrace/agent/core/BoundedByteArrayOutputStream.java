@@ -18,6 +18,8 @@ package org.hypertrace.agent.core;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 
 /**
  * {@link ByteArrayOutputStream} with a bounded capacity. Write methods are no-op if the size
@@ -26,14 +28,21 @@ import java.io.IOException;
 public class BoundedByteArrayOutputStream extends ByteArrayOutputStream {
 
   private final int maxCapacity;
+  private final Charset charset;
 
-  BoundedByteArrayOutputStream(int maxCapacity) {
+  BoundedByteArrayOutputStream(int maxCapacity, Charset charset) {
     this.maxCapacity = maxCapacity;
+    this.charset = charset;
   }
 
-  BoundedByteArrayOutputStream(int maxCapacity, int size) {
+  BoundedByteArrayOutputStream(int maxCapacity, int size, Charset charset) {
     super(size);
     this.maxCapacity = maxCapacity;
+    this.charset = charset;
+  }
+
+  public synchronized String toStringWithSuppliedCharset() throws UnsupportedEncodingException {
+    return super.toString(this.charset.name());
   }
 
   @Override

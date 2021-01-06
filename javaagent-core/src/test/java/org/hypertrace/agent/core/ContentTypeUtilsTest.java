@@ -38,4 +38,24 @@ class ContentTypeUtilsTest {
       Assertions.assertFalse(ContentTypeUtils.shouldCapture(contentType), contentType);
     }
   }
+
+  @Test
+  public void utf8Charset() {
+    Assertions.assertEquals(
+        "utf-8", ContentTypeUtils.parseCharset("Content-Type: application/json; charset=utf-8"));
+  }
+
+  @Test
+  public void windows1252Charset() {
+    Assertions.assertEquals(
+        "windows-1252",
+        ContentTypeUtils.parseCharset("Content-Type: application/json; charset=windows-1252"));
+  }
+
+  @Test
+  public void noCharset() {
+    Assertions.assertEquals(null, ContentTypeUtils.parseCharset("Content-Type: application/json;"));
+    Assertions.assertEquals(
+        null, ContentTypeUtils.parseCharset("Content-Type: application/json; charset="));
+  }
 }

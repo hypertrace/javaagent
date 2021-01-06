@@ -32,6 +32,7 @@ import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -41,6 +42,10 @@ import org.junit.jupiter.api.Test;
 class VertxBodyInstrumentationModuleTest extends AbstractInstrumenterTest {
 
   public static final String CONFIG_HTTP_SERVER_PORT = "http.server.port";
+  private static final String REQUEST_BODY = "{\"foo\": \"bar\"}";
+
+  public static final String REQUEST_HEADER_NAME = "reqheader";
+  public static final String REQUEST_HEADER_VALUE = "reqheadervalue";
 
   private static Vertx vertx;
   private static int port;
@@ -79,26 +84,53 @@ class VertxBodyInstrumentationModuleTest extends AbstractInstrumenterTest {
 
   @AfterAll
   public static void stopServer() {
-    System.out.println("Closing vertx");
     vertx.close();
-    System.out.println("vertx closed");
   }
 
   @Test
-  public void test() throws IOException {
+  public void postJsonReturnChunked() throws IOException, TimeoutException, InterruptedException {
+    postJson(String.format("http://localhost:%d/return_chunked", port));
+  }
+
+  @Test
+  public void postJsonReturnNoChunked() throws IOException, TimeoutException, InterruptedException {
+    postJson(String.format("http://localhost:%d/return_no_chunked", port));
+  }
+
+  public void postJson(String url) throws IOException, TimeoutException, InterruptedException {
     Request request =
         new Request.Builder()
-            .url(String.format("http://localhost:%d/success", port))
-            .post(RequestBody.create("{\"foo\": \"bar\"}", MediaType.get("application/json")))
+            .url(url)
+            .header(REQUEST_HEADER_NAME, REQUEST_HEADER_VALUE)
+            .post(RequestBody.create(REQUEST_BODY, MediaType.get("application/json")))
             .build();
     try (Response response = httpClient.newCall(request).execute()) {
       Assertions.assertEquals(200, response.code());
-      Assertions.assertEquals("success", response.body().string());
-      // TODO test
-      //      Assertions.assertEquals("chunk1chunk2success", response.body().string());
+      Assertions.assertEquals(VertxWebServer.RESPONSE_BODY, response.body().string());
     }
 
     List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    TEST_WRITER.waitForTraces(1);
     Assertions.assertEquals(1, traces.size());
+    List<SpanData> trace = traces.get(0);
+    Assertions.assertEquals(1, trace.size());
+    SpanData spanData = trace.get(0);
+    Assertions.assertEquals(
+        REQUEST_BODY, spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+    Assertions.assertEquals(
+        REQUEST_HEADER_VALUE,
+        spanData
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
+    Assertions.assertEquals(
+        VertxWebServer.RESPONSE_BODY,
+        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+    Assertions.assertEquals(
+        VertxWebServer.RESPONSE_HEADER_VALUE,
+        spanData
+            .getAttributes()
+            .get(
+                HypertraceSemanticAttributes.httpResponseHeader(
+                    VertxWebServer.RESPONSE_HEADER_NAME)));
   }
 }
