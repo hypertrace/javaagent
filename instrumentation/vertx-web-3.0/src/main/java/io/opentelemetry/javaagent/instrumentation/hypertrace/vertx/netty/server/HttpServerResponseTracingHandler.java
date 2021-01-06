@@ -18,7 +18,6 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.vertx.netty.server
 
 import static io.opentelemetry.javaagent.instrumentation.netty.v4_0.server.NettyHttpServerTracer.tracer;
 
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
@@ -35,9 +34,6 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.api.tracer.HttpStatusConverter;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.vertx.netty.AttributeKeys;
 import io.opentelemetry.javaagent.instrumentation.netty.v4_0.server.NettyHttpServerTracer;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.Map;
 import org.hypertrace.agent.core.BoundedByteArrayOutputStream;
@@ -63,13 +59,13 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
     }
     Span span = Span.fromContext(context);
 
-    if (msg instanceof HttpMessage) {
-      HttpMessage httpMessage = (HttpMessage) msg;
-      captureHeaders(span, httpMessage);
+    if (msg instanceof HttpResponse) {
+      HttpResponse httpResponse = (HttpResponse) msg;
+      captureHeaders(span, httpResponse);
 
-      CharSequence contentType = getContentType(httpMessage);
+      CharSequence contentType = DataCaptureUtils.getContentType(httpResponse);
       if (contentType != null && ContentTypeUtils.shouldCapture(contentType.toString())) {
-        CharSequence contentLengthHeader = getContentLength(httpMessage);
+        CharSequence contentLengthHeader = DataCaptureUtils.getContentLength(httpResponse);
         int contentLength = ContentLengthUtils.parseLength(contentLengthHeader);
 
         String charsetString = ContentTypeUtils.parseCharset(contentType.toString());
@@ -84,7 +80,8 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
     }
 
     if (msg instanceof HttpContent) {
-      captureBody(span, ctx.channel(), (HttpContent) msg);
+      DataCaptureUtils.captureBody(
+          span, ctx.channel(), AttributeKeys.RESPONSE_BODY_BUFFER, (HttpContent) msg);
     }
 
     try (Scope ignored = context.makeCurrent()) {
@@ -103,66 +100,10 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
     }
   }
 
-  private static void captureBody(Span span, Channel channel, HttpContent httpContent) {
-    Attribute<BoundedByteArrayOutputStream> bufferAttr =
-        channel.attr(AttributeKeys.RESPONSE_BODY_BUFFER);
-    BoundedByteArrayOutputStream buffer = bufferAttr.get();
-    if (buffer == null) {
-      // not capturing body e.g. unknown content type
-      return;
-    }
-
-    System.out.println(httpContent.content().getClass().getName());
-
-    System.out.println(httpContent.content().capacity());
-    if (httpContent.content().hasArray()) {
-      byte[] array = httpContent.content().array();
-      try {
-        buffer.write(array);
-      } catch (IOException e) {
-        log.error("Failed to write body array to buffer", e);
-      }
-      System.out.printf("response content array: %s\n", new String(array));
-    } else {
-      final ByteArrayOutputStream finalBuffer = buffer;
-      httpContent
-          .content()
-          .forEachByte(
-              value -> {
-                finalBuffer.write(value);
-                return true;
-              });
-      System.out.printf(
-          "response content forEachByte: %s\n", new String(httpContent.content().array()));
-    }
-
-    if (httpContent instanceof LastHttpContent) {
-      System.out.println("It is the last content");
-      // TODO set encoding
-      bufferAttr.remove();
-      try {
-        span.setAttribute(
-            HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, buffer.toStringWithSuppliedCharset());
-      } catch (UnsupportedEncodingException e) {
-        // charset was parsed before
-      }
-    }
-  }
-
   private static void captureHeaders(Span span, HttpMessage httpMessage) {
-    System.out.println("It is http message");
     for (Map.Entry<String, String> entry : httpMessage.headers().entries()) {
       span.setAttribute(
           HypertraceSemanticAttributes.httpResponseHeader(entry.getKey()), entry.getValue());
     }
-  }
-
-  // see io.netty.handler.codec.http.HttpUtil
-  public static CharSequence getContentType(HttpMessage message) {
-    return message.headers().get("content-type");
-  }
-
-  public static CharSequence getContentLength(HttpMessage message) {
-    return message.headers().get("content-length");
   }
 }

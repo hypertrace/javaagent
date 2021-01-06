@@ -21,6 +21,7 @@ import io.opentelemetry.javaagent.instrumentation.api.WeakMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.hypertrace.agent.core.BoundedByteArrayOutputStream;
+import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 
 /**
  * Copied from
@@ -39,10 +40,10 @@ public class AttributeKeys {
           };
 
   public static final AttributeKey<BoundedByteArrayOutputStream> RESPONSE_BODY_BUFFER =
-      attributeKey(AttributeKeys.class.getName() + ".response-body-buffer");
+      attributeKey(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY.getKey());
 
   public static final AttributeKey<BoundedByteArrayOutputStream> REQUEST_BODY_BUFFER =
-      attributeKey(AttributeKeys.class.getName() + ".request-body-buffer");
+      attributeKey(HypertraceSemanticAttributes.HTTP_REQUEST_BODY.getKey());
 
   /**
    * Generate an attribute key or reuse the one existing in the global app map. This implementation
