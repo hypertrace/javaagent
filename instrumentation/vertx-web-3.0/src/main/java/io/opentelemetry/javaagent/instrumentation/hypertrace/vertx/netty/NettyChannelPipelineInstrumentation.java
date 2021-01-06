@@ -31,7 +31,7 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.vertx.netty.server.HttpServerRequestTracingHandler;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.vertx.netty.server.HttpServerResponseTracingHandler;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.vertx.netty.server.NettyHttpServerTracingHandler;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.vertx.netty.server.HttpServerTracingHandler;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.util.HashMap;
 import java.util.Map;
@@ -87,14 +87,14 @@ public class NettyChannelPipelineInstrumentation implements TypeInstrumentation 
       try {
         // Server pipeline handlers
         if (handler instanceof HttpServerCodec) {
-          pipeline.addLast(
-              NettyHttpServerTracingHandler.class.getName(), new NettyHttpServerTracingHandler());
+          // replace OTEL response handler because it closes request span before body (especially
+          // chunked) is captured
           pipeline.replace(
               io.opentelemetry.javaagent.instrumentation.netty.v4_0.server.HttpServerTracingHandler
                   .class
                   .getName(),
-              NettyHttpServerTracingHandler.class.getName(),
-              new NettyHttpServerTracingHandler());
+              HttpServerTracingHandler.class.getName(),
+              new HttpServerTracingHandler());
         } else if (handler instanceof HttpRequestDecoder) {
           System.out.println("\n\nAdding request handler");
           pipeline.addLast(
@@ -102,8 +102,6 @@ public class NettyChannelPipelineInstrumentation implements TypeInstrumentation 
               new HttpServerRequestTracingHandler());
         } else if (handler instanceof HttpResponseEncoder) {
           System.out.println("\n\nAdding response handler");
-          // replace OTEL response handler because it closes request span before body (especially
-          // chunked) is captured
           pipeline.replace(
               io.opentelemetry.javaagent.instrumentation.netty.v4_0.server
                   .HttpServerResponseTracingHandler.class

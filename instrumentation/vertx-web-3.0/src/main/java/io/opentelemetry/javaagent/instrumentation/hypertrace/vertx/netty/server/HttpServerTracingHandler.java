@@ -18,11 +18,11 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.vertx.netty.server
 
 import io.netty.channel.CombinedChannelDuplexHandler;
 
-public class NettyHttpServerTracingHandler
+public class HttpServerTracingHandler
     extends CombinedChannelDuplexHandler<
         HttpServerRequestTracingHandler, HttpServerResponseTracingHandler> {
 
-  public NettyHttpServerTracingHandler() {
+  public HttpServerTracingHandler() {
     super(new HttpServerRequestTracingHandler(), new HttpServerResponseTracingHandler());
   }
 }
