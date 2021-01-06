@@ -20,7 +20,8 @@ import java.nio.charset.Charset;
 
 public class BoundedByteArrayOutputStreamFactory {
 
-  public static final int DEFAULT_SIZE = 128;
+  public static final int DEFAULT_SIZE =
+      HypertraceConfig.get().getDataCapture().getBodyMaxSizeBytes().getValue();
 
   public static BoundedByteArrayOutputStream create(Charset charset) {
     return new BoundedByteArrayOutputStream(DEFAULT_SIZE, charset);

@@ -32,7 +32,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.vertx.netty.AttributeKeys;
 import io.opentelemetry.javaagent.instrumentation.netty.v4_0.server.NettyHttpServerTracer;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.Map;
 import org.hypertrace.agent.core.BoundedByteArrayOutputStream;
@@ -108,58 +108,36 @@ public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapte
   private static void captureBody(Span span, Channel channel, HttpContent httpContent) {
     Attribute<BoundedByteArrayOutputStream> bufferAttr =
         channel.attr(AttributeKeys.REQUEST_BODY_BUFFER);
-    ByteArrayOutputStream buffer = bufferAttr.get();
+    BoundedByteArrayOutputStream buffer = bufferAttr.get();
     if (buffer == null) {
       // not capturing body e.g. unknown content type
       return;
     }
 
+    System.out.println(httpContent.getClass().getName());
     System.out.println(httpContent.content().getClass().getName());
     System.out.println(httpContent.content().capacity());
 
-    if (httpContent.content().hasArray()) {
-      byte[] array = httpContent.content().array();
-      try {
-        buffer.write(array);
-      } catch (IOException e) {
-        log.error("Failed to write body array to buffer", e);
-      }
-      System.out.printf("response content array: %s\n", new String(array));
-    } else {
-      final ByteArrayOutputStream finalBuffer = buffer;
-      httpContent
-          .content()
-          .forEachByte(
-              value -> {
-                finalBuffer.write(value);
-                return true;
-              });
-      System.out.printf(
-          "response content forEachByte: %s\n", new String(httpContent.content().array()));
-    }
+    final ByteArrayOutputStream finalBuffer = buffer;
+    httpContent
+        .content()
+        .forEachByte(
+            value -> {
+              finalBuffer.write(value);
+              System.out.printf("request content byte: %s\n", (char) value);
+              return true;
+            });
 
     if (httpContent instanceof LastHttpContent) {
       System.out.println("It is the last content");
       // TODO set encoding
       bufferAttr.remove();
-      span.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, buffer.toString());
+      try {
+        span.setAttribute(
+            HypertraceSemanticAttributes.HTTP_REQUEST_BODY, buffer.toStringWithSuppliedCharset());
+      } catch (UnsupportedEncodingException e) {
+        // ignore charset was parsed before
+      }
     }
-  }
-
-  private static void processHttpContent(Span span, HttpContent httpContent) {
-    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-    httpContent
-        .content()
-        .forEachByte(
-            value -> {
-              buffer.write(value);
-              return true;
-            });
-
-    // TODO check chunked body
-    System.out.printf(
-        "Captured request body: %s, span is recording: %s\n",
-        new String(buffer.toByteArray()), span.isRecording());
-    span.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, buffer.toString());
   }
 }

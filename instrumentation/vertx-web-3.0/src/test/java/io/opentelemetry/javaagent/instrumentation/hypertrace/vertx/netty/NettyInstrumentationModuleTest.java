@@ -16,6 +16,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.vertx.netty;
 
+import static io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_LENGTH;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import io.netty.bootstrap.ServerBootstrap;
@@ -90,17 +91,18 @@ public class NettyInstrumentationModuleTest extends AbstractInstrumenterTest {
 
                 pipeline.addLast(
                     new SimpleChannelInboundHandler() {
-
                       @Override
                       protected void channelRead0(ChannelHandlerContext ctx, Object msg) {
+                        // write response after all content has been received otherwise
+                        // server span is closed before request payload is captured
                         if (msg instanceof LastHttpContent) {
-                          LastHttpContent httpRequest = (LastHttpContent) msg;
-                          ByteBuf responseBody = Unpooled.copiedBuffer(RESPONSE_BODY.getBytes());
+                          ByteBuf responseBody = Unpooled.wrappedBuffer(RESPONSE_BODY.getBytes());
                           HttpResponse response =
                               new DefaultFullHttpResponse(
                                   HTTP_1_1, HttpResponseStatus.valueOf(200), responseBody);
                           response.headers().add(RESPONSE_HEADER_NAME, RESPONSE_HEADER_VALUE);
                           response.headers().add("Content-Type", "application-json");
+                          response.headers().set(CONTENT_LENGTH, responseBody.readableBytes());
                           ctx.write(response);
                         }
                       }
@@ -131,10 +133,7 @@ public class NettyInstrumentationModuleTest extends AbstractInstrumenterTest {
 
   @Test
   public void postJson() throws IOException, TimeoutException, InterruptedException {
-    RequestBody requestBody = requestBody(true, 100, 20);
-    Buffer buffer = new Buffer();
-    requestBody.writeTo(buffer);
-
+    RequestBody requestBody = requestBody(true, 3000, 75);
     Request request =
         new Request.Builder()
             .url(String.format("http://localhost:%d", port))
@@ -145,8 +144,7 @@ public class NettyInstrumentationModuleTest extends AbstractInstrumenterTest {
 
     try (Response response = httpClient.newCall(request).execute()) {
       Assertions.assertEquals(200, response.code());
-      // TODO this hangs
-      //      Assertions.assertEquals(RESPONSE_BODY, response.body().string());
+      Assertions.assertEquals(RESPONSE_BODY, response.body().string());
     }
 
     System.out.println("foo bar");
@@ -167,8 +165,10 @@ public class NettyInstrumentationModuleTest extends AbstractInstrumenterTest {
         spanData
             .getAttributes()
             .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_HEADER_NAME)));
+    Buffer requestBodyBuffer = new Buffer();
+    requestBody.writeTo(requestBodyBuffer);
     Assertions.assertEquals(
-        new String(buffer.readByteArray()),
+        new String(requestBodyBuffer.readByteArray()),
         spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
     Assertions.assertEquals(
         RESPONSE_BODY,
