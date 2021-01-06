@@ -85,18 +85,16 @@ public class NettyChannelPipelineInstrumentation implements TypeInstrumentation 
       CallDepthThreadLocalMap.reset(ChannelHandler.class);
 
       try {
-        //        if (handler instanceof
-        // io.opentelemetry.javaagent.instrumentation.netty.v4_0.server.HttpServerResponseTracingHandler) {
-        //          System.out.println("Removing\n\n");
-        //
-        // pipeline.remove(io.opentelemetry.javaagent.instrumentation.netty.v4_0.server.HttpServerResponseTracingHandler.class.getName());
-        //        }
-
         // Server pipeline handlers
         if (handler instanceof HttpServerCodec) {
           pipeline.addLast(
               NettyHttpServerTracingHandler.class.getName(), new NettyHttpServerTracingHandler());
-
+          pipeline.replace(
+              io.opentelemetry.javaagent.instrumentation.netty.v4_0.server.HttpServerTracingHandler
+                  .class
+                  .getName(),
+              NettyHttpServerTracingHandler.class.getName(),
+              new NettyHttpServerTracingHandler());
         } else if (handler instanceof HttpRequestDecoder) {
           System.out.println("\n\nAdding request handler");
           pipeline.addLast(
