@@ -115,6 +115,7 @@ public class HttpEntityInstrumentation implements TypeInstrumentation {
         contentSize = ContentLengthUtils.DEFAULT;
       }
 
+      // TODO set charset
       String encoding =
           thizz.getContentEncoding() != null ? thizz.getContentEncoding().getValue() : "";
       Charset charset = ContentTypeCharsetUtils.toCharset(encoding);
