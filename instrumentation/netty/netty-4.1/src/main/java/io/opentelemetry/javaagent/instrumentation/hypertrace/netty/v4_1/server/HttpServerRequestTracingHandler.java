@@ -14,26 +14,19 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.server;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.server;
 
-import static io.opentelemetry.javaagent.instrumentation.netty.v4_0.server.NettyHttpServerTracer.tracer;
-
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelOutboundHandlerAdapter;
-import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http.FullHttpMessage;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpMessage;
-import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.handler.codec.http.HttpRequest;
 import io.netty.util.Attribute;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.Scope;
-import io.opentelemetry.instrumentation.api.tracer.HttpStatusConverter;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.AttributeKeys;
-import io.opentelemetry.javaagent.instrumentation.netty.v4_0.server.NettyHttpServerTracer;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.AttributeKeys;
+import io.opentelemetry.javaagent.instrumentation.netty.v4_1.server.NettyHttpServerTracer;
 import java.nio.charset.Charset;
 import java.util.Map;
 import org.hypertrace.agent.core.BoundedByteArrayOutputStream;
@@ -43,24 +36,36 @@ import org.hypertrace.agent.core.ContentTypeCharsetUtils;
 import org.hypertrace.agent.core.ContentTypeUtils;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 
-public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdapter {
+public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapter {
 
   @Override
-  public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise prm) {
-    Context context = NettyHttpServerTracer.tracer().getServerContext(ctx.channel());
+  public void channelRead(ChannelHandlerContext ctx, Object msg) {
+    Channel channel = ctx.channel();
+
+    Context context = NettyHttpServerTracer.tracer().getServerContext(channel);
     if (context == null) {
-      ctx.write(msg, prm);
+      ctx.fireChannelRead(msg);
       return;
     }
     Span span = Span.fromContext(context);
 
-    if (msg instanceof HttpResponse) {
-      HttpResponse httpResponse = (HttpResponse) msg;
-      captureHeaders(span, httpResponse);
+    if (msg instanceof HttpRequest) {
+      HttpRequest httpRequest = (HttpRequest) msg;
+      // TODO add blocking
+      // TODO maybe block once the full body is retrieved
+      //      if (true) {
+      //        DefaultFullHttpResponse blockResponse = new DefaultFullHttpResponse(
+      //            httpMessage.getProtocolVersion(), HttpResponseStatus.FORBIDDEN);
+      ////        blockResponse.headers().add("Connection",  "Keep-Alive");
+      //        ctx.writeAndFlush(blockResponse)
+      //            .addListener(ChannelFutureListener.CLOSE);
+      //        ReferenceCountUtil.release(msg);
+      //        return;
+      //      }
 
-      CharSequence contentType = DataCaptureUtils.getContentType(httpResponse);
+      CharSequence contentType = DataCaptureUtils.getContentType(httpRequest);
       if (contentType != null && ContentTypeUtils.shouldCapture(contentType.toString())) {
-        CharSequence contentLengthHeader = DataCaptureUtils.getContentLength(httpResponse);
+        CharSequence contentLengthHeader = DataCaptureUtils.getContentLength(httpRequest);
         int contentLength = ContentLengthUtils.parseLength(contentLengthHeader);
 
         String charsetString = ContentTypeUtils.parseCharset(contentType.toString());
@@ -69,36 +74,25 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
         // set the buffer to capture response body
         // the buffer is used byt captureBody method
         Attribute<BoundedByteArrayOutputStream> bufferAttr =
-            ctx.channel().attr(AttributeKeys.RESPONSE_BODY_BUFFER);
+            ctx.channel().attr(AttributeKeys.REQUEST_BODY_BUFFER);
         bufferAttr.set(BoundedByteArrayOutputStreamFactory.create(contentLength, charset));
       }
+
+      captureHeaders(span, httpRequest);
     }
 
     if (msg instanceof HttpContent) {
       DataCaptureUtils.captureBody(
-          span, ctx.channel(), AttributeKeys.RESPONSE_BODY_BUFFER, (HttpContent) msg);
+          span, channel, AttributeKeys.REQUEST_BODY_BUFFER, (HttpContent) msg);
     }
 
-    try (Scope ignored = context.makeCurrent()) {
-      ctx.write(msg, prm);
-    } catch (Throwable throwable) {
-      tracer().endExceptionally(context, throwable);
-      throw throwable;
-    }
-    if (msg instanceof HttpResponse) {
-      HttpResponse httpResponse = (HttpResponse) msg;
-      span.setAttribute(SemanticAttributes.HTTP_STATUS_CODE, httpResponse.getStatus().code());
-      span.setStatus(HttpStatusConverter.statusFromHttpStatus(httpResponse.getStatus().code()));
-    }
-    if (msg instanceof FullHttpMessage || msg instanceof LastHttpContent) {
-      span.end();
-    }
+    ctx.fireChannelRead(msg);
   }
 
   private static void captureHeaders(Span span, HttpMessage httpMessage) {
     for (Map.Entry<String, String> entry : httpMessage.headers().entries()) {
       span.setAttribute(
-          HypertraceSemanticAttributes.httpResponseHeader(entry.getKey()), entry.getValue());
+          HypertraceSemanticAttributes.httpRequestHeader(entry.getKey()), entry.getValue());
     }
   }
 }

@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.server;
-
-import static io.opentelemetry.javaagent.instrumentation.netty.v4_0.server.NettyHttpServerTracer.tracer;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.server;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
@@ -32,8 +30,8 @@ import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.api.tracer.HttpStatusConverter;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.AttributeKeys;
-import io.opentelemetry.javaagent.instrumentation.netty.v4_0.server.NettyHttpServerTracer;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.AttributeKeys;
+import io.opentelemetry.javaagent.instrumentation.netty.v4_1.server.NettyHttpServerTracer;
 import java.nio.charset.Charset;
 import java.util.Map;
 import org.hypertrace.agent.core.BoundedByteArrayOutputStream;
@@ -82,13 +80,13 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
     try (Scope ignored = context.makeCurrent()) {
       ctx.write(msg, prm);
     } catch (Throwable throwable) {
-      tracer().endExceptionally(context, throwable);
+      NettyHttpServerTracer.tracer().endExceptionally(context, throwable);
       throw throwable;
     }
     if (msg instanceof HttpResponse) {
       HttpResponse httpResponse = (HttpResponse) msg;
-      span.setAttribute(SemanticAttributes.HTTP_STATUS_CODE, httpResponse.getStatus().code());
-      span.setStatus(HttpStatusConverter.statusFromHttpStatus(httpResponse.getStatus().code()));
+      span.setAttribute(SemanticAttributes.HTTP_STATUS_CODE, httpResponse.status().code());
+      span.setStatus(HttpStatusConverter.statusFromHttpStatus(httpResponse.status().code()));
     }
     if (msg instanceof FullHttpMessage || msg instanceof LastHttpContent) {
       span.end();

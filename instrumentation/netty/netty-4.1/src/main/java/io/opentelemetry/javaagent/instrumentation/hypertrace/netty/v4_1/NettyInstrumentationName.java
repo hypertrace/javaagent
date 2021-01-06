@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.server;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1;
 
-import io.netty.channel.CombinedChannelDuplexHandler;
-
-public class HttpServerTracingHandler
-    extends CombinedChannelDuplexHandler<
-        HttpServerRequestTracingHandler, HttpServerResponseTracingHandler> {
-
-  public HttpServerTracingHandler() {
-    super(new HttpServerRequestTracingHandler(), new HttpServerResponseTracingHandler());
-  }
+public class NettyInstrumentationName {
+  public static final String PRIMARY = "netty";
+  public static final String[] OTHER = {
+    "netty-4.1", "ht", "netty", "netty-4.1-ht",
+  };
 }
