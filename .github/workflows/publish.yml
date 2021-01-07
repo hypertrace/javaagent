@@ -49,8 +49,8 @@ jobs:
   github-release-publish:
     needs: publish-images
     runs-on: ubuntu-20.04
-    container: cibuilds/github:0.13
-      image: 
+    container: 
+      image: cibuilds/github:0.13
       credentials:
         username: ${{ secrets.DOCKERHUB_READ_USER }}
         password: ${{ secrets.DOCKERHUB_READ_TOKEN }}
