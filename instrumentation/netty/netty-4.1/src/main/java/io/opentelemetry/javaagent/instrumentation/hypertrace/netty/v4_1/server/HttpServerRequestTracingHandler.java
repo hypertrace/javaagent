@@ -29,14 +29,18 @@ import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.Attribut
 import io.opentelemetry.javaagent.instrumentation.netty.v4_1.server.NettyHttpServerTracer;
 import java.nio.charset.Charset;
 import java.util.Map;
+import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.core.BoundedByteArrayOutputStream;
 import org.hypertrace.agent.core.BoundedByteArrayOutputStreamFactory;
 import org.hypertrace.agent.core.ContentLengthUtils;
 import org.hypertrace.agent.core.ContentTypeCharsetUtils;
 import org.hypertrace.agent.core.ContentTypeUtils;
+import org.hypertrace.agent.core.HypertraceConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 
 public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapter {
+
+  private final AgentConfig agentConfig = HypertraceConfig.get();
 
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) {
@@ -51,6 +55,10 @@ public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapte
 
     if (msg instanceof HttpRequest) {
       HttpRequest httpRequest = (HttpRequest) msg;
+      if (agentConfig.getDataCapture().getHttpHeaders().getRequest().getValue()) {
+        captureHeaders(span, httpRequest);
+      }
+
       // TODO add blocking
       // TODO maybe block once the full body is retrieved
       //      if (true) {
@@ -64,7 +72,10 @@ public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapte
       //      }
 
       CharSequence contentType = DataCaptureUtils.getContentType(httpRequest);
-      if (contentType != null && ContentTypeUtils.shouldCapture(contentType.toString())) {
+      if (agentConfig.getDataCapture().getHttpBody().getRequest().getValue()
+          && contentType != null
+          && ContentTypeUtils.shouldCapture(contentType.toString())) {
+
         CharSequence contentLengthHeader = DataCaptureUtils.getContentLength(httpRequest);
         int contentLength = ContentLengthUtils.parseLength(contentLengthHeader);
 
@@ -77,11 +88,10 @@ public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapte
             ctx.channel().attr(AttributeKeys.REQUEST_BODY_BUFFER);
         bufferAttr.set(BoundedByteArrayOutputStreamFactory.create(contentLength, charset));
       }
-
-      captureHeaders(span, httpRequest);
     }
 
-    if (msg instanceof HttpContent) {
+    if (msg instanceof HttpContent
+        && agentConfig.getDataCapture().getHttpBody().getRequest().getValue()) {
       DataCaptureUtils.captureBody(
           span, channel, AttributeKeys.REQUEST_BODY_BUFFER, (HttpContent) msg);
     }

@@ -34,14 +34,18 @@ import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.Attribut
 import io.opentelemetry.javaagent.instrumentation.netty.v4_1.server.NettyHttpServerTracer;
 import java.nio.charset.Charset;
 import java.util.Map;
+import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.core.BoundedByteArrayOutputStream;
 import org.hypertrace.agent.core.BoundedByteArrayOutputStreamFactory;
 import org.hypertrace.agent.core.ContentLengthUtils;
 import org.hypertrace.agent.core.ContentTypeCharsetUtils;
 import org.hypertrace.agent.core.ContentTypeUtils;
+import org.hypertrace.agent.core.HypertraceConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 
 public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdapter {
+
+  private final AgentConfig agentConfig = HypertraceConfig.get();
 
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise prm) {
@@ -54,10 +58,15 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
 
     if (msg instanceof HttpResponse) {
       HttpResponse httpResponse = (HttpResponse) msg;
-      captureHeaders(span, httpResponse);
+      if (agentConfig.getDataCapture().getHttpHeaders().getResponse().getValue()) {
+        captureHeaders(span, httpResponse);
+      }
 
       CharSequence contentType = DataCaptureUtils.getContentType(httpResponse);
-      if (contentType != null && ContentTypeUtils.shouldCapture(contentType.toString())) {
+      if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()
+          && contentType != null
+          && ContentTypeUtils.shouldCapture(contentType.toString())) {
+
         CharSequence contentLengthHeader = DataCaptureUtils.getContentLength(httpResponse);
         int contentLength = ContentLengthUtils.parseLength(contentLengthHeader);
 
@@ -72,7 +81,8 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
       }
     }
 
-    if (msg instanceof HttpContent) {
+    if (msg instanceof HttpContent
+        && agentConfig.getDataCapture().getHttpBody().getResponse().getValue()) {
       DataCaptureUtils.captureBody(
           span, ctx.channel(), AttributeKeys.RESPONSE_BODY_BUFFER, (HttpContent) msg);
     }
