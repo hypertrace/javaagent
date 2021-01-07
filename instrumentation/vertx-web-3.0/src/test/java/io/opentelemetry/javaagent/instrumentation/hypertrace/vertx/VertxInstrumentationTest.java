@@ -39,13 +39,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-class VertxyInstrumentationTest extends AbstractInstrumenterTest {
+class VertxInstrumentationTest extends AbstractInstrumenterTest {
 
-  public static final String CONFIG_HTTP_SERVER_PORT = "http.server.port";
-  private static final String REQUEST_BODY = "{\"foo\": \"bar\"}";
+  static final String CONFIG_HTTP_SERVER_PORT = "http.server.port";
+  static final String REQUEST_BODY = "{\"foo\": \"bar\"}";
 
-  public static final String REQUEST_HEADER_NAME = "reqheader";
-  public static final String REQUEST_HEADER_VALUE = "reqheadervalue";
+  private static final String REQUEST_HEADER_NAME = "reqheader";
+  private static final String REQUEST_HEADER_VALUE = "reqheadervalue";
 
   private static Vertx vertx;
   private static int port;

@@ -19,6 +19,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.vertx;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.ext.web.Router;
+import org.junit.jupiter.api.Assertions;
 
 public class VertxWebServer extends AbstractVerticle {
 
@@ -32,7 +33,7 @@ public class VertxWebServer extends AbstractVerticle {
 
   @Override
   public void start(Future<Void> startFuture) {
-    int port = config().getInteger(VertxyInstrumentationTest.CONFIG_HTTP_SERVER_PORT);
+    int port = config().getInteger(VertxInstrumentationTest.CONFIG_HTTP_SERVER_PORT);
     Router router = Router.router(vertx);
 
     router
@@ -42,7 +43,8 @@ public class VertxWebServer extends AbstractVerticle {
                 ctx.request()
                     .bodyHandler(
                         h -> {
-                          System.out.printf("vertx received: %s\n", new String(h.getBytes()));
+                          Assertions.assertEquals(
+                              VertxInstrumentationTest.REQUEST_BODY, new String(h.getBytes()));
                           ctx.response()
                               .putHeader("content-Type", "application/json; charset=utf-8");
                           ctx.response().putHeader(RESPONSE_HEADER_NAME, RESPONSE_HEADER_VALUE);
@@ -59,7 +61,8 @@ public class VertxWebServer extends AbstractVerticle {
                 ctx.request()
                     .bodyHandler(
                         h -> {
-                          System.out.printf("vertx received: %s\n", new String(h.getBytes()));
+                          Assertions.assertEquals(
+                              VertxInstrumentationTest.REQUEST_BODY, new String(h.getBytes()));
                           ctx.response()
                               .putHeader("content-Type", "application/json; charset=utf-8");
                           ctx.response().putHeader(RESPONSE_HEADER_NAME, RESPONSE_HEADER_VALUE);
