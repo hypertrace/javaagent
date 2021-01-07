@@ -35,13 +35,13 @@ import io.opentelemetry.javaagent.instrumentation.netty.v4_1.server.NettyHttpSer
 import java.nio.charset.Charset;
 import java.util.Map;
 import org.hypertrace.agent.config.Config.AgentConfig;
-import org.hypertrace.agent.core.BoundedByteArrayOutputStream;
-import org.hypertrace.agent.core.BoundedByteArrayOutputStreamFactory;
-import org.hypertrace.agent.core.ContentLengthUtils;
-import org.hypertrace.agent.core.ContentTypeCharsetUtils;
-import org.hypertrace.agent.core.ContentTypeUtils;
-import org.hypertrace.agent.core.HypertraceConfig;
-import org.hypertrace.agent.core.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.config.HypertraceConfig;
+import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStreamFactory;
+import org.hypertrace.agent.core.instrumentation.utils.ContentLengthUtils;
+import org.hypertrace.agent.core.instrumentation.utils.ContentTypeCharsetUtils;
+import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 
 public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdapter {
 

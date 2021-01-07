@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceLoader;
-import org.hypertrace.agent.core.EnvironmentConfig;
+import org.hypertrace.agent.core.config.EnvironmentConfig;
 import org.hypertrace.agent.filter.api.Filter;
 import org.hypertrace.agent.filter.spi.FilterProvider;
 

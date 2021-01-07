@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.core;
+package org.hypertrace.agent.core.instrumentation;
 
 /**
  * Copy of the upstream {@link io.opentelemetry.javaagent.instrumentation.api.CallDepth} because we

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.core;
+package org.hypertrace.agent.core.instrumentation.buffer;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.config.Config.PropagationFormat;
-import org.hypertrace.agent.core.HypertraceConfig;
+import org.hypertrace.agent.core.config.HypertraceConfig;
 
 public class HypertraceAgent {
   // https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/sdk-environment-variables.md

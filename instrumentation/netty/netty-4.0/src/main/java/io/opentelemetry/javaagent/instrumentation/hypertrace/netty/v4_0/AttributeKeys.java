@@ -21,8 +21,8 @@ import io.opentelemetry.javaagent.instrumentation.api.WeakMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import org.hypertrace.agent.core.BoundedByteArrayOutputStream;
-import org.hypertrace.agent.core.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 
 /**
  * Copied from

@@ -28,9 +28,9 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okio.Buffer;
-import org.hypertrace.agent.core.ContentTypeUtils;
-import org.hypertrace.agent.core.HypertraceConfig;
-import org.hypertrace.agent.core.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.config.HypertraceConfig;
+import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

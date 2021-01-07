@@ -26,7 +26,7 @@ import io.opentelemetry.api.trace.Span;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
-import org.hypertrace.agent.core.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

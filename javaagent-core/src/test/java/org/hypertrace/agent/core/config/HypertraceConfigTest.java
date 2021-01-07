@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.core;
+package org.hypertrace.agent.core.config;
 
 import com.google.protobuf.util.JsonFormat;
 import java.io.File;

@@ -19,7 +19,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.java.outputstream;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import java.io.IOException;
 import java.io.OutputStream;
-import org.hypertrace.agent.core.GlobalObjectRegistry;
+import org.hypertrace.agent.core.instrumentation.GlobalObjectRegistry;
 
 public class OutputStreamUtils {
 

@@ -49,10 +49,10 @@ import net.bytebuddy.matcher.ElementMatcher;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.hypertrace.agent.core.BoundedByteArrayOutputStreamFactory;
-import org.hypertrace.agent.core.ContentTypeUtils;
-import org.hypertrace.agent.core.GlobalObjectRegistry;
-import org.hypertrace.agent.core.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.instrumentation.GlobalObjectRegistry;
+import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStreamFactory;
+import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 
 @AutoService(InstrumentationModule.class)
 public class ApacheClientReadAllInstrumentationModule extends InstrumentationModule {
