@@ -64,7 +64,6 @@ class VertxInstrumentationTest extends AbstractInstrumenterTest {
             new VertxOptions()
                 // Useful for debugging:
                 // .setBlockedThreadCheckInterval(Integer.MAX_VALUE)
-                // TODO use random port
                 .setClusterPort(port));
     CompletableFuture<Void> future = new CompletableFuture<>();
     vertx.deployVerticle(
