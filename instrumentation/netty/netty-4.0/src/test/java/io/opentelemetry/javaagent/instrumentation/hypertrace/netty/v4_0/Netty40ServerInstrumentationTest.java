@@ -175,7 +175,7 @@ public class Netty40ServerInstrumentationTest extends AbstractInstrumenterTest {
   }
 
   @Test
-  public void block() throws IOException, TimeoutException, InterruptedException {
+  public void blocking() throws IOException, TimeoutException, InterruptedException {
     Request request =
         new Request.Builder()
             .url(String.format("http://localhost:%d", port))
