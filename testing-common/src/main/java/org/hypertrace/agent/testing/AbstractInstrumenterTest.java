@@ -74,11 +74,13 @@ public abstract class AbstractInstrumenterTest {
   }
 
   private static ClassFileTransformer classFileTransformer;
+
+  private static final int DEFAULT_TIMEOUT_SECONDS = 30;
   protected OkHttpClient httpClient =
       new OkHttpClient.Builder()
-          .callTimeout(30, TimeUnit.SECONDS)
-          .connectTimeout(30, TimeUnit.SECONDS)
-          .readTimeout(30, TimeUnit.SECONDS)
+          .callTimeout(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+          .connectTimeout(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+          .readTimeout(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
           .build();
 
   @BeforeAll
