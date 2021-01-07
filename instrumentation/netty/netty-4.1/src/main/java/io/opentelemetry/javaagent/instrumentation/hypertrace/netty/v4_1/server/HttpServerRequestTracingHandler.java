@@ -23,11 +23,13 @@ import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpMessage;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.util.Attribute;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.AttributeKeys;
 import io.opentelemetry.javaagent.instrumentation.netty.v4_1.server.NettyHttpServerTracer;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.Map;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.core.BoundedByteArrayOutputStream;
@@ -45,7 +47,6 @@ public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapte
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) {
     Channel channel = ctx.channel();
-
     Context context = NettyHttpServerTracer.tracer().getServerContext(channel);
     if (context == null) {
       ctx.fireChannelRead(msg);
@@ -55,21 +56,13 @@ public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapte
 
     if (msg instanceof HttpRequest) {
       HttpRequest httpRequest = (HttpRequest) msg;
-      if (agentConfig.getDataCapture().getHttpHeaders().getRequest().getValue()) {
-        captureHeaders(span, httpRequest);
-      }
 
-      // TODO add blocking
-      // TODO maybe block once the full body is retrieved
-      //      if (true) {
-      //        DefaultFullHttpResponse blockResponse = new DefaultFullHttpResponse(
-      //            httpMessage.getProtocolVersion(), HttpResponseStatus.FORBIDDEN);
-      ////        blockResponse.headers().add("Connection",  "Keep-Alive");
-      //        ctx.writeAndFlush(blockResponse)
-      //            .addListener(ChannelFutureListener.CLOSE);
-      //        ReferenceCountUtil.release(msg);
-      //        return;
-      //      }
+      Map<String, String> headersMap = headersToMap(httpRequest);
+      if (agentConfig.getDataCapture().getHttpHeaders().getRequest().getValue()) {
+        headersMap.forEach((key, value) -> span.setAttribute(key, value));
+      }
+      // used by blocking handler
+      channel.attr(AttributeKeys.REQUEST_HEADERS).set(headersMap);
 
       CharSequence contentType = DataCaptureUtils.getContentType(httpRequest);
       if (agentConfig.getDataCapture().getHttpBody().getRequest().getValue()
@@ -99,10 +92,12 @@ public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapte
     ctx.fireChannelRead(msg);
   }
 
-  private static void captureHeaders(Span span, HttpMessage httpMessage) {
+  private static Map<String, String> headersToMap(HttpMessage httpMessage) {
+    Map<String, String> map = new HashMap<>();
     for (Map.Entry<String, String> entry : httpMessage.headers().entries()) {
-      span.setAttribute(
-          HypertraceSemanticAttributes.httpRequestHeader(entry.getKey()), entry.getValue());
+      AttributeKey<String> key = HypertraceSemanticAttributes.httpRequestHeader(entry.getKey());
+      map.put(key.getKey(), entry.getValue());
     }
+    return map;
   }
 }

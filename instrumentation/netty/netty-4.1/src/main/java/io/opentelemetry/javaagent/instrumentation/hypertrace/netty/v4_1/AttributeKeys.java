@@ -17,6 +17,7 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1;
 
 import io.netty.util.AttributeKey;
+import java.util.Map;
 import org.hypertrace.agent.core.BoundedByteArrayOutputStream;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 
@@ -27,4 +28,7 @@ public class AttributeKeys {
 
   public static final AttributeKey<BoundedByteArrayOutputStream> REQUEST_BODY_BUFFER =
       AttributeKey.valueOf(HypertraceSemanticAttributes.HTTP_REQUEST_BODY.getKey());
+
+  public static final AttributeKey<Map<String, String>> REQUEST_HEADERS =
+      AttributeKey.valueOf(AttributeKeys.class, "request-headers");
 }

@@ -61,6 +61,7 @@ public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapte
       if (agentConfig.getDataCapture().getHttpHeaders().getRequest().getValue()) {
         headersMap.forEach((key, value) -> span.setAttribute(key, value));
       }
+      // used by blocking handler
       channel.attr(AttributeKeys.REQUEST_HEADERS).set(headersMap);
 
       CharSequence contentType = DataCaptureUtils.getContentType(httpRequest);
