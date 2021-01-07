@@ -17,16 +17,20 @@
 package org.hypertrace.agent.core;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class BoundedByteArrayOutputStreamTest {
 
+  private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
   private static final String ONE_TO_TEN = "0123456789";
 
   @Test
   public void writeArrTheSameSizeAsBuffer() throws IOException {
-    BoundedByteArrayOutputStream boundedBuffer = new BoundedByteArrayOutputStream(10);
+    BoundedByteArrayOutputStream boundedBuffer =
+        new BoundedByteArrayOutputStream(10, DEFAULT_CHARSET);
 
     boundedBuffer.write(ONE_TO_TEN.getBytes());
     Assertions.assertEquals(10, boundedBuffer.size());
@@ -37,7 +41,8 @@ public class BoundedByteArrayOutputStreamTest {
 
   @Test
   public void writeArrSmallerSizeAsBuffer() throws IOException {
-    BoundedByteArrayOutputStream boundedBuffer = new BoundedByteArrayOutputStream(15);
+    BoundedByteArrayOutputStream boundedBuffer =
+        new BoundedByteArrayOutputStream(15, DEFAULT_CHARSET);
 
     boundedBuffer.write(ONE_TO_TEN.getBytes());
     Assertions.assertEquals(10, boundedBuffer.size());
@@ -48,7 +53,8 @@ public class BoundedByteArrayOutputStreamTest {
 
   @Test
   public void writeByteSmallerSizeAsBuffer() throws IOException {
-    BoundedByteArrayOutputStream boundedBuffer = new BoundedByteArrayOutputStream(5);
+    BoundedByteArrayOutputStream boundedBuffer =
+        new BoundedByteArrayOutputStream(5, DEFAULT_CHARSET);
 
     boundedBuffer.write('0');
     boundedBuffer.write('1');

@@ -35,6 +35,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -197,7 +198,8 @@ public class ApacheClientReadAllInstrumentationModule extends InstrumentationMod
 
           BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
           ByteArrayOutputStream buffer =
-              BoundedByteArrayOutputStreamFactory.create((int) contentSize);
+              BoundedByteArrayOutputStreamFactory.create(
+                  (int) contentSize, Charset.defaultCharset());
           byte ch;
           while ((ch = (byte) bufferedInputStream.read()) != -1) {
             buffer.write(ch);

@@ -16,18 +16,21 @@
 
 package org.hypertrace.agent.core;
 
+import java.nio.charset.Charset;
+
 public class BoundedByteArrayOutputStreamFactory {
 
-  private static final int DEFAULT_SIZE = 128;
+  public static final int DEFAULT_SIZE =
+      HypertraceConfig.get().getDataCapture().getBodyMaxSizeBytes().getValue();
 
-  public static BoundedByteArrayOutputStream create() {
-    return new BoundedByteArrayOutputStream(DEFAULT_SIZE);
+  public static BoundedByteArrayOutputStream create(Charset charset) {
+    return new BoundedByteArrayOutputStream(DEFAULT_SIZE, charset);
   }
 
-  public static BoundedByteArrayOutputStream create(int initialSize) {
+  public static BoundedByteArrayOutputStream create(int initialSize, Charset charset) {
     if (initialSize > DEFAULT_SIZE) {
       initialSize = DEFAULT_SIZE;
     }
-    return new BoundedByteArrayOutputStream(DEFAULT_SIZE, initialSize);
+    return new BoundedByteArrayOutputStream(DEFAULT_SIZE, initialSize, charset);
   }
 }

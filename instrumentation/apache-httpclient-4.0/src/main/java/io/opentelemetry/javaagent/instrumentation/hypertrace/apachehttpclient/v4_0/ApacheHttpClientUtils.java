@@ -19,7 +19,6 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v4_0.ApacheHttpClientObjectRegistry.SpanAndAttributeKey;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
@@ -31,8 +30,9 @@ import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpMessage;
 import org.apache.http.HttpResponse;
 import org.hypertrace.agent.config.Config.AgentConfig;
+import org.hypertrace.agent.core.BoundedByteArrayOutputStream;
 import org.hypertrace.agent.core.BoundedByteArrayOutputStreamFactory;
-import org.hypertrace.agent.core.ContentEncodingUtils;
+import org.hypertrace.agent.core.ContentTypeCharsetUtils;
 import org.hypertrace.agent.core.ContentTypeUtils;
 import org.hypertrace.agent.core.HypertraceConfig;
 import org.hypertrace.agent.core.HypertraceSemanticAttributes;
@@ -101,19 +101,20 @@ public class ApacheHttpClientUtils {
       return;
     }
 
+    String charsetStr = ContentTypeUtils.parseCharset(contentType.getValue());
+    Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
+
     if (entity.isRepeatable()) {
       try {
-        ByteArrayOutputStream byteArrayOutputStream = BoundedByteArrayOutputStreamFactory.create();
+        BoundedByteArrayOutputStream byteArrayOutputStream =
+            BoundedByteArrayOutputStreamFactory.create(charset);
         entity.writeTo(byteArrayOutputStream);
-        String encoding =
-            entity.getContentEncoding() != null ? entity.getContentEncoding().getValue() : "";
 
-        Charset charset = ContentEncodingUtils.toCharset(encoding);
         try {
-          String body = byteArrayOutputStream.toString(charset.name());
+          String body = byteArrayOutputStream.toStringWithSuppliedCharset();
           span.setAttribute(bodyAttributeKey, body);
         } catch (UnsupportedEncodingException e) {
-          log.error("Could not parse charset from encoding {}", encoding, e);
+          log.error("Could not parse charset from encoding {}", charsetStr, e);
         }
       } catch (IOException e) {
         log.error("Could not read request input stream from repeatable request entity/body", e);

@@ -20,6 +20,8 @@ public class ContentTypeUtils {
 
   private ContentTypeUtils() {}
 
+  private static final String CHARSET_EQUALS = "charset=";
+
   /**
    * Returns true if the request/response with this content type should be captured.
    *
@@ -34,5 +36,23 @@ public class ContentTypeUtils {
     return contentType.contains("json")
         || contentType.contains("graphql")
         || contentType.contains("x-www-form-urlencoded");
+  }
+
+  public static String parseCharset(String contentType) {
+    if (contentType == null) {
+      return null;
+    }
+
+    contentType = contentType.toLowerCase();
+    int indexOfCharset = contentType.indexOf(CHARSET_EQUALS);
+    if (indexOfCharset == -1) {
+      return null;
+    }
+
+    int indexOfEncoding = indexOfCharset + CHARSET_EQUALS.length();
+    if (indexOfEncoding < contentType.length()) {
+      return contentType.substring(indexOfEncoding, contentType.length());
+    }
+    return null;
   }
 }

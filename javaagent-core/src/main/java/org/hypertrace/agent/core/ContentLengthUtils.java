@@ -20,15 +20,15 @@ public class ContentLengthUtils {
   private ContentLengthUtils() {}
 
   // default content length
-  public static final int DEFAULT = 128;
+  public static final int DEFAULT = BoundedByteArrayOutputStreamFactory.DEFAULT_SIZE;
 
-  public static int parseLength(String lengthStr) {
-    if (lengthStr == null || lengthStr.isEmpty()) {
+  public static int parseLength(CharSequence lengthStr) {
+    if (lengthStr == null || lengthStr.length() == 0) {
       return DEFAULT;
     }
 
     try {
-      return Integer.parseInt(lengthStr);
+      return Integer.parseInt(lengthStr.toString());
     } catch (Exception ex) {
       return DEFAULT;
     }

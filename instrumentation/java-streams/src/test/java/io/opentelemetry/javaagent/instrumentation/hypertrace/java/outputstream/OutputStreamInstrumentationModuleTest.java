@@ -19,6 +19,10 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.java.outputstream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import org.hypertrace.agent.core.BoundedByteArrayOutputStream;
+import org.hypertrace.agent.core.BoundedByteArrayOutputStreamFactory;
 import org.hypertrace.agent.core.GlobalObjectRegistry;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.junit.jupiter.api.Assertions;
@@ -27,6 +31,9 @@ import org.junit.jupiter.api.Test;
 class OutputStreamInstrumentationModuleTest extends AbstractInstrumenterTest {
   private static final String STR1 = "hellofoobarrandom";
   private static final String STR2 = "someother";
+
+  private static final int MAX_SIZE = Integer.MAX_VALUE;
+  private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
   @Test
   public void write() {
@@ -79,7 +86,8 @@ class OutputStreamInstrumentationModuleTest extends AbstractInstrumenterTest {
   }
 
   private void write(OutputStream outputStream, Runnable read, String expected) {
-    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+    BoundedByteArrayOutputStream buffer =
+        BoundedByteArrayOutputStreamFactory.create(MAX_SIZE, DEFAULT_CHARSET);
     GlobalObjectRegistry.outputStreamToBufferMap.put(outputStream, buffer);
     read.run();
     Assertions.assertEquals(expected, buffer.toString());
