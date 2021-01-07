@@ -140,17 +140,6 @@ public class NettyChannelPipelineInstrumentation implements TypeInstrumentation 
         //          }
       } catch (IllegalArgumentException e) {
         // Prevented adding duplicate handlers.
-        System.out.println("\n\n duplicated name");
-      }
-
-      System.out.println("\nPipeline names");
-      for (String name : pipeline.names()) {
-        ChannelHandler channelHandler = pipeline.get(name);
-        if (channelHandler == null) {
-          System.out.printf("channelHandler is null: %s\n", name);
-        } else {
-          System.out.printf("%s:%s\n", name, channelHandler.getClass().getCanonicalName());
-        }
       }
     }
   }

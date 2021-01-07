@@ -147,7 +147,6 @@ public class Netty41ServerInstrumentationTest extends AbstractInstrumenterTest {
       Assertions.assertEquals(RESPONSE_BODY, response.body().string());
     }
 
-    System.out.println("foo bar");
     List<List<SpanData>> traces = TEST_WRITER.getTraces();
     TEST_WRITER.waitForTraces(1);
     Assertions.assertEquals(1, traces.size());
