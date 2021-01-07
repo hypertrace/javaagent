@@ -63,11 +63,12 @@ public abstract class AbstractSmokeTest {
   private static OpenTelemetryStorage openTelemetryStorage;
 
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+  private static final int DEFAULT_TIMEOUT_SECONDS = 30;
   protected OkHttpClient client =
       new OkHttpClient.Builder()
-          .connectTimeout(30, TimeUnit.SECONDS)
-          .readTimeout(30, TimeUnit.SECONDS)
-          .writeTimeout(30, TimeUnit.SECONDS)
+          .connectTimeout(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+          .readTimeout(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+          .writeTimeout(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
           .followRedirects(true)
           .build();
 

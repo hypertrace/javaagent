@@ -47,8 +47,7 @@ public class GrpcServerInterceptor implements ServerInterceptor {
     Map<String, String> mapHeaders = GrpcSpanDecorator.metadataToMap(headers);
 
     if (HypertraceConfig.get().getDataCapture().getRpcMetadata().getRequest().getValue()) {
-      GrpcSpanDecorator.addMetadataAttributes(
-          mapHeaders, currentSpan, HypertraceSemanticAttributes::rpcRequestMetadata);
+      GrpcSpanDecorator.addMetadataAttributes(mapHeaders, currentSpan);
     }
 
     boolean block = FilterRegistry.getFilter().evaluateRequestHeaders(currentSpan, mapHeaders);
