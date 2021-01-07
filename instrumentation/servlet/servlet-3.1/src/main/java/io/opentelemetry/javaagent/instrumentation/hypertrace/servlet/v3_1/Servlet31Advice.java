@@ -16,6 +16,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.common.ServletSpanDecorator;
@@ -79,15 +80,15 @@ public class Servlet31Advice {
     while (headerNames.hasMoreElements()) {
       String headerName = headerNames.nextElement();
       String headerValue = httpRequest.getHeader(headerName);
+      AttributeKey<String> attributeKey =
+          HypertraceSemanticAttributes.httpRequestHeader(headerName);
 
       if (HypertraceConfig.get().getDataCapture().getHttpHeaders().getRequest().getValue()) {
-        currentSpan.setAttribute(
-            HypertraceSemanticAttributes.httpRequestHeader(headerName), headerValue);
+        currentSpan.setAttribute(attributeKey, headerValue);
       }
-      headers.put(headerName, headerValue);
+      headers.put(attributeKey.getKey(), headerValue);
     }
-    boolean block = FilterRegistry.getFilter().evaluateRequestHeaders(currentSpan, headers);
-    if (block) {
+    if (FilterRegistry.getFilter().evaluateRequestHeaders(currentSpan, headers)) {
       httpResponse.setStatus(403);
       return true;
     }

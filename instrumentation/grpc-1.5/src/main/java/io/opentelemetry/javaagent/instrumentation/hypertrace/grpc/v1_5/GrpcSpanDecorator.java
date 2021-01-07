@@ -26,6 +26,7 @@ import io.opentelemetry.api.trace.Span;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
+import org.hypertrace.agent.core.HypertraceSemanticAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,10 +65,9 @@ public class GrpcSpanDecorator {
     }
   }
 
-  public static void addMetadataAttributes(
-      Map<String, String> metadata, Span span, Function<String, AttributeKey<String>> keySupplier) {
+  public static void addMetadataAttributes(Map<String, String> metadata, Span span) {
     for (Map.Entry<String, String> entry : metadata.entrySet()) {
-      span.setAttribute(keySupplier.apply(entry.getKey()), entry.getValue());
+      span.setAttribute(entry.getKey(), entry.getValue());
     }
   }
 
@@ -81,7 +81,7 @@ public class GrpcSpanDecorator {
       Iterable<String> stringValues = metadata.getAll(stringKey);
       for (String stringValue : stringValues) {
         key = GrpcSemanticAttributes.removeHypertracePrefixAndAddColon(key);
-        mapHeaders.put(key, stringValue);
+        mapHeaders.put(HypertraceSemanticAttributes.rpcRequestMetadata(key).getKey(), stringValue);
       }
     }
     return mapHeaders;
