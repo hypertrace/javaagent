@@ -76,7 +76,6 @@ public class JaxrsClientEntityInterceptor implements ReaderInterceptor, WriterIn
     InputStream entityStream = responseContext.getInputStream();
     Object entity = null;
     try {
-      String encodingStr = responseContext.getHeaders().getFirst(HttpHeaders.CONTENT_ENCODING);
       String contentLengthStr = responseContext.getHeaders().getFirst(HttpHeaders.CONTENT_LENGTH);
       int contentLength = ContentLengthUtils.parseLength(contentLengthStr);
 
@@ -91,10 +90,7 @@ public class JaxrsClientEntityInterceptor implements ReaderInterceptor, WriterIn
       GlobalObjectRegistry.inputStreamToSpanAndBufferMap.put(
           entityStream,
           new SpanAndBuffer(
-              currentSpan,
-              buffer,
-              HypertraceSemanticAttributes.HTTP_RESPONSE_BODY,
-              ContentTypeCharsetUtils.toCharset(encodingStr)));
+              currentSpan, buffer, HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, charset));
       entity = responseContext.proceed();
     } catch (Exception ex) {
       log.error("Exception while capturing response body", ex);

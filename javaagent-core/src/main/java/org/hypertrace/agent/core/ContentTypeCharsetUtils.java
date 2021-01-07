@@ -29,15 +29,15 @@ public class ContentTypeCharsetUtils {
   // default for HTTP 1.1 https://www.w3.org/International/articles/http-charset/index
   private static final Charset DEFAULT_CHARSET = StandardCharsets.ISO_8859_1;
 
-  public static Charset toCharset(String encoding) {
-    if (encoding == null || encoding.isEmpty()) {
+  public static Charset toCharset(String charsetName) {
+    if (charsetName == null || charsetName.isEmpty()) {
       return DEFAULT_CHARSET;
     }
     try {
-      return Charset.forName(encoding);
+      return Charset.forName(charsetName);
     } catch (Exception e) {
       log.error(
-          "Could not parse encoding {} to charset, using default {}", encoding, DEFAULT_CHARSET);
+          "Could not parse encoding {} to charset, using default {}", charsetName, DEFAULT_CHARSET);
     }
     return DEFAULT_CHARSET;
   }

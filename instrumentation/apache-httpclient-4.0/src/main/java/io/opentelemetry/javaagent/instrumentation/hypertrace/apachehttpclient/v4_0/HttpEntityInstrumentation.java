@@ -35,11 +35,13 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.hypertrace.agent.core.BoundedByteArrayOutputStream;
 import org.hypertrace.agent.core.BoundedByteArrayOutputStreamFactory;
 import org.hypertrace.agent.core.ContentLengthUtils;
 import org.hypertrace.agent.core.ContentTypeCharsetUtils;
+import org.hypertrace.agent.core.ContentTypeUtils;
 import org.hypertrace.agent.core.GlobalObjectRegistry;
 import org.hypertrace.agent.core.GlobalObjectRegistry.SpanAndBuffer;
 
@@ -88,9 +90,13 @@ public class HttpEntityInstrumentation implements TypeInstrumentation {
         contentSize = ContentLengthUtils.DEFAULT;
       }
 
-      String encoding =
-          thizz.getContentEncoding() != null ? thizz.getContentEncoding().getValue() : "";
-      Charset charset = ContentTypeCharsetUtils.toCharset(encoding);
+      Header contentTypeHeader = thizz.getContentType();
+      String charsetStr = null;
+      if (contentTypeHeader != null) {
+        charsetStr = ContentTypeUtils.parseCharset(contentTypeHeader.getValue());
+      }
+      Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
+
       SpanAndBuffer spanAndBuffer =
           new SpanAndBuffer(
               clientSpan.span,
@@ -115,10 +121,13 @@ public class HttpEntityInstrumentation implements TypeInstrumentation {
         contentSize = ContentLengthUtils.DEFAULT;
       }
 
-      // TODO set charset
-      String encoding =
-          thizz.getContentEncoding() != null ? thizz.getContentEncoding().getValue() : "";
-      Charset charset = ContentTypeCharsetUtils.toCharset(encoding);
+      Header contentTypeHeader = thizz.getContentType();
+      String charsetStr = null;
+      if (contentTypeHeader != null) {
+        charsetStr = ContentTypeUtils.parseCharset(contentTypeHeader.getValue());
+      }
+      Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
+
       BoundedByteArrayOutputStream byteArrayOutputStream =
           BoundedByteArrayOutputStreamFactory.create((int) contentSize, charset);
 
@@ -133,9 +142,6 @@ public class HttpEntityInstrumentation implements TypeInstrumentation {
       if (spanAndAttributeKey == null) {
         return;
       }
-
-      String encoding =
-          thizz.getContentEncoding() != null ? thizz.getContentEncoding().getValue() : "";
 
       BoundedByteArrayOutputStream bufferedOutStream =
           GlobalObjectRegistry.outputStreamToBufferMap.remove(outputStream);
