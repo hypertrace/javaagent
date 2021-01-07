@@ -18,6 +18,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0;
 
 import io.netty.util.AttributeKey;
 import io.opentelemetry.javaagent.instrumentation.api.WeakMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.hypertrace.agent.core.BoundedByteArrayOutputStream;
@@ -44,6 +45,9 @@ public class AttributeKeys {
 
   public static final AttributeKey<BoundedByteArrayOutputStream> REQUEST_BODY_BUFFER =
       attributeKey(HypertraceSemanticAttributes.HTTP_REQUEST_BODY.getKey());
+
+  public static final AttributeKey<Map<String, String>> REQUEST_HEADERS =
+      attributeKey(AttributeKeys.class.getName() + ".request-headers");
 
   /**
    * Generate an attribute key or reuse the one existing in the global app map. This implementation

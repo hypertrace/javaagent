@@ -102,7 +102,7 @@ class VertxInstrumentationTest extends AbstractInstrumenterTest {
         new Request.Builder()
             .url(url)
             .header(REQUEST_HEADER_NAME, REQUEST_HEADER_VALUE)
-            .post(RequestBody.create(REQUEST_BODY, MediaType.get("application/json")))
+            .post(RequestBody.create(MediaType.get("application/json"), REQUEST_BODY))
             .build();
     try (Response response = httpClient.newCall(request).execute()) {
       Assertions.assertEquals(200, response.code());

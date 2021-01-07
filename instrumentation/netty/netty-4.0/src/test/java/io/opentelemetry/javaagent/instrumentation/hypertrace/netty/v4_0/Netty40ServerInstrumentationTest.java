@@ -147,7 +147,6 @@ public class Netty40ServerInstrumentationTest extends AbstractInstrumenterTest {
       Assertions.assertEquals(RESPONSE_BODY, response.body().string());
     }
 
-    System.out.println("foo bar");
     List<List<SpanData>> traces = TEST_WRITER.getTraces();
     TEST_WRITER.waitForTraces(1);
     Assertions.assertEquals(1, traces.size());
@@ -173,6 +172,43 @@ public class Netty40ServerInstrumentationTest extends AbstractInstrumenterTest {
     Assertions.assertEquals(
         RESPONSE_BODY,
         spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+  }
+
+  @Test
+  public void block() throws IOException, TimeoutException, InterruptedException {
+    Request request =
+        new Request.Builder()
+            .url(String.format("http://localhost:%d", port))
+            .header(REQUEST_HEADER_NAME, REQUEST_HEADER_VALUE)
+            .header("mockblock", "true")
+            .get()
+            .build();
+
+    try (Response response = httpClient.newCall(request).execute()) {
+      Assertions.assertEquals(403, response.code());
+      Assertions.assertTrue(response.body().string().isEmpty());
+    }
+
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    TEST_WRITER.waitForTraces(1);
+    Assertions.assertEquals(1, traces.size());
+    List<SpanData> trace = traces.get(0);
+    Assertions.assertEquals(1, trace.size());
+    SpanData spanData = trace.get(0);
+
+    Assertions.assertEquals(
+        REQUEST_HEADER_VALUE,
+        spanData
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
+    Assertions.assertNull(
+        spanData
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_HEADER_NAME)));
+    Assertions.assertNull(
+        spanData
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_BODY)));
   }
 
   private RequestBody requestBody(final boolean chunked, final long size, final int writeSize) {
