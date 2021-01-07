@@ -1,0 +1,79 @@
+name: Publish artifacts
+on:
+# Will only run when release is published. 
+  release:
+    types: 
+      - created
+  workflow_dispatch:
+
+jobs:
+  publish-artifacts:
+    runs-on: ubuntu-20.04
+    steps:
+      # Set fetch-depth: 0 to fetch commit history and tags for use in version calculation
+      - name: Check out code
+        uses: actions/checkout@v2.3.4
+        with:
+          fetch-depth: 0
+
+      - name: create checksum file
+        uses: hypertrace/github-actions/checksum@main
+
+      - name: Cache packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle
+          key: gradle-packages-${{ runner.os }}-${{ github.job }}-${{ hashFiles('**/checksum.txt') }}
+          restore-keys: |
+            gradle-packages-${{ runner.os }}-${{ github.job }}
+            gradle-packages-${{ runner.os }}
+
+      - name: publish docker image
+        uses: hypertrace/github-actions/gradle@main
+        with: 
+          args: publish
+        env:
+          ORG_GRADLE_PROJECT_publishUser: ${{ secrets.BINTRAY_USER }}
+          ORG_GRADLE_PROJECT_publishApiKey: ${{ secrets.BINTRAY_API_KEY }}
+      
+      - name: Copy artifacts to workspace
+        run: |
+          mkdir artifacts
+          cp javaagent/build/libs/*-all.jar artifacts/hypertrace-agent-all.jar
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: hypertrace-javaagent
+          path: artifacts/hypertrace-agent-all.jar
+
+  github-release-publish:
+    needs: publish-images
+    runs-on: ubuntu-20.04
+    container: cibuilds/github:0.13
+      image: 
+      credentials:
+        username: ${{ secrets.DOCKERHUB_READ_USER }}
+        password: ${{ secrets.DOCKERHUB_READ_TOKEN }}
+
+    steps:
+       # Set fetch-depth: 0 to fetch commit history and tags for use in version calculation
+      - name: Checkout Repository
+        uses: actions/checkout@v2.3.4
+        with:
+          fetch-depth: 0
+
+      - name: make directory for artifact
+        run: |
+          mkdir artifacts
+
+      - name: Download javaagent artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: hypertrace-javaagent
+          path: artifacts/
+      
+      - name: publish release on GitHub
+        run: |
+          ghr -t ${GH_TOKEN} -u ${GITHUB_REPOSITORY_OWNER} -r ${GITHUB_REPOSITORY##*/} -n "Release ${GITHUB_REF##*/}" -b "..." --soft $${GITHUB_REF##*/} ./artifacts/
+
+
