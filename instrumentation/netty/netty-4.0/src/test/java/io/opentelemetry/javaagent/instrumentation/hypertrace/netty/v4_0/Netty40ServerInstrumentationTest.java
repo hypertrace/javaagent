@@ -50,7 +50,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okio.Buffer;
 import okio.BufferedSink;
-import org.hypertrace.agent.core.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;

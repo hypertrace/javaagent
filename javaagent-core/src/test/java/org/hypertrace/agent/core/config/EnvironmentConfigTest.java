@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.core;
+package org.hypertrace.agent.core.config;
 
 import com.google.protobuf.StringValue;
 import java.util.Arrays;

@@ -30,8 +30,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import net.bytebuddy.asm.Advice;
 import org.hypertrace.agent.config.Config.AgentConfig;
-import org.hypertrace.agent.core.HypertraceConfig;
-import org.hypertrace.agent.core.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.config.HypertraceConfig;
+import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.filter.FilterRegistry;
 
 public class Servlet31Advice {

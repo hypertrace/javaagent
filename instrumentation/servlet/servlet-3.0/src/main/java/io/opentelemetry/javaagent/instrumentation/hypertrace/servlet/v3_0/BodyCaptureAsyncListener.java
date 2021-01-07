@@ -22,8 +22,8 @@ import javax.servlet.AsyncEvent;
 import javax.servlet.AsyncListener;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import org.hypertrace.agent.core.HypertraceConfig;
-import org.hypertrace.agent.core.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.config.HypertraceConfig;
+import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 
 public class BodyCaptureAsyncListener implements AsyncListener {
 

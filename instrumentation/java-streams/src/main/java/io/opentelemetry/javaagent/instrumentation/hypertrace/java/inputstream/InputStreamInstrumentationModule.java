@@ -36,8 +36,8 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import org.hypertrace.agent.core.GlobalObjectRegistry;
-import org.hypertrace.agent.core.GlobalObjectRegistry.SpanAndBuffer;
+import org.hypertrace.agent.core.instrumentation.GlobalObjectRegistry;
+import org.hypertrace.agent.core.instrumentation.GlobalObjectRegistry.SpanAndBuffer;
 
 /**
  * {@link InputStream} instrumentation. The type matcher applies to all implementations. However

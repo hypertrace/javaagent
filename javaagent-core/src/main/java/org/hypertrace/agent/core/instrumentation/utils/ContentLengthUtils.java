@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.core;
+package org.hypertrace.agent.core.instrumentation.utils;
+
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStreamFactory;
 
 public class ContentLengthUtils {
   private ContentLengthUtils() {}
