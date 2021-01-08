@@ -31,6 +31,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseEncoder;
@@ -91,19 +92,36 @@ public class Netty40ServerInstrumentationTest extends AbstractInstrumenterTest {
 
                 pipeline.addLast(
                     new SimpleChannelInboundHandler() {
+
+                      HttpRequest httpRequest;
+
                       @Override
                       protected void channelRead0(ChannelHandlerContext ctx, Object msg) {
+
+                        if (msg instanceof HttpRequest) {
+                          this.httpRequest = (HttpRequest) msg;
+                        }
+
                         // write response after all content has been received otherwise
                         // server span is closed before request payload is captured
                         if (msg instanceof LastHttpContent) {
-                          ByteBuf responseBody = Unpooled.wrappedBuffer(RESPONSE_BODY.getBytes());
-                          HttpResponse response =
-                              new DefaultFullHttpResponse(
-                                  HTTP_1_1, HttpResponseStatus.valueOf(200), responseBody);
-                          response.headers().add(RESPONSE_HEADER_NAME, RESPONSE_HEADER_VALUE);
-                          response.headers().add("Content-Type", "application-json");
-                          response.headers().set(CONTENT_LENGTH, responseBody.readableBytes());
-                          ctx.write(response);
+                          if (httpRequest.getUri().contains("get_no_content")) {
+                            HttpResponse response =
+                                new DefaultFullHttpResponse(
+                                    HTTP_1_1, HttpResponseStatus.valueOf(204));
+                            response.headers().add(RESPONSE_HEADER_NAME, RESPONSE_HEADER_VALUE);
+                            response.headers().set(CONTENT_LENGTH, 0);
+                            ctx.write(response);
+                          } else if (httpRequest.getUri().contains("post")) {
+                            ByteBuf responseBody = Unpooled.wrappedBuffer(RESPONSE_BODY.getBytes());
+                            HttpResponse response =
+                                new DefaultFullHttpResponse(
+                                    HTTP_1_1, HttpResponseStatus.valueOf(200), responseBody);
+                            response.headers().add(RESPONSE_HEADER_NAME, RESPONSE_HEADER_VALUE);
+                            response.headers().add("Content-Type", "application-json");
+                            response.headers().set(CONTENT_LENGTH, responseBody.readableBytes());
+                            ctx.write(response);
+                          }
                         }
                       }
 
@@ -132,11 +150,47 @@ public class Netty40ServerInstrumentationTest extends AbstractInstrumenterTest {
   }
 
   @Test
+  public void get() throws IOException, TimeoutException, InterruptedException {
+    Request request =
+        new Request.Builder()
+            .url(String.format("http://localhost:%d/get_no_content", port))
+            .header(REQUEST_HEADER_NAME, REQUEST_HEADER_VALUE)
+            .get()
+            .build();
+
+    try (Response response = httpClient.newCall(request).execute()) {
+      Assertions.assertEquals(204, response.code());
+    }
+
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    TEST_WRITER.waitForTraces(1);
+    Assertions.assertEquals(1, traces.size());
+    List<SpanData> trace = traces.get(0);
+    Assertions.assertEquals(1, trace.size());
+    SpanData spanData = trace.get(0);
+
+    Assertions.assertEquals(
+        REQUEST_HEADER_VALUE,
+        spanData
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
+    Assertions.assertEquals(
+        RESPONSE_HEADER_VALUE,
+        spanData
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_HEADER_NAME)));
+    Assertions.assertNull(
+        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+    Assertions.assertNull(
+        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+  }
+
+  @Test
   public void postJson() throws IOException, TimeoutException, InterruptedException {
     RequestBody requestBody = requestBody(true, 3000, 75);
     Request request =
         new Request.Builder()
-            .url(String.format("http://localhost:%d", port))
+            .url(String.format("http://localhost:%d/post", port))
             .header(REQUEST_HEADER_NAME, REQUEST_HEADER_VALUE)
             .header("Transfer-Encoding", "chunked")
             .post(requestBody)
@@ -178,7 +232,7 @@ public class Netty40ServerInstrumentationTest extends AbstractInstrumenterTest {
   public void blocking() throws IOException, TimeoutException, InterruptedException {
     Request request =
         new Request.Builder()
-            .url(String.format("http://localhost:%d", port))
+            .url(String.format("http://localhost:%d/post", port))
             .header(REQUEST_HEADER_NAME, REQUEST_HEADER_VALUE)
             .header("mockblock", "true")
             .get()
