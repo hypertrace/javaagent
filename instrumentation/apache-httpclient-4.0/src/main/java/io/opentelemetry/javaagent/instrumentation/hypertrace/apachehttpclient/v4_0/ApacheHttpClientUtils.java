@@ -32,8 +32,8 @@ import org.apache.http.HttpResponse;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.core.config.HypertraceConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStreamFactory;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeCharsetUtils;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 import org.slf4j.Logger;
@@ -107,7 +107,7 @@ public class ApacheHttpClientUtils {
     if (entity.isRepeatable()) {
       try {
         BoundedByteArrayOutputStream byteArrayOutputStream =
-            BoundedByteArrayOutputStreamFactory.create(charset);
+            BoundedBuffersFactory.createStream(charset);
         entity.writeTo(byteArrayOutputStream);
 
         try {

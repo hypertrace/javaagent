@@ -16,17 +16,19 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.v1_5;
 
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
 import io.grpc.Metadata;
 import io.grpc.Metadata.Key;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,9 +43,10 @@ public class GrpcSpanDecorator {
     if (message instanceof Message) {
       Message mb = (Message) message;
       try {
-        String requestBody = PRINTER.print(mb);
-        span.setAttribute(key, requestBody);
-      } catch (InvalidProtocolBufferException e) {
+        BoundedCharArrayWriter writer = BoundedBuffersFactory.createWriter();
+        PRINTER.appendTo(mb, writer);
+        span.setAttribute(key, writer.toString());
+      } catch (IOException e) {
         log.error("Failed to decode message to JSON", e);
       }
     }

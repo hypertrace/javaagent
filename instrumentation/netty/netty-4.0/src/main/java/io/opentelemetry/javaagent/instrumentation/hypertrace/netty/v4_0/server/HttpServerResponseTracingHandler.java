@@ -39,8 +39,8 @@ import java.util.Map;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.core.config.HypertraceConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStreamFactory;
 import org.hypertrace.agent.core.instrumentation.utils.ContentLengthUtils;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeCharsetUtils;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
@@ -79,7 +79,7 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
         // the buffer is used byt captureBody method
         Attribute<BoundedByteArrayOutputStream> bufferAttr =
             ctx.channel().attr(AttributeKeys.RESPONSE_BODY_BUFFER);
-        bufferAttr.set(BoundedByteArrayOutputStreamFactory.create(contentLength, charset));
+        bufferAttr.set(BoundedBuffersFactory.createStream(contentLength, charset));
       }
     }
 

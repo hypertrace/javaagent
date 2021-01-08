@@ -39,8 +39,8 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.hypertrace.agent.core.instrumentation.GlobalObjectRegistry;
 import org.hypertrace.agent.core.instrumentation.GlobalObjectRegistry.SpanAndBuffer;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStreamFactory;
 import org.hypertrace.agent.core.instrumentation.utils.ContentLengthUtils;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeCharsetUtils;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
@@ -100,7 +100,7 @@ public class HttpEntityInstrumentation implements TypeInstrumentation {
       SpanAndBuffer spanAndBuffer =
           new SpanAndBuffer(
               clientSpan.span,
-              BoundedByteArrayOutputStreamFactory.create((int) contentSize, charset),
+              BoundedBuffersFactory.createStream((int) contentSize, charset),
               clientSpan.attributeKey,
               charset);
       GlobalObjectRegistry.inputStreamToSpanAndBufferMap.put(inputStream, spanAndBuffer);
@@ -129,7 +129,7 @@ public class HttpEntityInstrumentation implements TypeInstrumentation {
       Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
 
       BoundedByteArrayOutputStream byteArrayOutputStream =
-          BoundedByteArrayOutputStreamFactory.create((int) contentSize, charset);
+          BoundedBuffersFactory.createStream((int) contentSize, charset);
 
       GlobalObjectRegistry.outputStreamToBufferMap.put(outputStream, byteArrayOutputStream);
     }

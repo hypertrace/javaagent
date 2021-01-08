@@ -51,7 +51,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.hypertrace.agent.core.instrumentation.GlobalObjectRegistry;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStreamFactory;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 
 @AutoService(InstrumentationModule.class)
@@ -198,8 +198,7 @@ public class ApacheClientReadAllInstrumentationModule extends InstrumentationMod
 
           BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
           ByteArrayOutputStream buffer =
-              BoundedByteArrayOutputStreamFactory.create(
-                  (int) contentSize, Charset.defaultCharset());
+              BoundedBuffersFactory.createStream((int) contentSize, Charset.defaultCharset());
           byte ch;
           while ((ch = (byte) bufferedInputStream.read()) != -1) {
             buffer.write(ch);

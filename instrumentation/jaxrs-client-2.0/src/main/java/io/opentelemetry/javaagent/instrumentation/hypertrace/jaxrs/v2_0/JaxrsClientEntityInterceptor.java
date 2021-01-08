@@ -35,8 +35,8 @@ import org.hypertrace.agent.core.config.HypertraceConfig;
 import org.hypertrace.agent.core.instrumentation.GlobalObjectRegistry;
 import org.hypertrace.agent.core.instrumentation.GlobalObjectRegistry.SpanAndBuffer;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStreamFactory;
 import org.hypertrace.agent.core.instrumentation.utils.ContentLengthUtils;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeCharsetUtils;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
@@ -86,7 +86,7 @@ public class JaxrsClientEntityInterceptor implements ReaderInterceptor, WriterIn
       Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
 
       BoundedByteArrayOutputStream buffer =
-          BoundedByteArrayOutputStreamFactory.create(contentLength, charset);
+          BoundedBuffersFactory.createStream(contentLength, charset);
       GlobalObjectRegistry.inputStreamToSpanAndBufferMap.put(
           entityStream,
           new SpanAndBuffer(
@@ -130,7 +130,7 @@ public class JaxrsClientEntityInterceptor implements ReaderInterceptor, WriterIn
     Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
 
     // TODO length is not known
-    BoundedByteArrayOutputStream buffer = BoundedByteArrayOutputStreamFactory.create(charset);
+    BoundedByteArrayOutputStream buffer = BoundedBuffersFactory.createStream(charset);
     OutputStream entityStream = requestContext.getOutputStream();
     try {
       GlobalObjectRegistry.outputStreamToBufferMap.put(entityStream, buffer);

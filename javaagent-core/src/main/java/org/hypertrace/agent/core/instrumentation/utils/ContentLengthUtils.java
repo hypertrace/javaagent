@@ -16,13 +16,13 @@
 
 package org.hypertrace.agent.core.instrumentation.utils;
 
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStreamFactory;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 
 public class ContentLengthUtils {
   private ContentLengthUtils() {}
 
   // default content length
-  public static final int DEFAULT = BoundedByteArrayOutputStreamFactory.DEFAULT_SIZE;
+  public static final int DEFAULT = BoundedBuffersFactory.MAX_SIZE;
 
   public static int parseLength(CharSequence lengthStr) {
     if (lengthStr == null || lengthStr.length() == 0) {
