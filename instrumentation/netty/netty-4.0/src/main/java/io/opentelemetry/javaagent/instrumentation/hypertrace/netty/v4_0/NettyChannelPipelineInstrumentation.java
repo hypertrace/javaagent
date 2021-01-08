@@ -21,6 +21,7 @@ import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementM
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.nameStartsWith;
 import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.not;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
 import io.netty.channel.ChannelHandler;
@@ -45,7 +46,8 @@ public class NettyChannelPipelineInstrumentation implements TypeInstrumentation 
 
   @Override
   public ElementMatcher<ClassLoader> classLoaderOptimization() {
-    return hasClassesNamed("io.netty.channel.ChannelPipeline");
+    return hasClassesNamed("io.netty.channel.ChannelPipeline")
+        .and(not(hasClassesNamed("org.springframework.web.reactive.HandlerAdapter")));
   }
 
   @Override
