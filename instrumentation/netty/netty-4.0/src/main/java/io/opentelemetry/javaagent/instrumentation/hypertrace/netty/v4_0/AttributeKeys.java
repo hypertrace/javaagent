@@ -60,7 +60,9 @@ public class AttributeKeys {
     ConcurrentMap<String, AttributeKey<?>> classLoaderMap =
         map.computeIfAbsent(AttributeKey.class.getClassLoader(), mapSupplier);
     if (classLoaderMap.containsKey(key)) {
-      return (AttributeKey<T>) classLoaderMap.get(key);
+      @SuppressWarnings("unchecked")
+      AttributeKey<T> attrKey = (AttributeKey<T>) classLoaderMap.get(key);
+      return attrKey;
     }
 
     AttributeKey<T> value = new AttributeKey<>(key);

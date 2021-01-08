@@ -97,6 +97,42 @@ class VertxInstrumentationTest extends AbstractInstrumenterTest {
   }
 
   @Test
+  public void get() throws IOException, TimeoutException, InterruptedException {
+    Request request =
+        new Request.Builder()
+            .url(String.format("http://localhost:%d/get", port))
+            .header(REQUEST_HEADER_NAME, REQUEST_HEADER_VALUE)
+            .get()
+            .build();
+    try (Response response = httpClient.newCall(request).execute()) {
+      Assertions.assertEquals(200, response.code());
+    }
+
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    TEST_WRITER.waitForTraces(1);
+    Assertions.assertEquals(1, traces.size());
+    List<SpanData> trace = traces.get(0);
+    Assertions.assertEquals(1, trace.size());
+    SpanData spanData = trace.get(0);
+    Assertions.assertNull(
+        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+    Assertions.assertEquals(
+        REQUEST_HEADER_VALUE,
+        spanData
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
+    Assertions.assertNull(
+        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+    Assertions.assertEquals(
+        VertxWebServer.RESPONSE_HEADER_VALUE,
+        spanData
+            .getAttributes()
+            .get(
+                HypertraceSemanticAttributes.httpResponseHeader(
+                    VertxWebServer.RESPONSE_HEADER_NAME)));
+  }
+
+  @Test
   public void blocking() throws IOException, TimeoutException, InterruptedException {
     Request request =
         new Request.Builder()

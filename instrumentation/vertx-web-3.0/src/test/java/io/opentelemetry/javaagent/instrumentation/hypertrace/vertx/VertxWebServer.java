@@ -69,6 +69,15 @@ public class VertxWebServer extends AbstractVerticle {
                           ctx.response().setStatusCode(200).end(RESPONSE_BODY);
                         }));
 
+    router
+        .route("/get")
+        .handler(
+            ctx -> {
+              ctx.response().setStatusCode(200);
+              ctx.response().putHeader(RESPONSE_HEADER_NAME, RESPONSE_HEADER_VALUE);
+              ctx.response().end();
+            });
+
     vertx
         .createHttpServer()
         .requestHandler(router::accept)
