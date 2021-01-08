@@ -19,19 +19,30 @@ package org.hypertrace.agent.core.instrumentation.buffer;
 import java.nio.charset.Charset;
 import org.hypertrace.agent.core.config.HypertraceConfig;
 
-public class BoundedByteArrayOutputStreamFactory {
+public class BoundedBuffersFactory {
 
-  public static final int DEFAULT_SIZE =
+  public static final int MAX_SIZE =
       HypertraceConfig.get().getDataCapture().getBodyMaxSizeBytes().getValue();
 
-  public static BoundedByteArrayOutputStream create(Charset charset) {
-    return new BoundedByteArrayOutputStream(DEFAULT_SIZE, charset);
+  public static BoundedByteArrayOutputStream createStream(Charset charset) {
+    return new BoundedByteArrayOutputStream(MAX_SIZE, charset);
   }
 
-  public static BoundedByteArrayOutputStream create(int initialSize, Charset charset) {
-    if (initialSize > DEFAULT_SIZE) {
-      initialSize = DEFAULT_SIZE;
+  public static BoundedByteArrayOutputStream createStream(int initialSize, Charset charset) {
+    if (initialSize > MAX_SIZE) {
+      initialSize = MAX_SIZE;
     }
-    return new BoundedByteArrayOutputStream(DEFAULT_SIZE, initialSize, charset);
+    return new BoundedByteArrayOutputStream(MAX_SIZE, initialSize, charset);
+  }
+
+  public static BoundedCharArrayWriter createWriter() {
+    return new BoundedCharArrayWriter(MAX_SIZE);
+  }
+
+  public static BoundedCharArrayWriter createWriter(int initialSize) {
+    if (initialSize > MAX_SIZE) {
+      initialSize = MAX_SIZE;
+    }
+    return new BoundedCharArrayWriter(MAX_SIZE, initialSize);
   }
 }
