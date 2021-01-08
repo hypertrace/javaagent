@@ -69,6 +69,7 @@ public class BoundedCharArrayWriter extends CharArrayWriter {
 
   @Override
   public CharArrayWriter append(CharSequence csq) {
+    // the same impl as the super class
     String s = (csq == null ? "null" : csq.toString());
     this.write(s, 0, s.length());
     return this;
