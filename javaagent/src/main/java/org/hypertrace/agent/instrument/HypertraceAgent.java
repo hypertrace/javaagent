@@ -66,6 +66,9 @@ public class HypertraceAgent {
     instance = new HypertraceAgent();
     setDefaultConfig();
     OpenTelemetryAgent.premain(agentArgs, inst);
+    System.out.printf(
+        "Hypertrace agent started, version: %s\n",
+        HypertraceAgent.class.getPackage().getImplementationVersion());
   }
 
   /** Set default values to OTEL config. OTEL config has a higher precedence. */
