@@ -1,4 +1,5 @@
-serviceName: service
+# use snake case for newly added fields
+service_name: service
 propagationFormats:
   - B3
 reporting:
