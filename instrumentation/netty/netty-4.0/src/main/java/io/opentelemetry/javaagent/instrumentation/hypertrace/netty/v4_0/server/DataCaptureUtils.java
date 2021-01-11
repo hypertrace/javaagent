@@ -16,6 +16,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.server;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpMessage;
@@ -35,7 +36,7 @@ public class DataCaptureUtils {
       Span span,
       Channel channel,
       AttributeKey<BoundedByteArrayOutputStream> attributeKey,
-      HttpContent httpContent) {
+      Object httpContentOrBuffer) {
 
     Attribute<BoundedByteArrayOutputStream> bufferAttr = channel.attr(attributeKey);
     BoundedByteArrayOutputStream buffer = bufferAttr.get();
@@ -44,16 +45,17 @@ public class DataCaptureUtils {
       return;
     }
 
-    final ByteArrayOutputStream finalBuffer = buffer;
-    httpContent
-        .content()
-        .forEachByte(
-            value -> {
-              finalBuffer.write(value);
-              return true;
-            });
+    ByteBuf content = castToBuf(httpContentOrBuffer);
+    if (content != null && content.isReadable()) {
+      final ByteArrayOutputStream finalBuffer = buffer;
+      content.forEachByte(
+          value -> {
+            finalBuffer.write(value);
+            return true;
+          });
+    }
 
-    if (httpContent instanceof LastHttpContent) {
+    if (httpContentOrBuffer instanceof LastHttpContent) {
       bufferAttr.remove();
       try {
         span.setAttribute(attributeKey.name(), buffer.toStringWithSuppliedCharset());
@@ -61,6 +63,16 @@ public class DataCaptureUtils {
         // ignore charset was parsed before
       }
     }
+  }
+
+  private static ByteBuf castToBuf(Object msg) {
+    if (msg instanceof ByteBuf) {
+      return (ByteBuf) msg;
+    } else if (msg instanceof HttpContent) {
+      HttpContent httpContent = (HttpContent) msg;
+      return httpContent.content();
+    }
+    return null;
   }
 
   // see io.netty.handler.codec.http.HttpUtil

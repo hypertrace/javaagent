@@ -85,8 +85,7 @@ public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapte
 
     if (msg instanceof HttpContent
         && agentConfig.getDataCapture().getHttpBody().getRequest().getValue()) {
-      DataCaptureUtils.captureBody(
-          span, channel, AttributeKeys.REQUEST_BODY_BUFFER, (HttpContent) msg);
+      DataCaptureUtils.captureBody(span, channel, AttributeKeys.REQUEST_BODY_BUFFER, msg);
     }
 
     ctx.fireChannelRead(msg);
