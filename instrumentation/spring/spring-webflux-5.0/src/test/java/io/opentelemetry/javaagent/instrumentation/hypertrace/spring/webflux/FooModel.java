@@ -14,14 +14,19 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.server;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.spring.webflux;
 
-import io.netty.channel.CombinedChannelDuplexHandler;
+class FooModel {
+  public String id;
+  public String name;
 
-public class HttpServerTracingHandler
-    extends CombinedChannelDuplexHandler<
-        HttpServerRequestTracingHandler, HttpServerResponseTracingHandler> {
-  public HttpServerTracingHandler() {
-    super(new HttpServerRequestTracingHandler(), new HttpServerResponseTracingHandler());
+  FooModel(String id, String name) {
+    this.id = id;
+    this.name = name;
+  }
+
+  @Override
+  public String toString() {
+    return "{\"id\":\"" + id + "\",\"name\":\"" + name + "\"}";
   }
 }

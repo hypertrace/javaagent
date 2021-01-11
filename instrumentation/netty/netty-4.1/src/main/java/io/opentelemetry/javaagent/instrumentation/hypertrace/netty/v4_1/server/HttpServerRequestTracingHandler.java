@@ -16,6 +16,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.server;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -84,9 +85,9 @@ public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapte
     }
 
     if (msg instanceof HttpContent
-        && agentConfig.getDataCapture().getHttpBody().getRequest().getValue()) {
-      DataCaptureUtils.captureBody(
-          span, channel, AttributeKeys.REQUEST_BODY_BUFFER, (HttpContent) msg);
+        || msg instanceof ByteBuf
+            && agentConfig.getDataCapture().getHttpBody().getRequest().getValue()) {
+      DataCaptureUtils.captureBody(span, channel, AttributeKeys.REQUEST_BODY_BUFFER, msg);
     }
 
     ctx.fireChannelRead(msg);
