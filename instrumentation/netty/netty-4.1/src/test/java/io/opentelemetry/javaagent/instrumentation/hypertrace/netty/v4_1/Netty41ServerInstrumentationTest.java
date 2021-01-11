@@ -18,6 +18,9 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1;
 
 import static io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_LENGTH;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+import static io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.NettyTestServer.RESPONSE_BODY;
+import static io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.NettyTestServer.RESPONSE_HEADER_NAME;
+import static io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.NettyTestServer.RESPONSE_HEADER_VALUE;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
@@ -53,100 +56,29 @@ import okio.BufferedSink;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class Netty41ServerInstrumentationTest extends AbstractInstrumenterTest {
 
-  private static final LoggingHandler LOGGING_HANDLER =
-      new LoggingHandler(Netty41ServerInstrumentationTest.class, LogLevel.DEBUG);
-
   public static final String REQUEST_HEADER_NAME = "reqheader";
   public static final String REQUEST_HEADER_VALUE = "reqheadervalue";
-  public static final String RESPONSE_HEADER_NAME = "respheader";
-  public static final String RESPONSE_HEADER_VALUE = "respheadervalue";
-  private static final String RESPONSE_BODY = "{\"foo\": \"bar\"}";
 
-  private static EventLoopGroup eventLoopGroup;
   private static int port;
+  private static NettyTestServer nettyTestServer;
 
-  @BeforeAll
-  private static void startServer() throws IOException, InterruptedException {
-    eventLoopGroup = new NioEventLoopGroup();
-
-    ServerBootstrap serverBootstrap = new ServerBootstrap();
-    serverBootstrap.group(eventLoopGroup);
-    serverBootstrap
-        .handler(LOGGING_HANDLER)
-        .childHandler(
-            new ChannelInitializer<Channel>() {
-              @Override
-              protected void initChannel(Channel ch) throws Exception {
-                ChannelPipeline pipeline = ch.pipeline();
-                pipeline.addFirst("logger", LOGGING_HANDLER);
-
-                pipeline.addLast(new HttpServerCodec());
-                //                pipeline.addLast(new HttpRequestDecoder());
-                //                pipeline.addLast(new HttpResponseEncoder());
-
-                pipeline.addLast(
-                    new SimpleChannelInboundHandler() {
-
-                      HttpRequest httpRequest;
-
-                      @Override
-                      protected void channelRead0(ChannelHandlerContext ctx, Object msg) {
-
-                        if (msg instanceof HttpRequest) {
-                          this.httpRequest = (HttpRequest) msg;
-                        }
-
-                        // write response after all content has been received otherwise
-                        // server span is closed before request payload is captured
-                        if (msg instanceof LastHttpContent) {
-                          if (httpRequest.getUri().contains("get_no_content")) {
-                            HttpResponse response =
-                                new DefaultFullHttpResponse(
-                                    HTTP_1_1, HttpResponseStatus.valueOf(204));
-                            response.headers().add(RESPONSE_HEADER_NAME, RESPONSE_HEADER_VALUE);
-                            response.headers().set(CONTENT_LENGTH, 0);
-                            ctx.write(response);
-                          } else if (httpRequest.getUri().contains("post")) {
-                            ByteBuf responseBody = Unpooled.wrappedBuffer(RESPONSE_BODY.getBytes());
-                            HttpResponse response =
-                                new DefaultFullHttpResponse(
-                                    HTTP_1_1, HttpResponseStatus.valueOf(200), responseBody);
-                            response.headers().add(RESPONSE_HEADER_NAME, RESPONSE_HEADER_VALUE);
-                            response.headers().add("Content-Type", "application-json");
-                            response.headers().set(CONTENT_LENGTH, responseBody.readableBytes());
-                            ctx.write(response);
-                          }
-                        }
-                      }
-
-                      @Override
-                      public void channelReadComplete(ChannelHandlerContext ctx) {
-                        ctx.flush();
-                      }
-                    });
-              }
-            })
-        .channel(NioServerSocketChannel.class);
-
-    ServerSocket socket;
-    socket = new ServerSocket(0);
-    port = socket.getLocalPort();
-    socket.close();
-
-    serverBootstrap.bind(port).sync();
+  @BeforeEach
+  private void startServer() throws IOException, InterruptedException {
+    nettyTestServer = new NettyTestServer();
+    port = nettyTestServer.create(Arrays.asList(HttpServerCodec.class));
   }
 
-  @AfterAll
-  private static void stopServer() {
-    if (eventLoopGroup != null) {
-      eventLoopGroup.shutdownGracefully();
-    }
+  @AfterEach
+  private void stopServer() {
+    nettyTestServer.stopServer();
   }
 
   @Test
