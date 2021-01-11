@@ -85,8 +85,7 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
 
     if (msg instanceof HttpContent
         && agentConfig.getDataCapture().getHttpBody().getResponse().getValue()) {
-      DataCaptureUtils.captureBody(
-          span, ctx.channel(), AttributeKeys.RESPONSE_BODY_BUFFER, (HttpContent) msg);
+      DataCaptureUtils.captureBody(span, ctx.channel(), AttributeKeys.RESPONSE_BODY_BUFFER, msg);
     }
 
     try (Scope ignored = context.makeCurrent()) {
