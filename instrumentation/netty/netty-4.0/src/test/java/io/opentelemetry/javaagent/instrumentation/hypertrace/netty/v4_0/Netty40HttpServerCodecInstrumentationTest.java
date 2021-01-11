@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.server;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0;
 
-import io.netty.channel.CombinedChannelDuplexHandler;
+import io.netty.handler.codec.http.HttpServerCodec;
+import java.util.Arrays;
 
-public class HttpServerTracingHandler
-    extends CombinedChannelDuplexHandler<
-        HttpServerRequestTracingHandler, HttpServerResponseTracingHandler> {
-  public HttpServerTracingHandler() {
-    super(new HttpServerRequestTracingHandler(), new HttpServerResponseTracingHandler());
+public class Netty40HttpServerCodecInstrumentationTest
+    extends AbstractNetty40ServerInstrumentationTest {
+
+  @Override
+  protected NettyTestServer createNetty() {
+    return new NettyTestServer(Arrays.asList(HttpServerCodec.class));
   }
 }

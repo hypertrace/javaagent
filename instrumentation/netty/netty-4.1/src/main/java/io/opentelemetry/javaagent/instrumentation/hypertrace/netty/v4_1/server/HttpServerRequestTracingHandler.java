@@ -45,12 +45,6 @@ public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapte
 
   private final AgentConfig agentConfig = HypertraceConfig.get();
 
-  public final ChannelInboundHandlerAdapter runBefore;
-
-  public HttpServerRequestTracingHandler(ChannelInboundHandlerAdapter runBefore) {
-    this.runBefore = runBefore;
-  }
-
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) {
     Channel channel = ctx.channel();

@@ -104,9 +104,7 @@ public class NettyChannelPipelineInstrumentation implements TypeInstrumentation 
                   .class
                   .getName(),
               HttpServerTracingHandler.class.getName(),
-              new HttpServerTracingHandler(
-                  new io.opentelemetry.javaagent.instrumentation.netty.v4_1.server
-                      .HttpServerRequestTracingHandler()));
+              new HttpServerTracingHandler());
 
           pipeline.addBefore(
               HttpServerTracingHandler.class.getName(),
@@ -122,7 +120,7 @@ public class NettyChannelPipelineInstrumentation implements TypeInstrumentation 
         } else if (handler instanceof HttpRequestDecoder) {
           pipeline.addLast(
               HttpServerRequestTracingHandler.class.getName(),
-              new HttpServerRequestTracingHandler(null));
+              new HttpServerRequestTracingHandler());
         } else if (handler instanceof HttpResponseEncoder) {
           pipeline.replace(
               io.opentelemetry.javaagent.instrumentation.netty.v4_1.server

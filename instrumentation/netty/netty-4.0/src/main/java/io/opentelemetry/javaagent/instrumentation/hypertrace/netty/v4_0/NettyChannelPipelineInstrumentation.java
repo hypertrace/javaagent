@@ -98,6 +98,16 @@ public class NettyChannelPipelineInstrumentation implements TypeInstrumentation 
                   .getName(),
               HttpServerTracingHandler.class.getName(),
               new HttpServerTracingHandler());
+
+          // add OTEL request handler to start spans
+          pipeline.addBefore(
+              HttpServerTracingHandler.class.getName(),
+              io.opentelemetry.javaagent.instrumentation.netty.v4_0.server
+                  .HttpServerRequestTracingHandler.class
+                  .getName(),
+              new io.opentelemetry.javaagent.instrumentation.netty.v4_0.server
+                  .HttpServerRequestTracingHandler());
+
           pipeline.addLast(
               HttpServerBlockingRequestHandler.class.getName(),
               new HttpServerBlockingRequestHandler());
