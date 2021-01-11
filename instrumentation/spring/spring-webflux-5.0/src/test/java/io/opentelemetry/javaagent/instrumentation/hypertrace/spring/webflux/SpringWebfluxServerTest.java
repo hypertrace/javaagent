@@ -37,6 +37,8 @@ import org.springframework.boot.web.embedded.netty.NettyReactiveWebServerFactory
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Flux;
 
 @ExtendWith(SpringExtension.class) // enables junit5
 @SpringBootTest(
@@ -93,6 +95,43 @@ public class SpringWebfluxServerTest extends AbstractInstrumenterTest {
     Assertions.assertNull(
         spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
     Assertions.assertNull(
+        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+  }
+
+  @Test
+  public void getStream() throws IOException, TimeoutException, InterruptedException {
+    Flux<FooModel> modelFlux = SpringWebFluxTestApplication.finiteStream();
+    StringBuilder responseBodyStr = new StringBuilder();
+    modelFlux
+        .flatMap(
+            fooModel -> {
+              responseBodyStr.append(fooModel.toString()).append("\n");
+              return Flux.empty();
+            })
+        .then()
+        .block();
+
+    Request request =
+        new Request.Builder()
+            .url(String.format("http://localhost:%d/stream", port))
+            .header(REQUEST_HEADER_NAME, REQUEST_HEADER_VALUE)
+            .get()
+            .build();
+
+    ServerResponse serverResponse = SpringWebFluxTestApplication.finiteStreamResponse().block();
+    try (Response response = httpClient.newCall(request).execute()) {
+      Assertions.assertEquals(200, response.code());
+      Assertions.assertEquals(responseBodyStr.toString(), response.body().string());
+    }
+
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    TEST_WRITER.waitForTraces(1);
+    Assertions.assertEquals(1, traces.size());
+    List<SpanData> trace = traces.get(0);
+    Assertions.assertEquals(1, trace.size());
+    SpanData spanData = trace.get(0);
+    Assertions.assertEquals(
+        responseBodyStr.toString(),
         spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
   }
 

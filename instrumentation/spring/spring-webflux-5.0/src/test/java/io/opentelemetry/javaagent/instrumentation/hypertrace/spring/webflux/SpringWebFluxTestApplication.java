@@ -16,8 +16,6 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.spring.webflux;
 
-import static org.springframework.web.reactive.function.server.ServerResponse.ok;
-
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.stream.Stream;
@@ -72,32 +70,29 @@ class SpringWebFluxTestApplication {
   }
 
   @Bean
-  RouterFunction<ServerResponse> finiteStream() {
+  RouterFunction<ServerResponse> finiteStreamRouterFunction() {
     return org.springframework.web.reactive.function.server.RouterFunctions.route(
         org.springframework.web.reactive.function.server.RequestPredicates.GET("/stream"),
         new HandlerFunction<ServerResponse>() {
           @Override
           public Mono<ServerResponse> handle(ServerRequest request) {
-            return finiteStream(request);
+            return finiteStreamResponse();
           }
         });
   }
 
-  public Mono<ServerResponse> finiteStream(ServerRequest req) {
+  public static Mono<ServerResponse> finiteStreamResponse() {
+    return ServerResponse.ok()
+        .contentType(MediaType.APPLICATION_STREAM_JSON)
+        .body(finiteStream(), FooModel.class);
+  }
+
+  public static Flux<FooModel> finiteStream() {
     String[] array = {"a", "b", "c", "d", "e"};
-
-    // Arrays.stream
     Stream<String> stream = Arrays.stream(array);
-
-    Flux<FooModel> mapFlux =
-        Flux.fromStream(stream)
-            .zipWith(Flux.interval(Duration.ofSeconds(1)))
-            .map(
-                i -> {
-                  return new FooModel(i.getT1(), "name");
-                });
-
-    return ok().contentType(MediaType.APPLICATION_STREAM_JSON).body(mapFlux, FooModel.class);
+    return Flux.fromStream(stream)
+        .zipWith(Flux.interval(Duration.ofSeconds(1)))
+        .map(i -> new FooModel(i.getT1(), "name"));
   }
 
   @Component
