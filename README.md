@@ -22,6 +22,7 @@ List of supported frameworks with additional capabilities:
 | [OkHttp](https://github.com/square/okhttp/)                                                            | 3.0+            |
 | [Servlet](https://javaee.github.io/javaee-spec/javadocs/javax/servlet/package-summary.html)            | 2.3+            |
 | [Spark Web Framework](https://github.com/perwendel/spark)                                              | 2.3+            |
+| [Spring Webflux](https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/web/reactive/package-summary.html) (only server)       | 5.0+            |
 | [Vert.x](https://vertx.io) (only server)                                                               | 3.0+            |
 
 ### Adding custom filter implementation
