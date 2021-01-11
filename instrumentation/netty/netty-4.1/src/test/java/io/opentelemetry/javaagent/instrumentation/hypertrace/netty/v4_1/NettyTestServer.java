@@ -78,10 +78,6 @@ public class NettyTestServer {
                   ChannelHandler channelHandler = channelHandlerClass.newInstance();
                   pipeline.addLast(channelHandler);
                 }
-                //                pipeline.addLast(handlerList.toArray(new ChannelHandler[0]));
-                //                pipeline.addLast(new HttpServerCodec());
-                //                pipeline.addLast(new HttpRequestDecoder());
-                //                pipeline.addLast(new HttpResponseEncoder());
 
                 pipeline.addLast(
                     new SimpleChannelInboundHandler() {
