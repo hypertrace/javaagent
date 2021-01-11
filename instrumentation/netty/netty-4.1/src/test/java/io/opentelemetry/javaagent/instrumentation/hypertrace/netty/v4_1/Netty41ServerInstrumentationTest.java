@@ -32,10 +32,9 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
@@ -87,8 +86,9 @@ public class Netty41ServerInstrumentationTest extends AbstractInstrumenterTest {
                 ChannelPipeline pipeline = ch.pipeline();
                 pipeline.addFirst("logger", LOGGING_HANDLER);
 
-                pipeline.addLast(new HttpRequestDecoder());
-                pipeline.addLast(new HttpResponseEncoder());
+                pipeline.addLast(new HttpServerCodec());
+                //                pipeline.addLast(new HttpRequestDecoder());
+                //                pipeline.addLast(new HttpResponseEncoder());
 
                 pipeline.addLast(
                     new SimpleChannelInboundHandler() {
