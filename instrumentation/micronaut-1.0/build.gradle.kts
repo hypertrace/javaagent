@@ -59,7 +59,7 @@ for (version in listOf("1.0.0", "2.2.3")) {
         versionedConfiguration("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.1:${versions["opentelemetry_java_agent"]}")
         versionedConfiguration(project(":testing-common"))
         versionedConfiguration("io.micronaut:micronaut-inject-java:${version}")
-        versionedConfiguration("io.micronaut.test:micronaut-test-junit5:${version}")
+        versionedConfiguration("io.micronaut.test:micronaut-test-junit5:${micronautTestVersion}")
         versionedConfiguration("io.micronaut:micronaut-http-server-netty:${version}")
         versionedConfiguration("io.micronaut:micronaut-runtime:${version}")
         versionedConfiguration("io.micronaut:micronaut-inject:${version}")
