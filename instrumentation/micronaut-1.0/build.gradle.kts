@@ -6,7 +6,7 @@ val versions: Map<String, String> by extra
 
 val micronautVersion = "1.0.0"
 val micronaut2Version = "2.2.3"
-val micronautTestVersion = "2.3.1"
+val micronautTestVersion = "1.0.0"
 
 //val micronautLatest by configurations.getting {
 //    extendsFrom(configurations.implementation.get())
@@ -42,6 +42,13 @@ dependencies {
 //}
 //
 //tasks.check { dependsOn(micronaut2Test) }
+
+sourceSets {
+    create("intTest") {
+        compileClasspath += sourceSets.main.get().output
+        runtimeClasspath += sourceSets.main.get().output
+    }
+}
 
 for (version in listOf("1.0.0", "2.2.3")) {
     val versionedConfiguration = configurations.create("test_${version}") {
