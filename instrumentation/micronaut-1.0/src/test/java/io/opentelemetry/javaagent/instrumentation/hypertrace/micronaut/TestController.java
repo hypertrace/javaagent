@@ -33,6 +33,7 @@ public class TestController {
 
   static final String RESPONSE_HEADER_NAME = "reqheadername";
   static final String RESPONSE_HEADER_VALUE = "reqheadervalue";
+  static final String RESPONSE_BODY = "{\"key\": \"val\"}";
 
   @Get(uri = "/get_no_content")
   public HttpResponse<?> getNoContent() {
@@ -46,7 +47,7 @@ public class TestController {
         .header(RESPONSE_HEADER_NAME, RESPONSE_HEADER_VALUE)
         .characterEncoding(StandardCharsets.US_ASCII)
         .contentType(MediaType.APPLICATION_JSON)
-        .body(body);
+        .body(RESPONSE_BODY);
   }
 
   @Get(value = "/stream", produces = MediaType.APPLICATION_JSON_STREAM)
@@ -57,7 +58,10 @@ public class TestController {
   static List<String> streamBody() {
     List<String> entities = new ArrayList<>();
     for (int i = 0; i < 1000; i++) {
-      entities.add(String.format("dog=%d\n", i));
+      entities.add(
+          String.format(
+              "dog,cats,foo,bar,dog,cats,foo,bar,dog,cats,foo,bar,dog,cats,foo,bar,dog,cats,foo,bar=%d\n",
+              i));
     }
     return entities;
   }

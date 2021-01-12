@@ -81,6 +81,10 @@ public class MicronautInstrumentationTest extends AbstractInstrumenterTest {
   @Test
   public void postJson() throws IOException, TimeoutException, InterruptedException {
     RequestBody requestBody = requestBody(true, 3000, 75);
+    Buffer requestBodyBuffer = new Buffer();
+    requestBody.writeTo(requestBodyBuffer);
+    String requestBodyStr = new String(requestBodyBuffer.readByteArray());
+
     Request request =
         new Request.Builder()
             .url(String.format("http://localhost:%d/post", server.getPort()))
@@ -91,10 +95,7 @@ public class MicronautInstrumentationTest extends AbstractInstrumenterTest {
 
     try (Response response = httpClient.newCall(request).execute()) {
       Assertions.assertEquals(200, response.code());
-      Buffer requestBodyBuffer = new Buffer();
-      requestBody.writeTo(requestBodyBuffer);
-      Assertions.assertEquals(
-          new String(requestBodyBuffer.readByteArray()), response.body().string());
+      Assertions.assertEquals(TestController.RESPONSE_BODY, response.body().string());
     }
 
     List<List<SpanData>> traces = TEST_WRITER.getTraces();
@@ -116,17 +117,12 @@ public class MicronautInstrumentationTest extends AbstractInstrumenterTest {
             .get(
                 HypertraceSemanticAttributes.httpResponseHeader(
                     TestController.RESPONSE_HEADER_NAME)));
-    Buffer requestBodyBuffer = new Buffer();
-    requestBody.writeTo(requestBodyBuffer);
     Assertions.assertEquals(
-        new String(requestBodyBuffer.readByteArray()),
+        requestBodyStr,
         spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
-    // TODO seems like a wrong charset
-    //        Buffer responseBodyBuffer = new Buffer();
-    //        requestBody.writeTo(responseBodyBuffer);
-    //        Assertions.assertEquals(
-    //            new String(responseBodyBuffer.readByteArray()),
-    //            spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+    Assertions.assertEquals(
+        TestController.RESPONSE_BODY,
+        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
   }
 
   @Test
