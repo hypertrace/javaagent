@@ -19,6 +19,6 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1;
 public class NettyInstrumentationName {
   public static final String PRIMARY = "netty";
   public static final String[] OTHER = {
-    "netty-4.1", "ht", "netty", "netty-4.1-ht",
+    "netty-4.1", "ht", "netty-ht", "netty-4.1-ht",
   };
 }
