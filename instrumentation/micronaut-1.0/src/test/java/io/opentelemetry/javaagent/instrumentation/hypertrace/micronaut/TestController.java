@@ -43,6 +43,7 @@ public class TestController {
 
   @Post(uri = "/post")
   public HttpResponse<?> post(@Body String body) {
+    System.out.printf("Received body: %s", body);
     return HttpResponse.status(HttpStatus.OK)
         .header(RESPONSE_HEADER_NAME, RESPONSE_HEADER_VALUE)
         .characterEncoding(StandardCharsets.US_ASCII)
