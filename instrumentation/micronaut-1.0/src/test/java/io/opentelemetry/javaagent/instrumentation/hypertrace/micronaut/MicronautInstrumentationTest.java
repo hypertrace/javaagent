@@ -121,11 +121,12 @@ public class MicronautInstrumentationTest extends AbstractInstrumenterTest {
     Assertions.assertEquals(
         new String(requestBodyBuffer.readByteArray()),
         spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
-    //    Buffer responseBodyBuffer = new Buffer();
-    //    requestBody.writeTo(responseBodyBuffer);
-    //    Assertions.assertEquals(
-    //        new String(responseBodyBuffer.readByteArray()),
-    //        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+    // TODO seems like a wrong charset
+    //        Buffer responseBodyBuffer = new Buffer();
+    //        requestBody.writeTo(responseBodyBuffer);
+    //        Assertions.assertEquals(
+    //            new String(responseBodyBuffer.readByteArray()),
+    //            spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
   }
 
   @Test

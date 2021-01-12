@@ -35,16 +35,16 @@ public class TestController {
   static final String RESPONSE_HEADER_VALUE = "reqheadervalue";
 
   @Get(uri = "/get_no_content")
-  public HttpResponse<?> hello() {
+  public HttpResponse<?> getNoContent() {
     return HttpResponse.status(HttpStatus.NO_CONTENT)
         .header(RESPONSE_HEADER_NAME, RESPONSE_HEADER_VALUE);
   }
 
   @Post(uri = "/post")
-  public HttpResponse<?> savePerson(@Body String body) {
+  public HttpResponse<?> post(@Body String body) {
     return HttpResponse.status(HttpStatus.OK)
         .header(RESPONSE_HEADER_NAME, RESPONSE_HEADER_VALUE)
-        .characterEncoding(StandardCharsets.UTF_8)
+        .characterEncoding(StandardCharsets.US_ASCII)
         .contentType(MediaType.APPLICATION_JSON)
         .body(body);
   }
