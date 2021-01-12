@@ -53,3 +53,5 @@ include("instrumentation:netty:netty-4.1")
 findProject(":instrumentation:netty:netty-4.1")?.name = "netty-4.1"
 include("instrumentation:spring:spring-webflux-5.0")
 findProject(":instrumentation:spring:spring-webflux-5.0")?.name = "spring-webflux-5.0"
+include("instrumentation:micronaut-1.0")
+findProject(":instrumentation:micronaut-1.0")?.name = "micronaut-1.0"

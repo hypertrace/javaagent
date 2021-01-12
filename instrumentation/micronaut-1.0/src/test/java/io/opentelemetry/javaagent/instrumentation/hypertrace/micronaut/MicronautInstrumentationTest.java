@@ -14,54 +14,37 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.micronaut;
 
-import static io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.NettyTestServer.RESPONSE_BODY;
-import static io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.NettyTestServer.RESPONSE_HEADER_NAME;
-import static io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.NettyTestServer.RESPONSE_HEADER_VALUE;
-
+import io.micronaut.runtime.server.EmbeddedServer;
+import io.micronaut.test.annotation.MicronautTest;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import javax.inject.Inject;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okio.Buffer;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public abstract class AbstractNetty41ServerInstrumentationTest extends AbstractInstrumenterTest {
+@MicronautTest
+public class MicronautInstrumentationTest extends AbstractInstrumenterTest {
 
   public static final String REQUEST_HEADER_NAME = "reqheader";
   public static final String REQUEST_HEADER_VALUE = "reqheadervalue";
 
-  private static int port;
-  private static NettyTestServer nettyTestServer;
-
-  @BeforeEach
-  private void startServer() throws IOException, InterruptedException {
-    nettyTestServer = createNetty();
-    port = nettyTestServer.create();
-  }
-
-  @AfterEach
-  private void stopServer() throws ExecutionException, InterruptedException {
-    nettyTestServer.stopServer();
-  }
-
-  protected abstract NettyTestServer createNetty();
+  @Inject EmbeddedServer server;
 
   @Test
   public void get() throws IOException, TimeoutException, InterruptedException {
     Request request =
         new Request.Builder()
-            .url(String.format("http://localhost:%d/get_no_content", port))
+            .url(String.format("http://localhost:%d/get_no_content", server.getPort()))
             .header(REQUEST_HEADER_NAME, REQUEST_HEADER_VALUE)
             .get()
             .build();
@@ -83,10 +66,12 @@ public abstract class AbstractNetty41ServerInstrumentationTest extends AbstractI
             .getAttributes()
             .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
     Assertions.assertEquals(
-        RESPONSE_HEADER_VALUE,
+        TestController.RESPONSE_HEADER_VALUE,
         spanData
             .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_HEADER_NAME)));
+            .get(
+                HypertraceSemanticAttributes.httpResponseHeader(
+                    TestController.RESPONSE_HEADER_NAME)));
     Assertions.assertNull(
         spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
     Assertions.assertNull(
@@ -98,7 +83,7 @@ public abstract class AbstractNetty41ServerInstrumentationTest extends AbstractI
     RequestBody requestBody = requestBody(true, 3000, 75);
     Request request =
         new Request.Builder()
-            .url(String.format("http://localhost:%d/post", port))
+            .url(String.format("http://localhost:%d/post", server.getPort()))
             .header(REQUEST_HEADER_NAME, REQUEST_HEADER_VALUE)
             .header("Transfer-Encoding", "chunked")
             .post(requestBody)
@@ -106,7 +91,10 @@ public abstract class AbstractNetty41ServerInstrumentationTest extends AbstractI
 
     try (Response response = httpClient.newCall(request).execute()) {
       Assertions.assertEquals(200, response.code());
-      Assertions.assertEquals(RESPONSE_BODY, response.body().string());
+      Buffer requestBodyBuffer = new Buffer();
+      requestBody.writeTo(requestBodyBuffer);
+      Assertions.assertEquals(
+          new String(requestBodyBuffer.readByteArray()), response.body().string());
     }
 
     List<List<SpanData>> traces = TEST_WRITER.getTraces();
@@ -122,17 +110,59 @@ public abstract class AbstractNetty41ServerInstrumentationTest extends AbstractI
             .getAttributes()
             .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
     Assertions.assertEquals(
-        RESPONSE_HEADER_VALUE,
+        TestController.RESPONSE_HEADER_VALUE,
         spanData
             .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_HEADER_NAME)));
+            .get(
+                HypertraceSemanticAttributes.httpResponseHeader(
+                    TestController.RESPONSE_HEADER_NAME)));
     Buffer requestBodyBuffer = new Buffer();
     requestBody.writeTo(requestBodyBuffer);
     Assertions.assertEquals(
         new String(requestBodyBuffer.readByteArray()),
         spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+    //    Buffer responseBodyBuffer = new Buffer();
+    //    requestBody.writeTo(responseBodyBuffer);
+    //    Assertions.assertEquals(
+    //        new String(responseBodyBuffer.readByteArray()),
+    //        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+  }
+
+  @Test
+  public void stream() throws IOException, TimeoutException, InterruptedException {
+    Request request =
+        new Request.Builder()
+            .url(String.format("http://localhost:%d/stream", server.getPort()))
+            .header(REQUEST_HEADER_NAME, REQUEST_HEADER_VALUE)
+            .get()
+            .build();
+
+    StringBuilder responseBody = new StringBuilder();
+    for (String body : TestController.streamBody()) {
+      responseBody.append(body);
+    }
+
+    try (Response response = httpClient.newCall(request).execute()) {
+      Assertions.assertEquals(200, response.code());
+      Assertions.assertEquals(responseBody.toString(), response.body().string());
+    }
+
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    TEST_WRITER.waitForTraces(1);
+    Assertions.assertEquals(1, traces.size());
+    List<SpanData> trace = traces.get(0);
+    Assertions.assertEquals(1, trace.size());
+    SpanData spanData = trace.get(0);
+
     Assertions.assertEquals(
-        RESPONSE_BODY,
+        REQUEST_HEADER_VALUE,
+        spanData
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
+    Assertions.assertNull(
+        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+    Assertions.assertEquals(
+        responseBody.toString(),
         spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
   }
 
@@ -140,7 +170,7 @@ public abstract class AbstractNetty41ServerInstrumentationTest extends AbstractI
   public void blocking() throws IOException, TimeoutException, InterruptedException {
     Request request =
         new Request.Builder()
-            .url(String.format("http://localhost:%d/post", port))
+            .url(String.format("http://localhost:%d/post", server.getPort()))
             .header(REQUEST_HEADER_NAME, REQUEST_HEADER_VALUE)
             .header("mockblock", "true")
             .get()
@@ -166,10 +196,10 @@ public abstract class AbstractNetty41ServerInstrumentationTest extends AbstractI
     Assertions.assertNull(
         spanData
             .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_HEADER_NAME)));
+            .get(
+                HypertraceSemanticAttributes.httpResponseHeader(
+                    TestController.RESPONSE_HEADER_NAME)));
     Assertions.assertNull(
-        spanData
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_BODY)));
+        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
   }
 }
