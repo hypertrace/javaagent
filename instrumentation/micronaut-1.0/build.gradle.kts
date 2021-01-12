@@ -8,49 +8,22 @@ val micronautVersion = "1.0.0"
 val micronaut2Version = "2.2.3"
 val micronautTestVersion = "1.0.0"
 
-//val micronautLatest by configurations.getting {
-//    extendsFrom(configurations.implementation.get())
-//}
-
 dependencies {
     implementation(project(":instrumentation:netty:netty-4.1"))
     implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.1:${versions["opentelemetry_java_agent"]}")
 
     testImplementation(project(":testing-common"))
-
     testImplementation("io.micronaut.test:micronaut-test-junit5:${micronautTestVersion}")
     testImplementation("io.micronaut:micronaut-http-server-netty:${micronautVersion}")
     testImplementation("io.micronaut:micronaut-runtime:${micronautVersion}")
     testImplementation("io.micronaut:micronaut-inject:${micronautVersion}")
-
     testAnnotationProcessor("io.micronaut:micronaut-inject-java:${micronautVersion}")
-
-//    micronautLatest(":testing-common")
-//    micronautLatest("io.micronaut.test:micronaut-test-junit5:${micronautTestVersion}")
-//    micronautLatest("io.micronaut:micronaut-http-server-netty:${micronaut2Version}")
-//    micronautLatest("io.micronaut:micronaut-runtime:${micronaut2Version}")
-//    micronautLatest("io.micronaut:micronaut-inject:${micronaut2Version}")
 }
 
-//val micronaut2Test = task<Test>("micronaut2Test") {
-//    description = "Runs micronaut2 tests."
-//    group = "verification"
-//
-//    testClassesDirs = sourceSets["intTest"].output.classesDirs
-//    classpath = sourceSets["intTest"].runtimeClasspath
-//    shouldRunAfter("test")
-//}
-//
-//tasks.check { dependsOn(micronaut2Test) }
-
-sourceSets {
-    create("intTest") {
-        compileClasspath += sourceSets.main.get().output
-        runtimeClasspath += sourceSets.main.get().output
-    }
-}
-
-for (version in listOf("1.0.0", "2.2.3")) {
+/**
+ * Todo this does not run tests
+ */
+for (version in listOf(micronautVersion, micronaut2Version)) {
     val versionedConfiguration = configurations.create("test_${version}") {
         extendsFrom(configurations.testRuntimeClasspath.get())
     }
