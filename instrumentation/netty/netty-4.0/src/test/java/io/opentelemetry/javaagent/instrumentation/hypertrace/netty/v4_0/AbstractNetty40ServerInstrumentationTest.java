@@ -22,16 +22,13 @@ import static io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.N
 
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
-import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okio.Buffer;
-import okio.BufferedSink;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.junit.jupiter.api.AfterEach;
@@ -174,29 +171,5 @@ public abstract class AbstractNetty40ServerInstrumentationTest extends AbstractI
         spanData
             .getAttributes()
             .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_BODY)));
-  }
-
-  private RequestBody requestBody(final boolean chunked, final long size, final int writeSize) {
-    final byte[] buffer = new byte[writeSize];
-    Arrays.fill(buffer, (byte) 'x');
-
-    return new RequestBody() {
-      @Override
-      public MediaType contentType() {
-        return MediaType.get("application/json; charset=utf-8");
-      }
-
-      @Override
-      public long contentLength() throws IOException {
-        return chunked ? -1L : size;
-      }
-
-      @Override
-      public void writeTo(BufferedSink sink) throws IOException {
-        for (int count = 0; count < size; count += writeSize) {
-          sink.write(buffer, 0, (int) Math.min(size - count, writeSize));
-        }
-      }
-    };
   }
 }
