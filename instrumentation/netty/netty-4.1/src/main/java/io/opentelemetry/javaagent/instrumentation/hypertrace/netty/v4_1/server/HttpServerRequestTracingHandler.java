@@ -28,6 +28,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.AttributeKeys;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.DataCaptureUtils;
 import io.opentelemetry.javaagent.instrumentation.netty.v4_1.server.NettyHttpServerTracer;
 import java.nio.charset.Charset;
 import java.util.HashMap;
@@ -84,9 +85,8 @@ public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapte
       }
     }
 
-    if (msg instanceof HttpContent
-        || msg instanceof ByteBuf
-            && agentConfig.getDataCapture().getHttpBody().getRequest().getValue()) {
+    if ((msg instanceof HttpContent || msg instanceof ByteBuf)
+        && agentConfig.getDataCapture().getHttpBody().getRequest().getValue()) {
       DataCaptureUtils.captureBody(span, channel, AttributeKeys.REQUEST_BODY_BUFFER, msg);
     }
 

@@ -159,7 +159,6 @@ public class NettyChannelPipelineInstrumentation implements TypeInstrumentation 
               HttpClientResponseTracingHandler.class.getName(),
               new HttpClientResponseTracingHandler());
         }
-
       } catch (IllegalArgumentException e) {
         // Prevented adding duplicate handlers.
       }

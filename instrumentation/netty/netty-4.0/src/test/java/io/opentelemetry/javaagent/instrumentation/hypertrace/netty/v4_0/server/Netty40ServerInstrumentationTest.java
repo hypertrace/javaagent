@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.server;
 
-import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.codec.http.HttpRequestDecoder;
+import io.netty.handler.codec.http.HttpResponseEncoder;
 import java.util.Arrays;
 
-public class Netty40HttpServerCodecInstrumentationTest
-    extends AbstractNetty40ServerInstrumentationTest {
+public class Netty40ServerInstrumentationTest extends AbstractNetty40ServerInstrumentationTest {
 
   @Override
   protected NettyTestServer createNetty() {
-    return new NettyTestServer(Arrays.asList(HttpServerCodec.class));
+    return new NettyTestServer(Arrays.asList(HttpRequestDecoder.class, HttpResponseEncoder.class));
   }
 }

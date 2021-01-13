@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.server;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;

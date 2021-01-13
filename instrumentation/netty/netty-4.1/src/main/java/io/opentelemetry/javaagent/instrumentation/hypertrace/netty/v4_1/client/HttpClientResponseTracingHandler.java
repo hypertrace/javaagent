@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.client;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.client;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -31,9 +31,9 @@ import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.api.tracer.HttpStatusConverter;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.AttributeKeys;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.DataCaptureUtils;
-import io.opentelemetry.javaagent.instrumentation.netty.v4_0.client.NettyHttpClientTracer;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.AttributeKeys;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.DataCaptureUtils;
+import io.opentelemetry.javaagent.instrumentation.netty.v4_1.client.NettyHttpClientTracer;
 import java.nio.charset.Charset;
 import java.util.Map;
 import org.hypertrace.agent.config.Config.AgentConfig;
@@ -55,7 +55,7 @@ public class HttpClientResponseTracingHandler extends ChannelInboundHandlerAdapt
     Context context =
         channel
             .attr(
-                io.opentelemetry.javaagent.instrumentation.netty.v4_0.AttributeKeys.CLIENT_CONTEXT)
+                io.opentelemetry.javaagent.instrumentation.netty.v4_1.AttributeKeys.CLIENT_CONTEXT)
             .get();
     if (context == null) {
       ctx.fireChannelRead(msg);
