@@ -24,7 +24,7 @@ val micronaut2Version = "2.2.3"
 
 for (version in listOf(micronaut2Version)) {
     val versionedConfiguration = configurations.create("test_${version}") {
-        extendsFrom(configurations.testRuntimeClasspath.get())
+        extendsFrom(configurations.runtimeClasspath.get())
     }
     dependencies {
         versionedConfiguration(project(":testing-common"))
