@@ -44,5 +44,5 @@ for (version in listOf(micronaut2Version)) {
         useJUnitPlatform()
         shouldRunAfter("test")
     }
-//    tasks.test { dependsOn(versionedTest) }
+    tasks.test { dependsOn(versionedTest) }
 }
