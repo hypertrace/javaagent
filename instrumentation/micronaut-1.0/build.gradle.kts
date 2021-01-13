@@ -39,7 +39,6 @@ for (version in listOf(micronaut2Version)) {
     val versionedTest = task<Test>("test_${version}") {
         group = "verification"
         val testOuput = sourceSets.test.get().output
-        testClassesDirs = testOuput.classesDirs
         classpath = versionedConfiguration + testOuput
         useJUnitPlatform()
         shouldRunAfter("test")
