@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.server;
 
-import static io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.NettyTestServer.RESPONSE_BODY;
-import static io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.NettyTestServer.RESPONSE_HEADER_NAME;
-import static io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.NettyTestServer.RESPONSE_HEADER_VALUE;
+import static io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.server.NettyTestServer.RESPONSE_BODY;
+import static io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.server.NettyTestServer.RESPONSE_HEADER_NAME;
+import static io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.server.NettyTestServer.RESPONSE_HEADER_VALUE;
 
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.IOException;

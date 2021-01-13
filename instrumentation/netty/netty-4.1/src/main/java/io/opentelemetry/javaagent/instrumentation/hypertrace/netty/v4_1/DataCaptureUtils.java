@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.server;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMessage;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.Attribute;
@@ -77,10 +78,10 @@ public class DataCaptureUtils {
 
   // see io.netty.handler.codec.http.HttpUtil
   public static CharSequence getContentType(HttpMessage message) {
-    return message.headers().get("content-type");
+    return message.headers().get(HttpHeaderNames.CONTENT_TYPE);
   }
 
   public static CharSequence getContentLength(HttpMessage message) {
-    return message.headers().get("content-length");
+    return message.headers().get(HttpHeaderNames.CONTENT_LENGTH);
   }
 }

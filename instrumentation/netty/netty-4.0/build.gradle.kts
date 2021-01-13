@@ -47,5 +47,6 @@ dependencies {
     implementation("io.netty:netty-codec-http:4.0.0.Final")
 
     testImplementation(project(":testing-common"))
+    testImplementation("org.asynchttpclient:async-http-client:2.0.9")
 }
 

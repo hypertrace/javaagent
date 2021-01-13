@@ -28,6 +28,10 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 
 public class TestHttpServer implements AutoCloseable {
+
+  public static final String RESPONSE_HEADER_NAME = "test-response-header";
+  public static final String RESPONSE_HEADER_VALUE = "test-value";
+
   private final Server server = new Server(0);
   private final HandlerList handlerList = new HandlerList();
 
@@ -62,7 +66,7 @@ public class TestHttpServer implements AutoCloseable {
         HttpServletRequest request,
         HttpServletResponse response)
         throws IOException {
-      response.setHeader("test-response-header", "test-value");
+      response.setHeader(RESPONSE_HEADER_NAME, RESPONSE_HEADER_VALUE);
     }
   }
 

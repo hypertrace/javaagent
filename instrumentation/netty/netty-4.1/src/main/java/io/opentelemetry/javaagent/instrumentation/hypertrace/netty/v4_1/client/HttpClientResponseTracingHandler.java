@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.server;
-
-import static io.opentelemetry.javaagent.instrumentation.netty.v4_0.server.NettyHttpServerTracer.tracer;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.client;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelOutboundHandlerAdapter;
-import io.netty.channel.ChannelPromise;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.FullHttpMessage;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpMessage;
@@ -33,9 +31,9 @@ import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.api.tracer.HttpStatusConverter;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.AttributeKeys;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.DataCaptureUtils;
-import io.opentelemetry.javaagent.instrumentation.netty.v4_0.server.NettyHttpServerTracer;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.AttributeKeys;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.DataCaptureUtils;
+import io.opentelemetry.javaagent.instrumentation.netty.v4_1.client.NettyHttpClientTracer;
 import java.nio.charset.Charset;
 import java.util.Map;
 import org.hypertrace.agent.config.Config.AgentConfig;
@@ -47,15 +45,20 @@ import org.hypertrace.agent.core.instrumentation.utils.ContentLengthUtils;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeCharsetUtils;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 
-public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdapter {
+public class HttpClientResponseTracingHandler extends ChannelInboundHandlerAdapter {
 
   private final AgentConfig agentConfig = HypertraceConfig.get();
 
   @Override
-  public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise prm) {
-    Context context = NettyHttpServerTracer.tracer().getServerContext(ctx.channel());
+  public void channelRead(ChannelHandlerContext ctx, Object msg) {
+    Channel channel = ctx.channel();
+    Context context =
+        channel
+            .attr(
+                io.opentelemetry.javaagent.instrumentation.netty.v4_1.AttributeKeys.CLIENT_CONTEXT)
+            .get();
     if (context == null) {
-      ctx.write(msg, prm);
+      ctx.fireChannelRead(msg);
       return;
     }
     Span span = Span.fromContext(context);
@@ -91,9 +94,9 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
     }
 
     try (Scope ignored = context.makeCurrent()) {
-      ctx.write(msg, prm);
+      ctx.fireChannelRead(msg);
     } catch (Throwable throwable) {
-      tracer().endExceptionally(context, throwable);
+      NettyHttpClientTracer.tracer().endExceptionally(context, throwable);
       throw throwable;
     }
     if (msg instanceof HttpResponse) {

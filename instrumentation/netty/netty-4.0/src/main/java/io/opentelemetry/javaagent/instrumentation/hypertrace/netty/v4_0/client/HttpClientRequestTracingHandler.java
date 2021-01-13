@@ -14,29 +14,24 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.server;
-
-import static io.opentelemetry.javaagent.instrumentation.netty.v4_0.server.NettyHttpServerTracer.tracer;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.client;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http.FullHttpMessage;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpMessage;
-import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.handler.codec.http.HttpRequest;
 import io.netty.util.Attribute;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.attributes.SemanticAttributes;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.Scope;
-import io.opentelemetry.instrumentation.api.tracer.HttpStatusConverter;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.AttributeKeys;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.DataCaptureUtils;
-import io.opentelemetry.javaagent.instrumentation.netty.v4_0.server.NettyHttpServerTracer;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.Map;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.core.config.HypertraceConfig;
@@ -47,31 +42,38 @@ import org.hypertrace.agent.core.instrumentation.utils.ContentLengthUtils;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeCharsetUtils;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 
-public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdapter {
+public class HttpClientRequestTracingHandler extends ChannelOutboundHandlerAdapter {
 
   private final AgentConfig agentConfig = HypertraceConfig.get();
 
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise prm) {
-    Context context = NettyHttpServerTracer.tracer().getServerContext(ctx.channel());
+    Channel channel = ctx.channel();
+    Context context =
+        channel
+            .attr(
+                io.opentelemetry.javaagent.instrumentation.netty.v4_0.AttributeKeys.CLIENT_CONTEXT)
+            .get();
     if (context == null) {
       ctx.write(msg, prm);
       return;
     }
     Span span = Span.fromContext(context);
 
-    if (msg instanceof HttpResponse) {
-      HttpResponse httpResponse = (HttpResponse) msg;
-      if (agentConfig.getDataCapture().getHttpHeaders().getResponse().getValue()) {
-        captureHeaders(span, httpResponse);
+    if (msg instanceof HttpRequest) {
+      HttpRequest httpRequest = (HttpRequest) msg;
+
+      Map<String, String> headersMap = headersToMap(httpRequest);
+      if (agentConfig.getDataCapture().getHttpHeaders().getRequest().getValue()) {
+        headersMap.forEach((key, value) -> span.setAttribute(key, value));
       }
 
-      CharSequence contentType = DataCaptureUtils.getContentType(httpResponse);
-      if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()
+      CharSequence contentType = DataCaptureUtils.getContentType(httpRequest);
+      if (agentConfig.getDataCapture().getHttpBody().getRequest().getValue()
           && contentType != null
           && ContentTypeUtils.shouldCapture(contentType.toString())) {
 
-        CharSequence contentLengthHeader = DataCaptureUtils.getContentLength(httpResponse);
+        CharSequence contentLengthHeader = DataCaptureUtils.getContentLength(httpRequest);
         int contentLength = ContentLengthUtils.parseLength(contentLengthHeader);
 
         String charsetString = ContentTypeUtils.parseCharset(contentType.toString());
@@ -80,36 +82,25 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
         // set the buffer to capture response body
         // the buffer is used byt captureBody method
         Attribute<BoundedByteArrayOutputStream> bufferAttr =
-            ctx.channel().attr(AttributeKeys.RESPONSE_BODY_BUFFER);
+            ctx.channel().attr(AttributeKeys.REQUEST_BODY_BUFFER);
         bufferAttr.set(BoundedBuffersFactory.createStream(contentLength, charset));
       }
     }
 
     if ((msg instanceof HttpContent || msg instanceof ByteBuf)
-        && agentConfig.getDataCapture().getHttpBody().getResponse().getValue()) {
-      DataCaptureUtils.captureBody(span, ctx.channel(), AttributeKeys.RESPONSE_BODY_BUFFER, msg);
+        && agentConfig.getDataCapture().getHttpBody().getRequest().getValue()) {
+      DataCaptureUtils.captureBody(span, channel, AttributeKeys.REQUEST_BODY_BUFFER, msg);
     }
 
-    try (Scope ignored = context.makeCurrent()) {
-      ctx.write(msg, prm);
-    } catch (Throwable throwable) {
-      tracer().endExceptionally(context, throwable);
-      throw throwable;
-    }
-    if (msg instanceof HttpResponse) {
-      HttpResponse httpResponse = (HttpResponse) msg;
-      span.setAttribute(SemanticAttributes.HTTP_STATUS_CODE, httpResponse.getStatus().code());
-      span.setStatus(HttpStatusConverter.statusFromHttpStatus(httpResponse.getStatus().code()));
-    }
-    if (msg instanceof FullHttpMessage || msg instanceof LastHttpContent) {
-      span.end();
-    }
+    ctx.write(msg, prm);
   }
 
-  private static void captureHeaders(Span span, HttpMessage httpMessage) {
+  private static Map<String, String> headersToMap(HttpMessage httpMessage) {
+    Map<String, String> map = new HashMap<>();
     for (Map.Entry<String, String> entry : httpMessage.headers().entries()) {
-      span.setAttribute(
-          HypertraceSemanticAttributes.httpResponseHeader(entry.getKey()), entry.getValue());
+      AttributeKey<String> key = HypertraceSemanticAttributes.httpRequestHeader(entry.getKey());
+      map.put(key.getKey(), entry.getValue());
     }
+    return map;
   }
 }
