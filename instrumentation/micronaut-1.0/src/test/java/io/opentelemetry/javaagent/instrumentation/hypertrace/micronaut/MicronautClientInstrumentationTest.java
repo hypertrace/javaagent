@@ -20,7 +20,6 @@ import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.client.annotation.Client;
-import io.micronaut.runtime.server.EmbeddedServer;
 import io.micronaut.test.annotation.MicronautTest;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.List;
@@ -57,8 +56,6 @@ public class MicronautClientInstrumentationTest extends AbstractInstrumenterTest
   @Inject
   @Client("/")
   private HttpClient client;
-
-  @Inject EmbeddedServer server;
 
   @Test
   public void getJson() throws InterruptedException, TimeoutException {
