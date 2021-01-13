@@ -17,6 +17,7 @@ dependencies {
     testImplementation("io.micronaut:micronaut-http-server-netty:${micronautVersion}")
     testImplementation("io.micronaut:micronaut-runtime:${micronautVersion}")
     testImplementation("io.micronaut:micronaut-inject:${micronautVersion}")
+    testImplementation("io.micronaut:micronaut-http-client:${micronautVersion}")
     testAnnotationProcessor("io.micronaut:micronaut-inject-java:${micronautVersion}")
 }
 
