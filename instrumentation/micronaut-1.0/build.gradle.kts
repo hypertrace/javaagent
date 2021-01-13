@@ -40,7 +40,6 @@ for (version in listOf(micronaut2Version)) {
         group = "verification"
         classpath = versionedConfiguration + sourceSets.test.get().output
         useJUnitPlatform()
-        shouldRunAfter("test")
     }
     tasks.check { dependsOn(versionedTest) }
 }
