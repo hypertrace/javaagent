@@ -27,11 +27,8 @@ for (version in listOf(micronaut2Version)) {
         extendsFrom(configurations.testRuntimeClasspath.get())
     }
     dependencies {
-        versionedConfiguration(project(":instrumentation:netty:netty-4.1"))
-        versionedConfiguration("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.1:${versions["opentelemetry_java_agent"]}")
         versionedConfiguration(project(":testing-common"))
         versionedConfiguration("io.micronaut.test:micronaut-test-junit5:${micronautTestVersion}")
-        versionedConfiguration("io.micronaut:micronaut-inject-java:${version}")
         versionedConfiguration("io.micronaut:micronaut-http-server-netty:${version}")
         versionedConfiguration("io.micronaut:micronaut-http-client:${version}")
         versionedConfiguration("io.micronaut:micronaut-runtime:${version}")
@@ -47,5 +44,5 @@ for (version in listOf(micronaut2Version)) {
         useJUnitPlatform()
         shouldRunAfter("test")
     }
-    tasks.test { dependsOn(versionedTest) }
+//    tasks.test { dependsOn(versionedTest) }
 }
