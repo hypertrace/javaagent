@@ -24,14 +24,11 @@ val micronaut2Version = "2.2.3"
 
 for (version in listOf(micronaut2Version)) {
     val versionedConfiguration = configurations.create("test_${version}") {
-        extendsFrom(configurations.testRuntimeClasspath.get())
+        extendsFrom(configurations.runtimeClasspath.get())
     }
     dependencies {
-        versionedConfiguration(project(":instrumentation:netty:netty-4.1"))
-        versionedConfiguration("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.1:${versions["opentelemetry_java_agent"]}")
         versionedConfiguration(project(":testing-common"))
         versionedConfiguration("io.micronaut.test:micronaut-test-junit5:${micronautTestVersion}")
-        versionedConfiguration("io.micronaut:micronaut-inject-java:${version}")
         versionedConfiguration("io.micronaut:micronaut-http-server-netty:${version}")
         versionedConfiguration("io.micronaut:micronaut-http-client:${version}")
         versionedConfiguration("io.micronaut:micronaut-runtime:${version}")
@@ -41,11 +38,8 @@ for (version in listOf(micronaut2Version)) {
     }
     val versionedTest = task<Test>("test_${version}") {
         group = "verification"
-        val testOuput = sourceSets.test.get().output
-        testClassesDirs = testOuput.classesDirs
-        classpath = versionedConfiguration + testOuput
+        classpath = versionedConfiguration + sourceSets.test.get().output
         useJUnitPlatform()
-        shouldRunAfter("test")
     }
-    tasks.test { dependsOn(versionedTest) }
+    tasks.check { dependsOn(versionedTest) }
 }
