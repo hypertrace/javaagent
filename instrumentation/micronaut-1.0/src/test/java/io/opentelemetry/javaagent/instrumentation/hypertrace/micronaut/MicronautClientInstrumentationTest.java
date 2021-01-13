@@ -60,18 +60,6 @@ public class MicronautClientInstrumentationTest extends AbstractInstrumenterTest
 
   @Inject EmbeddedServer server;
 
-  public static class Content {
-    public String name;
-
-    public String getName() {
-      return name;
-    }
-
-    public void setName(String name) {
-      this.name = name;
-    }
-  }
-
   @Test
   public void getJson() throws InterruptedException, TimeoutException {
     String retrieve =
