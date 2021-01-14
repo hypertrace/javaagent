@@ -17,9 +17,11 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.java.inputstream;
 
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.extendsClass;
+import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.safeHasSuperType;
 import static net.bytebuddy.matcher.ElementMatchers.is;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.not;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
@@ -68,7 +70,8 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
 
     @Override
     public ElementMatcher<? super TypeDescription> typeMatcher() {
-      return extendsClass(named(InputStream.class.getName()));
+      return extendsClass(named(InputStream.class.getName()))
+          .and(not(safeHasSuperType(named("javax.servlet.ServletInputStream"))));
     }
 
     @Override
