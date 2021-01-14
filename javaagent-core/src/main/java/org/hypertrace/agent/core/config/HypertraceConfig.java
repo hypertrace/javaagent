@@ -140,7 +140,8 @@ public class HypertraceConfig {
     File configFile = new File(filename);
     if (!configFile.exists() || configFile.isDirectory() || !configFile.canRead()) {
       log.error("Config file {} does not exist", filename);
-      return AgentConfig.newBuilder().build();
+      AgentConfig.Builder configBuilder = AgentConfig.newBuilder();
+      return EnvironmentConfig.applyPropertiesAndEnvVars(applyDefaults(configBuilder)).build();
     }
 
     AgentConfig.Builder configBuilder = AgentConfig.newBuilder();
