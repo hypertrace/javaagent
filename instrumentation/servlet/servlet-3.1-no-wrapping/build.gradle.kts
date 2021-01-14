@@ -9,7 +9,7 @@ muzzle {
     pass {
         group = "javax.servlet"
         module = "javax.servlet-api"
-        versions = "[3.1.0,)"
+        versions = "[3.0.0,)"
     }
     // fail on all old servlet-api. This groupId was changed in 3.x to javax.servlet-api
     fail {
@@ -35,10 +35,6 @@ dependencies {
     api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0:${versions["opentelemetry_java_agent"]}")
 
     compileOnly("javax.servlet:javax.servlet-api:3.1.0")
-
-    // TODO remove
-    implementation("com.blogspot.mydailyjava:weak-lock-free:0.15")
-    implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-api:${versions["opentelemetry_java_agent"]}")
 
     testImplementation(project(":testing-common")) {
         exclude(group ="org.eclipse.jetty", module= "jetty-server")

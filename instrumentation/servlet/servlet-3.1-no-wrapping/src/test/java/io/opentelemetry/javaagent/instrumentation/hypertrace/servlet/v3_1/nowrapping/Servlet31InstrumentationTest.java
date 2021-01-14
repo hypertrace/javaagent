@@ -45,7 +45,6 @@ public class Servlet31InstrumentationTest extends AbstractInstrumenterTest {
   public static void startServer() throws Exception {
     ServletContextHandler handler = new ServletContextHandler();
     handler.addServlet(TestServlet.class, "/test");
-    handler.addServlet(RequestCastServlet.class, "/cast");
     server.setHandler(handler);
     server.start();
     serverPort = ((ServerConnector) server.getConnectors()[0]).getLocalPort();

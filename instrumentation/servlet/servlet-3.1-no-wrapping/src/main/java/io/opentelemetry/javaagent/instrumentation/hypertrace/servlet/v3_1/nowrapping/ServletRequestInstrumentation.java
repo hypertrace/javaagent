@@ -110,7 +110,11 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
         contentLength = ContentLengthUtils.DEFAULT;
       }
 
-      Metadata metadata = new Metadata(requestSpan, httpServletRequest, BoundedBuffersFactory.createStream(contentLength, charset));
+      Metadata metadata =
+          new Metadata(
+              requestSpan,
+              httpServletRequest,
+              BoundedBuffersFactory.createStream(contentLength, charset));
       InstrumentationContext.get(ServletInputStream.class, Metadata.class)
           .put(servletInputStream, metadata);
       System.out.println("BBBB");

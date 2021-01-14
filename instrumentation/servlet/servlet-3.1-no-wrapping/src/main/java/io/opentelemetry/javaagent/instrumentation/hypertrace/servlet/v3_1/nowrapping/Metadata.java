@@ -26,8 +26,9 @@ public class Metadata {
   public final HttpServletRequest httpServletRequest;
   public final BoundedByteArrayOutputStream boundedByteArrayOutputStream;
 
-
-  public Metadata(Span span, HttpServletRequest httpServletRequest,
+  public Metadata(
+      Span span,
+      HttpServletRequest httpServletRequest,
       BoundedByteArrayOutputStream boundedByteArrayOutputStream) {
     this.span = span;
     this.httpServletRequest = httpServletRequest;
