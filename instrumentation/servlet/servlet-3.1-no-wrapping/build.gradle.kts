@@ -41,4 +41,5 @@ dependencies {
     }
     testImplementation("org.eclipse.jetty:jetty-server:9.4.32.v20200930")
     testImplementation("org.eclipse.jetty:jetty-servlet:9.4.32.v20200930")
+    testImplementation("org.mockito:mockito-core:3.7.0")
 }

@@ -77,6 +77,12 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
         @Advice.Return ServletInputStream servletInputStream) {
       System.out.println("\n\n\n\n ---> getInputStream");
 
+      ContextStore<ServletInputStream, Metadata> servletInputStreamContextStore = InstrumentationContext
+          .get(ServletInputStream.class, Metadata.class);
+      if (servletInputStreamContextStore.get(servletInputStream) != null) {
+        return;
+      }
+
       if (!(servletRequest instanceof HttpServletRequest)) {
         return;
       }
@@ -91,13 +97,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
         return;
       }
 
-      // add input stream to a map to indicate it should be instrumented
-      ContextStore<HttpServletRequest, Span> requestSpanContextStore =
-          InstrumentationContext.get(HttpServletRequest.class, Span.class);
-      System.out.printf(
-          "requestSpanContextStore in ServletRequest_getInputStream_advice: %s\n",
-          requestSpanContextStore);
-      Span requestSpan = requestSpanContextStore.get(httpServletRequest);
+      Span requestSpan = InstrumentationContext.get(HttpServletRequest.class, Span.class).get(httpServletRequest);
       if (requestSpan == null) {
         return;
       }
@@ -115,9 +115,8 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
               requestSpan,
               httpServletRequest,
               BoundedBuffersFactory.createStream(contentLength, charset));
-      InstrumentationContext.get(ServletInputStream.class, Metadata.class)
-          .put(servletInputStream, metadata);
-      System.out.println("BBBB");
+      servletInputStreamContextStore.put(servletInputStream, metadata);
+      System.out.printf("Created metadata: %s\n", metadata);
     }
   }
 

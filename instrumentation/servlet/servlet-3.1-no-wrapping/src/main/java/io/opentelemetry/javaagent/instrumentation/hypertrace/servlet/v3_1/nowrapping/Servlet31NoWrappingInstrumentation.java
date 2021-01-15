@@ -68,7 +68,6 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
   }
 
   static class ServletAdvice {
-
     @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = Advice.OnNonDefaultValue.class)
     public static boolean start(
         @Advice.Argument(value = 0) ServletRequest request,
@@ -134,7 +133,6 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
         return;
       }
 
-      System.out.println("");
       HttpServletResponse httpResponse = (HttpServletResponse) response;
       AgentConfig agentConfig = HypertraceConfig.get();
 
@@ -152,7 +150,7 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
 
       if (!request.isAsyncStarted() && responseHandled.compareAndSet(false, true)) {
         if (agentConfig.getDataCapture().getHttpHeaders().getResponse().getValue()) {
-          for (String headerName : httpResponse.getHeaderNames()) {
+          for (String headerName: httpResponse.getHeaderNames()) {
             String headerValue = httpResponse.getHeader(headerName);
             currentSpan.setAttribute(
                 HypertraceSemanticAttributes.httpResponseHeader(headerName), headerValue);

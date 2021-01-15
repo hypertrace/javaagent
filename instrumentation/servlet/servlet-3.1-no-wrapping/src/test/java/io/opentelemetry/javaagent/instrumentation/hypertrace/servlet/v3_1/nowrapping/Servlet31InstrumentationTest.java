@@ -75,21 +75,20 @@ public class Servlet31InstrumentationTest extends AbstractInstrumenterTest {
     Assertions.assertEquals(1, spans.size());
     SpanData spanData = spans.get(0);
     Assertions.assertEquals(
-        REQUEST_BODY, spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
-    Assertions.assertEquals(
         REQUEST_HEADER_VALUE,
         spanData
             .getAttributes()
             .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER)));
-
-    Assertions.assertEquals(
-        TestServlet.RESPONSE_BODY,
-        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
     Assertions.assertEquals(
         TestServlet.RESPONSE_HEADER_VALUE,
         spanData
             .getAttributes()
             .get(HypertraceSemanticAttributes.httpResponseHeader(TestServlet.RESPONSE_HEADER)));
+    Assertions.assertEquals(
+        REQUEST_BODY, spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+    Assertions.assertEquals(
+        TestServlet.RESPONSE_BODY,
+        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
   }
 
   @Test

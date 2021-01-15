@@ -32,7 +32,8 @@ public class TestServlet extends HttpServlet {
     resp.setStatus(200);
 
     try {
-      req.getInputStream().read();
+      while (req.getInputStream().read() != -1) {
+      }
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -40,7 +41,7 @@ public class TestServlet extends HttpServlet {
     resp.setContentType("application/json");
     resp.setHeader(RESPONSE_HEADER, RESPONSE_HEADER_VALUE);
     try {
-      resp.getWriter().print(RESPONSE_BODY);
+      resp.getOutputStream().print(RESPONSE_BODY);
     } catch (IOException e) {
       e.printStackTrace();
     }
