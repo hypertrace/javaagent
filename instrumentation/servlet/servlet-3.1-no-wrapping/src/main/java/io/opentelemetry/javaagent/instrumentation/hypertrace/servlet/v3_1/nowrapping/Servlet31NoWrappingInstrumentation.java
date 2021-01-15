@@ -28,7 +28,6 @@ import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.common.ServletSpanDecorator;
-import io.opentelemetry.javaagent.instrumentation.servlet.v3_0.Servlet3HttpServerTracer;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -46,6 +45,7 @@ import net.bytebuddy.matcher.ElementMatcher.Junction;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.core.config.HypertraceConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 import org.hypertrace.agent.filter.FilterRegistry;
 
 public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
@@ -83,15 +83,22 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
         return false;
       }
 
-      System.out.println("ServletFilter start");
-
       HttpServletRequest httpRequest = (HttpServletRequest) request;
       HttpServletResponse httpResponse = (HttpServletResponse) response;
       currentSpan = Java8BytecodeBridge.currentSpan();
-      Servlet3HttpServerTracer.getCurrentServerSpan();
 
-      InstrumentationContext.get(HttpServletRequest.class, Span.class)
-          .put(httpRequest, currentSpan);
+      AgentConfig agentConfig = HypertraceConfig.get();
+      String contentType = httpRequest.getContentType();
+      if (agentConfig.getDataCapture().getHttpBody().getRequest().getValue()
+          && ContentTypeUtils.shouldCapture(contentType)) {
+        // The HttpServletRequest instrumentation uses this to
+        // enable the instrumentation
+        InstrumentationContext.get(HttpServletRequest.class, Span.class)
+            .put(httpRequest, currentSpan);
+      }
+      // this has to be added for all responses - as the content type is known at this point
+      InstrumentationContext.get(HttpServletResponse.class, Span.class)
+          .put(httpResponse, currentSpan);
 
       ServletSpanDecorator.addSessionId(currentSpan, httpRequest);
 
@@ -150,7 +157,7 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
 
       if (!request.isAsyncStarted() && responseHandled.compareAndSet(false, true)) {
         if (agentConfig.getDataCapture().getHttpHeaders().getResponse().getValue()) {
-          for (String headerName: httpResponse.getHeaderNames()) {
+          for (String headerName : httpResponse.getHeaderNames()) {
             String headerValue = httpResponse.getHeader(headerName);
             currentSpan.setAttribute(
                 HypertraceSemanticAttributes.httpResponseHeader(headerName), headerValue);

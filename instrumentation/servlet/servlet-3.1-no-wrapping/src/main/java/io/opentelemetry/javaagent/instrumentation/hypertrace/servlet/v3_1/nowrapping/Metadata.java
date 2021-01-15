@@ -23,15 +23,12 @@ import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputSt
 public class Metadata {
 
   public final Span span;
-  public final HttpServletRequest httpServletRequest;
   public final BoundedByteArrayOutputStream boundedByteArrayOutputStream;
 
   public Metadata(
       Span span,
-      HttpServletRequest httpServletRequest,
       BoundedByteArrayOutputStream boundedByteArrayOutputStream) {
     this.span = span;
-    this.httpServletRequest = httpServletRequest;
     this.boundedByteArrayOutputStream = boundedByteArrayOutputStream;
   }
 }

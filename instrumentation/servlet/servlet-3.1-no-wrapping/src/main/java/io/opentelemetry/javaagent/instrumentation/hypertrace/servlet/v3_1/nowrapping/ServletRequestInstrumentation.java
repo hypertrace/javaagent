@@ -27,7 +27,6 @@ import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.io.BufferedReader;
-import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import javax.servlet.ServletInputStream;
@@ -38,12 +37,6 @@ import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import net.bytebuddy.matcher.ElementMatcher.Junction;
-import org.hypertrace.agent.config.Config.AgentConfig;
-import org.hypertrace.agent.core.config.HypertraceConfig;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
-import org.hypertrace.agent.core.instrumentation.utils.ContentLengthUtils;
-import org.hypertrace.agent.core.instrumentation.utils.ContentTypeCharsetUtils;
-import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 
 public class ServletRequestInstrumentation implements TypeInstrumentation {
 
@@ -75,48 +68,29 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
     public static void exit(
         @Advice.This ServletRequest servletRequest,
         @Advice.Return ServletInputStream servletInputStream) {
-      System.out.println("\n\n\n\n ---> getInputStream");
-
-      ContextStore<ServletInputStream, Metadata> servletInputStreamContextStore = InstrumentationContext
-          .get(ServletInputStream.class, Metadata.class);
-      if (servletInputStreamContextStore.get(servletInputStream) != null) {
-        return;
-      }
-
       if (!(servletRequest instanceof HttpServletRequest)) {
         return;
       }
       HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
 
-      // TODO consider moving this to servlet advice to avoid adding data to the
-      // InstrumentationContext
-      AgentConfig agentConfig = HypertraceConfig.get();
-      String contentType = httpServletRequest.getContentType();
-      if (agentConfig.getDataCapture().getHttpBody().getRequest().getValue()
-          && !ContentTypeUtils.shouldCapture(contentType)) {
+      ContextStore<ServletInputStream, Metadata> contextStore =
+          InstrumentationContext.get(ServletInputStream.class, Metadata.class);
+      if (contextStore.get(servletInputStream) != null) {
+        // getInputStream() can be called multiple times
         return;
       }
 
-      Span requestSpan = InstrumentationContext.get(HttpServletRequest.class, Span.class).get(httpServletRequest);
+      // span is added in servlet/filter instrumentation if data capture is enabled and it is the
+      // right content
+      Span requestSpan =
+          InstrumentationContext.get(HttpServletRequest.class, Span.class).get(httpServletRequest);
       if (requestSpan == null) {
         return;
       }
-      System.out.println("AAAAA");
-
-      String charsetStr = ContentTypeUtils.parseCharset(contentType);
-      Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
-      int contentLength = httpServletRequest.getContentLength();
-      if (contentLength < 0) {
-        contentLength = ContentLengthUtils.DEFAULT;
-      }
 
       Metadata metadata =
-          new Metadata(
-              requestSpan,
-              httpServletRequest,
-              BoundedBuffersFactory.createStream(contentLength, charset));
-      servletInputStreamContextStore.put(servletInputStream, metadata);
-      System.out.printf("Created metadata: %s\n", metadata);
+          HttpRequestInstrumentationUtils.createRequestMetadata(httpServletRequest, requestSpan);
+      contextStore.put(servletInputStream, metadata);
     }
   }
 
@@ -124,7 +98,29 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void exit(
         @Advice.This ServletRequest servletRequest, @Advice.Return BufferedReader reader) {
-      // TODO
+      if (!(servletRequest instanceof HttpServletRequest)) {
+        return;
+      }
+      HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
+
+      ContextStore<BufferedReader, Metadata> contextStore =
+          InstrumentationContext.get(BufferedReader.class, Metadata.class);
+      if (contextStore.get(reader) != null) {
+        // getReader() can be called multiple times
+        return;
+      }
+
+      // span is added in servlet/filter instrumentation if data capture is enabled and it is the
+      // right content
+      Span requestSpan =
+          InstrumentationContext.get(HttpServletRequest.class, Span.class).get(httpServletRequest);
+      if (requestSpan == null) {
+        return;
+      }
+
+      Metadata metadata =
+          HttpRequestInstrumentationUtils.createRequestMetadata(httpServletRequest, requestSpan);
+      contextStore.put(reader, metadata);
     }
   }
 }

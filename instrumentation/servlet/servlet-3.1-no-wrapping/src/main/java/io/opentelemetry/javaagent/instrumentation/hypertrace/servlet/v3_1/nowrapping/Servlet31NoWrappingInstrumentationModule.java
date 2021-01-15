@@ -50,14 +50,20 @@ public class Servlet31NoWrappingInstrumentationModule extends InstrumentationMod
     return Arrays.asList(
         new Servlet31NoWrappingInstrumentation(),
         new ServletRequestInstrumentation(),
-        new ServletInputStreamInstrumentation());
+        new ServletInputStreamInstrumentation(),
+        new BufferedReaderInstrumentation(),
+        new ServletResponseInstrumentation(),
+        new ServletOutputStreamInstrumentation());
   }
 
   @Override
   protected Map<String, String> contextStore() {
     Map<String, String> context = new HashMap<>();
     context.put("javax.servlet.http.HttpServletRequest", Span.class.getName());
+    context.put("javax.servlet.http.HttpServletResponse", Span.class.getName());
     context.put("javax.servlet.ServletInputStream", Metadata.class.getName());
+    context.put("java.io.BufferedReader", Metadata.class.getName());
+    context.put("javax.servlet.ServletOutputStream", Metadata.class.getName());
     return context;
   }
 }

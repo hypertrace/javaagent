@@ -62,8 +62,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
             .and(takesArgument(1, is(int.class)))
             .and(takesArgument(2, is(int.class)))
             .and(isPublic()),
-        ServletInputStreamInstrumentation.class.getName()
-            + "$InputStream_ReadByteArrayOffset");
+        ServletInputStreamInstrumentation.class.getName() + "$InputStream_ReadByteArrayOffset");
     transformers.put(
         named("readAllBytes").and(takesArguments(0)).and(isPublic()),
         ServletInputStreamInstrumentation.class.getName() + "$InputStream_ReadAllBytes");
@@ -81,16 +80,16 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
 
     // ServletInputStream methods
     transformers.put(
-        named("readLine").and(takesArguments(3))
+        named("readLine")
+            .and(takesArguments(3))
             .and(takesArgument(0, is(byte[].class)))
             .and(takesArgument(1, is(int.class)))
             .and(takesArgument(2, is(int.class)))
             .and(isPublic()),
         ServletInputStreamInstrumentation.class.getName() + "$InputStream_ReadByteArray");
-//     servlet 3.1 API, but since we do not call it directly muzzle
+    //     servlet 3.1 API, but since we do not call it directly muzzle
     transformers.put(
-        named("isFinished").and(takesArguments(0))
-            .and(isPublic()),
+        named("isFinished").and(takesArguments(0)).and(isPublic()),
         ServletInputStreamInstrumentation.class.getName() + "$ServletInputStream_IsFinished");
     return transformers;
   }
@@ -106,9 +105,10 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
-    public static void exit(@Advice.This ServletInputStream thizz, @Advice.Return int read, @Advice.Enter Metadata metadata) {
-      System.out.println("servlet input stream read \n\n");
-      System.out.println(metadata);
+    public static void exit(
+        @Advice.This ServletInputStream thizz,
+        @Advice.Return int read,
+        @Advice.Enter Metadata metadata) {
       CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
       if (metadata == null) {
         return;
@@ -116,7 +116,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
       if (read == -1) {
         ServletInputStreamUtils.captureBody(metadata);
       } else {
-        metadata.boundedByteArrayOutputStream.write((byte)read);
+        metadata.boundedByteArrayOutputStream.write((byte) read);
       }
       CallDepthThreadLocalMap.reset(ServletInputStream.class);
     }
@@ -134,9 +134,8 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(
-        @Advice.Return int read,
-        @Advice.Argument(0) byte b[],
-        @Advice.Enter Metadata metadata) throws IOException {
+        @Advice.Return int read, @Advice.Argument(0) byte b[], @Advice.Enter Metadata metadata)
+        throws IOException {
       CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
       if (metadata == null) {
         return;
@@ -191,9 +190,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
-    public static void exit(
-        @Advice.Return byte[] b,
-        @Advice.Enter Metadata metadata)
+    public static void exit(@Advice.Return byte[] b, @Advice.Enter Metadata metadata)
         throws IOException {
       CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
       if (metadata == null) {
@@ -241,8 +238,8 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
       if (available != 0) {
         return;
       }
-      Metadata metadata = InstrumentationContext.get(ServletInputStream.class, Metadata.class)
-          .get(thizz);
+      Metadata metadata =
+          InstrumentationContext.get(ServletInputStream.class, Metadata.class).get(thizz);
       if (metadata == null) {
         return;
       }
@@ -252,12 +249,13 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
 
   public static class ServletInputStream_IsFinished {
     @Advice.OnMethodExit(suppress = Throwable.class)
-    public static void exit(@Advice.This ServletInputStream thizz, @Advice.Return boolean isFinished) {
+    public static void exit(
+        @Advice.This ServletInputStream thizz, @Advice.Return boolean isFinished) {
       if (!isFinished) {
         return;
       }
-      Metadata metadata = InstrumentationContext.get(ServletInputStream.class, Metadata.class)
-          .get(thizz);
+      Metadata metadata =
+          InstrumentationContext.get(ServletInputStream.class, Metadata.class).get(thizz);
       if (metadata == null) {
         return;
       }
