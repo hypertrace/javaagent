@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.request;
 
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.safeHasSuperType;
 import static net.bytebuddy.matcher.ElementMatchers.is;

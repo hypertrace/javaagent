@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.request;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.Metadata;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import javax.servlet.ServletInputStream;

@@ -1,4 +1,4 @@
-package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.response;
 
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.safeHasSuperType;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
@@ -9,13 +9,14 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.request.HttpRequestInstrumentationUtils;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.Metadata;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.io.BufferedReader;
 import java.util.HashMap;
 import java.util.Map;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
@@ -87,6 +88,10 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
         Metadata metadata =
             HttpRequestInstrumentationUtils.createResponseMetadata(httpServletResponse, requestSpan);
         contextStore.put(servletOutputStream, metadata);
+//
+//        ContextStore<HttpServletResponse, Metadata> responseContext = InstrumentationContext
+//            .get(HttpServletResponse.class, Metadata.class);
+//        responseContext.put(httpServletResponse, metadata);
       }
     }
   }

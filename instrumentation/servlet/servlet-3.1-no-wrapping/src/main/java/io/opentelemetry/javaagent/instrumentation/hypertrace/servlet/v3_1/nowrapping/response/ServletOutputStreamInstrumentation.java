@@ -1,4 +1,4 @@
-package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.response;
 
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.safeHasSuperType;
 import static net.bytebuddy.matcher.ElementMatchers.is;
@@ -9,9 +9,10 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.Metadata;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,9 +46,28 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
             .and(isPublic()),
         ServletOutputStreamInstrumentation.class.getName() + "$OutputStream_write");
     transformers.put(
+        named("write")
+            .and(takesArguments(1))
+            .and(takesArgument(0, is(byte[].class)))
+            .and(isPublic()),
+        ServletOutputStreamInstrumentation.class.getName() + "$OutputStream_writeByteArr");
+    transformers.put(
+        named("write")
+            .and(takesArguments(3))
+            .and(takesArgument(0, is(byte[].class)))
+            .and(takesArgument(1, is(int.class)))
+            .and(takesArgument(2, is(int.class)))
+            .and(isPublic()),
+        ServletOutputStreamInstrumentation.class.getName()
+            + "$OutputStream_writeByteArrOffset");
+    transformers.put(
         named("close").and(takesArguments(0))
             .and(isPublic()),
-        ServletOutputStreamInstrumentation.class.getName() + "$ServletOutputStream_close");
+        ServletOutputStreamInstrumentation.class.getName() + "$OutputStream_close");
+    transformers.put(
+        named("flush").and(takesArguments(0))
+            .and(isPublic()),
+        ServletOutputStreamInstrumentation.class.getName() + "$OutputStream_flush");
 //    transformers.put(
 //        named("read")
 //            .and(takesArguments(1))
@@ -114,6 +134,33 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
     }
   }
 
+  static class OutputStream_writeByteArr {
+    @Advice.OnMethodEnter(suppress = Throwable.class)
+    public static void enter() {
+      System.out.println("ServletOutputStream write array");
+    }
+
+    @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
+    public static void exit() {
+    }
+  }
+
+  static class OutputStream_writeByteArrOffset {
+    @Advice.OnMethodEnter(suppress = Throwable.class)
+    public static void enter(
+        @Advice.This ServletOutputStream thizz,
+        @Advice.Argument(0) byte b[],
+        @Advice.Argument(1) int off,
+        @Advice.Argument(2) int len) {
+      System.out.printf("ServletOutputStream write array offset: %s", new String(b));
+      System.out.println(b.length);
+    }
+
+    @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
+    public static void exit() {
+    }
+  }
+
   static class ServletOutputStream_print {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void enter(@Advice.This ServletOutputStream thizz, @Advice.Argument(0) String s)
@@ -137,17 +184,25 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
     }
   }
 
-  static class ServletOutputStream_close {
+  static class OutputStream_close {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static void enter(@Advice.This ServletOutputStream thizz)
+    public static void enter()
         throws UnsupportedEncodingException {
       System.out.println("ServletOutputStream close");
-      Metadata metadata = InstrumentationContext.get(ServletOutputStream.class, Metadata.class)
-          .get(thizz);
-      if (metadata != null) {
-        String responseBody = metadata.boundedByteArrayOutputStream.toStringWithSuppliedCharset();
-        metadata.span.setAttribute(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY.getKey(), responseBody);
-      }
+//      Metadata metadata = InstrumentationContext.get(ServletOutputStream.class, Metadata.class)
+//          .get(thizz);
+//      if (metadata != null) {
+//        String responseBody = metadata.boundedByteArrayOutputStream.toStringWithSuppliedCharset();
+//        metadata.span.setAttribute(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY.getKey(), responseBody);
+//      }
+    }
+  }
+
+  static class OutputStream_flush {
+    @Advice.OnMethodEnter(suppress = Throwable.class)
+    public static void enter(@Advice.This ServletOutputStream thizz) {
+      System.out.println("ServletOutputStream flush");
+      System.out.println(thizz.getClass().getCanonicalName());
     }
   }
 }

@@ -17,7 +17,7 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping;
 
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.safeHasSuperType;
-import static io.opentelemetry.javaagent.tooling.matcher.NameMatchers.namedOneOf;
+import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.NameMatchers.namedOneOf;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
@@ -25,10 +25,12 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
+import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.common.ServletSpanDecorator;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
+import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -128,7 +130,7 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
     public static void exit(
         @Advice.Argument(value = 0) ServletRequest request,
         @Advice.Argument(value = 1) ServletResponse response,
-        @Advice.Local("currentSpan") Span currentSpan) {
+        @Advice.Local("currentSpan") Span currentSpan) throws UnsupportedEncodingException {
       int callDepth =
           CallDepthThreadLocalMap.decrementCallDepth(Servlet31InstrumentationName.class);
       if (callDepth > 0) {
@@ -164,6 +166,17 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
           }
         }
       }
+      System.out.println("END");
+//      // get buffer by response
+//      ContextStore<HttpServletResponse, Metadata> responseContext = InstrumentationContext
+//          .get(HttpServletResponse.class, Metadata.class);
+//      Metadata metadata = responseContext.get(httpResponse);
+//      if (metadata != null) {
+//        System.out.println("END attaching response body to span");
+//        String responseBody = metadata.boundedByteArrayOutputStream.toStringWithSuppliedCharset();
+//        currentSpan.setAttribute(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, responseBody);
+//      }
+//      System.out.println("very END");
     }
   }
 }
