@@ -17,7 +17,7 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1;
 
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Status;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.List;
 import okhttp3.MediaType;
 import okhttp3.Request;
@@ -109,7 +109,7 @@ public class Servlet31InstrumentationTest extends AbstractInstrumenterTest {
     List<SpanData> spans = traces.get(0);
     Assertions.assertEquals(1, spans.size());
     SpanData spanData = spans.get(0);
-    Assertions.assertEquals(Status.error(), spanData.getStatus());
+    Assertions.assertEquals(StatusData.error(), spanData.getStatus());
     Assertions.assertEquals(
         REQUEST_HEADER_VALUE,
         spanData

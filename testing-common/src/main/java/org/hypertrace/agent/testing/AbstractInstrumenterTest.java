@@ -18,7 +18,7 @@ package org.hypertrace.agent.testing;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.javaagent.spi.ComponentInstaller;
 import io.opentelemetry.javaagent.tooling.AgentInstaller;
@@ -75,7 +75,7 @@ public abstract class AbstractInstrumenterTest {
 
     COMPONENT_INSTALLER = new TestOpenTelemetryInstaller(TEST_WRITER);
     OpenTelemetrySdk.getGlobalTracerManagement().addSpanProcessor(TEST_WRITER);
-    TEST_TRACER = OpenTelemetry.getGlobalTracer("io.opentelemetry.auto");
+    TEST_TRACER = GlobalOpenTelemetry.getTracer("io.opentelemetry.auto");
   }
 
   private static ClassFileTransformer classFileTransformer;
@@ -93,7 +93,7 @@ public abstract class AbstractInstrumenterTest {
     if (classFileTransformer == null) {
       classFileTransformer =
           AgentInstaller.installBytebuddyAgent(
-              INSTRUMENTATION, true, Collections.singleton(COMPONENT_INSTALLER));
+              INSTRUMENTATION, Collections.singleton(COMPONENT_INSTALLER));
     }
   }
 
