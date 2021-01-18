@@ -75,7 +75,7 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
         @Advice.Local("currentSpan") Span currentSpan) {
 
       int callDepth =
-          CallDepthThreadLocalMap.incrementCallDepth(Servlet31NoWrappingInstrumentation.class);
+          CallDepthThreadLocalMap.incrementCallDepth(Servlet31InstrumentationName.class);
       if (callDepth > 0) {
         return false;
       }
@@ -130,7 +130,7 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
         @Advice.Argument(value = 1) ServletResponse response,
         @Advice.Local("currentSpan") Span currentSpan) {
       int callDepth =
-          CallDepthThreadLocalMap.decrementCallDepth(Servlet31NoWrappingInstrumentation.class);
+          CallDepthThreadLocalMap.decrementCallDepth(Servlet31InstrumentationName.class);
       if (callDepth > 0) {
         return;
       }

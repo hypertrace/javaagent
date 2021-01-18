@@ -41,6 +41,7 @@ import net.bytebuddy.matcher.ElementMatcher;
  * might be fine as on exception there is usually not body send to users.
  */
 @AutoService(InstrumentationModule.class)
+// TODO extend non-wrapping
 public class SparkJavaBodyInstrumentationModule extends Servlet31BodyInstrumentationModule {
 
   public SparkJavaBodyInstrumentationModule() {

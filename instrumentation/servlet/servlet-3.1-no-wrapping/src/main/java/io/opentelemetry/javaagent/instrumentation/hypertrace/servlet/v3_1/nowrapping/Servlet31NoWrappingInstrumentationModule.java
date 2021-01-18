@@ -59,10 +59,12 @@ public class Servlet31NoWrappingInstrumentationModule extends InstrumentationMod
   @Override
   protected Map<String, String> contextStore() {
     Map<String, String> context = new HashMap<>();
+    // capture request body
     context.put("javax.servlet.http.HttpServletRequest", Span.class.getName());
-    context.put("javax.servlet.http.HttpServletResponse", Span.class.getName());
     context.put("javax.servlet.ServletInputStream", Metadata.class.getName());
     context.put("java.io.BufferedReader", Metadata.class.getName());
+    // capture response body
+    context.put("javax.servlet.http.HttpServletResponse", Span.class.getName());
     context.put("javax.servlet.ServletOutputStream", Metadata.class.getName());
     return context;
   }

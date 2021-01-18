@@ -41,6 +41,7 @@ public class TestServlet extends HttpServlet {
     resp.setHeader(RESPONSE_HEADER, RESPONSE_HEADER_VALUE);
     try {
       resp.getOutputStream().print(RESPONSE_BODY);
+      resp.getOutputStream().close();
     } catch (IOException e) {
       e.printStackTrace();
     }

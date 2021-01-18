@@ -10,6 +10,9 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 import javax.servlet.ServletInputStream;
@@ -19,6 +22,7 @@ import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import net.bytebuddy.matcher.ElementMatcher.Junction;
+import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 
 public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
 
@@ -34,7 +38,16 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
         named("print").and(takesArguments(1))
             .and(takesArgument(0, is(String.class)))
             .and(isPublic()),
-        ServletInputStreamInstrumentation.class.getName() + "$ServletOutputStream_print");
+        ServletOutputStreamInstrumentation.class.getName() + "$ServletOutputStream_print");
+    transformers.put(
+        named("write").and(takesArguments(1))
+            .and(takesArgument(0, is(int.class)))
+            .and(isPublic()),
+        ServletOutputStreamInstrumentation.class.getName() + "$OutputStream_write");
+    transformers.put(
+        named("close").and(takesArguments(0))
+            .and(isPublic()),
+        ServletOutputStreamInstrumentation.class.getName() + "$ServletOutputStream_close");
 //    transformers.put(
 //        named("read")
 //            .and(takesArguments(1))
@@ -80,30 +93,61 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
     return transformers;
   }
 
-  static class ServletOutputStream_print {
+  static class OutputStream_write {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static Metadata enter(@Advice.This ServletOutputStream thizz, @Advice.Argument(0) String s) {
+    public static void enter(@Advice.This ServletOutputStream thizz, @Advice.Argument(0) int b) {
+      System.out.println("ServletOutput stream write enter");
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletOutputStream.class);
       if (callDepth > 0) {
-        return null;
+        return;
       }
-      return InstrumentationContext.get(ServletOutputStream.class, Metadata.class).get(thizz);
+      Metadata metadata = InstrumentationContext.get(ServletOutputStream.class, Metadata.class)
+          .get(thizz);
+      if (metadata != null) {
+        metadata.boundedByteArrayOutputStream.write(b);
+      }
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
-    public static void exit(
-        @Advice.This ServletOutputStream thizz,
-        @Advice.Enter Metadata metadata) {
+    public static void exit() {
       CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
-      if (metadata == null) {
-        return;
+    }
+  }
+
+  static class ServletOutputStream_print {
+    @Advice.OnMethodEnter(suppress = Throwable.class)
+    public static void enter(@Advice.This ServletOutputStream thizz, @Advice.Argument(0) String s)
+        throws IOException {
+      System.out.println("\n\n\n ---> print enter");
+      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletOutputStream.class);
+      if (callDepth > 0) {
+        return ;
       }
-      if (read == -1) {
-        ServletInputStreamUtils.captureBody(metadata);
-      } else {
-        metadata.boundedByteArrayOutputStream.write((byte) read);
+      Metadata metadata = InstrumentationContext.get(ServletOutputStream.class, Metadata.class)
+          .get(thizz);
+      if (metadata != null) {
+        String bodyPart = s == null ? "null" : s;
+        metadata.boundedByteArrayOutputStream.write(s.getBytes());
       }
-      CallDepthThreadLocalMap.reset(ServletInputStream.class);
+    }
+
+    @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
+    public static void exit() {
+      CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
+    }
+  }
+
+  static class ServletOutputStream_close {
+    @Advice.OnMethodEnter(suppress = Throwable.class)
+    public static void enter(@Advice.This ServletOutputStream thizz)
+        throws UnsupportedEncodingException {
+      System.out.println("ServletOutputStream close");
+      Metadata metadata = InstrumentationContext.get(ServletOutputStream.class, Metadata.class)
+          .get(thizz);
+      if (metadata != null) {
+        String responseBody = metadata.boundedByteArrayOutputStream.toStringWithSuppliedCharset();
+        metadata.span.setAttribute(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY.getKey(), responseBody);
+      }
     }
   }
 }

@@ -56,6 +56,8 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
     public static void exit(
         @Advice.This ServletResponse servletResponse,
         @Advice.Return ServletOutputStream servletOutputStream) {
+      System.out.println("getting response output stream");
+
       if (!(servletResponse instanceof HttpServletResponse)) {
         return;
       }
@@ -79,21 +81,20 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
       // do not capture if data capture is disabled or not supported content type
       AgentConfig agentConfig = HypertraceConfig.get();
       String contentType = httpServletResponse.getContentType();
-      if (!agentConfig.getDataCapture().getHttpBody().getResponse().getValue()
-          || ContentTypeUtils.shouldCapture(contentType)) {
-        return;
+      if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()
+          && ContentTypeUtils.shouldCapture(contentType)) {
+        System.out.println("Adding metadata for response");
+        Metadata metadata =
+            HttpRequestInstrumentationUtils.createResponseMetadata(httpServletResponse, requestSpan);
+        contextStore.put(servletOutputStream, metadata);
       }
-
-      Metadata metadata =
-          HttpRequestInstrumentationUtils.createResponseMetadata(httpServletResponse, requestSpan);
-      contextStore.put(servletOutputStream, metadata);
     }
   }
 
   static class ServletResponse_getWriter_advice {
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void exit() {
-      System.out.println("");
+      System.out.println("Getting printWriter from response");
     }
   }
 }
