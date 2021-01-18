@@ -50,6 +50,8 @@ public class SparkJavaInstrumentationTest extends AbstractInstrumenterTest {
     Spark.post(
         "/",
         (req, res) -> {
+          System.out.printf("Spark received: %s\n", req.body());
+
           res.header(RESPONSE_HEADER, RESPONSE_HEADER_VALUE);
           res.type("application/json");
           return RESPONSE_BODY;

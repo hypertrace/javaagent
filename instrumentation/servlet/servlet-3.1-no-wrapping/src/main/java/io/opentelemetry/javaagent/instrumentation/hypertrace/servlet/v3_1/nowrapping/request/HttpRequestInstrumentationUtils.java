@@ -38,15 +38,14 @@ public class HttpRequestInstrumentationUtils {
     if (contentLength < 0) {
       contentLength = ContentLengthUtils.DEFAULT;
     }
-    return new Metadata(
-        span, BoundedBuffersFactory.createStream(contentLength, charset));
+    return new Metadata(span, BoundedBuffersFactory.createStream(contentLength, charset));
   }
 
-  public static Metadata createResponseMetadata(HttpServletResponse httpServletResponse, Span span) {
+  public static Metadata createResponseMetadata(
+      HttpServletResponse httpServletResponse, Span span) {
     String contentType = httpServletResponse.getContentType();
     String charsetStr = ContentTypeUtils.parseCharset(contentType);
     Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
-    return new Metadata(
-        span, BoundedBuffersFactory.createStream(charset));
+    return new Metadata(span, BoundedBuffersFactory.createStream(charset));
   }
 }

@@ -58,7 +58,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
     matchers.put(
         named("getReader")
             .and(takesArguments(0))
-            .and(returns(BufferedReader.class))
+            //            .and(returns(BufferedReader.class))
             .and(isPublic()),
         ServletRequestInstrumentation.class.getName() + "$ServletRequest_getReader_advice");
     return matchers;
@@ -69,6 +69,8 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
     public static void exit(
         @Advice.This ServletRequest servletRequest,
         @Advice.Return ServletInputStream servletInputStream) {
+      System.out.println("getting servlet request inputStream");
+
       if (!(servletRequest instanceof HttpServletRequest)) {
         return;
       }
@@ -99,6 +101,8 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void exit(
         @Advice.This ServletRequest servletRequest, @Advice.Return BufferedReader reader) {
+      System.out.println("getting servlet request bufferedReader");
+
       if (!(servletRequest instanceof HttpServletRequest)) {
         return;
       }

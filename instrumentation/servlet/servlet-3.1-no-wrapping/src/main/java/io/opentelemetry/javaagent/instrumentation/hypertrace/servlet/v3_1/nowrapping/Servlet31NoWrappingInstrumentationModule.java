@@ -70,10 +70,8 @@ public class Servlet31NoWrappingInstrumentationModule extends InstrumentationMod
     context.put("java.io.BufferedReader", Metadata.class.getName());
 
     // capture response body
-    context.put("javax.servlet.http.HttpServletResponse", Span.class.getName());
+    context.put("javax.servlet.http.HttpServletResponse", Metadata.class.getName());
     context.put("javax.servlet.ServletOutputStream", Metadata.class.getName());
-    // get the metadata after processing
-//    context.put("javax.servlet.http.HttpServletResponse", Metadata.class.getName());
     return context;
   }
 }

@@ -17,7 +17,6 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping;
 
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Status;
 import java.util.List;
 import okhttp3.MediaType;
 import okhttp3.Request;

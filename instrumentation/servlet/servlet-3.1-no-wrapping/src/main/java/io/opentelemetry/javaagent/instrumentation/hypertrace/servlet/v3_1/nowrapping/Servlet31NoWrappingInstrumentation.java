@@ -31,6 +31,7 @@ import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.common.ServletSpanDecorator;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,6 +48,7 @@ import net.bytebuddy.matcher.ElementMatcher.Junction;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.core.config.HypertraceConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 import org.hypertrace.agent.filter.FilterRegistry;
 
@@ -69,7 +71,7 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
     return matchers;
   }
 
-  static class ServletAdvice {
+  public static class ServletAdvice {
     @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = Advice.OnNonDefaultValue.class)
     public static boolean start(
         @Advice.Argument(value = 0) ServletRequest request,
@@ -99,8 +101,11 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
             .put(httpRequest, currentSpan);
       }
       // this has to be added for all responses - as the content type is known at this point
-      InstrumentationContext.get(HttpServletResponse.class, Span.class)
-          .put(httpResponse, currentSpan);
+      InstrumentationContext.get(HttpServletResponse.class, Metadata.class)
+          .put(
+              httpResponse,
+              new Metadata(
+                  currentSpan, BoundedBuffersFactory.createStream(StandardCharsets.ISO_8859_1)));
 
       ServletSpanDecorator.addSessionId(currentSpan, httpRequest);
 
@@ -118,11 +123,12 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
         }
         headers.put(attributeKey.getKey(), headerValue);
       }
+
       if (FilterRegistry.getFilter().evaluateRequestHeaders(currentSpan, headers)) {
         httpResponse.setStatus(403);
+        // skip execution of the user code
         return true;
       }
-
       return false;
     }
 
@@ -130,7 +136,8 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
     public static void exit(
         @Advice.Argument(value = 0) ServletRequest request,
         @Advice.Argument(value = 1) ServletResponse response,
-        @Advice.Local("currentSpan") Span currentSpan) throws UnsupportedEncodingException {
+        @Advice.Local("currentSpan") Span currentSpan)
+        throws UnsupportedEncodingException {
       int callDepth =
           CallDepthThreadLocalMap.decrementCallDepth(Servlet31InstrumentationName.class);
       if (callDepth > 0) {
@@ -166,17 +173,18 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
           }
         }
       }
+
       System.out.println("END");
-//      // get buffer by response
-//      ContextStore<HttpServletResponse, Metadata> responseContext = InstrumentationContext
-//          .get(HttpServletResponse.class, Metadata.class);
-//      Metadata metadata = responseContext.get(httpResponse);
-//      if (metadata != null) {
-//        System.out.println("END attaching response body to span");
-//        String responseBody = metadata.boundedByteArrayOutputStream.toStringWithSuppliedCharset();
-//        currentSpan.setAttribute(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, responseBody);
-//      }
-//      System.out.println("very END");
+      // capture response body
+      ContextStore<HttpServletResponse, Metadata> responseContext =
+          InstrumentationContext.get(HttpServletResponse.class, Metadata.class);
+      Metadata metadata = responseContext.get(httpResponse);
+      if (metadata != null) {
+        System.out.println("capturing response body");
+        System.out.println(metadata.boundedByteArrayOutputStream.toStringWithSuppliedCharset());
+        String responseBody = metadata.boundedByteArrayOutputStream.toStringWithSuppliedCharset();
+        currentSpan.setAttribute(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, responseBody);
+      }
     }
   }
 }

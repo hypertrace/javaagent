@@ -1,3 +1,19 @@
+/*
+ * Copyright The Hypertrace Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.response;
 
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.safeHasSuperType;
@@ -33,7 +49,8 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
   public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
     Map<Junction<MethodDescription>, String> transformers = new HashMap<>();
     transformers.put(
-        named("write").and(takesArguments(3))
+        named("write")
+            .and(takesArguments(3))
             .and(takesArgument(0, is(char[].class)))
             .and(takesArgument(1, is(int.class)))
             .and(takesArgument(2, is(int.class)))
@@ -44,25 +61,27 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
 
   static class Writer_write {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static Metadata enter(@Advice.This PrintWriter thizz, @Advice.Argument(0) char[] buf, @Advice.Argument(1) int off, @Advice.Argument(2) int len) {
+    public static Metadata enter(
+        @Advice.This PrintWriter thizz,
+        @Advice.Argument(0) char[] buf,
+        @Advice.Argument(1) int off,
+        @Advice.Argument(2) int len) {
       System.out.println("\n\n\n ---> print enter");
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
       if (callDepth > 0) {
         return null;
       }
-      Metadata metadata = InstrumentationContext.get(PrintWriter.class, Metadata.class)
-          .get(thizz);
+      Metadata metadata = InstrumentationContext.get(PrintWriter.class, Metadata.class).get(thizz);
       if (metadata != null) {
-//        metadata.boundedByteArrayOutputStream.
+        //        metadata.boundedByteArrayOutputStream.
       }
 
       return metadata;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
-    public static void exit(
-        @Advice.Argument(0) String str,
-        @Advice.Enter Metadata metadata) throws IOException {
+    public static void exit(@Advice.Argument(0) String str, @Advice.Enter Metadata metadata)
+        throws IOException {
       System.out.println("print exit");
       CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
       if (metadata == null) {

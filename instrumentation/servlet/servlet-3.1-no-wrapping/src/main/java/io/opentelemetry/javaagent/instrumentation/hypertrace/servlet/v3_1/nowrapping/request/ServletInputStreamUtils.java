@@ -37,6 +37,7 @@ public class ServletInputStreamUtils {
       GlobalOpenTelemetry.get().getTracer("org.hypertrace.java.servletinputstream");
 
   public static void captureBody(Metadata metadata) {
+    System.out.println("Capturing request body");
     Span span = metadata.span;
     String requestBody = null;
     try {
