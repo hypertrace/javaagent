@@ -45,7 +45,6 @@ import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.hypertrace.agent.testing.TestHttpServer;
 import org.hypertrace.agent.testing.TestHttpServer.GetJsonHandler;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -183,35 +182,7 @@ class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTes
 
     @Override
     public InputStream getContent() {
-      return new TestInputStream(this.content);
-    }
-  }
-
-  // TODO remove once https://github.com/hypertrace/javaagent/issues/189 is fixed
-  static class TestInputStream extends ByteArrayInputStream {
-
-    public TestInputStream(byte[] buf) {
-      super(buf);
-    }
-
-    @Override
-    public synchronized int read() {
-      return super.read();
-    }
-
-    @Override
-    public int read(@NotNull byte[] b) throws IOException {
-      return super.read(b);
-    }
-
-    @Override
-    public synchronized int read(byte[] b, int off, int len) {
-      return super.read(b, off, len);
-    }
-
-    @Override
-    public synchronized int available() {
-      return super.available();
+      return new ByteArrayInputStream(this.content);
     }
   }
 

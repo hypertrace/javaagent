@@ -16,8 +16,8 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpasyncclient;
 
-import static io.opentelemetry.javaagent.tooling.ClassLoaderMatcher.hasClassesNamed;
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.implementsInterface;
+import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMatcher.hasClassesNamed;
 import static java.util.Collections.singletonMap;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.named;
@@ -28,7 +28,6 @@ import com.google.auto.service.AutoService;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.javaagent.instrumentation.apachehttpasyncclient.ApacheHttpAsyncClientInstrumentation.DelegatingRequestProducer;
-import io.opentelemetry.javaagent.instrumentation.apachehttpasyncclient.DelegatingRequestAccessor;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v4_0.ApacheHttpClientUtils;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
@@ -104,7 +103,7 @@ public class ApacheAsyncClientInstrumentationModule extends InstrumentationModul
       if (requestProducer instanceof DelegatingRequestProducer) {
         DelegatingRequestProducer delegatingRequestProducer =
             (DelegatingRequestProducer) requestProducer;
-        Context context = DelegatingRequestAccessor.get(delegatingRequestProducer);
+        Context context = delegatingRequestProducer.getContext();
         requestProducer = new DelegatingCaptureBodyRequestProducer(context, requestProducer);
         futureCallback = new BodyCaptureDelegatingCallback(context, httpContext, futureCallback);
       }

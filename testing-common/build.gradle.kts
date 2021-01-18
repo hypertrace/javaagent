@@ -10,6 +10,8 @@ configurations {
 val versions: Map<String, String> by extra
 
 dependencies {
+    api(project(":otel-extensions"))
+
     api("io.opentelemetry:opentelemetry-api:${versions["opentelemetry"]}")
     api("io.opentelemetry:opentelemetry-sdk:${versions["opentelemetry"]}")
     api("com.squareup.okhttp3:okhttp:4.9.0")

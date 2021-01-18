@@ -16,7 +16,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.sparkjava;
 
-import static io.opentelemetry.javaagent.tooling.matcher.NameMatchers.namedOneOf;
+import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.NameMatchers.namedOneOf;
 import static java.util.Collections.singletonMap;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;

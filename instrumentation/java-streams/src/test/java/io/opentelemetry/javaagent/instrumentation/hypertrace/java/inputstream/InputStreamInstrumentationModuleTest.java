@@ -39,7 +39,7 @@ public class InputStreamInstrumentationModuleTest extends AbstractInstrumenterTe
 
   @Test
   public void read() {
-    InputStream inputStream = new TestByteArrayInputStream(STR.getBytes());
+    InputStream inputStream = new ByteArrayInputStream(STR.getBytes());
     read(
         inputStream,
         () -> {
@@ -57,7 +57,7 @@ public class InputStreamInstrumentationModuleTest extends AbstractInstrumenterTe
 
   @Test
   public void readBytes() {
-    InputStream inputStream = new TestByteArrayInputStream(STR.getBytes());
+    InputStream inputStream = new ByteArrayInputStream(STR.getBytes());
     read(
         inputStream,
         () -> {
@@ -75,7 +75,7 @@ public class InputStreamInstrumentationModuleTest extends AbstractInstrumenterTe
 
   @Test
   public void readBytesOffset() {
-    InputStream inputStream = new TestByteArrayInputStream(STR.getBytes());
+    InputStream inputStream = new ByteArrayInputStream(STR.getBytes());
     read(
         inputStream,
         () -> {
@@ -108,31 +108,5 @@ public class InputStreamInstrumentationModuleTest extends AbstractInstrumenterTe
     Assertions.assertEquals(1, trace.size());
     SpanData spanData = trace.get(0);
     Assertions.assertEquals(expected, spanData.getAttributes().get(ATTRIBUTE_KEY));
-  }
-
-  /**
-   * Each method has to be overridden because OTEL agent ignores classes from java.
-   * https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/8baa897e8bf09359da848aaaa98d2b4eb7fbf4c1/javaagent-tooling/src/main/java/io/opentelemetry/javaagent/tooling/matcher/GlobalIgnoresMatcher.java#L105
-   */
-  static class TestByteArrayInputStream extends ByteArrayInputStream {
-
-    public TestByteArrayInputStream(byte[] buf) {
-      super(buf);
-    }
-
-    @Override
-    public synchronized int read() {
-      return super.read();
-    }
-
-    @Override
-    public int read(byte[] b) throws IOException {
-      return super.read(b);
-    }
-
-    @Override
-    public synchronized int read(byte[] b, int off, int len) {
-      return super.read(b, off, len);
-    }
   }
 }
