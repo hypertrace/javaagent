@@ -19,12 +19,10 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowra
 import io.opentelemetry.api.trace.Span;
 import java.nio.charset.Charset;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
 import org.hypertrace.agent.core.instrumentation.utils.ContentLengthUtils;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeCharsetUtils;
-import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 
 public class HttpRequestInstrumentationUtils {
 
