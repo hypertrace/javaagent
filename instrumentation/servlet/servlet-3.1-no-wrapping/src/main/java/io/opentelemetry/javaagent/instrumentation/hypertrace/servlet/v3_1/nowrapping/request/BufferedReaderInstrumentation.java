@@ -17,11 +17,19 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.request;
 
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.safeHasSuperType;
+import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
+import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
+import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.Metadata;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
+import java.io.BufferedReader;
 import java.util.HashMap;
 import java.util.Map;
+import javax.servlet.ServletInputStream;
+import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
@@ -37,9 +45,9 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
   @Override
   public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
     Map<Junction<MethodDescription>, String> transformers = new HashMap<>();
-    //    transformers.put(
-    //        named("read").and(takesArguments(0)).and(isPublic()),
-    //        ServletInputStreamInstrumentation.class.getName() + "$InputStream_ReadNoArgs");
+    transformers.put(
+        named("read").and(takesArguments(0)).and(isPublic()),
+        BufferedReaderInstrumentation.class.getName() + "$Reader_readNoArgs");
     //    transformers.put(
     //        named("read")
     //            .and(takesArguments(1))
@@ -84,5 +92,33 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
     //        named("isFinished").and(takesArguments(0)).and(isPublic()),
     //        ServletInputStreamInstrumentation.class.getName() + "$ServletInputStream_IsFinished");
     return transformers;
+  }
+
+  static class Reader_readNoArgs {
+    @Advice.OnMethodEnter(suppress = Throwable.class)
+    public static Metadata enter(@Advice.This BufferedReader thizz) {
+      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(BufferedReader.class);
+      if (callDepth > 0) {
+        return null;
+      }
+      return InstrumentationContext.get(BufferedReader.class, Metadata.class).get(thizz);
+    }
+
+    @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
+    public static void exit(
+        @Advice.This ServletInputStream thizz,
+        @Advice.Return int read,
+        @Advice.Enter Metadata metadata) {
+      CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
+      if (metadata == null) {
+        return;
+      }
+      if (read == -1) {
+        ServletInputStreamUtils.captureBody(metadata);
+      } else {
+        metadata.boundedByteArrayOutputStream.write((byte) read);
+      }
+      CallDepthThreadLocalMap.reset(ServletInputStream.class);
+    }
   }
 }

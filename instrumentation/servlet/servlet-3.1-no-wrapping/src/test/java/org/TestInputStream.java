@@ -21,10 +21,6 @@ import java.io.InputStream;
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 
-/**
- * OTEL agent excludes {@code io.opentelemetry.} package from instrumentation, therefore using this
- * package.
- */
 public class TestInputStream extends ServletInputStream {
 
   private final InputStream wrapped;
