@@ -17,14 +17,20 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.response;
 
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.safeHasSuperType;
+import static net.bytebuddy.matcher.ElementMatchers.is;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
+import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
+import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
+import javax.servlet.ServletInputStream;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
@@ -43,8 +49,11 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
   public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
     Map<Junction<MethodDescription>, String> transformers = new HashMap<>();
     transformers.put(
-        named("write").and(takesArguments(0)).and(isPublic()),
-        PrintWriterInstrumentation.class.getName() + "$Writer_writeNoArgs");
+        named("write")
+            .and(takesArguments(1))
+            .and(takesArgument(0, is(char[].class)))
+            .and(isPublic()),
+        PrintWriterInstrumentation.class.getName() + "$Writer_writeArr");
     //    transformers.put(
     //        named("write")
     //            .and(takesArguments(3))
@@ -56,36 +65,25 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
     return transformers;
   }
 
-  static class Writer_writeNoArgs {
+  static class Writer_writeArr {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static BoundedCharArrayWriter enter(
-        @Advice.This PrintWriter thizz, @Advice.Argument(0) char[] buf) {
-      System.out.println("\n\n\n ---> print enter");
-      return null;
-      //      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
-      //      if (callDepth > 0) {
-      //        return null;
-      //      }
-      //      BoundedCharArrayWriter metadata =
-      //          InstrumentationContext.get(PrintWriter.class,
-      // BoundedCharArrayWriter.class).get(thizz);
-      //      if (metadata != null) {
-      //        //        metadata.boundedByteArrayOutputStream.
-      //      }
-      //      return metadata;
+    public static void enter(@Advice.This PrintWriter thizz, @Advice.Argument(0) char[] buf)
+        throws IOException {
+
+      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
+      if (callDepth > 0) {
+        return;
+      }
+      BoundedCharArrayWriter buffer =
+          InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class).get(thizz);
+      if (buffer != null) {
+        buffer.write(buf);
+      }
     }
-    //
-    //    @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
-    //    public static void exit(
-    //        @Advice.Argument(0) String str, @Advice.Enter CharBufferAndSpan metadata)
-    //        throws IOException {
-    //      System.out.println("print exit");
-    //      CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
-    //      if (metadata == null) {
-    //        return;
-    //      }
-    //      String bodyPart = str == null ? "null" : str;
-    //      metadata.buffer.write(bodyPart.toCharArray());
-    //    }
+
+    @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
+    public static void exit() {
+      CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
+    }
   }
 }

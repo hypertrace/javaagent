@@ -33,8 +33,7 @@ public class HttpRequestInstrumentationUtils {
 
   public static ByteBufferMetadata createRequestByteBufferMetadata(
       HttpServletRequest httpServletRequest, Span span) {
-    String contentType = httpServletRequest.getContentType();
-    String charsetStr = ContentTypeUtils.parseCharset(contentType);
+    String charsetStr = httpServletRequest.getCharacterEncoding();
     Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
     int contentLength = httpServletRequest.getContentLength();
     if (contentLength < 0) {
