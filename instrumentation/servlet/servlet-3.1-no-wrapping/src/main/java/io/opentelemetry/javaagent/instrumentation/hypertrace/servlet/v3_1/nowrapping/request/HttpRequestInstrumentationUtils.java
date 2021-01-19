@@ -49,17 +49,4 @@ public class HttpRequestInstrumentationUtils {
     }
     return new CharBufferSpanPair(span, BoundedBuffersFactory.createWriter(contentLength));
   }
-
-  public static ByteBufferSpanPair createResponseMetadata(
-      HttpServletResponse httpServletResponse, Span span) {
-    String contentType = httpServletResponse.getContentType();
-    String charsetStr = ContentTypeUtils.parseCharset(contentType);
-    Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
-    return new ByteBufferSpanPair(span, BoundedBuffersFactory.createStream(charset));
-  }
-
-  public static CharBufferSpanPair createResponseCharBufferMetadata(
-      HttpServletResponse httpServletResponse, Span span) {
-    return new CharBufferSpanPair(span, BoundedBuffersFactory.createWriter());
-  }
 }
