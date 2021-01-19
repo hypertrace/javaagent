@@ -22,12 +22,12 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.returns;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
+import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.ByteBufferMetadata;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.request.HttpRequestInstrumentationUtils;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import java.io.BufferedReader;
+import java.io.PrintWriter;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import javax.servlet.ServletOutputStream;
@@ -40,6 +40,10 @@ import net.bytebuddy.matcher.ElementMatcher;
 import net.bytebuddy.matcher.ElementMatcher.Junction;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.core.config.HypertraceConfig;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
+import org.hypertrace.agent.core.instrumentation.utils.ContentTypeCharsetUtils;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 
 public class ServletResponseInstrumentation implements TypeInstrumentation {
@@ -59,19 +63,28 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
             .and(isPublic()),
         ServletResponseInstrumentation.class.getName() + "$ServletResponse_getOutputStream");
     matchers.put(
-        named("getWriter")
-            .and(takesArguments(0))
-            .and(returns(BufferedReader.class))
-            .and(isPublic()),
+        named("getWriter").and(takesArguments(0)).and(returns(PrintWriter.class)).and(isPublic()),
         ServletResponseInstrumentation.class.getName() + "$ServletResponse_getWriter_advice");
     return matchers;
   }
 
   static class ServletResponse_getOutputStream {
-    @Advice.OnMethodExit(suppress = Throwable.class)
+    @Advice.OnMethodEnter(suppress = Throwable.class)
+    public static void enter() {
+      // the getReader method might call getInputStream
+      CallDepthThreadLocalMap.incrementCallDepth(ServletResponse.class);
+    }
+
+    @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(
         @Advice.This ServletResponse servletResponse,
         @Advice.Return ServletOutputStream servletOutputStream) {
+
+      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(ServletResponse.class);
+      if (callDepth > 0) {
+        return;
+      }
+
       System.out.println("getting response output stream");
 
       if (!(servletResponse instanceof HttpServletResponse)) {
@@ -79,18 +92,10 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
       }
       HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
 
-      ContextStore<ServletOutputStream, ByteBufferMetadata> contextStore =
-          InstrumentationContext.get(ServletOutputStream.class, ByteBufferMetadata.class);
+      ContextStore<ServletOutputStream, BoundedByteArrayOutputStream> contextStore =
+          InstrumentationContext.get(ServletOutputStream.class, BoundedByteArrayOutputStream.class);
       if (contextStore.get(servletOutputStream) != null) {
         // getOutputStream() can be called multiple times
-        return;
-      }
-
-      /** TODO what if the response is a wrapper? - it needs to be unwrapped */
-      ContextStore<HttpServletResponse, ByteBufferMetadata> responseContext =
-          InstrumentationContext.get(HttpServletResponse.class, ByteBufferMetadata.class);
-      ByteBufferMetadata responseMetadata = responseContext.get(httpServletResponse);
-      if (responseMetadata == null) {
         return;
       }
 
@@ -100,20 +105,54 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
       if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()
           && ContentTypeUtils.shouldCapture(contentType)) {
         System.out.println("Adding metadata for response");
-        ByteBufferMetadata metadata =
-            HttpRequestInstrumentationUtils.createResponseMetadata(
-                httpServletResponse, responseMetadata.span);
-        contextStore.put(servletOutputStream, metadata);
+
+        String charsetStr = httpServletResponse.getCharacterEncoding();
+        Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
+        BoundedByteArrayOutputStream buffer = BoundedBuffersFactory.createStream(charset);
+        contextStore.put(servletOutputStream, buffer);
         // override the metadata that is used by the OutputStream instrumentation
-        responseContext.put(httpServletResponse, metadata);
       }
     }
   }
 
   static class ServletResponse_getWriter_advice {
-    @Advice.OnMethodExit(suppress = Throwable.class)
-    public static void exit() {
+    @Advice.OnMethodEnter(suppress = Throwable.class)
+    public static void enter() {
+      System.out.println("getting writer");
+      // the getWriter method might call getOutputStream
+      CallDepthThreadLocalMap.incrementCallDepth(ServletResponse.class);
+    }
+
+    @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
+    public static void exit(
+        @Advice.This ServletResponse servletResponse, @Advice.Return PrintWriter printWriter) {
+
+      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(ServletResponse.class);
+      if (callDepth > 0) {
+        return;
+      }
       System.out.println("Getting printWriter from response");
+      if (!(servletResponse instanceof HttpServletResponse)) {
+        return;
+      }
+      HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
+
+      ContextStore<PrintWriter, BoundedCharArrayWriter> contextStore =
+          InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class);
+      if (contextStore.get(printWriter) != null) {
+        // getWriter() can be called multiple times
+        return;
+      }
+
+      // do not capture if data capture is disabled or not supported content type
+      AgentConfig agentConfig = HypertraceConfig.get();
+      String contentType = httpServletResponse.getContentType();
+      if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()
+          && ContentTypeUtils.shouldCapture(contentType)) {
+        System.out.println("Adding metadata for response");
+        BoundedCharArrayWriter writer = BoundedBuffersFactory.createWriter();
+        contextStore.put(printWriter, writer);
+      }
     }
   }
 }

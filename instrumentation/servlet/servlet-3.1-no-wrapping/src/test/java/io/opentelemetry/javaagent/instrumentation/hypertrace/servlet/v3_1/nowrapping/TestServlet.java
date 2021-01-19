@@ -34,7 +34,7 @@ public class TestServlet extends HttpServlet {
     try {
       System.out.println("Reader name");
       System.out.println(req.getReader().getClass().getName());
-      while (req.getReader().read() != -1) {}
+      while (req.getReader().readLine() != null) {}
       req.getReader().close();
     } catch (IOException e) {
       e.printStackTrace();
@@ -43,6 +43,7 @@ public class TestServlet extends HttpServlet {
     resp.setContentType("application/json");
     resp.setHeader(RESPONSE_HEADER, RESPONSE_HEADER_VALUE);
     try {
+      //      resp.getWriter().print(RESPONSE_BODY.toCharArray());
       resp.getOutputStream().print(RESPONSE_BODY);
       resp.getOutputStream().close();
     } catch (IOException e) {

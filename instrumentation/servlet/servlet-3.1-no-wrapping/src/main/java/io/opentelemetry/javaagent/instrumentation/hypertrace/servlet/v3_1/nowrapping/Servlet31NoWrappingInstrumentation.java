@@ -25,17 +25,17 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.common.ServletSpanDecorator;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -48,7 +48,8 @@ import net.bytebuddy.matcher.ElementMatcher.Junction;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.core.config.HypertraceConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 import org.hypertrace.agent.filter.FilterRegistry;
 
@@ -100,12 +101,6 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
         InstrumentationContext.get(HttpServletRequest.class, Span.class)
             .put(httpRequest, currentSpan);
       }
-      // this has to be added for all responses - as the content type is known at this point
-      InstrumentationContext.get(HttpServletResponse.class, ByteBufferMetadata.class)
-          .put(
-              httpResponse,
-              new ByteBufferMetadata(
-                  currentSpan, BoundedBuffersFactory.createStream(StandardCharsets.ISO_8859_1)));
 
       ServletSpanDecorator.addSessionId(currentSpan, httpRequest);
 
@@ -137,7 +132,7 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
         @Advice.Argument(value = 0) ServletRequest request,
         @Advice.Argument(value = 1) ServletResponse response,
         @Advice.Local("currentSpan") Span currentSpan)
-        throws UnsupportedEncodingException {
+        throws IOException {
       int callDepth =
           CallDepthThreadLocalMap.decrementCallDepth(Servlet31InstrumentationName.class);
       if (callDepth > 0) {
@@ -172,18 +167,37 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
                 HypertraceSemanticAttributes.httpResponseHeader(headerName), headerValue);
           }
         }
-      }
 
-      System.out.println("END");
-      // capture response body
-      ContextStore<HttpServletResponse, ByteBufferMetadata> responseContext =
-          InstrumentationContext.get(HttpServletResponse.class, ByteBufferMetadata.class);
-      ByteBufferMetadata metadata = responseContext.get(httpResponse);
-      if (metadata != null) {
-        System.out.println("capturing response body");
-        System.out.println(metadata.buffer.toStringWithSuppliedCharset());
-        String responseBody = metadata.buffer.toStringWithSuppliedCharset();
-        currentSpan.setAttribute(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, responseBody);
+        // capture response body
+        if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()
+            && ContentTypeUtils.shouldCapture(httpResponse.getContentType())) {
+          try {
+            ServletOutputStream outputStream = httpResponse.getOutputStream();
+            BoundedByteArrayOutputStream buffer =
+                InstrumentationContext.get(
+                        ServletOutputStream.class, BoundedByteArrayOutputStream.class)
+                    .get(outputStream);
+            if (buffer != null) {
+              currentSpan.setAttribute(
+                  HypertraceSemanticAttributes.HTTP_RESPONSE_BODY,
+                  buffer.toStringWithSuppliedCharset());
+            }
+          } catch (IllegalStateException exOutStream) {
+            // getWriter was called
+            try {
+              PrintWriter writer = httpResponse.getWriter();
+              BoundedCharArrayWriter buffer =
+                  InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class)
+                      .get(writer);
+              if (buffer != null) {
+                currentSpan.setAttribute(
+                    HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, buffer.toString());
+              }
+            } catch (IllegalStateException exPrintWriter) {
+              // nothing to do
+            }
+          }
+        }
       }
     }
   }

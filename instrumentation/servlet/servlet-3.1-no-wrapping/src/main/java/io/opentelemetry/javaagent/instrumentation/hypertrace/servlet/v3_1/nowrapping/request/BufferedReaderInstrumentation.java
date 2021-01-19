@@ -182,7 +182,6 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
         Utils.captureBody(metadata);
       } else {
         metadata.buffer.write(line);
-        metadata.buffer.write('\n');
       }
       CallDepthThreadLocalMap.reset(BufferedReader.class);
     }

@@ -24,9 +24,8 @@ public class CharBufferAndSpan {
   public final BoundedCharArrayWriter buffer;
 
   /**
-   * A flag to signalize that buffer has been added to span.
-   * For instance Jetty calls reader#read in recycle method and
-   * this flag prevents capturing the payload twice.
+   * A flag to signalize that buffer has been added to span. For instance Jetty calls reader#read in
+   * recycle method and this flag prevents capturing the payload twice.
    */
   private boolean bufferCaptured;
 

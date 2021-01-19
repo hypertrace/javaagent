@@ -74,7 +74,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
       CallDepthThreadLocalMap.incrementCallDepth(ServletRequest.class);
     }
 
-    @Advice.OnMethodExit(suppress = Throwable.class)
+    @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(
         @Advice.This ServletRequest servletRequest,
         @Advice.Return ServletInputStream servletInputStream) {

@@ -31,6 +31,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.bytebuddy.matcher.ElementMatcher;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
 import org.hypertrace.agent.core.instrumentation.buffer.CharBufferAndSpan;
 
 @AutoService(InstrumentationModule.class)
@@ -69,8 +71,8 @@ public class Servlet31NoWrappingInstrumentationModule extends InstrumentationMod
     context.put("java.io.BufferedReader", CharBufferAndSpan.class.getName());
 
     // capture response body
-    context.put("javax.servlet.http.HttpServletResponse", ByteBufferMetadata.class.getName());
-    context.put("javax.servlet.ServletOutputStream", ByteBufferMetadata.class.getName());
+    context.put("javax.servlet.ServletOutputStream", BoundedByteArrayOutputStream.class.getName());
+    context.put("java.io.PrintWriter", BoundedCharArrayWriter.class.getName());
     return context;
   }
 }

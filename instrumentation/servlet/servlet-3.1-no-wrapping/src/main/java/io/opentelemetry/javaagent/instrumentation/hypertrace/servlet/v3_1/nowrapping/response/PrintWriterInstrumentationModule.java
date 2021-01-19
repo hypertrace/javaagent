@@ -21,6 +21,8 @@ import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
 
 /**
  * Instrumentation module for {@link java.io.PrintWriter}. It has be be defined in a separate module
@@ -34,6 +36,11 @@ public class PrintWriterInstrumentationModule extends InstrumentationModule {
 
   public PrintWriterInstrumentationModule() {
     super("printwriter", "servlet", "servlet-3");
+  }
+
+  @Override
+  protected Map<String, String> contextStore() {
+    return Collections.singletonMap("java.io.PrintWriter", BoundedCharArrayWriter.class.getName());
   }
 
   @Override

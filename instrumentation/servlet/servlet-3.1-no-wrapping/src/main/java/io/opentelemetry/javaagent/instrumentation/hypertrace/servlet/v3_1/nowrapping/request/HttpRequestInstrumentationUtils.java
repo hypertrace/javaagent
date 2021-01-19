@@ -59,4 +59,9 @@ public class HttpRequestInstrumentationUtils {
     Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
     return new ByteBufferMetadata(span, BoundedBuffersFactory.createStream(charset));
   }
+
+  public static CharBufferAndSpan createResponseCharBufferMetadata(
+      HttpServletResponse httpServletResponse, Span span) {
+    return new CharBufferAndSpan(span, BoundedBuffersFactory.createWriter());
+  }
 }
