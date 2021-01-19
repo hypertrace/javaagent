@@ -20,6 +20,7 @@ import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMa
 
 import com.google.auto.service.AutoService;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.request.ByteBufferSpanPair;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.request.ServletInputStreamInstrumentation;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.request.ServletRequestInstrumentation;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.response.ServletOutputStreamInstrumentation;
@@ -33,7 +34,7 @@ import java.util.Map;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
-import org.hypertrace.agent.core.instrumentation.buffer.CharBufferAndSpan;
+import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
 
 @AutoService(InstrumentationModule.class)
 public class Servlet31NoWrappingInstrumentationModule extends InstrumentationModule {
@@ -67,8 +68,8 @@ public class Servlet31NoWrappingInstrumentationModule extends InstrumentationMod
     Map<String, String> context = new HashMap<>();
     // capture request body
     context.put("javax.servlet.http.HttpServletRequest", Span.class.getName());
-    context.put("javax.servlet.ServletInputStream", ByteBufferMetadata.class.getName());
-    context.put("java.io.BufferedReader", CharBufferAndSpan.class.getName());
+    context.put("javax.servlet.ServletInputStream", ByteBufferSpanPair.class.getName());
+    context.put("java.io.BufferedReader", CharBufferSpanPair.class.getName());
 
     // capture response body
     context.put("javax.servlet.ServletOutputStream", BoundedByteArrayOutputStream.class.getName());

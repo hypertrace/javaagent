@@ -16,11 +16,11 @@
 
 package org;
 
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.ByteBufferMetadata;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.request.ByteBufferSpanPair;
 import javax.servlet.ServletInputStream;
 
 public class ServletInputStreamContextAccess {
 
   public static void addToContext(
-      ServletInputStream servletInputStream, ByteBufferMetadata metadata) {}
+      ServletInputStream servletInputStream, ByteBufferSpanPair metadata) {}
 }

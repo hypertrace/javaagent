@@ -14,31 +14,18 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.core.instrumentation.buffer;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.request;
 
 import io.opentelemetry.api.trace.Span;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 
-public class CharBufferAndSpan {
+public class ByteBufferSpanPair {
 
   public final Span span;
-  public final BoundedCharArrayWriter buffer;
+  public final BoundedByteArrayOutputStream buffer;
 
-  /**
-   * A flag to signalize that buffer has been added to span. For instance Jetty calls reader#read in
-   * recycle method and this flag prevents capturing the payload twice.
-   */
-  private boolean bufferCaptured;
-
-  public CharBufferAndSpan(Span span, BoundedCharArrayWriter buffer) {
+  public ByteBufferSpanPair(Span span, BoundedByteArrayOutputStream buffer) {
     this.span = span;
     this.buffer = buffer;
-  }
-
-  public boolean isBufferCaptured() {
-    return bufferCaptured;
-  }
-
-  public void setBufferCaptured(boolean bodyCaptured) {
-    this.bufferCaptured = bodyCaptured;
   }
 }

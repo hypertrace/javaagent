@@ -17,7 +17,7 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.server;
 
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.ByteBufferMetadata;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.request.ByteBufferSpanPair;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -44,7 +44,7 @@ public class ServletInputStreamInstrumentationTest extends AbstractInstrumenterT
 
     BoundedByteArrayOutputStream buffer =
         BoundedBuffersFactory.createStream(StandardCharsets.UTF_8);
-    ByteBufferMetadata metadata = new ByteBufferMetadata(span, buffer);
+    ByteBufferSpanPair metadata = new ByteBufferSpanPair(span, buffer);
     ServletInputStreamContextAccess.addToContext(servletInputStream, metadata);
 
     while (servletInputStream.read() != -1) {}
@@ -61,7 +61,7 @@ public class ServletInputStreamInstrumentationTest extends AbstractInstrumenterT
 
     BoundedByteArrayOutputStream buffer =
         BoundedBuffersFactory.createStream(StandardCharsets.UTF_8);
-    ByteBufferMetadata metadata = new ByteBufferMetadata(span, buffer);
+    ByteBufferSpanPair metadata = new ByteBufferSpanPair(span, buffer);
     ServletInputStreamContextAccess.addToContext(servletInputStream, metadata);
 
     while (servletInputStream.read() != -1) {}
@@ -78,7 +78,7 @@ public class ServletInputStreamInstrumentationTest extends AbstractInstrumenterT
 
     BoundedByteArrayOutputStream buffer =
         BoundedBuffersFactory.createStream(StandardCharsets.UTF_8);
-    ByteBufferMetadata metadata = new ByteBufferMetadata(span, buffer);
+    ByteBufferSpanPair metadata = new ByteBufferSpanPair(span, buffer);
     ServletInputStreamContextAccess.addToContext(servletInputStream, metadata);
 
     servletInputStream.read(new byte[BODY.length()]);

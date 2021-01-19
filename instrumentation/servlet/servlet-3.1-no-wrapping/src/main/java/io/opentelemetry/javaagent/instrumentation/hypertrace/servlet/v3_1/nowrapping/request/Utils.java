@@ -20,10 +20,9 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.ByteBufferMetadata;
 import java.io.UnsupportedEncodingException;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
-import org.hypertrace.agent.core.instrumentation.buffer.CharBufferAndSpan;
+import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
 
 public class Utils {
 
@@ -32,7 +31,7 @@ public class Utils {
   private static final Tracer TRACER =
       GlobalOpenTelemetry.get().getTracer("org.hypertrace.java.servletinputstream");
 
-  public static void captureBody(ByteBufferMetadata metadata) {
+  public static void captureBody(ByteBufferSpanPair metadata) {
     System.out.println("Capturing request body");
     Span span = metadata.span;
     String requestBody = null;
@@ -53,16 +52,16 @@ public class Utils {
     }
   }
 
-  public static void captureBody(CharBufferAndSpan charBufferAndSpan) {
+  public static void captureBody(CharBufferSpanPair charBufferSpanPair) {
     System.out.println("Capturing request body - BufferedReader");
-    if (charBufferAndSpan.isBufferCaptured()) {
+    if (charBufferSpanPair.isBufferCaptured()) {
       return;
     }
-    System.out.println(charBufferAndSpan);
-    Span span = charBufferAndSpan.span;
-    String requestBody = charBufferAndSpan.buffer.toString();
+    System.out.println(charBufferSpanPair);
+    Span span = charBufferSpanPair.span;
+    String requestBody = charBufferSpanPair.buffer.toString();
 
-    charBufferAndSpan.setBufferCaptured(true);
+    charBufferSpanPair.setBufferCaptured(true);
     if (span.isRecording()) {
       span.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, requestBody);
     } else {

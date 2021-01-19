@@ -22,7 +22,7 @@ import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.hypertrace.agent.core.instrumentation.buffer.CharBufferAndSpan;
+import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
 
 /**
  * Instrumentation module for {@link java.io.BufferedReader}. It has be be defined in a separate
@@ -40,7 +40,7 @@ public class BufferedReaderInstrumentationModule extends InstrumentationModule {
 
   @Override
   protected Map<String, String> contextStore() {
-    return Collections.singletonMap("java.io.BufferedReader", CharBufferAndSpan.class.getName());
+    return Collections.singletonMap("java.io.BufferedReader", CharBufferSpanPair.class.getName());
   }
 
   @Override

@@ -25,7 +25,6 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.ByteBufferMetadata;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.io.IOException;
 import java.util.HashMap;
@@ -97,17 +96,17 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
 
   static class InputStream_ReadNoArgs {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static ByteBufferMetadata enter(@Advice.This ServletInputStream thizz) {
+    public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
       if (callDepth > 0) {
         return null;
       }
-      return InstrumentationContext.get(ServletInputStream.class, ByteBufferMetadata.class)
+      return InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class)
           .get(thizz);
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
-    public static void exit(@Advice.Return int read, @Advice.Enter ByteBufferMetadata metadata) {
+    public static void exit(@Advice.Return int read, @Advice.Enter ByteBufferSpanPair metadata) {
       CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
       if (metadata == null) {
         return;
@@ -123,12 +122,12 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
 
   public static class InputStream_ReadByteArray {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static ByteBufferMetadata enter(@Advice.This ServletInputStream thizz) {
+    public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
       if (callDepth > 0) {
         return null;
       }
-      return InstrumentationContext.get(ServletInputStream.class, ByteBufferMetadata.class)
+      return InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class)
           .get(thizz);
     }
 
@@ -136,7 +135,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
     public static void exit(
         @Advice.Return int read,
         @Advice.Argument(0) byte b[],
-        @Advice.Enter ByteBufferMetadata metadata)
+        @Advice.Enter ByteBufferSpanPair metadata)
         throws IOException {
       CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
       if (metadata == null) {
@@ -153,12 +152,12 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
 
   public static class InputStream_ReadByteArrayOffset {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static ByteBufferMetadata enter(@Advice.This ServletInputStream thizz) {
+    public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
       if (callDepth > 0) {
         return null;
       }
-      return InstrumentationContext.get(ServletInputStream.class, ByteBufferMetadata.class)
+      return InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class)
           .get(thizz);
     }
 
@@ -168,7 +167,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         @Advice.Argument(0) byte b[],
         @Advice.Argument(1) int off,
         @Advice.Argument(2) int len,
-        @Advice.Enter ByteBufferMetadata metadata) {
+        @Advice.Enter ByteBufferSpanPair metadata) {
       CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
       if (metadata == null) {
         return;
@@ -184,17 +183,17 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
 
   public static class InputStream_ReadAllBytes {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static ByteBufferMetadata enter(@Advice.This ServletInputStream thizz) {
+    public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
       if (callDepth > 0) {
         return null;
       }
-      return InstrumentationContext.get(ServletInputStream.class, ByteBufferMetadata.class)
+      return InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class)
           .get(thizz);
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
-    public static void exit(@Advice.Return byte[] b, @Advice.Enter ByteBufferMetadata metadata)
+    public static void exit(@Advice.Return byte[] b, @Advice.Enter ByteBufferSpanPair metadata)
         throws IOException {
       CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
       if (metadata == null) {
@@ -208,12 +207,12 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
 
   public static class InputStream_ReadNBytes {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static ByteBufferMetadata enter(@Advice.This ServletInputStream thizz) {
+    public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
       if (callDepth > 0) {
         return null;
       }
-      return InstrumentationContext.get(ServletInputStream.class, ByteBufferMetadata.class)
+      return InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class)
           .get(thizz);
     }
 
@@ -223,7 +222,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         @Advice.Argument(0) byte[] b,
         @Advice.Argument(1) int off,
         @Advice.Argument(2) int len,
-        @Advice.Enter ByteBufferMetadata metadata) {
+        @Advice.Enter ByteBufferSpanPair metadata) {
       CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
       if (metadata == null) {
         return;
@@ -243,8 +242,8 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
       if (available != 0) {
         return;
       }
-      ByteBufferMetadata metadata =
-          InstrumentationContext.get(ServletInputStream.class, ByteBufferMetadata.class).get(thizz);
+      ByteBufferSpanPair metadata =
+          InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class).get(thizz);
       if (metadata == null) {
         return;
       }
@@ -259,8 +258,8 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
       if (!isFinished) {
         return;
       }
-      ByteBufferMetadata metadata =
-          InstrumentationContext.get(ServletInputStream.class, ByteBufferMetadata.class).get(thizz);
+      ByteBufferSpanPair metadata =
+          InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class).get(thizz);
       if (metadata == null) {
         return;
       }

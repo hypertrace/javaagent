@@ -35,7 +35,7 @@ import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import net.bytebuddy.matcher.ElementMatcher.Junction;
-import org.hypertrace.agent.core.instrumentation.buffer.CharBufferAndSpan;
+import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
 
 public class BufferedReaderInstrumentation implements TypeInstrumentation {
 
@@ -72,20 +72,20 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
 
   static class Reader_readNoArgs {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static CharBufferAndSpan enter(@Advice.This BufferedReader thizz) {
+    public static CharBufferSpanPair enter(@Advice.This BufferedReader thizz) {
       System.out.println("-----> BufferedReader read()");
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(BufferedReader.class);
       if (callDepth > 0) {
         return null;
       }
-      return InstrumentationContext.get(BufferedReader.class, CharBufferAndSpan.class).get(thizz);
+      return InstrumentationContext.get(BufferedReader.class, CharBufferSpanPair.class).get(thizz);
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(
         @Advice.This BufferedReader thizz,
         @Advice.Return int read,
-        @Advice.Enter CharBufferAndSpan metadata) {
+        @Advice.Enter CharBufferSpanPair metadata) {
       CallDepthThreadLocalMap.decrementCallDepth(BufferedReader.class);
       if (metadata == null) {
         return;
@@ -102,20 +102,20 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
 
   static class Reader_readCharArray {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static CharBufferAndSpan enter(@Advice.This BufferedReader thizz) {
+    public static CharBufferSpanPair enter(@Advice.This BufferedReader thizz) {
       System.out.println("-----> BufferedReader read(char[])");
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(BufferedReader.class);
       if (callDepth > 0) {
         return null;
       }
-      return InstrumentationContext.get(BufferedReader.class, CharBufferAndSpan.class).get(thizz);
+      return InstrumentationContext.get(BufferedReader.class, CharBufferSpanPair.class).get(thizz);
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(
         @Advice.Return int read,
         @Advice.Argument(0) char c[],
-        @Advice.Enter CharBufferAndSpan metadata) {
+        @Advice.Enter CharBufferSpanPair metadata) {
       CallDepthThreadLocalMap.decrementCallDepth(BufferedReader.class);
       if (metadata == null) {
         return;
@@ -131,13 +131,13 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
 
   static class Reader_readByteArrayOffset {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static CharBufferAndSpan enter(@Advice.This BufferedReader thizz) {
+    public static CharBufferSpanPair enter(@Advice.This BufferedReader thizz) {
       System.out.println("-----> BufferedReader read(char[], off, len)");
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(BufferedReader.class);
       if (callDepth > 0) {
         return null;
       }
-      return InstrumentationContext.get(BufferedReader.class, CharBufferAndSpan.class).get(thizz);
+      return InstrumentationContext.get(BufferedReader.class, CharBufferSpanPair.class).get(thizz);
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
@@ -146,7 +146,7 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
         @Advice.Argument(0) char c[],
         @Advice.Argument(1) int off,
         @Advice.Argument(2) int len,
-        @Advice.Enter CharBufferAndSpan metadata) {
+        @Advice.Enter CharBufferSpanPair metadata) {
       CallDepthThreadLocalMap.decrementCallDepth(BufferedReader.class);
       if (metadata == null) {
         return;
@@ -162,17 +162,17 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
 
   static class BufferedReader_readLine {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static CharBufferAndSpan enter(@Advice.This BufferedReader thizz) {
+    public static CharBufferSpanPair enter(@Advice.This BufferedReader thizz) {
       System.out.println("-----> BufferedReader readLine");
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(BufferedReader.class);
       if (callDepth > 0) {
         return null;
       }
-      return InstrumentationContext.get(BufferedReader.class, CharBufferAndSpan.class).get(thizz);
+      return InstrumentationContext.get(BufferedReader.class, CharBufferSpanPair.class).get(thizz);
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
-    public static void exit(@Advice.Return String line, @Advice.Enter CharBufferAndSpan metadata)
+    public static void exit(@Advice.Return String line, @Advice.Enter CharBufferSpanPair metadata)
         throws IOException {
       CallDepthThreadLocalMap.decrementCallDepth(BufferedReader.class);
       if (metadata == null) {

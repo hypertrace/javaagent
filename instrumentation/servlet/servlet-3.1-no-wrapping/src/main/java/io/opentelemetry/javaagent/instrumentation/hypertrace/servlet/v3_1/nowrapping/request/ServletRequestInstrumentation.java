@@ -26,7 +26,6 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.ByteBufferMetadata;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.io.BufferedReader;
 import java.util.HashMap;
@@ -39,7 +38,7 @@ import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import net.bytebuddy.matcher.ElementMatcher.Junction;
-import org.hypertrace.agent.core.instrumentation.buffer.CharBufferAndSpan;
+import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
 
 public class ServletRequestInstrumentation implements TypeInstrumentation {
 
@@ -89,8 +88,8 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
       }
       HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
 
-      ContextStore<ServletInputStream, ByteBufferMetadata> contextStore =
-          InstrumentationContext.get(ServletInputStream.class, ByteBufferMetadata.class);
+      ContextStore<ServletInputStream, ByteBufferSpanPair> contextStore =
+          InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class);
       if (contextStore.get(servletInputStream) != null) {
         // getInputStream() can be called multiple times
         return;
@@ -106,7 +105,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
 
       System.out.println("getting servlet request inputStream");
 
-      ByteBufferMetadata metadata =
+      ByteBufferSpanPair metadata =
           HttpRequestInstrumentationUtils.createRequestByteBufferMetadata(
               httpServletRequest, requestSpan);
       contextStore.put(servletInputStream, metadata);
@@ -133,8 +132,8 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
       }
       HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
 
-      ContextStore<BufferedReader, CharBufferAndSpan> contextStore =
-          InstrumentationContext.get(BufferedReader.class, CharBufferAndSpan.class);
+      ContextStore<BufferedReader, CharBufferSpanPair> contextStore =
+          InstrumentationContext.get(BufferedReader.class, CharBufferSpanPair.class);
       if (contextStore.get(reader) != null) {
         // getReader() can be called multiple times
         return;
@@ -149,7 +148,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
       }
 
       System.out.println("Adding BufferedReader to context");
-      CharBufferAndSpan metadata =
+      CharBufferSpanPair metadata =
           HttpRequestInstrumentationUtils.createRequestCharBufferMetadata(
               httpServletRequest, requestSpan);
       contextStore.put(reader, metadata);
