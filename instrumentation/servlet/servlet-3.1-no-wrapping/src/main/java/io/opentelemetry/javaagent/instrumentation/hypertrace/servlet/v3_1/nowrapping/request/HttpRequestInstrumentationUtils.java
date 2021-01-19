@@ -17,11 +17,12 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.request;
 
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.Metadata;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.ByteBufferMetadata;
 import java.nio.charset.Charset;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
+import org.hypertrace.agent.core.instrumentation.buffer.CharBufferAndSpan;
 import org.hypertrace.agent.core.instrumentation.utils.ContentLengthUtils;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeCharsetUtils;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
@@ -30,7 +31,8 @@ public class HttpRequestInstrumentationUtils {
 
   private HttpRequestInstrumentationUtils() {}
 
-  public static Metadata createRequestMetadata(HttpServletRequest httpServletRequest, Span span) {
+  public static ByteBufferMetadata createRequestByteBufferMetadata(
+      HttpServletRequest httpServletRequest, Span span) {
     String contentType = httpServletRequest.getContentType();
     String charsetStr = ContentTypeUtils.parseCharset(contentType);
     Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
@@ -38,14 +40,23 @@ public class HttpRequestInstrumentationUtils {
     if (contentLength < 0) {
       contentLength = ContentLengthUtils.DEFAULT;
     }
-    return new Metadata(span, BoundedBuffersFactory.createStream(contentLength, charset));
+    return new ByteBufferMetadata(span, BoundedBuffersFactory.createStream(contentLength, charset));
   }
 
-  public static Metadata createResponseMetadata(
+  public static CharBufferAndSpan createRequestCharBufferMetadata(
+      HttpServletRequest httpServletRequest, Span span) {
+    int contentLength = httpServletRequest.getContentLength();
+    if (contentLength < 0) {
+      contentLength = ContentLengthUtils.DEFAULT;
+    }
+    return new CharBufferAndSpan(span, BoundedBuffersFactory.createWriter(contentLength));
+  }
+
+  public static ByteBufferMetadata createResponseMetadata(
       HttpServletResponse httpServletResponse, Span span) {
     String contentType = httpServletResponse.getContentType();
     String charsetStr = ContentTypeUtils.parseCharset(contentType);
     Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
-    return new Metadata(span, BoundedBuffersFactory.createStream(charset));
+    return new ByteBufferMetadata(span, BoundedBuffersFactory.createStream(charset));
   }
 }

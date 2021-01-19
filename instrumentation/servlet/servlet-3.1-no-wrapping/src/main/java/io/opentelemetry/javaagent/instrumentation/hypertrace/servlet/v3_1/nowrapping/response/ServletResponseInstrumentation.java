@@ -24,7 +24,7 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.Metadata;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.ByteBufferMetadata;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.request.HttpRequestInstrumentationUtils;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.io.BufferedReader;
@@ -79,17 +79,17 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
       }
       HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
 
-      ContextStore<ServletOutputStream, Metadata> contextStore =
-          InstrumentationContext.get(ServletOutputStream.class, Metadata.class);
+      ContextStore<ServletOutputStream, ByteBufferMetadata> contextStore =
+          InstrumentationContext.get(ServletOutputStream.class, ByteBufferMetadata.class);
       if (contextStore.get(servletOutputStream) != null) {
         // getOutputStream() can be called multiple times
         return;
       }
 
       /** TODO what if the response is a wrapper? - it needs to be unwrapped */
-      ContextStore<HttpServletResponse, Metadata> responseContext =
-          InstrumentationContext.get(HttpServletResponse.class, Metadata.class);
-      Metadata responseMetadata = responseContext.get(httpServletResponse);
+      ContextStore<HttpServletResponse, ByteBufferMetadata> responseContext =
+          InstrumentationContext.get(HttpServletResponse.class, ByteBufferMetadata.class);
+      ByteBufferMetadata responseMetadata = responseContext.get(httpServletResponse);
       if (responseMetadata == null) {
         return;
       }
@@ -100,7 +100,7 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
       if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()
           && ContentTypeUtils.shouldCapture(contentType)) {
         System.out.println("Adding metadata for response");
-        Metadata metadata =
+        ByteBufferMetadata metadata =
             HttpRequestInstrumentationUtils.createResponseMetadata(
                 httpServletResponse, responseMetadata.span);
         contextStore.put(servletOutputStream, metadata);

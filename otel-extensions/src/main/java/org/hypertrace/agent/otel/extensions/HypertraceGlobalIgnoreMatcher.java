@@ -29,7 +29,12 @@ public class HypertraceGlobalIgnoreMatcher implements IgnoreMatcherProvider {
       if (actualName.equals("java.io.InputStream")
           || actualName.equals("java.io.OutputStream")
           || actualName.equals("java.io.ByteArrayInputStream")
-          || actualName.equals("java.io.ByteArrayOutputStream")) {
+          || actualName.equals("java.io.ByteArrayOutputStream")
+          // servlet request instrumentation
+          || actualName.equals("java.io.Reader")
+          || actualName.equals("java.io.BufferedReader")) {
+        System.out.println("\n\n---> ALLOW");
+        System.out.println(actualName);
         return Result.ALLOW;
       }
     }

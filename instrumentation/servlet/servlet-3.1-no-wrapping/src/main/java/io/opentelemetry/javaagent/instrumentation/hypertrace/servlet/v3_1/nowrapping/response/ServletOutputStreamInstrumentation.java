@@ -25,7 +25,7 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.Metadata;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.ByteBufferMetadata;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.io.IOException;
 import java.util.HashMap;
@@ -90,10 +90,11 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
       if (callDepth > 0) {
         return;
       }
-      Metadata metadata =
-          InstrumentationContext.get(ServletOutputStream.class, Metadata.class).get(thizz);
+      ByteBufferMetadata metadata =
+          InstrumentationContext.get(ServletOutputStream.class, ByteBufferMetadata.class)
+              .get(thizz);
       if (metadata != null) {
-        metadata.boundedByteArrayOutputStream.write(b);
+        metadata.buffer.write(b);
       }
     }
 
@@ -111,10 +112,11 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
       if (callDepth > 0) {
         return;
       }
-      Metadata metadata =
-          InstrumentationContext.get(ServletOutputStream.class, Metadata.class).get(thizz);
+      ByteBufferMetadata metadata =
+          InstrumentationContext.get(ServletOutputStream.class, ByteBufferMetadata.class)
+              .get(thizz);
       if (metadata != null) {
-        metadata.boundedByteArrayOutputStream.write(b);
+        metadata.buffer.write(b);
       }
     }
 
@@ -135,10 +137,11 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
       if (callDepth > 0) {
         return;
       }
-      Metadata metadata =
-          InstrumentationContext.get(ServletOutputStream.class, Metadata.class).get(thizz);
+      ByteBufferMetadata metadata =
+          InstrumentationContext.get(ServletOutputStream.class, ByteBufferMetadata.class)
+              .get(thizz);
       if (metadata != null) {
-        metadata.boundedByteArrayOutputStream.write(b, off, len);
+        metadata.buffer.write(b, off, len);
       }
     }
 
@@ -156,11 +159,12 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
       if (callDepth > 0) {
         return;
       }
-      Metadata metadata =
-          InstrumentationContext.get(ServletOutputStream.class, Metadata.class).get(thizz);
+      ByteBufferMetadata metadata =
+          InstrumentationContext.get(ServletOutputStream.class, ByteBufferMetadata.class)
+              .get(thizz);
       if (metadata != null) {
         String bodyPart = s == null ? "null" : s;
-        metadata.boundedByteArrayOutputStream.write(bodyPart.getBytes());
+        metadata.buffer.write(bodyPart.getBytes());
       }
     }
 

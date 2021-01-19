@@ -32,7 +32,10 @@ public class TestServlet extends HttpServlet {
     resp.setStatus(200);
 
     try {
-      while (req.getInputStream().read() != -1) {}
+      System.out.println("Reader name");
+      System.out.println(req.getReader().getClass().getName());
+      while (req.getReader().read() != -1) {}
+      req.getReader().close();
     } catch (IOException e) {
       e.printStackTrace();
     }

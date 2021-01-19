@@ -101,10 +101,10 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
             .put(httpRequest, currentSpan);
       }
       // this has to be added for all responses - as the content type is known at this point
-      InstrumentationContext.get(HttpServletResponse.class, Metadata.class)
+      InstrumentationContext.get(HttpServletResponse.class, ByteBufferMetadata.class)
           .put(
               httpResponse,
-              new Metadata(
+              new ByteBufferMetadata(
                   currentSpan, BoundedBuffersFactory.createStream(StandardCharsets.ISO_8859_1)));
 
       ServletSpanDecorator.addSessionId(currentSpan, httpRequest);
@@ -176,13 +176,13 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
 
       System.out.println("END");
       // capture response body
-      ContextStore<HttpServletResponse, Metadata> responseContext =
-          InstrumentationContext.get(HttpServletResponse.class, Metadata.class);
-      Metadata metadata = responseContext.get(httpResponse);
+      ContextStore<HttpServletResponse, ByteBufferMetadata> responseContext =
+          InstrumentationContext.get(HttpServletResponse.class, ByteBufferMetadata.class);
+      ByteBufferMetadata metadata = responseContext.get(httpResponse);
       if (metadata != null) {
         System.out.println("capturing response body");
-        System.out.println(metadata.boundedByteArrayOutputStream.toStringWithSuppliedCharset());
-        String responseBody = metadata.boundedByteArrayOutputStream.toStringWithSuppliedCharset();
+        System.out.println(metadata.buffer.toStringWithSuppliedCharset());
+        String responseBody = metadata.buffer.toStringWithSuppliedCharset();
         currentSpan.setAttribute(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, responseBody);
       }
     }

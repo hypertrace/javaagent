@@ -22,7 +22,7 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.Metadata;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.ByteBufferMetadata;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.util.Collections;
@@ -52,7 +52,7 @@ public class ServletInputStreamContextAccessInstrumentationModule extends Instru
   @Override
   protected Map<String, String> contextStore() {
     Map<String, String> context = new HashMap<>();
-    context.put("javax.servlet.ServletInputStream", Metadata.class.getName());
+    context.put("javax.servlet.ServletInputStream", ByteBufferMetadata.class.getName());
     return context;
   }
 
@@ -82,9 +82,9 @@ public class ServletInputStreamContextAccessInstrumentationModule extends Instru
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void enter(
         @Advice.Argument(0) ServletInputStream servletInputStream,
-        @Advice.Argument(1) Metadata metadata) {
-      ContextStore<ServletInputStream, Metadata> contextStore =
-          InstrumentationContext.get(ServletInputStream.class, Metadata.class);
+        @Advice.Argument(1) ByteBufferMetadata metadata) {
+      ContextStore<ServletInputStream, ByteBufferMetadata> contextStore =
+          InstrumentationContext.get(ServletInputStream.class, ByteBufferMetadata.class);
       contextStore.put(servletInputStream, metadata);
     }
   }

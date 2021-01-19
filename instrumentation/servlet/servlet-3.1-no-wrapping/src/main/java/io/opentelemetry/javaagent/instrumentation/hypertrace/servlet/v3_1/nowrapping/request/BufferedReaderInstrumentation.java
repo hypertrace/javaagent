@@ -17,29 +17,31 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.request;
 
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.safeHasSuperType;
+import static net.bytebuddy.matcher.ElementMatchers.is;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.Metadata;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import javax.servlet.ServletInputStream;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import net.bytebuddy.matcher.ElementMatcher.Junction;
+import org.hypertrace.agent.core.instrumentation.buffer.CharBufferAndSpan;
 
 public class BufferedReaderInstrumentation implements TypeInstrumentation {
 
   @Override
   public ElementMatcher<? super TypeDescription> typeMatcher() {
-    return safeHasSuperType(named("java.io.BufferedReader"));
+    return safeHasSuperType(named("java.io.BufferedReader")).or(named("java.io.BufferedReader"));
   }
 
   @Override
@@ -48,77 +50,141 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
     transformers.put(
         named("read").and(takesArguments(0)).and(isPublic()),
         BufferedReaderInstrumentation.class.getName() + "$Reader_readNoArgs");
-    //    transformers.put(
-    //        named("read")
-    //            .and(takesArguments(1))
-    //            .and(takesArgument(0, is(byte[].class)))
-    //            .and(isPublic()),
-    //        ServletInputStreamInstrumentation.class.getName() + "$InputStream_ReadByteArray");
-    //    transformers.put(
-    //        named("read")
-    //            .and(takesArguments(3))
-    //            .and(takesArgument(0, is(byte[].class)))
-    //            .and(takesArgument(1, is(int.class)))
-    //            .and(takesArgument(2, is(int.class)))
-    //            .and(isPublic()),
-    //        ServletInputStreamInstrumentation.class.getName() +
-    // "$InputStream_ReadByteArrayOffset");
-    //    transformers.put(
-    //        named("readAllBytes").and(takesArguments(0)).and(isPublic()),
-    //        ServletInputStreamInstrumentation.class.getName() + "$InputStream_ReadAllBytes");
-    //    transformers.put(
-    //        named("readNBytes")
-    //            .and(takesArguments(0))
-    //            .and(takesArgument(0, is(byte[].class)))
-    //            .and(takesArgument(1, is(int.class)))
-    //            .and(takesArgument(2, is(int.class)))
-    //            .and(isPublic()),
-    //        ServletInputStreamInstrumentation.class.getName() + "$InputStream_ReadNBytes");
-    //    transformers.put(
-    //        named("available").and(takesArguments(0)).and(isPublic()),
-    //        ServletInputStreamInstrumentation.class.getName() + "$InputStream_Available");
-    //
-    //    // ServletInputStream methods
-    //    transformers.put(
-    //        named("readLine")
-    //            .and(takesArguments(3))
-    //            .and(takesArgument(0, is(byte[].class)))
-    //            .and(takesArgument(1, is(int.class)))
-    //            .and(takesArgument(2, is(int.class)))
-    //            .and(isPublic()),
-    //        ServletInputStreamInstrumentation.class.getName() + "$InputStream_ReadByteArray");
-    //    //     servlet 3.1 API, but since we do not call it directly muzzle
-    //    transformers.put(
-    //        named("isFinished").and(takesArguments(0)).and(isPublic()),
-    //        ServletInputStreamInstrumentation.class.getName() + "$ServletInputStream_IsFinished");
+    transformers.put(
+        named("read")
+            .and(takesArguments(1))
+            .and(takesArgument(0, is(char[].class)))
+            .and(isPublic()),
+        BufferedReaderInstrumentation.class.getName() + "$Reader_readCharArray");
+    transformers.put(
+        named("read")
+            .and(takesArguments(3))
+            .and(takesArgument(0, is(char[].class)))
+            .and(takesArgument(1, is(int.class)))
+            .and(takesArgument(2, is(int.class)))
+            .and(isPublic()),
+        BufferedReaderInstrumentation.class.getName() + "$Reader_readByteArrayOffset");
+    transformers.put(
+        named("readLine").and(takesArguments(0)).and(isPublic()),
+        BufferedReaderInstrumentation.class.getName() + "$BufferedReader_readLine");
     return transformers;
   }
 
   static class Reader_readNoArgs {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static Metadata enter(@Advice.This BufferedReader thizz) {
+    public static CharBufferAndSpan enter(@Advice.This BufferedReader thizz) {
+      System.out.println("-----> BufferedReader read()");
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(BufferedReader.class);
       if (callDepth > 0) {
         return null;
       }
-      return InstrumentationContext.get(BufferedReader.class, Metadata.class).get(thizz);
+      return InstrumentationContext.get(BufferedReader.class, CharBufferAndSpan.class).get(thizz);
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(
-        @Advice.This ServletInputStream thizz,
+        @Advice.This BufferedReader thizz,
         @Advice.Return int read,
-        @Advice.Enter Metadata metadata) {
-      CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
+        @Advice.Enter CharBufferAndSpan metadata) {
+      CallDepthThreadLocalMap.decrementCallDepth(BufferedReader.class);
       if (metadata == null) {
         return;
       }
       if (read == -1) {
-        ServletInputStreamUtils.captureBody(metadata);
+        System.out.println("returning -1 from read");
+        Utils.captureBody(metadata);
       } else {
-        metadata.boundedByteArrayOutputStream.write((byte) read);
+        metadata.buffer.write(read);
       }
-      CallDepthThreadLocalMap.reset(ServletInputStream.class);
+      CallDepthThreadLocalMap.reset(BufferedReader.class);
+    }
+  }
+
+  static class Reader_readCharArray {
+    @Advice.OnMethodEnter(suppress = Throwable.class)
+    public static CharBufferAndSpan enter(@Advice.This BufferedReader thizz) {
+      System.out.println("-----> BufferedReader read(char[])");
+      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(BufferedReader.class);
+      if (callDepth > 0) {
+        return null;
+      }
+      return InstrumentationContext.get(BufferedReader.class, CharBufferAndSpan.class).get(thizz);
+    }
+
+    @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
+    public static void exit(
+        @Advice.Return int read,
+        @Advice.Argument(0) char c[],
+        @Advice.Enter CharBufferAndSpan metadata) {
+      CallDepthThreadLocalMap.decrementCallDepth(BufferedReader.class);
+      if (metadata == null) {
+        return;
+      }
+      if (read == -1) {
+        Utils.captureBody(metadata);
+      } else {
+        metadata.buffer.write(c, 0, read);
+      }
+      CallDepthThreadLocalMap.reset(BufferedReader.class);
+    }
+  }
+
+  static class Reader_readByteArrayOffset {
+    @Advice.OnMethodEnter(suppress = Throwable.class)
+    public static CharBufferAndSpan enter(@Advice.This BufferedReader thizz) {
+      System.out.println("-----> BufferedReader read(char[], off, len)");
+      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(BufferedReader.class);
+      if (callDepth > 0) {
+        return null;
+      }
+      return InstrumentationContext.get(BufferedReader.class, CharBufferAndSpan.class).get(thizz);
+    }
+
+    @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
+    public static void exit(
+        @Advice.Return int read,
+        @Advice.Argument(0) char c[],
+        @Advice.Argument(1) int off,
+        @Advice.Argument(2) int len,
+        @Advice.Enter CharBufferAndSpan metadata) {
+      CallDepthThreadLocalMap.decrementCallDepth(BufferedReader.class);
+      if (metadata == null) {
+        return;
+      }
+      if (read == -1) {
+        Utils.captureBody(metadata);
+      } else {
+        metadata.buffer.write(c, off, read);
+      }
+      CallDepthThreadLocalMap.reset(BufferedReader.class);
+    }
+  }
+
+  static class BufferedReader_readLine {
+    @Advice.OnMethodEnter(suppress = Throwable.class)
+    public static CharBufferAndSpan enter(@Advice.This BufferedReader thizz) {
+      System.out.println("-----> BufferedReader readLine");
+      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(BufferedReader.class);
+      if (callDepth > 0) {
+        return null;
+      }
+      return InstrumentationContext.get(BufferedReader.class, CharBufferAndSpan.class).get(thizz);
+    }
+
+    @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
+    public static void exit(@Advice.Return String line, @Advice.Enter CharBufferAndSpan metadata)
+        throws IOException {
+      CallDepthThreadLocalMap.decrementCallDepth(BufferedReader.class);
+      if (metadata == null) {
+        return;
+      }
+      if (line == null) {
+        Utils.captureBody(metadata);
+      } else {
+        metadata.buffer.write(line);
+        metadata.buffer.write('\n');
+      }
+      CallDepthThreadLocalMap.reset(BufferedReader.class);
     }
   }
 }

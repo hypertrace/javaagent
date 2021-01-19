@@ -19,13 +19,13 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowra
 import io.opentelemetry.api.trace.Span;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 
-public class Metadata {
+public class ByteBufferMetadata {
 
   public final Span span;
-  public final BoundedByteArrayOutputStream boundedByteArrayOutputStream;
+  public final BoundedByteArrayOutputStream buffer;
 
-  public Metadata(Span span, BoundedByteArrayOutputStream boundedByteArrayOutputStream) {
+  public ByteBufferMetadata(Span span, BoundedByteArrayOutputStream buffer) {
     this.span = span;
-    this.boundedByteArrayOutputStream = boundedByteArrayOutputStream;
+    this.buffer = buffer;
   }
 }

@@ -25,7 +25,7 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.Metadata;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.ByteBufferMetadata;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -42,7 +42,7 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
 
   @Override
   public ElementMatcher<? super TypeDescription> typeMatcher() {
-    return safeHasSuperType(named("java.io.PrintWriter"));
+    return safeHasSuperType(named("java.io.PrintWriter")).or(named("java.io.PrintWriter"));
   }
 
   @Override
@@ -61,7 +61,7 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
 
   static class Writer_write {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static Metadata enter(
+    public static ByteBufferMetadata enter(
         @Advice.This PrintWriter thizz,
         @Advice.Argument(0) char[] buf,
         @Advice.Argument(1) int off,
@@ -71,7 +71,8 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
       if (callDepth > 0) {
         return null;
       }
-      Metadata metadata = InstrumentationContext.get(PrintWriter.class, Metadata.class).get(thizz);
+      ByteBufferMetadata metadata =
+          InstrumentationContext.get(PrintWriter.class, ByteBufferMetadata.class).get(thizz);
       if (metadata != null) {
         //        metadata.boundedByteArrayOutputStream.
       }
@@ -80,7 +81,8 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
-    public static void exit(@Advice.Argument(0) String str, @Advice.Enter Metadata metadata)
+    public static void exit(
+        @Advice.Argument(0) String str, @Advice.Enter ByteBufferMetadata metadata)
         throws IOException {
       System.out.println("print exit");
       CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
@@ -88,7 +90,7 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
         return;
       }
       String bodyPart = str == null ? "null" : str;
-      metadata.boundedByteArrayOutputStream.write(bodyPart.getBytes());
+      metadata.buffer.write(bodyPart.getBytes());
     }
   }
 }

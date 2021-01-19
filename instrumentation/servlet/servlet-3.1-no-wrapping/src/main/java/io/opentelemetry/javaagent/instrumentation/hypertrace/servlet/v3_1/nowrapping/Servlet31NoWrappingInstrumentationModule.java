@@ -20,7 +20,6 @@ import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMa
 
 import com.google.auto.service.AutoService;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.request.BufferedReaderInstrumentation;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.request.ServletInputStreamInstrumentation;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.request.ServletRequestInstrumentation;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.response.ServletOutputStreamInstrumentation;
@@ -32,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.bytebuddy.matcher.ElementMatcher;
+import org.hypertrace.agent.core.instrumentation.buffer.CharBufferAndSpan;
 
 @AutoService(InstrumentationModule.class)
 public class Servlet31NoWrappingInstrumentationModule extends InstrumentationModule {
@@ -56,7 +56,6 @@ public class Servlet31NoWrappingInstrumentationModule extends InstrumentationMod
         new Servlet31NoWrappingInstrumentation(),
         new ServletRequestInstrumentation(),
         new ServletInputStreamInstrumentation(),
-        new BufferedReaderInstrumentation(),
         new ServletResponseInstrumentation(),
         new ServletOutputStreamInstrumentation());
   }
@@ -66,12 +65,12 @@ public class Servlet31NoWrappingInstrumentationModule extends InstrumentationMod
     Map<String, String> context = new HashMap<>();
     // capture request body
     context.put("javax.servlet.http.HttpServletRequest", Span.class.getName());
-    context.put("javax.servlet.ServletInputStream", Metadata.class.getName());
-    context.put("java.io.BufferedReader", Metadata.class.getName());
+    context.put("javax.servlet.ServletInputStream", ByteBufferMetadata.class.getName());
+    context.put("java.io.BufferedReader", CharBufferAndSpan.class.getName());
 
     // capture response body
-    context.put("javax.servlet.http.HttpServletResponse", Metadata.class.getName());
-    context.put("javax.servlet.ServletOutputStream", Metadata.class.getName());
+    context.put("javax.servlet.http.HttpServletResponse", ByteBufferMetadata.class.getName());
+    context.put("javax.servlet.ServletOutputStream", ByteBufferMetadata.class.getName());
     return context;
   }
 }
