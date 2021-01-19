@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
-import javax.servlet.ServletInputStream;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
@@ -49,20 +48,60 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
   public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
     Map<Junction<MethodDescription>, String> transformers = new HashMap<>();
     transformers.put(
+        named("write").and(takesArguments(1)).and(takesArgument(0, is(int.class))).and(isPublic()),
+        PrintWriterInstrumentation.class.getName() + "$Writer_writeChar");
+    transformers.put(
         named("write")
             .and(takesArguments(1))
             .and(takesArgument(0, is(char[].class)))
             .and(isPublic()),
         PrintWriterInstrumentation.class.getName() + "$Writer_writeArr");
-    //    transformers.put(
-    //        named("write")
-    //            .and(takesArguments(3))
-    //            .and(takesArgument(0, is(char[].class)))
-    //            .and(takesArgument(1, is(int.class)))
-    //            .and(takesArgument(2, is(int.class)))
-    //            .and(isPublic()),
-    //        PrintWriterInstrumentation.class.getName() + "$Writer_writeOffset");
+    transformers.put(
+        named("write")
+            .and(takesArguments(3))
+            .and(takesArgument(0, is(char[].class)))
+            .and(takesArgument(1, is(int.class)))
+            .and(takesArgument(2, is(int.class)))
+            .and(isPublic()),
+        PrintWriterInstrumentation.class.getName() + "$Writer_writeOffset");
+    transformers.put(
+        named("print")
+            .and(takesArguments(1))
+            .and(takesArgument(0, is(String.class)))
+            .and(isPublic()),
+        PrintWriterInstrumentation.class.getName() + "$PrintWriter_print");
+    transformers.put(
+        named("println").and(takesArguments(0)).and(isPublic()),
+        PrintWriterInstrumentation.class.getName() + "$PrintWriter_println");
+    transformers.put(
+        named("println")
+            .and(takesArguments(1))
+            .and(takesArgument(0, is(String.class)))
+            .and(isPublic()),
+        PrintWriterInstrumentation.class.getName() + "$PrintWriter_printlnStr");
     return transformers;
+  }
+
+  static class Writer_writeChar {
+    @Advice.OnMethodEnter(suppress = Throwable.class)
+    public static void enter(@Advice.This PrintWriter thizz, @Advice.Argument(0) int ch) {
+
+      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
+      if (callDepth > 0) {
+        return;
+      }
+      BoundedCharArrayWriter buffer =
+          InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class).get(thizz);
+      if (buffer != null) {
+        System.out.printf("Writing character %s \n", ch);
+        buffer.write(ch);
+      }
+    }
+
+    @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
+    public static void exit() {
+      CallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
+    }
   }
 
   static class Writer_writeArr {
@@ -83,7 +122,95 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit() {
-      CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
+      CallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
+    }
+  }
+
+  static class Writer_writeOffset {
+    @Advice.OnMethodEnter(suppress = Throwable.class)
+    public static void enter(
+        @Advice.This PrintWriter thizz,
+        @Advice.Argument(0) char[] buf,
+        @Advice.Argument(1) int offset,
+        @Advice.Argument(2) int len) {
+
+      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
+      if (callDepth > 0) {
+        return;
+      }
+      BoundedCharArrayWriter buffer =
+          InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class).get(thizz);
+      if (buffer != null) {
+        buffer.write(buf, offset, len);
+      }
+    }
+
+    @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
+    public static void exit() {
+      CallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
+    }
+  }
+
+  static class PrintWriter_print {
+    @Advice.OnMethodEnter(suppress = Throwable.class)
+    public static void enter(@Advice.This PrintWriter thizz, @Advice.Argument(0) String str)
+        throws IOException {
+      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
+      if (callDepth > 0) {
+        return;
+      }
+      BoundedCharArrayWriter buffer =
+          InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class).get(thizz);
+      if (buffer != null) {
+        buffer.write(str);
+      }
+    }
+
+    @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
+    public static void exit() {
+      CallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
+    }
+  }
+
+  static class PrintWriter_println {
+    @Advice.OnMethodEnter(suppress = Throwable.class)
+    public static void enter(@Advice.This PrintWriter thizz) throws IOException {
+      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
+      if (callDepth > 0) {
+        return;
+      }
+      BoundedCharArrayWriter buffer =
+          InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class).get(thizz);
+      if (buffer != null) {
+        buffer.append('\n');
+      }
+    }
+
+    @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
+    public static void exit() {
+      CallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
+    }
+  }
+
+  static class PrintWriter_printlnStr {
+    @Advice.OnMethodEnter(suppress = Throwable.class)
+    public static void enter(@Advice.This PrintWriter thizz, @Advice.Argument(0) String str)
+        throws IOException {
+      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
+      if (callDepth > 0) {
+        return;
+      }
+      BoundedCharArrayWriter buffer =
+          InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class).get(thizz);
+      if (buffer != null) {
+        buffer.write(str);
+        buffer.append('\n');
+      }
+    }
+
+    @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
+    public static void exit() {
+      CallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
     }
   }
 }

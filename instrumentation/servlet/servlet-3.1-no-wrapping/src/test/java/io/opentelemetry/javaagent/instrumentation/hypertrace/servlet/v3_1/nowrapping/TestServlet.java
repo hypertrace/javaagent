@@ -43,8 +43,14 @@ public class TestServlet extends HttpServlet {
     resp.setContentType("application/json");
     resp.setHeader(RESPONSE_HEADER, RESPONSE_HEADER_VALUE);
     try {
-      resp.getWriter().print(RESPONSE_BODY.toCharArray());
-      //      resp.getOutputStream().print(RESPONSE_BODY);
+      //      for (int i = 0; i < RESPONSE_BODY.length(); i++) {
+      //        System.out.println("Writing a char to printWriter");
+      //        resp.getWriter().write(RESPONSE_BODY.charAt(i));
+      //      }
+      //      resp.getWriter().write(RESPONSE_BODY.toCharArray(), 0, RESPONSE_BODY.length());
+      resp.getWriter().print(RESPONSE_BODY);
+      //      resp.getWriter().print(RESPONSE_BODY);
+      //            resp.getOutputStream().print(RESPONSE_BODY);
       //      resp.getOutputStream().close();
     } catch (IOException e) {
       e.printStackTrace();

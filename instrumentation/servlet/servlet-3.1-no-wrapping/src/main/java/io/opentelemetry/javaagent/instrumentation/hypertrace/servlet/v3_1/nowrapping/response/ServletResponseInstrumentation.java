@@ -94,11 +94,15 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
 
       ContextStore<ServletOutputStream, BoundedByteArrayOutputStream> contextStore =
           InstrumentationContext.get(ServletOutputStream.class, BoundedByteArrayOutputStream.class);
+      System.out.println(contextStore);
       if (contextStore.get(servletOutputStream) != null) {
         // getOutputStream() can be called multiple times
         return;
       }
 
+      System.out.println("getting response output stream222");
+      System.out.println("getting response output stream222");
+      System.out.println("getting response output stream222");
       // do not capture if data capture is disabled or not supported content type
       AgentConfig agentConfig = HypertraceConfig.get();
       String contentType = httpServletResponse.getContentType();
