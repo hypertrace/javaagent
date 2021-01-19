@@ -16,6 +16,7 @@
 
 package org.hypertrace.agent.core.instrumentation.buffer;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 
 public class CharBufferSpanPair {
@@ -34,11 +35,12 @@ public class CharBufferSpanPair {
     this.buffer = buffer;
   }
 
-  public boolean isBufferCaptured() {
-    return bufferCaptured;
-  }
-
-  public void setBufferCaptured(boolean bodyCaptured) {
-    this.bufferCaptured = bodyCaptured;
+  public void captureBody(AttributeKey<String> attributeKey) {
+    if (bufferCaptured) {
+      return;
+    }
+    this.bufferCaptured = true;
+    String requestBody = buffer.toString();
+    span.setAttribute(attributeKey, requestBody);
   }
 }

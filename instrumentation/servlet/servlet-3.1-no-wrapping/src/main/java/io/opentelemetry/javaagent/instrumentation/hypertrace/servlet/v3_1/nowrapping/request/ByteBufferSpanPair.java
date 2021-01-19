@@ -17,6 +17,8 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.request;
 
 import io.opentelemetry.api.trace.Span;
+import java.io.UnsupportedEncodingException;
+import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 
 public class ByteBufferSpanPair {
@@ -27,5 +29,15 @@ public class ByteBufferSpanPair {
   public ByteBufferSpanPair(Span span, BoundedByteArrayOutputStream buffer) {
     this.span = span;
     this.buffer = buffer;
+  }
+
+  public void captureBody() {
+    String requestBody = null;
+    try {
+      requestBody = buffer.toStringWithSuppliedCharset();
+    } catch (UnsupportedEncodingException e) {
+      // ignore charset has been parsed before
+    }
+    span.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, requestBody);
   }
 }

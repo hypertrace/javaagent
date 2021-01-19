@@ -106,8 +106,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
       System.out.println("getting servlet request inputStream");
 
       ByteBufferSpanPair metadata =
-          HttpRequestInstrumentationUtils.createRequestByteBufferMetadata(
-              httpServletRequest, requestSpan);
+          Utils.createRequestByteBufferMetadata(httpServletRequest, requestSpan);
       contextStore.put(servletInputStream, metadata);
     }
   }
@@ -149,8 +148,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
 
       System.out.println("Adding BufferedReader to context");
       CharBufferSpanPair metadata =
-          HttpRequestInstrumentationUtils.createRequestCharBufferMetadata(
-              httpServletRequest, requestSpan);
+          Utils.createRequestCharBufferMetadata(httpServletRequest, requestSpan);
       contextStore.put(reader, metadata);
       System.out.println("getting servlet request bufferedReader ---> end");
     }

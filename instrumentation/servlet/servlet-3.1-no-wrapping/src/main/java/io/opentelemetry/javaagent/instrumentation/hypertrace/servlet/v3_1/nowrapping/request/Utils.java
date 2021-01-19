@@ -16,61 +16,35 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.request;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.Context;
-import java.io.UnsupportedEncodingException;
-import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
+import java.nio.charset.Charset;
+import javax.servlet.http.HttpServletRequest;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
+import org.hypertrace.agent.core.instrumentation.utils.ContentLengthUtils;
+import org.hypertrace.agent.core.instrumentation.utils.ContentTypeCharsetUtils;
 
 public class Utils {
 
   private Utils() {}
 
-  private static final Tracer TRACER =
-      GlobalOpenTelemetry.get().getTracer("org.hypertrace.java.servletinputstream");
-
-  public static void captureBody(ByteBufferSpanPair metadata) {
-    System.out.println("Capturing request body");
-    Span span = metadata.span;
-    String requestBody = null;
-    try {
-      requestBody = metadata.buffer.toStringWithSuppliedCharset();
-    } catch (UnsupportedEncodingException e) {
-      // ignore charset has been parsed before
+  public static ByteBufferSpanPair createRequestByteBufferMetadata(
+      HttpServletRequest httpServletRequest, Span span) {
+    String charsetStr = httpServletRequest.getCharacterEncoding();
+    Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
+    int contentLength = httpServletRequest.getContentLength();
+    if (contentLength < 0) {
+      contentLength = ContentLengthUtils.DEFAULT;
     }
-    if (span.isRecording()) {
-      span.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, requestBody);
-    } else {
-      TRACER
-          .spanBuilder(HypertraceSemanticAttributes.ADDITIONAL_DATA_SPAN_NAME)
-          .setParent(Context.root().with(span))
-          .setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, requestBody)
-          .startSpan()
-          .end();
-    }
+    return new ByteBufferSpanPair(span, BoundedBuffersFactory.createStream(contentLength, charset));
   }
 
-  public static void captureBody(CharBufferSpanPair charBufferSpanPair) {
-    System.out.println("Capturing request body - BufferedReader");
-    if (charBufferSpanPair.isBufferCaptured()) {
-      return;
+  public static CharBufferSpanPair createRequestCharBufferMetadata(
+      HttpServletRequest httpServletRequest, Span span) {
+    int contentLength = httpServletRequest.getContentLength();
+    if (contentLength < 0) {
+      contentLength = ContentLengthUtils.DEFAULT;
     }
-    System.out.println(charBufferSpanPair);
-    Span span = charBufferSpanPair.span;
-    String requestBody = charBufferSpanPair.buffer.toString();
-
-    charBufferSpanPair.setBufferCaptured(true);
-    if (span.isRecording()) {
-      span.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, requestBody);
-    } else {
-      TRACER
-          .spanBuilder(HypertraceSemanticAttributes.ADDITIONAL_DATA_SPAN_NAME)
-          .setParent(Context.root().with(span))
-          .setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, requestBody)
-          .startSpan()
-          .end();
-    }
+    return new CharBufferSpanPair(span, BoundedBuffersFactory.createWriter(contentLength));
   }
 }
