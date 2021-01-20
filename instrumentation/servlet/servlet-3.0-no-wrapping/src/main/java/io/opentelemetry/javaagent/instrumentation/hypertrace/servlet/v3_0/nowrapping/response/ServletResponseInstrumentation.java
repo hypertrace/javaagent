@@ -92,7 +92,6 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
 
       ContextStore<ServletOutputStream, BoundedByteArrayOutputStream> contextStore =
           InstrumentationContext.get(ServletOutputStream.class, BoundedByteArrayOutputStream.class);
-      System.out.println(contextStore);
       if (contextStore.get(servletOutputStream) != null) {
         // getOutputStream() can be called multiple times
         return;
