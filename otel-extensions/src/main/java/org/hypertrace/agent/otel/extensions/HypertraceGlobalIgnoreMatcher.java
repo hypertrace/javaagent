@@ -38,6 +38,11 @@ public class HypertraceGlobalIgnoreMatcher implements IgnoreMatcherProvider {
 
   @Override
   public Result classloader(ClassLoader classLoader) {
+    // bootstrap
+    if (classLoader == null) {
+      return Result.DEFAULT;
+    }
+
     String name = classLoader.getClass().getName();
     if (name.startsWith("com.singularity.")) {
       return Result.IGNORE;
