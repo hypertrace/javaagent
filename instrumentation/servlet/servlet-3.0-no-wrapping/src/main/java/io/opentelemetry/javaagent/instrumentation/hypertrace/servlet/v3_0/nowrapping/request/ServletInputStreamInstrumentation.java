@@ -92,7 +92,6 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
   static class InputStream_ReadNoArgs {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
-      System.out.println("read()");
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
       if (callDepth > 0) {
         return null;
@@ -119,7 +118,6 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
   public static class InputStream_ReadByteArray {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
-      System.out.println("read(arr)");
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
       if (callDepth > 0) {
         return null;
@@ -148,7 +146,6 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
   public static class InputStream_ReadByteArrayOffset {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
-      System.out.println("read(arr, offset, len)");
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
       if (callDepth > 0) {
         return null;
@@ -171,8 +168,6 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
       if (read == -1) {
         bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
       } else {
-        System.out.println(new String(b));
-        System.out.println(read);
         bufferSpanPair.buffer.write(b, off, read);
       }
     }

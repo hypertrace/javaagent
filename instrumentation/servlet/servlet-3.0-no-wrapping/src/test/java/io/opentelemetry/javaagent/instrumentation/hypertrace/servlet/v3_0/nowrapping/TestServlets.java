@@ -28,6 +28,16 @@ public class TestServlets {
   public static final String RESPONSE_HEADER = "responseheader";
   public static final String RESPONSE_HEADER_VALUE = "responsevalue";
 
+  public static class GetHello extends HttpServlet {
+    @Override
+    protected void service(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+      while (req.getInputStream().read() != -1) {}
+      resp.setStatus(204);
+      resp.setHeader(RESPONSE_HEADER, RESPONSE_HEADER_VALUE);
+      resp.getWriter().write("hello");
+    }
+  }
+
   public static class EchoStream_single_byte extends HttpServlet {
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws IOException {

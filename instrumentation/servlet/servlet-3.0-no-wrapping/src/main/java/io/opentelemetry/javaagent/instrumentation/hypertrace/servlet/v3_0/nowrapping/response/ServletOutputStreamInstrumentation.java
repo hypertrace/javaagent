@@ -85,8 +85,6 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
   static class OutputStream_write {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void enter(@Advice.This ServletOutputStream thizz, @Advice.Argument(0) int b) {
-      System.out.println("write");
-      System.out.println(String.valueOf(b));
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletOutputStream.class);
       if (callDepth > 0) {
         return;

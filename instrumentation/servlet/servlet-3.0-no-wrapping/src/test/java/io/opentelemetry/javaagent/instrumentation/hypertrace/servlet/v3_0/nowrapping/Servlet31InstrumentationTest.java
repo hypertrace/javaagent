@@ -20,8 +20,10 @@ import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrap
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoStream_arr_offset;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoStream_readLine_print;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoStream_single_byte;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.GetHello;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.List;
+import okhttp3.FormBody;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -47,6 +49,7 @@ public class Servlet31InstrumentationTest extends AbstractInstrumenterTest {
   @BeforeAll
   public static void startServer() throws Exception {
     ServletContextHandler handler = new ServletContextHandler();
+    handler.addServlet(GetHello.class, "/hello");
     handler.addServlet(EchoStream_single_byte.class, "/echo_stream_single_byte");
     handler.addServlet(EchoStream_arr.class, "/echo_stream_arr");
     handler.addServlet(EchoStream_arr_offset.class, "/echo_stream_arr_offset");
@@ -117,6 +120,77 @@ public class Servlet31InstrumentationTest extends AbstractInstrumenterTest {
   @Test
   public void postJson_writer_readLine_print_arr() throws Exception {
     postJson(String.format("http://localhost:%d/echo_writer_readLine_print_arr", serverPort));
+  }
+
+  @Test
+  public void portUrlEncoded() throws Exception {
+    FormBody formBody = new FormBody.Builder().add("key1", "value1").add("key2", "value2").build();
+    Request request =
+        new Request.Builder()
+            .url(String.format("http://localhost:%d/echo_stream_single_byte", serverPort))
+            .post(formBody)
+            .header(REQUEST_HEADER, REQUEST_HEADER_VALUE)
+            .build();
+    try (Response response = httpClient.newCall(request).execute()) {
+      Assertions.assertEquals(200, response.code());
+    }
+
+    TEST_WRITER.waitForTraces(1);
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    Assertions.assertEquals(1, traces.size());
+    List<SpanData> spans = traces.get(0);
+    Assertions.assertEquals(1, spans.size());
+    SpanData spanData = spans.get(0);
+    Assertions.assertEquals(
+        REQUEST_HEADER_VALUE,
+        spanData
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER)));
+    Assertions.assertEquals(
+        TestServlets.RESPONSE_HEADER_VALUE,
+        spanData
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpResponseHeader(TestServlets.RESPONSE_HEADER)));
+    Assertions.assertEquals(
+        "key1=value1&key2=value2",
+        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+    Assertions.assertEquals(
+        TestServlets.RESPONSE_BODY,
+        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+  }
+
+  @Test
+  public void getHello() throws Exception {
+    Request request =
+        new Request.Builder()
+            .url(String.format("http://localhost:%d/hello", serverPort))
+            .get()
+            .header(REQUEST_HEADER, REQUEST_HEADER_VALUE)
+            .build();
+    try (Response response = httpClient.newCall(request).execute()) {
+      Assertions.assertEquals(204, response.code());
+    }
+
+    TEST_WRITER.waitForTraces(1);
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    Assertions.assertEquals(1, traces.size());
+    List<SpanData> spans = traces.get(0);
+    Assertions.assertEquals(1, spans.size());
+    SpanData spanData = spans.get(0);
+    Assertions.assertEquals(
+        REQUEST_HEADER_VALUE,
+        spanData
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER)));
+    Assertions.assertEquals(
+        TestServlets.RESPONSE_HEADER_VALUE,
+        spanData
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpResponseHeader(TestServlets.RESPONSE_HEADER)));
+    Assertions.assertNull(
+        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+    Assertions.assertNull(
+        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
   }
 
   public void postJson(String url) throws Exception {
