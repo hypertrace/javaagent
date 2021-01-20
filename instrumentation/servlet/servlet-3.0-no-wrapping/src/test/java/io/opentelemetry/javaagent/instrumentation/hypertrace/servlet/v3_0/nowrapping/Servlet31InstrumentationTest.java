@@ -22,7 +22,9 @@ import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrap
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoStream_single_byte;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.GetHello;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import java.util.EnumSet;
 import java.util.List;
+import javax.servlet.DispatcherType;
 import okhttp3.FormBody;
 import okhttp3.MediaType;
 import okhttp3.Request;
@@ -49,6 +51,9 @@ public class Servlet31InstrumentationTest extends AbstractInstrumenterTest {
   @BeforeAll
   public static void startServer() throws Exception {
     ServletContextHandler handler = new ServletContextHandler();
+
+    handler.addFilter(WrappingFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
+
     handler.addServlet(GetHello.class, "/hello");
     handler.addServlet(EchoStream_single_byte.class, "/echo_stream_single_byte");
     handler.addServlet(EchoStream_arr.class, "/echo_stream_arr");

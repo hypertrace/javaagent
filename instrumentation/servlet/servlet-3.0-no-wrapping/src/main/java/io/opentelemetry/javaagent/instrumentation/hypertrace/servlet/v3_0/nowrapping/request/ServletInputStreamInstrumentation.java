@@ -92,6 +92,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
   static class InputStream_ReadNoArgs {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
+      System.out.println("input stream read");
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
       if (callDepth > 0) {
         return null;

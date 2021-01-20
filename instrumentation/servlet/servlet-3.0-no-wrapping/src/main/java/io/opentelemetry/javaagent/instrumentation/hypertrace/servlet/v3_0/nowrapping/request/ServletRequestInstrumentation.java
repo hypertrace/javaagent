@@ -67,17 +67,30 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
   }
 
   static class ServletRequest_getInputStream_advice {
-
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static void enter() {
+    public static Span enter(@Advice.This ServletRequest servletRequest) {
+      HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
+      // span is added in servlet/filter instrumentation if data capture is enabled
+      Span requestSpan =
+          InstrumentationContext.get(HttpServletRequest.class, Span.class).get(httpServletRequest);
+      if (requestSpan == null) {
+        return null;
+      }
+
       // the getReader method might call getInputStream
       CallDepthThreadLocalMap.incrementCallDepth(ServletRequest.class);
+      return requestSpan;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(
         @Advice.This ServletRequest servletRequest,
-        @Advice.Return ServletInputStream servletInputStream) {
+        @Advice.Return ServletInputStream servletInputStream,
+        @Advice.Enter Span requestSpan) {
+
+      if (requestSpan == null) {
+        return;
+      }
 
       int callDepth = CallDepthThreadLocalMap.decrementCallDepth(ServletRequest.class);
       if (callDepth > 0) {
@@ -96,14 +109,6 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
         return;
       }
 
-      // span is added in servlet/filter instrumentation if data capture is enabled and it is the
-      // right content
-      Span requestSpan =
-          InstrumentationContext.get(HttpServletRequest.class, Span.class).get(httpServletRequest);
-      if (requestSpan == null) {
-        return;
-      }
-
       ByteBufferSpanPair metadata =
           Utils.createRequestByteBufferMetadata(httpServletRequest, requestSpan);
       contextStore.put(servletInputStream, metadata);
@@ -112,13 +117,27 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
 
   static class ServletRequest_getReader_advice {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static void enter() {
+    public static Span enter(@Advice.This ServletRequest servletRequest) {
+      HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
+      Span requestSpan =
+          InstrumentationContext.get(HttpServletRequest.class, Span.class).get(httpServletRequest);
+      if (requestSpan == null) {
+        return null;
+      }
+
       CallDepthThreadLocalMap.incrementCallDepth(ServletRequest.class);
+      return requestSpan;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(
-        @Advice.This ServletRequest servletRequest, @Advice.Return BufferedReader reader) {
+        @Advice.This ServletRequest servletRequest,
+        @Advice.Return BufferedReader reader,
+        @Advice.Enter Span requestSpan) {
+
+      if (requestSpan == null) {
+        return;
+      }
 
       int callDepth = CallDepthThreadLocalMap.decrementCallDepth(ServletRequest.class);
       if (callDepth > 0) {
@@ -134,14 +153,6 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
           InstrumentationContext.get(BufferedReader.class, CharBufferSpanPair.class);
       if (contextStore.get(reader) != null) {
         // getReader() can be called multiple times
-        return;
-      }
-
-      // span is added in servlet/filter instrumentation if data capture is enabled and it is the
-      // right content
-      Span requestSpan =
-          InstrumentationContext.get(HttpServletRequest.class, Span.class).get(httpServletRequest);
-      if (requestSpan == null) {
         return;
       }
 
