@@ -23,12 +23,12 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
 import com.google.auto.service.AutoService;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.Servlet31NoWrappingInstrumentation;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.Servlet31NoWrappingInstrumentationModule;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.request.ServletInputStreamInstrumentation;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.request.ServletRequestInstrumentation;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.response.ServletOutputStreamInstrumentation;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.response.ServletResponseInstrumentation;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.Servlet31NoWrappingInstrumentation;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.Servlet31NoWrappingInstrumentationModule;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.request.ServletInputStreamInstrumentation;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.request.ServletRequestInstrumentation;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.response.ServletOutputStreamInstrumentation;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.response.ServletResponseInstrumentation;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.util.Arrays;

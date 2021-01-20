@@ -25,7 +25,7 @@ afterEvaluate{
 val versions: Map<String, String> by extra
 
 dependencies {
-    api(project(":instrumentation:servlet:servlet-3.1-no-wrapping"))
+    api(project(":instrumentation:servlet:servlet-3.0-no-wrapping"))
 
     api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-spark-2.3:${versions["opentelemetry_java_agent"]}")
     api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0:${versions["opentelemetry_java_agent"]}")

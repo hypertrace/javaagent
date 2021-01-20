@@ -20,4 +20,5 @@ afterEvaluate{
 }
 
 dependencies {
+    testImplementation(project(":testing-common"))
 }
