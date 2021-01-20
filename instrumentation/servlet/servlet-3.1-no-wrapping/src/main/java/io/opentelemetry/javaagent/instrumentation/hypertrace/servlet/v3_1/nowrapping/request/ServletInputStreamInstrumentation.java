@@ -76,9 +76,6 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
             .and(takesArgument(2, is(int.class)))
             .and(isPublic()),
         ServletInputStreamInstrumentation.class.getName() + "$InputStream_ReadNBytes");
-    transformers.put(
-        named("available").and(takesArguments(0)).and(isPublic()),
-        ServletInputStreamInstrumentation.class.getName() + "$InputStream_Available");
 
     // ServletInputStream methods
     transformers.put(
@@ -237,21 +234,6 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         bufferSpanPair.buffer.write(b, off, len);
       }
       CallDepthThreadLocalMap.reset(ServletInputStream.class);
-    }
-  }
-
-  public static class InputStream_Available {
-    @Advice.OnMethodExit(suppress = Throwable.class)
-    public static void exit(@Advice.This ServletInputStream thizz, @Advice.Return int available) {
-      if (available != 0) {
-        return;
-      }
-      ByteBufferSpanPair bufferSpanPair =
-          InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class).get(thizz);
-      if (bufferSpanPair == null) {
-        return;
-      }
-      bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
     }
   }
 

@@ -39,7 +39,7 @@ public class CharBufferSpanPair {
     if (bufferCaptured) {
       return;
     }
-    this.bufferCaptured = true;
+    bufferCaptured = true;
     String requestBody = buffer.toString();
     span.setAttribute(attributeKey, requestBody);
   }

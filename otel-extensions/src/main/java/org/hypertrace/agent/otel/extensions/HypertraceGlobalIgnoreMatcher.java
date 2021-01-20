@@ -33,8 +33,6 @@ public class HypertraceGlobalIgnoreMatcher implements IgnoreMatcherProvider {
           // servlet request instrumentation
           || actualName.equals("java.io.Reader")
           || actualName.equals("java.io.BufferedReader")) {
-        System.out.println("\n\n---> ALLOW");
-        System.out.println(actualName);
         return Result.ALLOW;
       }
     }
