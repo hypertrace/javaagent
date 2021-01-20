@@ -88,7 +88,76 @@ public class TestServlets {
       resp.setStatus(200);
       resp.setContentType("application/json");
       resp.setHeader(RESPONSE_HEADER, RESPONSE_HEADER_VALUE);
+
+      for (int i = 0; i < RESPONSE_BODY.length(); i++)
+        resp.getWriter().write(RESPONSE_BODY.charAt(i));
+    }
+  }
+
+  public static class EchoWriter_arr extends HttpServlet {
+    @Override
+    protected void service(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+      while (req.getReader().read(new char[2]) != -1) {}
+
+      resp.setStatus(200);
+      resp.setContentType("application/json");
+      resp.setHeader(RESPONSE_HEADER, RESPONSE_HEADER_VALUE);
+      resp.getWriter().write(RESPONSE_BODY.toCharArray());
+    }
+  }
+
+  public static class EchoWriter_arr_offset extends HttpServlet {
+    @Override
+    protected void service(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+      while (req.getReader().read(new char[12], 3, 2) != -1) {}
+
+      resp.setStatus(200);
+      resp.setContentType("application/json");
+      resp.setHeader(RESPONSE_HEADER, RESPONSE_HEADER_VALUE);
+
+      char[] chars = RESPONSE_BODY.toCharArray();
+      resp.getWriter().write(chars, 0, 2);
+      resp.getWriter().write(chars, 2, 2);
+      resp.getWriter().write(chars, 4, chars.length - 4);
+    }
+  }
+
+  public static class EchoWriter_readLine_write extends HttpServlet {
+    @Override
+    protected void service(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+      while (req.getReader().readLine() != null) {}
+
+      resp.setStatus(200);
+      resp.setContentType("application/json");
+      resp.setHeader(RESPONSE_HEADER, RESPONSE_HEADER_VALUE);
+
+      resp.getWriter().write(RESPONSE_BODY);
+    }
+  }
+
+  public static class EchoWriter_readLine_print_str extends HttpServlet {
+    @Override
+    protected void service(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+      while (req.getReader().readLine() != null) {}
+
+      resp.setStatus(200);
+      resp.setContentType("application/json");
+      resp.setHeader(RESPONSE_HEADER, RESPONSE_HEADER_VALUE);
+
       resp.getWriter().print(RESPONSE_BODY);
+    }
+  }
+
+  public static class EchoWriter_readLine_print_arr extends HttpServlet {
+    @Override
+    protected void service(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+      while (req.getReader().readLine() != null) {}
+
+      resp.setStatus(200);
+      resp.setContentType("application/json");
+      resp.setHeader(RESPONSE_HEADER, RESPONSE_HEADER_VALUE);
+
+      resp.getWriter().print(RESPONSE_BODY.toCharArray());
     }
   }
 }

@@ -52,6 +52,13 @@ public class Servlet31InstrumentationTest extends AbstractInstrumenterTest {
     handler.addServlet(EchoStream_arr_offset.class, "/echo_stream_arr_offset");
     handler.addServlet(EchoStream_readLine_print.class, "/echo_stream_readLine_print");
     handler.addServlet(TestServlets.EchoWriter.class, "/echo_writer");
+    handler.addServlet(TestServlets.EchoWriter_arr.class, "/echo_writer_arr");
+    handler.addServlet(TestServlets.EchoWriter_arr_offset.class, "/echo_writer_arr_offset");
+    handler.addServlet(TestServlets.EchoWriter_readLine_write.class, "/echo_writer_readLine_write");
+    handler.addServlet(
+        TestServlets.EchoWriter_readLine_print_str.class, "/echo_writer_readLine_print_str");
+    handler.addServlet(
+        TestServlets.EchoWriter_readLine_print_arr.class, "/echo_writer_readLine_print_arr");
     server.setHandler(handler);
     server.start();
     serverPort = ((ServerConnector) server.getConnectors()[0]).getLocalPort();
@@ -85,6 +92,31 @@ public class Servlet31InstrumentationTest extends AbstractInstrumenterTest {
   @Test
   public void postJson_writer() throws Exception {
     postJson(String.format("http://localhost:%d/echo_writer", serverPort));
+  }
+
+  @Test
+  public void postJson_writer_arr() throws Exception {
+    postJson(String.format("http://localhost:%d/echo_writer_arr", serverPort));
+  }
+
+  @Test
+  public void postJson_writer_arr_offset() throws Exception {
+    postJson(String.format("http://localhost:%d/echo_writer_arr_offset", serverPort));
+  }
+
+  @Test
+  public void postJson_writer_readLine_write() throws Exception {
+    postJson(String.format("http://localhost:%d/echo_writer_readLine_write", serverPort));
+  }
+
+  @Test
+  public void postJson_writer_readLine_print_str() throws Exception {
+    postJson(String.format("http://localhost:%d/echo_writer_readLine_print_str", serverPort));
+  }
+
+  @Test
+  public void postJson_writer_readLine_print_arr() throws Exception {
+    postJson(String.format("http://localhost:%d/echo_writer_readLine_print_arr", serverPort));
   }
 
   public void postJson(String url) throws Exception {

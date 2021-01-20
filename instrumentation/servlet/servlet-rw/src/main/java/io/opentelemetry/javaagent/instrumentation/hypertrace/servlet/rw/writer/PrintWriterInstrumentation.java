@@ -65,6 +65,12 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
             .and(isPublic()),
         PrintWriterInstrumentation.class.getName() + "$Writer_writeOffset");
     transformers.put(
+        named("write")
+            .and(takesArguments(1))
+            .and(takesArgument(0, is(String.class)))
+            .and(isPublic()),
+        PrintWriterInstrumentation.class.getName() + "$PrintWriter_print");
+    transformers.put(
         named("print")
             .and(takesArguments(1))
             .and(takesArgument(0, is(String.class)))
@@ -85,7 +91,6 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
   static class Writer_writeChar {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void enter(@Advice.This PrintWriter thizz, @Advice.Argument(0) int ch) {
-
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
       if (callDepth > 0) {
         return;
@@ -93,7 +98,6 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
       BoundedCharArrayWriter buffer =
           InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class).get(thizz);
       if (buffer != null) {
-        System.out.printf("Writing character %s \n", ch);
         buffer.write(ch);
       }
     }
@@ -174,7 +178,7 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
 
   static class PrintWriter_println {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static void enter(@Advice.This PrintWriter thizz) throws IOException {
+    public static void enter(@Advice.This PrintWriter thizz) {
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
       if (callDepth > 0) {
         return;
