@@ -17,35 +17,52 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping;
 
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
+import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.servlet.AsyncEvent;
 import javax.servlet.AsyncListener;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
+import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.core.config.HypertraceConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
+import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 
 public class BodyCaptureAsyncListener implements AsyncListener {
 
   private final AtomicBoolean responseHandled;
   private final Span span;
+  private final ContextStore<ServletOutputStream, BoundedByteArrayOutputStream> streamContextStore;
+  private final ContextStore<PrintWriter, BoundedCharArrayWriter> writerContextStore;
 
-  public BodyCaptureAsyncListener(AtomicBoolean responseHandled, Span span) {
+  private final AgentConfig agentConfig = HypertraceConfig.get();
+
+  public BodyCaptureAsyncListener(
+      AtomicBoolean responseHandled,
+      Span span,
+      ContextStore<ServletOutputStream, BoundedByteArrayOutputStream> streamContextStore,
+      ContextStore<PrintWriter, BoundedCharArrayWriter> writerContextStore) {
     this.responseHandled = responseHandled;
     this.span = span;
+    this.streamContextStore = streamContextStore;
+    this.writerContextStore = writerContextStore;
   }
 
   @Override
   public void onComplete(AsyncEvent event) {
     if (responseHandled.compareAndSet(false, true)) {
-      captureResponseHeaders(event.getSuppliedResponse());
+      captureResponseData(event.getSuppliedResponse());
     }
   }
 
   @Override
   public void onError(AsyncEvent event) {
     if (responseHandled.compareAndSet(false, true)) {
-      captureResponseHeaders(event.getSuppliedResponse());
+      captureResponseData(event.getSuppliedResponse());
     }
   }
 
@@ -55,10 +72,16 @@ public class BodyCaptureAsyncListener implements AsyncListener {
   @Override
   public void onStartAsync(AsyncEvent event) {}
 
-  private void captureResponseHeaders(ServletResponse servletResponse) {
+  private void captureResponseData(ServletResponse servletResponse) {
     if (servletResponse instanceof HttpServletResponse) {
       HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
-      if (HypertraceConfig.get().getDataCapture().getHttpHeaders().getResponse().getValue()) {
+
+      if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()
+          && ContentTypeUtils.shouldCapture(httpResponse.getContentType())) {
+        Utils.captureResponseBody(span, streamContextStore, writerContextStore, httpResponse);
+      }
+
+      if (agentConfig.getDataCapture().getHttpHeaders().getResponse().getValue()) {
         for (String headerName : httpResponse.getHeaderNames()) {
           String headerValue = httpResponse.getHeader(headerName);
           span.setAttribute(

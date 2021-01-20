@@ -29,13 +29,16 @@ import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.common.ServletSpanDecorator;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.request.ByteBufferSpanPair;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -51,6 +54,7 @@ import org.hypertrace.agent.core.config.HypertraceConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
+import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 import org.hypertrace.agent.filter.FilterRegistry;
 
@@ -146,14 +150,32 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
       }
 
       HttpServletResponse httpResponse = (HttpServletResponse) response;
+      HttpServletRequest httpRequest = (HttpServletRequest) request;
       AgentConfig agentConfig = HypertraceConfig.get();
+
+      ContextStore<ServletOutputStream, BoundedByteArrayOutputStream> outputStreamContext =
+          InstrumentationContext.get(ServletOutputStream.class, BoundedByteArrayOutputStream.class);
+      ContextStore<PrintWriter, BoundedCharArrayWriter> writerContext =
+          InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class);
+
+      // remove request body buffers from context stores, otherwise they might get reused
+      if (agentConfig.getDataCapture().getHttpBody().getRequest().getValue()
+          && ContentTypeUtils.shouldCapture(httpRequest.getContentType())) {
+        ContextStore<ServletInputStream, ByteBufferSpanPair> inputStreamContext =
+            InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class);
+        ContextStore<BufferedReader, CharBufferSpanPair> readerContext =
+            InstrumentationContext.get(BufferedReader.class, CharBufferSpanPair.class);
+        Utils.resetRequestBodyBuffers(inputStreamContext, readerContext, httpRequest);
+      }
 
       AtomicBoolean responseHandled = new AtomicBoolean(false);
       if (request.isAsyncStarted()) {
         try {
           request
               .getAsyncContext()
-              .addListener(new BodyCaptureAsyncListener(responseHandled, currentSpan));
+              .addListener(
+                  new BodyCaptureAsyncListener(
+                      responseHandled, currentSpan, outputStreamContext, writerContext));
         } catch (IllegalStateException e) {
           // org.eclipse.jetty.server.Request may throw an exception here if request became
           // finished after check above. We just ignore that exception and move on.
@@ -172,34 +194,7 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
         // capture response body
         if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()
             && ContentTypeUtils.shouldCapture(httpResponse.getContentType())) {
-          try {
-            ServletOutputStream outputStream = httpResponse.getOutputStream();
-            ContextStore<ServletOutputStream, BoundedByteArrayOutputStream> streamContext =
-                InstrumentationContext.get(
-                    ServletOutputStream.class, BoundedByteArrayOutputStream.class);
-            BoundedByteArrayOutputStream buffer = streamContext.get(outputStream);
-            if (buffer != null) {
-              currentSpan.setAttribute(
-                  HypertraceSemanticAttributes.HTTP_RESPONSE_BODY,
-                  buffer.toStringWithSuppliedCharset());
-              streamContext.put(outputStream, null);
-            }
-          } catch (IllegalStateException exOutStream) {
-            // getWriter was called
-            try {
-              PrintWriter writer = httpResponse.getWriter();
-              ContextStore<PrintWriter, BoundedCharArrayWriter> writerContext =
-                  InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class);
-              BoundedCharArrayWriter buffer = writerContext.get(writer);
-              if (buffer != null) {
-                currentSpan.setAttribute(
-                    HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, buffer.toString());
-                writerContext.put(writer, null);
-              }
-            } catch (IllegalStateException exPrintWriter) {
-              // nothing to do
-            }
-          }
+          Utils.captureResponseBody(currentSpan, outputStreamContext, writerContext, httpResponse);
         }
       }
     }
