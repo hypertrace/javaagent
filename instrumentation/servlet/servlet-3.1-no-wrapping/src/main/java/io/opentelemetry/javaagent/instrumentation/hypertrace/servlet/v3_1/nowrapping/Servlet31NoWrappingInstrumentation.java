@@ -25,6 +25,7 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
+import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.common.ServletSpanDecorator;
@@ -173,25 +174,27 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
             && ContentTypeUtils.shouldCapture(httpResponse.getContentType())) {
           try {
             ServletOutputStream outputStream = httpResponse.getOutputStream();
-            BoundedByteArrayOutputStream buffer =
+            ContextStore<ServletOutputStream, BoundedByteArrayOutputStream> streamContext =
                 InstrumentationContext.get(
-                        ServletOutputStream.class, BoundedByteArrayOutputStream.class)
-                    .get(outputStream);
+                    ServletOutputStream.class, BoundedByteArrayOutputStream.class);
+            BoundedByteArrayOutputStream buffer = streamContext.get(outputStream);
             if (buffer != null) {
               currentSpan.setAttribute(
                   HypertraceSemanticAttributes.HTTP_RESPONSE_BODY,
                   buffer.toStringWithSuppliedCharset());
+              streamContext.put(outputStream, null);
             }
           } catch (IllegalStateException exOutStream) {
             // getWriter was called
             try {
               PrintWriter writer = httpResponse.getWriter();
-              BoundedCharArrayWriter buffer =
-                  InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class)
-                      .get(writer);
+              ContextStore<PrintWriter, BoundedCharArrayWriter> writerContext =
+                  InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class);
+              BoundedCharArrayWriter buffer = writerContext.get(writer);
               if (buffer != null) {
                 currentSpan.setAttribute(
                     HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, buffer.toString());
+                writerContext.put(writer, null);
               }
             } catch (IllegalStateException exPrintWriter) {
               // nothing to do
