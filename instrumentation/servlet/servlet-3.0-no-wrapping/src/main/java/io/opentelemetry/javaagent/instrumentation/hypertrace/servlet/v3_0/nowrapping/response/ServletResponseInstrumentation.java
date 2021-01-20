@@ -85,8 +85,6 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
         return;
       }
 
-      System.out.println("getting response output stream");
-
       if (!(servletResponse instanceof HttpServletResponse)) {
         return;
       }
@@ -100,15 +98,11 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
         return;
       }
 
-      System.out.println("getting response output stream222");
-      System.out.println("getting response output stream222");
-      System.out.println("getting response output stream222");
       // do not capture if data capture is disabled or not supported content type
       AgentConfig agentConfig = HypertraceConfig.get();
       String contentType = httpServletResponse.getContentType();
       if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()
           && ContentTypeUtils.shouldCapture(contentType)) {
-        System.out.println("Adding metadata for response");
 
         String charsetStr = httpServletResponse.getCharacterEncoding();
         Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
@@ -122,7 +116,6 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
   static class ServletResponse_getWriter_advice {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void enter() {
-      System.out.println("getting writer");
       // the getWriter method might call getOutputStream
       CallDepthThreadLocalMap.incrementCallDepth(ServletResponse.class);
     }
@@ -135,7 +128,6 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
       if (callDepth > 0) {
         return;
       }
-      System.out.println("Getting printWriter from response");
       if (!(servletResponse instanceof HttpServletResponse)) {
         return;
       }
@@ -153,7 +145,6 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
       String contentType = httpServletResponse.getContentType();
       if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()
           && ContentTypeUtils.shouldCapture(contentType)) {
-        System.out.println("Adding metadata for response");
         BoundedCharArrayWriter writer = BoundedBuffersFactory.createWriter();
         contextStore.put(printWriter, writer);
       }

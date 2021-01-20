@@ -95,7 +95,6 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
       } else {
         bufferSpanPair.buffer.write(read);
       }
-      CallDepthThreadLocalMap.reset(BufferedReader.class);
     }
   }
 
@@ -123,7 +122,6 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
       } else {
         bufferSpanPair.buffer.write(c, 0, read);
       }
-      CallDepthThreadLocalMap.reset(BufferedReader.class);
     }
   }
 
@@ -153,7 +151,6 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
       } else {
         bufferSpanPair.buffer.write(c, off, read);
       }
-      CallDepthThreadLocalMap.reset(BufferedReader.class);
     }
   }
 
@@ -180,7 +177,6 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
       } else {
         bufferSpanPair.buffer.write(line);
       }
-      CallDepthThreadLocalMap.reset(BufferedReader.class);
     }
   }
 }

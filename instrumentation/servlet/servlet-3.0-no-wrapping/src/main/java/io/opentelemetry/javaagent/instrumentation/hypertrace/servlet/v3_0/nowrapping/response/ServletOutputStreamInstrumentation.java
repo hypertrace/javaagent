@@ -29,7 +29,6 @@ import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
@@ -86,6 +85,8 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
   static class OutputStream_write {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void enter(@Advice.This ServletOutputStream thizz, @Advice.Argument(0) int b) {
+      System.out.println("write");
+      System.out.println(String.valueOf(b));
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletOutputStream.class);
       if (callDepth > 0) {
         return;
@@ -100,7 +101,7 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit() {
-      CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
+      CallDepthThreadLocalMap.decrementCallDepth(ServletOutputStream.class);
     }
   }
 
@@ -122,7 +123,7 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit() {
-      CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
+      CallDepthThreadLocalMap.decrementCallDepth(ServletOutputStream.class);
     }
   }
 
@@ -147,7 +148,7 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit() {
-      CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
+      CallDepthThreadLocalMap.decrementCallDepth(ServletOutputStream.class);
     }
   }
 
@@ -170,7 +171,7 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit() {
-      CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
+      CallDepthThreadLocalMap.decrementCallDepth(ServletOutputStream.class);
     }
   }
 }

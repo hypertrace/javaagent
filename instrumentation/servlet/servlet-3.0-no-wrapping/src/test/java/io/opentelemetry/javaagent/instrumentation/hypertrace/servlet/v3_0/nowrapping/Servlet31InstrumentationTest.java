@@ -16,6 +16,10 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping;
 
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoStream_arr;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoStream_arr_offset;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoStream_readLine_print;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoStream_single_byte;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.List;
 import okhttp3.MediaType;
@@ -43,7 +47,11 @@ public class Servlet31InstrumentationTest extends AbstractInstrumenterTest {
   @BeforeAll
   public static void startServer() throws Exception {
     ServletContextHandler handler = new ServletContextHandler();
-    handler.addServlet(TestServlet.class, "/test");
+    handler.addServlet(EchoStream_single_byte.class, "/echo_stream_single_byte");
+    handler.addServlet(EchoStream_arr.class, "/echo_stream_arr");
+    handler.addServlet(EchoStream_arr_offset.class, "/echo_stream_arr_offset");
+    handler.addServlet(EchoStream_readLine_print.class, "/echo_stream_readLine_print");
+    handler.addServlet(TestServlets.EchoWriter.class, "/echo_writer");
     server.setHandler(handler);
     server.start();
     serverPort = ((ServerConnector) server.getConnectors()[0]).getLocalPort();
@@ -55,16 +63,40 @@ public class Servlet31InstrumentationTest extends AbstractInstrumenterTest {
   }
 
   @Test
-  public void postJson() throws Exception {
+  public void postJson_stream_single_byte() throws Exception {
+    postJson(String.format("http://localhost:%d/echo_stream_single_byte", serverPort));
+  }
+
+  @Test
+  public void postJson_stream_arr() throws Exception {
+    postJson(String.format("http://localhost:%d/echo_stream_arr", serverPort));
+  }
+
+  @Test
+  public void postJson_stream_arr_offset() throws Exception {
+    postJson(String.format("http://localhost:%d/echo_stream_arr_offset", serverPort));
+  }
+
+  @Test
+  public void postJson_stream_readLine_print() throws Exception {
+    postJson(String.format("http://localhost:%d/echo_stream_readLine_print", serverPort));
+  }
+
+  @Test
+  public void postJson_writer() throws Exception {
+    postJson(String.format("http://localhost:%d/echo_writer", serverPort));
+  }
+
+  public void postJson(String url) throws Exception {
     Request request =
         new Request.Builder()
-            .url(String.format("http://localhost:%d/test", serverPort))
+            .url(url)
             .post(RequestBody.create(REQUEST_BODY, MediaType.get("application/json")))
             .header(REQUEST_HEADER, REQUEST_HEADER_VALUE)
             .build();
     try (Response response = httpClient.newCall(request).execute()) {
       Assertions.assertEquals(200, response.code());
-      Assertions.assertEquals(TestServlet.RESPONSE_BODY, response.body().string());
+      Assertions.assertEquals(TestServlets.RESPONSE_BODY, response.body().string());
     }
 
     TEST_WRITER.waitForTraces(1);
@@ -79,14 +111,14 @@ public class Servlet31InstrumentationTest extends AbstractInstrumenterTest {
             .getAttributes()
             .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER)));
     Assertions.assertEquals(
-        TestServlet.RESPONSE_HEADER_VALUE,
+        TestServlets.RESPONSE_HEADER_VALUE,
         spanData
             .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader(TestServlet.RESPONSE_HEADER)));
+            .get(HypertraceSemanticAttributes.httpResponseHeader(TestServlets.RESPONSE_HEADER)));
     Assertions.assertEquals(
         REQUEST_BODY, spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
     Assertions.assertEquals(
-        TestServlet.RESPONSE_BODY,
+        TestServlets.RESPONSE_BODY,
         spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
   }
 }

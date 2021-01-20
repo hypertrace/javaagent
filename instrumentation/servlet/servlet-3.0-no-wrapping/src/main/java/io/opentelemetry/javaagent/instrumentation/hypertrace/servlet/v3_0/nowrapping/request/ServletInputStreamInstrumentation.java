@@ -85,17 +85,14 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
             .and(takesArgument(1, is(int.class)))
             .and(takesArgument(2, is(int.class)))
             .and(isPublic()),
-        ServletInputStreamInstrumentation.class.getName() + "$InputStream_ReadByteArray");
-    //     servlet 3.1 API, but since we do not call it directly muzzle
-    transformers.put(
-        named("isFinished").and(takesArguments(0)).and(isPublic()),
-        ServletInputStreamInstrumentation.class.getName() + "$ServletInputStream_IsFinished");
+        ServletInputStreamInstrumentation.class.getName() + "$InputStream_ReadByteArrayOffset");
     return transformers;
   }
 
   static class InputStream_ReadNoArgs {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
+      System.out.println("read()");
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
       if (callDepth > 0) {
         return null;
@@ -116,13 +113,13 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
       } else {
         bufferSpanPair.buffer.write((byte) read);
       }
-      CallDepthThreadLocalMap.reset(ServletInputStream.class);
     }
   }
 
   public static class InputStream_ReadByteArray {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
+      System.out.println("read(arr)");
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
       if (callDepth > 0) {
         return null;
@@ -135,8 +132,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
     public static void exit(
         @Advice.Return int read,
         @Advice.Argument(0) byte b[],
-        @Advice.Enter ByteBufferSpanPair bufferSpanPair)
-        throws IOException {
+        @Advice.Enter ByteBufferSpanPair bufferSpanPair) {
       CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
       if (bufferSpanPair == null) {
         return;
@@ -144,15 +140,15 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
       if (read == -1) {
         bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
       } else {
-        bufferSpanPair.buffer.write(b);
+        bufferSpanPair.buffer.write(b, 0, read);
       }
-      CallDepthThreadLocalMap.reset(ServletInputStream.class);
     }
   }
 
   public static class InputStream_ReadByteArrayOffset {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
+      System.out.println("read(arr, offset, len)");
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
       if (callDepth > 0) {
         return null;
@@ -175,9 +171,10 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
       if (read == -1) {
         bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
       } else {
-        bufferSpanPair.buffer.write(b, off, len);
+        System.out.println(new String(b));
+        System.out.println(read);
+        bufferSpanPair.buffer.write(b, off, read);
       }
-      CallDepthThreadLocalMap.reset(ServletInputStream.class);
     }
   }
 
@@ -202,7 +199,6 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
       }
       bufferSpanPair.buffer.write(b);
       bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
-      CallDepthThreadLocalMap.reset(ServletInputStream.class);
     }
   }
 
@@ -231,25 +227,8 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
       if (read == -1) {
         bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
       } else {
-        bufferSpanPair.buffer.write(b, off, len);
+        bufferSpanPair.buffer.write(b, off, read);
       }
-      CallDepthThreadLocalMap.reset(ServletInputStream.class);
-    }
-  }
-
-  public static class ServletInputStream_IsFinished {
-    @Advice.OnMethodExit(suppress = Throwable.class)
-    public static void exit(
-        @Advice.This ServletInputStream thizz, @Advice.Return boolean isFinished) {
-      if (!isFinished) {
-        return;
-      }
-      ByteBufferSpanPair bufferSpanPair =
-          InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class).get(thizz);
-      if (bufferSpanPair == null) {
-        return;
-      }
-      bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
     }
   }
 }
