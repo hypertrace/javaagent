@@ -33,6 +33,7 @@ dependencies{
     implementation(project(":instrumentation:servlet:servlet-2.3"))
     implementation(project(":instrumentation:servlet:servlet-3.0"))
     implementation(project(":instrumentation:servlet:servlet-3.1"))
+    implementation(project(":instrumentation:servlet:servlet-rw"))
     implementation(project(":instrumentation:servlet:servlet-3.1-no-wrapping"))
     implementation(project(":instrumentation:spark-2.3"))
     implementation(project(":instrumentation:grpc-1.5"))

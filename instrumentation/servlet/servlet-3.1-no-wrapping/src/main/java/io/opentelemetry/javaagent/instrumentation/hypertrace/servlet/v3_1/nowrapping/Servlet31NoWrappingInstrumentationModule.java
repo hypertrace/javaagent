@@ -20,7 +20,6 @@ import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMa
 
 import com.google.auto.service.AutoService;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.request.ByteBufferSpanPair;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.request.ServletInputStreamInstrumentation;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.request.ServletRequestInstrumentation;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.response.ServletOutputStreamInstrumentation;
@@ -34,6 +33,7 @@ import java.util.Map;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
+import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
 import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
 
 @AutoService(InstrumentationModule.class)

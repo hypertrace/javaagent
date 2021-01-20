@@ -35,6 +35,8 @@ import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import net.bytebuddy.matcher.ElementMatcher.Junction;
+import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
 
 public class ServletInputStreamInstrumentation implements TypeInstrumentation {
 
@@ -113,7 +115,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         return;
       }
       if (read == -1) {
-        bufferSpanPair.captureBody();
+        bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
       } else {
         bufferSpanPair.buffer.write((byte) read);
       }
@@ -143,7 +145,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         return;
       }
       if (read == -1) {
-        bufferSpanPair.captureBody();
+        bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
       } else {
         bufferSpanPair.buffer.write(b);
       }
@@ -174,7 +176,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         return;
       }
       if (read == -1) {
-        bufferSpanPair.captureBody();
+        bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
       } else {
         bufferSpanPair.buffer.write(b, off, len);
       }
@@ -202,7 +204,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         return;
       }
       bufferSpanPair.buffer.write(b);
-      bufferSpanPair.captureBody();
+      bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
       CallDepthThreadLocalMap.reset(ServletInputStream.class);
     }
   }
@@ -230,7 +232,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         return;
       }
       if (read == -1) {
-        bufferSpanPair.captureBody();
+        bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
       } else {
         bufferSpanPair.buffer.write(b, off, len);
       }
@@ -249,7 +251,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
       if (bufferSpanPair == null) {
         return;
       }
-      bufferSpanPair.captureBody();
+      bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
     }
   }
 
@@ -265,7 +267,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
       if (bufferSpanPair == null) {
         return;
       }
-      bufferSpanPair.captureBody();
+      bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
     }
   }
 }

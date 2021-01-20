@@ -14,30 +14,35 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.request;
+package org.hypertrace.agent.core.instrumentation.buffer;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import java.io.UnsupportedEncodingException;
-import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 
 public class ByteBufferSpanPair {
 
   public final Span span;
   public final BoundedByteArrayOutputStream buffer;
+  private boolean bufferCaptured;
 
   public ByteBufferSpanPair(Span span, BoundedByteArrayOutputStream buffer) {
     this.span = span;
     this.buffer = buffer;
   }
 
-  public void captureBody() {
+  public void captureBody(AttributeKey<String> attributeKey) {
+    if (bufferCaptured) {
+      return;
+    }
+    bufferCaptured = true;
+
     String requestBody = null;
     try {
       requestBody = buffer.toStringWithSuppliedCharset();
     } catch (UnsupportedEncodingException e) {
       // ignore charset has been parsed before
     }
-    span.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, requestBody);
+    span.setAttribute(attributeKey, requestBody);
   }
 }

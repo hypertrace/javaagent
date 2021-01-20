@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.response;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.rw.request;
 
 import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
@@ -22,29 +22,30 @@ import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
+import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
 
-/**
- * Instrumentation module for {@link java.io.PrintWriter}. It has be be defined in a separate module
- * because {@link
- * io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.Servlet31NoWrappingInstrumentationModule}
- * runs only on classloaders that have servlet classes and the writer is in the bootstrap
- * classloader.
- */
+/// **
+// * Instrumentation module for {@link java.io.BufferedReader}. It has be be defined in a separate
+// * module because {@link
+// *
+// io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.Servlet31NoWrappingInstrumentationModule}
+// * runs only on classloaders that have servlet classes and the reader is in the bootstrap
+// * classloader.
+// */
 @AutoService(InstrumentationModule.class)
-public class PrintWriterInstrumentationModule extends InstrumentationModule {
+public class BufferedReaderInstrumentationModule extends InstrumentationModule {
 
-  public PrintWriterInstrumentationModule() {
-    super("printwriter", "servlet", "servlet-3");
+  public BufferedReaderInstrumentationModule() {
+    super("bufferedreader", "servlet", "servlet-3");
   }
 
   @Override
   protected Map<String, String> contextStore() {
-    return Collections.singletonMap("java.io.PrintWriter", BoundedCharArrayWriter.class.getName());
+    return Collections.singletonMap("java.io.BufferedReader", CharBufferSpanPair.class.getName());
   }
 
   @Override
   public List<TypeInstrumentation> typeInstrumentations() {
-    return Collections.singletonList(new PrintWriterInstrumentation());
+    return Collections.singletonList(new BufferedReaderInstrumentation());
   }
 }

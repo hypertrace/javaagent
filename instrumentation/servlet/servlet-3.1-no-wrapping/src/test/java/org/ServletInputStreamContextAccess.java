@@ -16,8 +16,8 @@
 
 package org;
 
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.request.ByteBufferSpanPair;
 import javax.servlet.ServletInputStream;
+import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
 
 public class ServletInputStreamContextAccess {
 

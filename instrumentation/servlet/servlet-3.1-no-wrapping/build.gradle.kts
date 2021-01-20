@@ -30,8 +30,6 @@ afterEvaluate{
 val versions: Map<String, String> by extra
 
 dependencies {
-    api(project(":instrumentation:servlet:servlet-common"))
-
     api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0:${versions["opentelemetry_java_agent"]}")
 
     compileOnly("javax.servlet:javax.servlet-api:3.1.0")
@@ -39,6 +37,7 @@ dependencies {
     testImplementation(project(":testing-common")) {
         exclude(group ="org.eclipse.jetty", module= "jetty-server")
     }
+    testImplementation(project(":instrumentation:servlet:servlet-rw"))
     testImplementation("org.eclipse.jetty:jetty-server:9.4.32.v20200930")
     testImplementation("org.eclipse.jetty:jetty-servlet:9.4.32.v20200930")
     testImplementation("org.mockito:mockito-core:3.7.0")

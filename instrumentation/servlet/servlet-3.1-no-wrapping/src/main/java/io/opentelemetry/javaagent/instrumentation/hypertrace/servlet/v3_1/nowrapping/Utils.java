@@ -18,7 +18,6 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowra
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.request.ByteBufferSpanPair;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -26,14 +25,25 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
+import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
 import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
 
 public class Utils {
 
   private Utils() {}
+
+  public static void addSessionId(Span span, HttpServletRequest httpRequest) {
+    if (httpRequest.isRequestedSessionIdValid()) {
+      HttpSession session = httpRequest.getSession();
+      if (session != null && session.getId() != "") {
+        span.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_SESSION_ID, session.getId());
+      }
+    }
+  }
 
   public static void captureResponseBody(
       Span span,

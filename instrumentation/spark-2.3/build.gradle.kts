@@ -33,6 +33,7 @@ dependencies {
 
     compileOnly("com.sparkjava:spark-core:2.3")
 
+    testImplementation(project(":instrumentation:servlet:servlet-rw"))
     testImplementation(project(":testing-common"))
     testImplementation("com.sparkjava:spark-core:2.3")
 }

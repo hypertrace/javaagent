@@ -25,7 +25,6 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.Servlet31NoWrappingInstrumentation;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.Servlet31NoWrappingInstrumentationModule;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.request.BufferedReaderInstrumentation;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.request.ServletInputStreamInstrumentation;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.request.ServletRequestInstrumentation;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.response.ServletOutputStreamInstrumentation;
@@ -59,7 +58,6 @@ public class SparkJavaBodyInstrumentationModule extends Servlet31NoWrappingInstr
         new Servlet31NoWrappingInstrumentation(),
         new ServletRequestInstrumentation(),
         new ServletInputStreamInstrumentation(),
-        new BufferedReaderInstrumentation(),
         new ServletResponseInstrumentation(),
         new ServletOutputStreamInstrumentation());
   }
