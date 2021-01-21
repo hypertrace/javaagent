@@ -74,11 +74,14 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
   static class Reader_readNoArgs {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static CharBufferSpanPair enter(@Advice.This BufferedReader thizz) {
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(BufferedReader.class);
-      if (callDepth > 0) {
+      CharBufferSpanPair bufferSpanPair =
+          InstrumentationContext.get(BufferedReader.class, CharBufferSpanPair.class).get(thizz);
+      if (bufferSpanPair == null) {
         return null;
       }
-      return InstrumentationContext.get(BufferedReader.class, CharBufferSpanPair.class).get(thizz);
+
+      CallDepthThreadLocalMap.incrementCallDepth(BufferedReader.class);
+      return bufferSpanPair;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
@@ -86,10 +89,14 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
         @Advice.This BufferedReader thizz,
         @Advice.Return int read,
         @Advice.Enter CharBufferSpanPair bufferSpanPair) {
-      CallDepthThreadLocalMap.decrementCallDepth(BufferedReader.class);
       if (bufferSpanPair == null) {
         return;
       }
+      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(BufferedReader.class);
+      if (callDepth > 0) {
+        return;
+      }
+
       if (read == -1) {
         bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
       } else {
@@ -101,11 +108,14 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
   static class Reader_readCharArray {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static CharBufferSpanPair enter(@Advice.This BufferedReader thizz) {
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(BufferedReader.class);
-      if (callDepth > 0) {
+      CharBufferSpanPair bufferSpanPair =
+          InstrumentationContext.get(BufferedReader.class, CharBufferSpanPair.class).get(thizz);
+      if (bufferSpanPair == null) {
         return null;
       }
-      return InstrumentationContext.get(BufferedReader.class, CharBufferSpanPair.class).get(thizz);
+
+      CallDepthThreadLocalMap.incrementCallDepth(BufferedReader.class);
+      return bufferSpanPair;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
@@ -113,10 +123,14 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
         @Advice.Return int read,
         @Advice.Argument(0) char c[],
         @Advice.Enter CharBufferSpanPair bufferSpanPair) {
-      CallDepthThreadLocalMap.decrementCallDepth(BufferedReader.class);
       if (bufferSpanPair == null) {
         return;
       }
+      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(BufferedReader.class);
+      if (callDepth > 0) {
+        return;
+      }
+
       if (read == -1) {
         bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
       } else {
@@ -128,11 +142,14 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
   static class Reader_readByteArrayOffset {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static CharBufferSpanPair enter(@Advice.This BufferedReader thizz) {
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(BufferedReader.class);
-      if (callDepth > 0) {
+      CharBufferSpanPair bufferSpanPair =
+          InstrumentationContext.get(BufferedReader.class, CharBufferSpanPair.class).get(thizz);
+      if (bufferSpanPair == null) {
         return null;
       }
-      return InstrumentationContext.get(BufferedReader.class, CharBufferSpanPair.class).get(thizz);
+
+      CallDepthThreadLocalMap.incrementCallDepth(BufferedReader.class);
+      return bufferSpanPair;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
@@ -142,10 +159,14 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
         @Advice.Argument(1) int off,
         @Advice.Argument(2) int len,
         @Advice.Enter CharBufferSpanPair bufferSpanPair) {
-      CallDepthThreadLocalMap.decrementCallDepth(BufferedReader.class);
       if (bufferSpanPair == null) {
         return;
       }
+      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(BufferedReader.class);
+      if (callDepth > 0) {
+        return;
+      }
+
       if (read == -1) {
         bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
       } else {
@@ -157,21 +178,28 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
   static class BufferedReader_readLine {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static CharBufferSpanPair enter(@Advice.This BufferedReader thizz) {
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(BufferedReader.class);
-      if (callDepth > 0) {
+      CharBufferSpanPair bufferSpanPair =
+          InstrumentationContext.get(BufferedReader.class, CharBufferSpanPair.class).get(thizz);
+      if (bufferSpanPair == null) {
         return null;
       }
-      return InstrumentationContext.get(BufferedReader.class, CharBufferSpanPair.class).get(thizz);
+
+      CallDepthThreadLocalMap.incrementCallDepth(BufferedReader.class);
+      return bufferSpanPair;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(
         @Advice.Return String line, @Advice.Enter CharBufferSpanPair bufferSpanPair)
         throws IOException {
-      CallDepthThreadLocalMap.decrementCallDepth(BufferedReader.class);
       if (bufferSpanPair == null) {
         return;
       }
+      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(BufferedReader.class);
+      if (callDepth > 0) {
+        return;
+      }
+
       if (line == null) {
         bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
       } else {

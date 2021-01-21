@@ -16,6 +16,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -55,6 +56,7 @@ public class WrappingFilter implements Filter {
   static class ReqWrapper extends HttpServletRequestWrapper {
 
     private ServletInputStream servletInputStream;
+    private BufferedReader bufferedReader;
 
     public ReqWrapper(HttpServletRequest request) {
       super(request);
@@ -66,6 +68,14 @@ public class WrappingFilter implements Filter {
         servletInputStream = new DelegatingServletInputStream(super.getInputStream());
       }
       return servletInputStream;
+    }
+
+    @Override
+    public BufferedReader getReader() throws IOException {
+      if (bufferedReader == null) {
+        bufferedReader = new BufferedReader(super.getReader());
+      }
+      return bufferedReader;
     }
   }
 

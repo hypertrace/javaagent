@@ -20,6 +20,7 @@ import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrap
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoStream_arr_offset;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoStream_readLine_print;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoStream_single_byte;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoWriter_single_char;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.GetHello;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.EnumSet;
@@ -59,7 +60,7 @@ public class Servlet31InstrumentationTest extends AbstractInstrumenterTest {
     handler.addServlet(EchoStream_arr.class, "/echo_stream_arr");
     handler.addServlet(EchoStream_arr_offset.class, "/echo_stream_arr_offset");
     handler.addServlet(EchoStream_readLine_print.class, "/echo_stream_readLine_print");
-    handler.addServlet(TestServlets.EchoWriter.class, "/echo_writer");
+    handler.addServlet(EchoWriter_single_char.class, "/echo_writer_single_char");
     handler.addServlet(TestServlets.EchoWriter_arr.class, "/echo_writer_arr");
     handler.addServlet(TestServlets.EchoWriter_arr_offset.class, "/echo_writer_arr_offset");
     handler.addServlet(TestServlets.EchoWriter_readLine_write.class, "/echo_writer_readLine_write");
@@ -98,8 +99,8 @@ public class Servlet31InstrumentationTest extends AbstractInstrumenterTest {
   }
 
   @Test
-  public void postJson_writer() throws Exception {
-    postJson(String.format("http://localhost:%d/echo_writer", serverPort));
+  public void postJson_writer_single_char() throws Exception {
+    postJson(String.format("http://localhost:%d/echo_writer_single_char", serverPort));
   }
 
   @Test

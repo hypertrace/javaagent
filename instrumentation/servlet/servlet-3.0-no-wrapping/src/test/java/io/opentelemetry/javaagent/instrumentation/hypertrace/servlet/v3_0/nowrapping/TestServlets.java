@@ -90,7 +90,7 @@ public class TestServlets {
     }
   }
 
-  public static class EchoWriter extends HttpServlet {
+  public static class EchoWriter_single_char extends HttpServlet {
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws IOException {
       while (req.getReader().read() != -1) {}
