@@ -81,10 +81,8 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
       // are not used.
       HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
       if (httpServletResponse instanceof HttpServletResponseWrapper) {
-        System.out.println("response is wrapper");
         return null;
       }
-      System.out.println("response is NOT wrapper");
 
       // the getReader method might call getInputStream
       CallDepthThreadLocalMap.incrementCallDepth(ServletResponse.class);
@@ -118,10 +116,6 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
       if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()
           && ContentTypeUtils.shouldCapture(contentType)) {
 
-        System.out.printf(
-            "created response byte buffer: %s, %s\n",
-            httpServletResponse.getClass().getName(), servletOutputStream.getClass().getName());
-
         String charsetStr = httpServletResponse.getCharacterEncoding();
         Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
         BoundedByteArrayOutputStream buffer = BoundedBuffersFactory.createStream(charset);
@@ -139,10 +133,8 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
       }
       HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
       if (httpServletResponse instanceof HttpServletResponseWrapper) {
-        System.out.println("response is wrapper");
         return null;
       }
-      System.out.println("response is NOT wrapper");
 
       // the getWriter method might call getInputStream
       CallDepthThreadLocalMap.incrementCallDepth(ServletResponse.class);
@@ -175,12 +167,6 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
       String contentType = httpServletResponse.getContentType();
       if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()
           && ContentTypeUtils.shouldCapture(contentType)) {
-
-        System.out.printf(
-            "created response char buffer: %s, %s, %d\n",
-            httpServletResponse.getClass().getName(),
-            printWriter.getClass().getName(),
-            System.identityHashCode(printWriter));
 
         BoundedCharArrayWriter writer = BoundedBuffersFactory.createWriter();
         contextStore.put(printWriter, writer);

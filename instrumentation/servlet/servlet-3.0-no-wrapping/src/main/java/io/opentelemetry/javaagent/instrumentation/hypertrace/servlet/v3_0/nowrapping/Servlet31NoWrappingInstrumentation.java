@@ -147,8 +147,6 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
       if (!(request instanceof HttpServletRequest) || !(response instanceof HttpServletResponse)) {
         return;
       }
-      System.out.println(request.getClass().getName());
-      System.out.println(response.getClass().getName());
 
       HttpServletResponse httpResponse = (HttpServletResponse) response;
       HttpServletRequest httpRequest = (HttpServletRequest) request;
