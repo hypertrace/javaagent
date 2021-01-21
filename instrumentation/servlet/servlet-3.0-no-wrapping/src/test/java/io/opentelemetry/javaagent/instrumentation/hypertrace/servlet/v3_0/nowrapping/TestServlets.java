@@ -17,6 +17,8 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping;
 
 import java.io.IOException;
+import javax.servlet.AsyncContext;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -168,6 +170,42 @@ public class TestServlets {
       resp.setHeader(RESPONSE_HEADER, RESPONSE_HEADER_VALUE);
 
       resp.getWriter().print(RESPONSE_BODY.toCharArray());
+    }
+  }
+
+  public static class EchoAsyncResponse extends HttpServlet {
+    @Override
+    protected void service(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+      while (req.getReader().readLine() != null) {}
+
+      AsyncContext asyncContext = req.startAsync();
+      asyncContext.start(
+          () -> {
+            try {
+              Thread.sleep(100);
+            } catch (InterruptedException e) {
+              e.printStackTrace();
+            }
+            HttpServletResponse httpServletResponse =
+                (HttpServletResponse) asyncContext.getResponse();
+            httpServletResponse.setStatus(200);
+            httpServletResponse.setContentType("application/json");
+            httpServletResponse.setHeader(RESPONSE_HEADER, RESPONSE_HEADER_VALUE);
+            try {
+              httpServletResponse.getWriter().print(RESPONSE_BODY.toCharArray());
+            } catch (IOException e) {
+              e.printStackTrace();
+            }
+            asyncContext.complete();
+          });
+    }
+  }
+
+  public static class Forward_to_post extends HttpServlet {
+    @Override
+    protected void service(HttpServletRequest req, HttpServletResponse resp)
+        throws IOException, ServletException {
+      req.getRequestDispatcher("/echo_stream_single_byte").forward(req, resp);
     }
   }
 }

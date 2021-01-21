@@ -67,6 +67,8 @@ public class Servlet30NoWrappingInstrumentationTest extends AbstractInstrumenter
         TestServlets.EchoWriter_readLine_print_str.class, "/echo_writer_readLine_print_str");
     handler.addServlet(
         TestServlets.EchoWriter_readLine_print_arr.class, "/echo_writer_readLine_print_arr");
+    handler.addServlet(TestServlets.Forward_to_post.class, "/forward_to_echo");
+    handler.addServlet(TestServlets.EchoAsyncResponse.class, "/echo_async_response");
     server.setHandler(handler);
     server.start();
     serverPort = server.getConnectors()[0].getLocalPort();
@@ -75,6 +77,16 @@ public class Servlet30NoWrappingInstrumentationTest extends AbstractInstrumenter
   @AfterAll
   public static void stopServer() throws Exception {
     server.stop();
+  }
+
+  @Test
+  public void forward_to_post() throws Exception {
+    postJson(String.format("http://localhost:%d/forward_to_echo", serverPort));
+  }
+
+  @Test
+  public void echo_async_response() throws Exception {
+    postJson(String.format("http://localhost:%d/echo_async_response", serverPort));
   }
 
   @Test
