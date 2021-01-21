@@ -33,6 +33,7 @@ import java.util.Map;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
@@ -70,25 +71,35 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
 
   static class ServletResponse_getOutputStream {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static void enter() {
+    public static HttpServletResponse enter(@Advice.This ServletResponse servletResponse) {
+      if (!(servletResponse instanceof HttpServletResponse)) {
+        return null;
+      }
+      HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
+      if (httpServletResponse instanceof HttpServletResponseWrapper) {
+        System.out.println("response is wrapper");
+        return null;
+      }
+      System.out.println("response is NOT wrapper");
+
       // the getReader method might call getInputStream
       CallDepthThreadLocalMap.incrementCallDepth(ServletResponse.class);
+      return httpServletResponse;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(
-        @Advice.This ServletResponse servletResponse,
+        @Advice.Enter HttpServletResponse httpServletResponse,
         @Advice.Return ServletOutputStream servletOutputStream) {
+
+      if (httpServletResponse == null) {
+        return;
+      }
 
       int callDepth = CallDepthThreadLocalMap.decrementCallDepth(ServletResponse.class);
       if (callDepth > 0) {
         return;
       }
-
-      if (!(servletResponse instanceof HttpServletResponse)) {
-        return;
-      }
-      HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
 
       ContextStore<ServletOutputStream, BoundedByteArrayOutputStream> contextStore =
           InstrumentationContext.get(ServletOutputStream.class, BoundedByteArrayOutputStream.class);
@@ -103,6 +114,9 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
       if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()
           && ContentTypeUtils.shouldCapture(contentType)) {
 
+        System.out.printf(
+            "created response byte buffer: %s", httpServletResponse.getClass().getName());
+
         String charsetStr = httpServletResponse.getCharacterEncoding();
         Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
         BoundedByteArrayOutputStream buffer = BoundedBuffersFactory.createStream(charset);
@@ -114,23 +128,35 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
 
   static class ServletResponse_getWriter_advice {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static void enter() {
-      // the getWriter method might call getOutputStream
+    public static HttpServletResponse enter(@Advice.This ServletResponse servletResponse) {
+      if (!(servletResponse instanceof HttpServletResponse)) {
+        return null;
+      }
+      HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
+      if (httpServletResponse instanceof HttpServletResponseWrapper) {
+        System.out.println("response is wrapper");
+        return null;
+      }
+      System.out.println("response is NOT wrapper");
+
+      // the getWriter method might call getInputStream
       CallDepthThreadLocalMap.incrementCallDepth(ServletResponse.class);
+      return httpServletResponse;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(
-        @Advice.This ServletResponse servletResponse, @Advice.Return PrintWriter printWriter) {
+        @Advice.Enter HttpServletResponse httpServletResponse,
+        @Advice.Return PrintWriter printWriter) {
+
+      if (httpServletResponse == null) {
+        return;
+      }
 
       int callDepth = CallDepthThreadLocalMap.decrementCallDepth(ServletResponse.class);
       if (callDepth > 0) {
         return;
       }
-      if (!(servletResponse instanceof HttpServletResponse)) {
-        return;
-      }
-      HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
 
       ContextStore<PrintWriter, BoundedCharArrayWriter> contextStore =
           InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class);
@@ -144,6 +170,10 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
       String contentType = httpServletResponse.getContentType();
       if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()
           && ContentTypeUtils.shouldCapture(contentType)) {
+
+        System.out.printf(
+            "created response char buffer: %s", httpServletResponse.getClass().getName());
+
         BoundedCharArrayWriter writer = BoundedBuffersFactory.createWriter();
         contextStore.put(printWriter, writer);
       }

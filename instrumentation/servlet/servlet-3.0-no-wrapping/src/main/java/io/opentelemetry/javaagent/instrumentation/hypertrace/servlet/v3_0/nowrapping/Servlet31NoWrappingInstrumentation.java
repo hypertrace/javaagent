@@ -133,8 +133,8 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void exit(
-        @Advice.Argument(value = 0) ServletRequest request,
-        @Advice.Argument(value = 1) ServletResponse response,
+        @Advice.Argument(0) ServletRequest request,
+        @Advice.Argument(1) ServletResponse response,
         @Advice.Local("currentSpan") Span currentSpan)
         throws IOException {
       int callDepth =
@@ -147,6 +147,8 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
       if (!(request instanceof HttpServletRequest) || !(response instanceof HttpServletResponse)) {
         return;
       }
+      System.out.println(request.getClass().getName());
+      System.out.println(response.getClass().getName());
 
       HttpServletResponse httpResponse = (HttpServletResponse) response;
       HttpServletRequest httpRequest = (HttpServletRequest) request;

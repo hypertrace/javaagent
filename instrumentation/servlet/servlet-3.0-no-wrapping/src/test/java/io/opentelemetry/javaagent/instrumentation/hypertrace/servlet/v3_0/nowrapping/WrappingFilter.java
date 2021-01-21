@@ -21,6 +21,8 @@ import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -49,14 +51,38 @@ public class WrappingFilter implements Filter {
   }
 
   static class ReqWrapper extends HttpServletRequestWrapper {
+
+    private ServletInputStream servletInputStream;
+
     public ReqWrapper(HttpServletRequest request) {
       super(request);
+    }
+
+    @Override
+    public ServletInputStream getInputStream() throws IOException {
+      return super.getInputStream();
+      //      if (servletInputStream == null) {
+      //        servletInputStream = new DelegatingServletInputStream(super.getInputStream());
+      //      }
+      //      return servletInputStream;
     }
   }
 
   static class RespWrapper extends HttpServletResponseWrapper {
+
+    private ServletOutputStream servletOutputStream;
+
     public RespWrapper(HttpServletResponse response) {
       super(response);
+    }
+
+    @Override
+    public ServletOutputStream getOutputStream() throws IOException {
+      return super.getOutputStream();
+      //      if (servletOutputStream == null) {
+      //        servletOutputStream = new DelegatingServletOutputStream(super.getOutputStream());
+      //      }
+      //      return servletOutputStream;
     }
   }
 }
