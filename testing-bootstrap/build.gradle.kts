@@ -12,7 +12,7 @@ val versions: Map<String, String> by extra
 dependencies {
     api("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:${versions["opentelemetry_java_agent"]}")
     api("io.opentelemetry.javaagent:opentelemetry-javaagent-api:${versions["opentelemetry_java_agent"]}")
-    api(project(":javaagent-core"))
+    implementation(project(":javaagent-core"))
     implementation(project(":filter-api"))
 
     implementation("ch.qos.logback:logback-classic:1.2.3")
