@@ -29,7 +29,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
+import org.DelegatingServletInputStream;
 
+// TODO wrap writer/reader
 public class WrappingFilter implements Filter {
 
   @Override
@@ -60,11 +62,10 @@ public class WrappingFilter implements Filter {
 
     @Override
     public ServletInputStream getInputStream() throws IOException {
-      return super.getInputStream();
-      //      if (servletInputStream == null) {
-      //        servletInputStream = new DelegatingServletInputStream(super.getInputStream());
-      //      }
-      //      return servletInputStream;
+      if (servletInputStream == null) {
+        servletInputStream = new DelegatingServletInputStream(super.getInputStream());
+      }
+      return servletInputStream;
     }
   }
 

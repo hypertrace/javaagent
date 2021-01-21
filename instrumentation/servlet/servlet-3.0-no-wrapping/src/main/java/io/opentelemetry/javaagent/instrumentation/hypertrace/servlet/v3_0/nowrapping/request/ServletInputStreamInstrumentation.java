@@ -92,22 +92,27 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
   static class InputStream_ReadNoArgs {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
-      System.out.println("input stream read");
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
-      if (callDepth > 0) {
+      ByteBufferSpanPair bufferSpanPair =
+          InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class).get(thizz);
+      if (bufferSpanPair == null) {
         return null;
       }
-      return InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class)
-          .get(thizz);
+
+      CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
+      return bufferSpanPair;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(
         @Advice.Return int read, @Advice.Enter ByteBufferSpanPair bufferSpanPair) {
-      CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
       if (bufferSpanPair == null) {
         return;
       }
+      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
+      if (callDepth > 0) {
+        return;
+      }
+
       if (read == -1) {
         bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
       } else {
@@ -119,12 +124,14 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
   public static class InputStream_ReadByteArray {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
-      if (callDepth > 0) {
+      ByteBufferSpanPair bufferSpanPair =
+          InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class).get(thizz);
+      if (bufferSpanPair == null) {
         return null;
       }
-      return InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class)
-          .get(thizz);
+
+      CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
+      return bufferSpanPair;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
@@ -132,10 +139,14 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         @Advice.Return int read,
         @Advice.Argument(0) byte b[],
         @Advice.Enter ByteBufferSpanPair bufferSpanPair) {
-      CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
       if (bufferSpanPair == null) {
         return;
       }
+      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
+      if (callDepth > 0) {
+        return;
+      }
+
       if (read == -1) {
         bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
       } else {
@@ -147,12 +158,14 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
   public static class InputStream_ReadByteArrayOffset {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
-      if (callDepth > 0) {
+      ByteBufferSpanPair bufferSpanPair =
+          InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class).get(thizz);
+      if (bufferSpanPair == null) {
         return null;
       }
-      return InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class)
-          .get(thizz);
+
+      CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
+      return bufferSpanPair;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
@@ -162,10 +175,14 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         @Advice.Argument(1) int off,
         @Advice.Argument(2) int len,
         @Advice.Enter ByteBufferSpanPair bufferSpanPair) {
-      CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
       if (bufferSpanPair == null) {
         return;
       }
+      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
+      if (callDepth > 0) {
+        return;
+      }
+
       if (read == -1) {
         bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
       } else {
@@ -177,22 +194,28 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
   public static class InputStream_ReadAllBytes {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
-      if (callDepth > 0) {
+      ByteBufferSpanPair bufferSpanPair =
+          InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class).get(thizz);
+      if (bufferSpanPair == null) {
         return null;
       }
-      return InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class)
-          .get(thizz);
+
+      CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
+      return bufferSpanPair;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(
         @Advice.Return byte[] b, @Advice.Enter ByteBufferSpanPair bufferSpanPair)
         throws IOException {
-      CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
       if (bufferSpanPair == null) {
         return;
       }
+      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
+      if (callDepth > 0) {
+        return;
+      }
+
       bufferSpanPair.buffer.write(b);
       bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
     }
@@ -201,12 +224,14 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
   public static class InputStream_ReadNBytes {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
-      if (callDepth > 0) {
+      ByteBufferSpanPair bufferSpanPair =
+          InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class).get(thizz);
+      if (bufferSpanPair == null) {
         return null;
       }
-      return InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class)
-          .get(thizz);
+
+      CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
+      return bufferSpanPair;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
@@ -216,10 +241,14 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         @Advice.Argument(1) int off,
         @Advice.Argument(2) int len,
         @Advice.Enter ByteBufferSpanPair bufferSpanPair) {
-      CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
       if (bufferSpanPair == null) {
         return;
       }
+      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
+      if (callDepth > 0) {
+        return;
+      }
+
       if (read == -1) {
         bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
       } else {

@@ -75,6 +75,10 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
       if (!(servletResponse instanceof HttpServletResponse)) {
         return null;
       }
+      // ignore wrappers, the filter/servlet instrumentation gets the captured body from context
+      // store
+      // by using response as a key and the filter/servlet instrumentation runs early when wrappers
+      // are not used.
       HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
       if (httpServletResponse instanceof HttpServletResponseWrapper) {
         System.out.println("response is wrapper");

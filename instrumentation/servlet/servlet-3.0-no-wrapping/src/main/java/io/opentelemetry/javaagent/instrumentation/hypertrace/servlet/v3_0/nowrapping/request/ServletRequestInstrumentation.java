@@ -109,6 +109,9 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
         return;
       }
 
+      System.out.printf(
+          "Creating request byte buffer: %s, %s\n",
+          httpServletRequest.getClass().getName(), servletInputStream.getClass().getName());
       ByteBufferSpanPair metadata =
           Utils.createRequestByteBufferMetadata(httpServletRequest, requestSpan);
       contextStore.put(servletInputStream, metadata);
@@ -149,6 +152,9 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
       }
       HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
 
+      System.out.printf(
+          "Creating request char buffer: %s, %s\n",
+          httpServletRequest.getClass().getName(), reader.getClass().getName());
       ContextStore<BufferedReader, CharBufferSpanPair> contextStore =
           InstrumentationContext.get(BufferedReader.class, CharBufferSpanPair.class);
       if (contextStore.get(reader) != null) {
