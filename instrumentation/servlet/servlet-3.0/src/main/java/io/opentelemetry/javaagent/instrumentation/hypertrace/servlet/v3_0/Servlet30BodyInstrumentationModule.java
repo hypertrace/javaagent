@@ -59,6 +59,11 @@ public class Servlet30BodyInstrumentationModule extends InstrumentationModule {
   }
 
   @Override
+  protected boolean defaultEnabled() {
+    return false;
+  }
+
+  @Override
   public int getOrder() {
     /**
      * Order 1 assures that this instrumentation runs after OTEL servlet instrumentation so we can

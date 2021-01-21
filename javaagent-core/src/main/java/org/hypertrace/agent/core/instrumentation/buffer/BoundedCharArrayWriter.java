@@ -95,6 +95,9 @@ public class BoundedCharArrayWriter extends CharArrayWriter {
 
   @Override
   public void write(String str) throws IOException {
+    if (str == null) {
+      str = "null";
+    }
     this.write(str, 0, str.length());
   }
 }

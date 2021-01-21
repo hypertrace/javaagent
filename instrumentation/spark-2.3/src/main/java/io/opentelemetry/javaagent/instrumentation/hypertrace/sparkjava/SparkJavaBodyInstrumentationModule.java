@@ -23,12 +23,15 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
 import com.google.auto.service.AutoService;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.Servlet31Advice;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.Servlet31BodyInstrumentationModule;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.Servlet31InstrumentationName;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.Servlet31NoWrappingInstrumentation;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.Servlet31NoWrappingInstrumentationModule;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.request.ServletInputStreamInstrumentation;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.request.ServletRequestInstrumentation;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.response.ServletOutputStreamInstrumentation;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.response.ServletResponseInstrumentation;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import net.bytebuddy.description.method.MethodDescription;
@@ -41,11 +44,7 @@ import net.bytebuddy.matcher.ElementMatcher;
  * might be fine as on exception there is usually not body send to users.
  */
 @AutoService(InstrumentationModule.class)
-public class SparkJavaBodyInstrumentationModule extends Servlet31BodyInstrumentationModule {
-
-  public SparkJavaBodyInstrumentationModule() {
-    super(Servlet31InstrumentationName.PRIMARY, Servlet31InstrumentationName.OTHER);
-  }
+public class SparkJavaBodyInstrumentationModule extends Servlet31NoWrappingInstrumentationModule {
 
   @Override
   public int getOrder() {
@@ -54,7 +53,13 @@ public class SparkJavaBodyInstrumentationModule extends Servlet31BodyInstrumenta
 
   @Override
   public List<TypeInstrumentation> typeInstrumentations() {
-    return Collections.singletonList(new SparkJavaBodyInstrumentation());
+    return Arrays.asList(
+        new SparkJavaBodyInstrumentation(),
+        new Servlet31NoWrappingInstrumentation(),
+        new ServletRequestInstrumentation(),
+        new ServletInputStreamInstrumentation(),
+        new ServletResponseInstrumentation(),
+        new ServletOutputStreamInstrumentation());
   }
 
   private static class SparkJavaBodyInstrumentation implements TypeInstrumentation {
@@ -70,7 +75,7 @@ public class SparkJavaBodyInstrumentationModule extends Servlet31BodyInstrumenta
               .and(takesArgument(0, named("javax.servlet.ServletRequest")))
               .and(takesArgument(1, named("javax.servlet.ServletResponse")))
               .and(isPublic()),
-          Servlet31Advice.class.getName());
+          Servlet31NoWrappingInstrumentation.ServletAdvice.class.getName());
     }
   }
 }

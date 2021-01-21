@@ -55,3 +55,7 @@ include("instrumentation:spring:spring-webflux-5.0")
 findProject(":instrumentation:spring:spring-webflux-5.0")?.name = "spring-webflux-5.0"
 include("instrumentation:micronaut-1.0")
 findProject(":instrumentation:micronaut-1.0")?.name = "micronaut-1.0"
+include("instrumentation:servlet:servlet-3.0-no-wrapping")
+findProject(":instrumentation:servlet:servlet-3.0-no-wrapping")?.name = "servlet-3.0-no-wrapping"
+include("instrumentation:servlet:servlet-rw")
+findProject(":instrumentation:servlet:servlet-rw")?.name = "servlet-rw"

@@ -17,13 +17,16 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.java.inputstream;
 
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.extendsClass;
+import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.safeHasSuperType;
 import static net.bytebuddy.matcher.ElementMatchers.is;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.not;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import com.google.auto.service.AutoService;
+import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.io.IOException;
@@ -68,7 +71,8 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
 
     @Override
     public ElementMatcher<? super TypeDescription> typeMatcher() {
-      return extendsClass(named(InputStream.class.getName()));
+      return extendsClass(named(InputStream.class.getName()))
+          .and(not(safeHasSuperType(named("javax.servlet.ServletInputStream"))));
     }
 
     @Override
@@ -116,14 +120,20 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
       return InputStreamUtils.check(thizz);
     }
 
-    @Advice.OnMethodExit(suppress = Throwable.class)
+    @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(
         @Advice.This InputStream thizz,
         @Advice.Return int read,
         @Advice.Enter SpanAndBuffer spanAndBuffer) {
-      if (spanAndBuffer != null) {
-        InputStreamUtils.read(thizz, spanAndBuffer, read);
+      if (spanAndBuffer == null) {
+        return;
       }
+      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(InputStream.class);
+      if (callDepth > 0) {
+        return;
+      }
+
+      InputStreamUtils.read(thizz, spanAndBuffer, read);
     }
   }
 
@@ -133,15 +143,21 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
       return InputStreamUtils.check(thizz);
     }
 
-    @Advice.OnMethodExit(suppress = Throwable.class)
+    @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(
         @Advice.This InputStream thizz,
         @Advice.Return int read,
         @Advice.Argument(0) byte b[],
         @Advice.Enter SpanAndBuffer spanAndBuffer) {
-      if (spanAndBuffer != null) {
-        InputStreamUtils.read(thizz, spanAndBuffer, read, b);
+      if (spanAndBuffer == null) {
+        return;
       }
+      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(InputStream.class);
+      if (callDepth > 0) {
+        return;
+      }
+
+      InputStreamUtils.read(thizz, spanAndBuffer, read, b);
     }
   }
 
@@ -151,7 +167,7 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
       return InputStreamUtils.check(thizz);
     }
 
-    @Advice.OnMethodExit(suppress = Throwable.class)
+    @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(
         @Advice.This InputStream thizz,
         @Advice.Return int read,
@@ -159,9 +175,15 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
         @Advice.Argument(1) int off,
         @Advice.Argument(2) int len,
         @Advice.Enter SpanAndBuffer spanAndBuffer) {
-      if (spanAndBuffer != null) {
-        InputStreamUtils.read(thizz, spanAndBuffer, read, b, off, len);
+      if (spanAndBuffer == null) {
+        return;
       }
+      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(InputStream.class);
+      if (callDepth > 0) {
+        return;
+      }
+
+      InputStreamUtils.read(thizz, spanAndBuffer, read, b, off, len);
     }
   }
 
@@ -171,15 +193,21 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
       return InputStreamUtils.check(thizz);
     }
 
-    @Advice.OnMethodExit(suppress = Throwable.class)
+    @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(
         @Advice.This InputStream thizz,
         @Advice.Return byte[] b,
         @Advice.Enter SpanAndBuffer spanAndBuffer)
         throws IOException {
-      if (spanAndBuffer != null) {
-        InputStreamUtils.readAll(thizz, spanAndBuffer, b);
+      if (spanAndBuffer == null) {
+        return;
       }
+      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(InputStream.class);
+      if (callDepth > 0) {
+        return;
+      }
+
+      InputStreamUtils.readAll(thizz, spanAndBuffer, b);
     }
   }
 
@@ -189,7 +217,7 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
       return InputStreamUtils.check(thizz);
     }
 
-    @Advice.OnMethodExit(suppress = Throwable.class)
+    @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(
         @Advice.This InputStream thizz,
         @Advice.Return int read,
@@ -197,6 +225,13 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
         @Advice.Argument(1) int off,
         @Advice.Argument(2) int len,
         @Advice.Enter SpanAndBuffer spanAndBuffer) {
+      if (spanAndBuffer == null) {
+        return;
+      }
+      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(InputStream.class);
+      if (callDepth > 0) {
+        return;
+      }
       InputStreamUtils.readNBytes(thizz, spanAndBuffer, read, b, off, len);
     }
   }

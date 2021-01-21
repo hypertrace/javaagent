@@ -76,10 +76,7 @@ public class InputStreamUtils {
       return null;
     }
 
-    int callDepth = CallDepthThreadLocalMap.incrementCallDepth(InputStream.class);
-    if (callDepth > 0) {
-      return null;
-    }
+    CallDepthThreadLocalMap.incrementCallDepth(InputStream.class);
     return spanAndBuffer;
   }
 
@@ -94,7 +91,6 @@ public class InputStreamUtils {
           spanAndBuffer.charset);
       GlobalObjectRegistry.inputStreamToSpanAndBufferMap.remove(inputStream);
     }
-    CallDepthThreadLocalMap.reset(InputStream.class);
   }
 
   public static void read(
@@ -109,7 +105,6 @@ public class InputStreamUtils {
           spanAndBuffer.charset);
       GlobalObjectRegistry.inputStreamToSpanAndBufferMap.remove(inputStream);
     }
-    CallDepthThreadLocalMap.reset(InputStream.class);
   }
 
   public static void read(
@@ -124,14 +119,12 @@ public class InputStreamUtils {
           spanAndBuffer.charset);
       GlobalObjectRegistry.inputStreamToSpanAndBufferMap.remove(inputStream);
     }
-    CallDepthThreadLocalMap.reset(InputStream.class);
   }
 
   public static void readAll(InputStream inputStream, SpanAndBuffer spanAndBuffer, byte[] b)
       throws IOException {
     spanAndBuffer.byteArrayBuffer.write(b);
     GlobalObjectRegistry.inputStreamToSpanAndBufferMap.remove(inputStream);
-    CallDepthThreadLocalMap.reset(InputStream.class);
   }
 
   public static void readNBytes(
@@ -146,7 +139,6 @@ public class InputStreamUtils {
     } else {
       spanAndBuffer.byteArrayBuffer.write(b, off, read);
     }
-    CallDepthThreadLocalMap.reset(InputStream.class);
   }
 
   public static void available(InputStream inputStream, int available) {
