@@ -85,16 +85,18 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
   static class OutputStream_write {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void enter(@Advice.This ServletOutputStream thizz, @Advice.Argument(0) int b) {
+      BoundedByteArrayOutputStream buffer =
+          InstrumentationContext.get(ServletOutputStream.class, BoundedByteArrayOutputStream.class)
+              .get(thizz);
+      if (buffer == null) {
+        return;
+      }
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletOutputStream.class);
       if (callDepth > 0) {
         return;
       }
-      BoundedByteArrayOutputStream buffer =
-          InstrumentationContext.get(ServletOutputStream.class, BoundedByteArrayOutputStream.class)
-              .get(thizz);
-      if (buffer != null) {
-        buffer.write(b);
-      }
+
+      buffer.write(b);
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
@@ -107,16 +109,19 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void enter(@Advice.This ServletOutputStream thizz, @Advice.Argument(0) byte[] b)
         throws IOException {
+
+      BoundedByteArrayOutputStream buffer =
+          InstrumentationContext.get(ServletOutputStream.class, BoundedByteArrayOutputStream.class)
+              .get(thizz);
+      if (buffer == null) {
+        return;
+      }
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletOutputStream.class);
       if (callDepth > 0) {
         return;
       }
-      BoundedByteArrayOutputStream buffer =
-          InstrumentationContext.get(ServletOutputStream.class, BoundedByteArrayOutputStream.class)
-              .get(thizz);
-      if (buffer != null) {
-        buffer.write(b);
-      }
+
+      buffer.write(b);
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
@@ -132,16 +137,19 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
         @Advice.Argument(0) byte b[],
         @Advice.Argument(1) int off,
         @Advice.Argument(2) int len) {
+
+      BoundedByteArrayOutputStream buffer =
+          InstrumentationContext.get(ServletOutputStream.class, BoundedByteArrayOutputStream.class)
+              .get(thizz);
+      if (buffer == null) {
+        return;
+      }
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletOutputStream.class);
       if (callDepth > 0) {
         return;
       }
-      BoundedByteArrayOutputStream buffer =
-          InstrumentationContext.get(ServletOutputStream.class, BoundedByteArrayOutputStream.class)
-              .get(thizz);
-      if (buffer != null) {
-        buffer.write(b, off, len);
-      }
+
+      buffer.write(b, off, len);
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
@@ -154,17 +162,20 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void enter(@Advice.This ServletOutputStream thizz, @Advice.Argument(0) String s)
         throws IOException {
+
+      BoundedByteArrayOutputStream buffer =
+          InstrumentationContext.get(ServletOutputStream.class, BoundedByteArrayOutputStream.class)
+              .get(thizz);
+      if (buffer == null) {
+        return;
+      }
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletOutputStream.class);
       if (callDepth > 0) {
         return;
       }
-      BoundedByteArrayOutputStream buffer =
-          InstrumentationContext.get(ServletOutputStream.class, BoundedByteArrayOutputStream.class)
-              .get(thizz);
-      if (buffer != null) {
-        String bodyPart = s == null ? "null" : s;
-        buffer.write(bodyPart.getBytes());
-      }
+
+      String bodyPart = s == null ? "null" : s;
+      buffer.write(bodyPart.getBytes());
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)

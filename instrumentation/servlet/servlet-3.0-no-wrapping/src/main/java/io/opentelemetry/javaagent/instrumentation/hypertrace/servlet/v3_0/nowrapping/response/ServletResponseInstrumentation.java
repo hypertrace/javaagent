@@ -119,7 +119,8 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
           && ContentTypeUtils.shouldCapture(contentType)) {
 
         System.out.printf(
-            "created response byte buffer: %s", httpServletResponse.getClass().getName());
+            "created response byte buffer: %s, %s\n",
+            httpServletResponse.getClass().getName(), servletOutputStream.getClass().getName());
 
         String charsetStr = httpServletResponse.getCharacterEncoding();
         Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);

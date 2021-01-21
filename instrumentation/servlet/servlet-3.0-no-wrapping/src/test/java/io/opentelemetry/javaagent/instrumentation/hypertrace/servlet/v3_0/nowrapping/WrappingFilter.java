@@ -31,8 +31,8 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 import org.DelegatingServletInputStream;
+import org.DelegatingServletOutputStream;
 
-// TODO wrap writer/reader
 public class WrappingFilter implements Filter {
 
   @Override
@@ -89,11 +89,10 @@ public class WrappingFilter implements Filter {
 
     @Override
     public ServletOutputStream getOutputStream() throws IOException {
-      return super.getOutputStream();
-      //      if (servletOutputStream == null) {
-      //        servletOutputStream = new DelegatingServletOutputStream(super.getOutputStream());
-      //      }
-      //      return servletOutputStream;
+      if (servletOutputStream == null) {
+        servletOutputStream = new DelegatingServletOutputStream(super.getOutputStream());
+      }
+      return servletOutputStream;
     }
   }
 }
