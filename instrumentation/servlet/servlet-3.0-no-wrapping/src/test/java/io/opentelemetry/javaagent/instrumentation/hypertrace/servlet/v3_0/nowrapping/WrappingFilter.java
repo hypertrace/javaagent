@@ -31,6 +31,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
+import org.DelegatingBufferedReader;
+import org.DelegatingPrintWriter;
 import org.DelegatingServletInputStream;
 import org.DelegatingServletOutputStream;
 
@@ -74,7 +76,7 @@ public class WrappingFilter implements Filter {
     @Override
     public BufferedReader getReader() throws IOException {
       if (bufferedReader == null) {
-        bufferedReader = new BufferedReader(super.getReader());
+        bufferedReader = new DelegatingBufferedReader(super.getReader());
       }
       return bufferedReader;
     }
@@ -100,7 +102,7 @@ public class WrappingFilter implements Filter {
     @Override
     public PrintWriter getWriter() throws IOException {
       if (printWriter == null) {
-        printWriter = new PrintWriter(super.getWriter());
+        printWriter = new DelegatingPrintWriter(super.getWriter());
       }
       return printWriter;
     }
