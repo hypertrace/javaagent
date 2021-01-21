@@ -94,7 +94,7 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
       }
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletOutputStream.class);
       if (callDepth > 0) {
-        return null;
+        return buffer;
       }
 
       buffer.write(b);
@@ -122,7 +122,7 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
       }
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletOutputStream.class);
       if (callDepth > 0) {
-        return null;
+        return buffer;
       }
 
       buffer.write(b);
@@ -153,7 +153,7 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
       }
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletOutputStream.class);
       if (callDepth > 0) {
-        return null;
+        return buffer;
       }
 
       buffer.write(b, off, len);
@@ -181,7 +181,7 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
       }
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletOutputStream.class);
       if (callDepth > 0) {
-        return null;
+        return buffer;
       }
 
       String bodyPart = s == null ? "null" : s;
