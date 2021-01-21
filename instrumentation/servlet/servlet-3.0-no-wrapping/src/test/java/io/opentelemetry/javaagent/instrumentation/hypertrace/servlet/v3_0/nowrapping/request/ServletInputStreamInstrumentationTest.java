@@ -21,7 +21,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import javax.servlet.ServletInputStream;
-import org.ServletInputStreamContextAccess;
+import org.ServletStreamContextAccess;
+import org.TestServletInputStream;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
@@ -39,12 +40,12 @@ public class ServletInputStreamInstrumentationTest extends AbstractInstrumenterT
     Span span = TEST_TRACER.spanBuilder(TEST_SPAN_NAME).startSpan();
 
     ServletInputStream servletInputStream =
-        new TestInputStream(new ByteArrayInputStream(BODY.getBytes()));
+        new TestServletInputStream(new ByteArrayInputStream(BODY.getBytes()));
 
     BoundedByteArrayOutputStream buffer =
         BoundedBuffersFactory.createStream(StandardCharsets.UTF_8);
     ByteBufferSpanPair metadata = new ByteBufferSpanPair(span, buffer);
-    ServletInputStreamContextAccess.addToContext(servletInputStream, metadata);
+    ServletStreamContextAccess.addToInputStreamContext(servletInputStream, metadata);
 
     while (servletInputStream.read() != -1) {}
     Assertions.assertEquals(BODY, buffer.toStringWithSuppliedCharset());
@@ -55,13 +56,13 @@ public class ServletInputStreamInstrumentationTest extends AbstractInstrumenterT
     Span span = TEST_TRACER.spanBuilder(TEST_SPAN_NAME).startSpan();
 
     ServletInputStream servletInputStream =
-        new TestInputStream(new ByteArrayInputStream(BODY.getBytes()));
+        new TestServletInputStream(new ByteArrayInputStream(BODY.getBytes()));
     servletInputStream.read();
 
     BoundedByteArrayOutputStream buffer =
         BoundedBuffersFactory.createStream(StandardCharsets.UTF_8);
     ByteBufferSpanPair metadata = new ByteBufferSpanPair(span, buffer);
-    ServletInputStreamContextAccess.addToContext(servletInputStream, metadata);
+    ServletStreamContextAccess.addToInputStreamContext(servletInputStream, metadata);
 
     while (servletInputStream.read() != -1) {}
     Assertions.assertEquals(BODY.substring(1), buffer.toStringWithSuppliedCharset());
@@ -72,13 +73,13 @@ public class ServletInputStreamInstrumentationTest extends AbstractInstrumenterT
     Span span = TEST_TRACER.spanBuilder(TEST_SPAN_NAME).startSpan();
 
     ServletInputStream servletInputStream =
-        new TestInputStream(new ByteArrayInputStream(BODY.getBytes()));
+        new TestServletInputStream(new ByteArrayInputStream(BODY.getBytes()));
     servletInputStream.read(new byte[2]);
 
     BoundedByteArrayOutputStream buffer =
         BoundedBuffersFactory.createStream(StandardCharsets.UTF_8);
     ByteBufferSpanPair metadata = new ByteBufferSpanPair(span, buffer);
-    ServletInputStreamContextAccess.addToContext(servletInputStream, metadata);
+    ServletStreamContextAccess.addToInputStreamContext(servletInputStream, metadata);
 
     servletInputStream.read(new byte[BODY.length()]);
     Assertions.assertEquals(BODY.substring(2), buffer.toStringWithSuppliedCharset());

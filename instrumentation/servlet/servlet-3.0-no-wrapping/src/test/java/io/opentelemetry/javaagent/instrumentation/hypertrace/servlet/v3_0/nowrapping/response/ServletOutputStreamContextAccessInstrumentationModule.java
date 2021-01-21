@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.request;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.response;
 
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
@@ -28,34 +28,33 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.servlet.ServletInputStream;
+import javax.servlet.ServletOutputStream;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import net.bytebuddy.matcher.ElementMatcher.Junction;
-import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 
-// SPI explicitly added in META-INF/services/...
-public class ServletInputStreamContextAccessInstrumentationModule extends InstrumentationModule {
+public class ServletOutputStreamContextAccessInstrumentationModule extends InstrumentationModule {
 
-  public ServletInputStreamContextAccessInstrumentationModule() {
-    super("test-servlet-input-stream");
+  public ServletOutputStreamContextAccessInstrumentationModule() {
+    super("test-servlet-output-stream");
   }
 
   @Override
   protected Map<String, String> contextStore() {
     Map<String, String> context = new HashMap<>();
-    context.put("javax.servlet.ServletInputStream", ByteBufferSpanPair.class.getName());
+    context.put("javax.servlet.ServletOutputStream", BoundedByteArrayOutputStream.class.getName());
     return context;
   }
 
   @Override
   public List<TypeInstrumentation> typeInstrumentations() {
-    return Collections.singletonList(new InputStreamTriggerInstrumentation());
+    return Collections.singletonList(new OutputStreamTriggerInstrumentation());
   }
 
-  class InputStreamTriggerInstrumentation implements TypeInstrumentation {
+  class OutputStreamTriggerInstrumentation implements TypeInstrumentation {
 
     @Override
     public ElementMatcher<? super TypeDescription> typeMatcher() {
@@ -66,8 +65,8 @@ public class ServletInputStreamContextAccessInstrumentationModule extends Instru
     public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
       Map<Junction<MethodDescription>, String> matchers = new HashMap<>();
       matchers.put(
-          named("addToInputStreamContext").and(takesArguments(2)).and(isPublic()),
-          ServletInputStreamContextAccessInstrumentationModule.class.getName() + "$TestAdvice");
+          named("addToOutputStreamContext").and(takesArguments(2)).and(isPublic()),
+          ServletOutputStreamContextAccessInstrumentationModule.class.getName() + "$TestAdvice");
       return matchers;
     }
   }
@@ -75,11 +74,12 @@ public class ServletInputStreamContextAccessInstrumentationModule extends Instru
   static class TestAdvice {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void enter(
-        @Advice.Argument(0) ServletInputStream servletInputStream,
-        @Advice.Argument(1) ByteBufferSpanPair metadata) {
-      ContextStore<ServletInputStream, ByteBufferSpanPair> contextStore =
-          InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class);
-      contextStore.put(servletInputStream, metadata);
+        @Advice.Argument(0) ServletOutputStream servletOutputStream,
+        @Advice.Argument(1) BoundedByteArrayOutputStream buffer) {
+      System.out.println("adding to context");
+      ContextStore<ServletOutputStream, BoundedByteArrayOutputStream> contextStore =
+          InstrumentationContext.get(ServletOutputStream.class, BoundedByteArrayOutputStream.class);
+      contextStore.put(servletOutputStream, buffer);
     }
   }
 }

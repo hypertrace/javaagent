@@ -14,22 +14,18 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.request;
+package org;
 
-import java.io.IOException;
-import java.io.InputStream;
 import javax.servlet.ServletInputStream;
+import javax.servlet.ServletOutputStream;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
+import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
 
-public class TestInputStream extends ServletInputStream {
+public class ServletStreamContextAccess {
 
-  private final InputStream wrapped;
+  public static void addToInputStreamContext(
+      ServletInputStream servletInputStream, ByteBufferSpanPair buffer) {}
 
-  public TestInputStream(InputStream wrapped) {
-    this.wrapped = wrapped;
-  }
-
-  @Override
-  public int read() throws IOException {
-    return wrapped.read();
-  }
+  public static void addToOutputStreamContext(
+      ServletOutputStream servletOutputStream, BoundedByteArrayOutputStream buffer) {}
 }

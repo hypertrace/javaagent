@@ -16,11 +16,20 @@
 
 package org;
 
+import java.io.IOException;
+import java.io.InputStream;
 import javax.servlet.ServletInputStream;
-import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
 
-public class ServletInputStreamContextAccess {
+public class TestServletInputStream extends ServletInputStream {
 
-  public static void addToContext(
-      ServletInputStream servletInputStream, ByteBufferSpanPair metadata) {}
+  private final InputStream wrapped;
+
+  public TestServletInputStream(InputStream wrapped) {
+    this.wrapped = wrapped;
+  }
+
+  @Override
+  public int read() throws IOException {
+    return wrapped.read();
+  }
 }
