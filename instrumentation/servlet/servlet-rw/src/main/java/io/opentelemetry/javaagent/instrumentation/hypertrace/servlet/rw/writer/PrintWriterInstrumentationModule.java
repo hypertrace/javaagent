@@ -24,18 +24,11 @@ import java.util.List;
 import java.util.Map;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
 
-/**
- * Instrumentation module for {@link java.io.PrintWriter}. It has be be defined in a separate module
- * because {@link
- * io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.Servlet31NoWrappingInstrumentationModule}
- * runs only on classloaders that have servlet classes and the writer is in the bootstrap
- * classloader.
- */
 @AutoService(InstrumentationModule.class)
 public class PrintWriterInstrumentationModule extends InstrumentationModule {
 
   public PrintWriterInstrumentationModule() {
-    super("printwriter", "servlet", "servlet-3");
+    super("printwriter", "servlet", "servlet-3", "ht", "servlet-no-wrapping");
   }
 
   @Override

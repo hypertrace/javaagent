@@ -24,19 +24,16 @@ import java.util.List;
 import java.util.Map;
 import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
 
-/// **
-// * Instrumentation module for {@link java.io.BufferedReader}. It has be be defined in a separate
-// * module because {@link
-// *
-// io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1.nowrapping.Servlet31NoWrappingInstrumentationModule}
-// * runs only on classloaders that have servlet classes and the reader is in the bootstrap
-// * classloader.
-// */
+/**
+ * Instrumentation module for {@link java.io.BufferedReader}. It must be be defined in a separate
+ * module because servlet non-wrapping instrumentation runs only on classloaders that have servlet
+ * classes and the reader is in the bootstrap classloader.
+ */
 @AutoService(InstrumentationModule.class)
 public class BufferedReaderInstrumentationModule extends InstrumentationModule {
 
   public BufferedReaderInstrumentationModule() {
-    super("bufferedreader", "servlet", "servlet-3");
+    super("bufferedreader", "servlet", "servlet-3", "ht", "servlet-no-wrapping");
   }
 
   @Override
