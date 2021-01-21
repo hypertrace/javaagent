@@ -120,7 +120,7 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
       return InputStreamUtils.check(thizz);
     }
 
-    @Advice.OnMethodExit(suppress = Throwable.class)
+    @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(
         @Advice.This InputStream thizz,
         @Advice.Return int read,

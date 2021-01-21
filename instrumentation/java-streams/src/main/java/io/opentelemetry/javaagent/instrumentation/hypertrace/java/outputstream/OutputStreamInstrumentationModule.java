@@ -24,6 +24,7 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import com.google.auto.service.AutoService;
+import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.io.IOException;
@@ -37,6 +38,7 @@ import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.core.instrumentation.GlobalObjectRegistry;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 
 /**
  * {@link OutputStream} instrumentation. The type matcher applies to all implementations. However
@@ -96,51 +98,79 @@ public class OutputStreamInstrumentationModule extends InstrumentationModule {
 
   static class OutputStream_WriteIntAdvice {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static boolean enter(@Advice.This OutputStream thizz) {
-      return OutputStreamUtils.check(thizz);
+    public static BoundedByteArrayOutputStream enter(
+        @Advice.This OutputStream thizz, @Advice.Argument(0) int b) {
+      BoundedByteArrayOutputStream buffer = GlobalObjectRegistry.outputStreamToBufferMap.get(thizz);
+      if (buffer == null) {
+        return null;
+      }
+      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(OutputStream.class);
+      if (callDepth > 0) {
+        return buffer;
+      }
+
+      buffer.write(b);
+      return buffer;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
-    public static void exit(
-        @Advice.This OutputStream thizz,
-        @Advice.Argument(0) int b,
-        @Advice.Enter boolean retEnterAdvice)
-        throws IOException {
-      OutputStreamUtils.write(thizz, retEnterAdvice, b);
+    public static void exit(@Advice.Enter BoundedByteArrayOutputStream buffer) {
+      if (buffer != null) {
+        CallDepthThreadLocalMap.decrementCallDepth(OutputStream.class);
+      }
     }
   }
 
   static class OutputStream_WriteByteArrAdvice {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static boolean enter(@Advice.This OutputStream thizz) {
-      return OutputStreamUtils.check(thizz);
+    public static BoundedByteArrayOutputStream enter(
+        @Advice.This OutputStream thizz, @Advice.Argument(0) byte b[]) throws IOException {
+      BoundedByteArrayOutputStream buffer = GlobalObjectRegistry.outputStreamToBufferMap.get(thizz);
+      if (buffer == null) {
+        return null;
+      }
+      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(OutputStream.class);
+      if (callDepth > 0) {
+        return buffer;
+      }
+
+      buffer.write(b);
+      return buffer;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
-    public static void exit(
-        @Advice.This OutputStream thizz,
-        @Advice.Argument(0) byte b[],
-        @Advice.Enter boolean retEnterAdvice)
-        throws IOException {
-      OutputStreamUtils.write(thizz, retEnterAdvice, b);
+    public static void exit(@Advice.Enter BoundedByteArrayOutputStream buffer) {
+      if (buffer != null) {
+        CallDepthThreadLocalMap.decrementCallDepth(OutputStream.class);
+      }
     }
   }
 
   static class OutputStream_WriteByteArrOffsetAdvice {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static boolean enter(@Advice.This OutputStream thizz) {
-      return OutputStreamUtils.check(thizz);
-    }
-
-    @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
-    public static void exit(
+    public static BoundedByteArrayOutputStream enter(
         @Advice.This OutputStream thizz,
         @Advice.Argument(0) byte b[],
         @Advice.Argument(1) int off,
-        @Advice.Argument(2) int len,
-        @Advice.Enter boolean retEnterAdvice)
-        throws IOException {
-      OutputStreamUtils.write(thizz, retEnterAdvice, b, off, len);
+        @Advice.Argument(2) int len) {
+      BoundedByteArrayOutputStream buffer = GlobalObjectRegistry.outputStreamToBufferMap.get(thizz);
+      if (buffer == null) {
+        return null;
+      }
+      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(OutputStream.class);
+      if (callDepth > 0) {
+        return buffer;
+      }
+
+      buffer.write(b, off, len);
+      return buffer;
+    }
+
+    @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
+    public static void exit(@Advice.Enter BoundedByteArrayOutputStream buffer) {
+      if (buffer != null) {
+        CallDepthThreadLocalMap.decrementCallDepth(OutputStream.class);
+      }
     }
   }
 }
