@@ -44,8 +44,8 @@ public class ServletInputStreamInstrumentationTest extends AbstractInstrumenterT
 
     BoundedByteArrayOutputStream buffer =
         BoundedBuffersFactory.createStream(StandardCharsets.UTF_8);
-    ByteBufferSpanPair metadata = new ByteBufferSpanPair(span, buffer);
-    ServletStreamContextAccess.addToInputStreamContext(servletInputStream, metadata);
+    ByteBufferSpanPair bufferSpanPair = new ByteBufferSpanPair(span, buffer);
+    ServletStreamContextAccess.addToInputStreamContext(servletInputStream, bufferSpanPair);
 
     while (servletInputStream.read() != -1) {}
     Assertions.assertEquals(BODY, buffer.toStringWithSuppliedCharset());
@@ -61,8 +61,8 @@ public class ServletInputStreamInstrumentationTest extends AbstractInstrumenterT
 
     BoundedByteArrayOutputStream buffer =
         BoundedBuffersFactory.createStream(StandardCharsets.UTF_8);
-    ByteBufferSpanPair metadata = new ByteBufferSpanPair(span, buffer);
-    ServletStreamContextAccess.addToInputStreamContext(servletInputStream, metadata);
+    ByteBufferSpanPair bufferSpanPair = new ByteBufferSpanPair(span, buffer);
+    ServletStreamContextAccess.addToInputStreamContext(servletInputStream, bufferSpanPair);
 
     while (servletInputStream.read() != -1) {}
     Assertions.assertEquals(BODY.substring(1), buffer.toStringWithSuppliedCharset());
@@ -78,8 +78,8 @@ public class ServletInputStreamInstrumentationTest extends AbstractInstrumenterT
 
     BoundedByteArrayOutputStream buffer =
         BoundedBuffersFactory.createStream(StandardCharsets.UTF_8);
-    ByteBufferSpanPair metadata = new ByteBufferSpanPair(span, buffer);
-    ServletStreamContextAccess.addToInputStreamContext(servletInputStream, metadata);
+    ByteBufferSpanPair bufferSpanPair = new ByteBufferSpanPair(span, buffer);
+    ServletStreamContextAccess.addToInputStreamContext(servletInputStream, bufferSpanPair);
 
     servletInputStream.read(new byte[BODY.length()]);
     Assertions.assertEquals(BODY.substring(2), buffer.toStringWithSuppliedCharset());

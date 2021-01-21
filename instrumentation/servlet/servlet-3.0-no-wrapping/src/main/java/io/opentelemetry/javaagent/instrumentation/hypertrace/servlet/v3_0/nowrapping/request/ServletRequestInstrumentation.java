@@ -109,9 +109,9 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
         return;
       }
 
-      ByteBufferSpanPair metadata =
-          Utils.createRequestByteBufferMetadata(httpServletRequest, requestSpan);
-      contextStore.put(servletInputStream, metadata);
+      ByteBufferSpanPair bufferSpanPair =
+          Utils.createRequestByteBufferSpanPair(httpServletRequest, requestSpan);
+      contextStore.put(servletInputStream, bufferSpanPair);
     }
   }
 
@@ -156,9 +156,9 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
         return;
       }
 
-      CharBufferSpanPair metadata =
-          Utils.createRequestCharBufferMetadata(httpServletRequest, requestSpan);
-      contextStore.put(reader, metadata);
+      CharBufferSpanPair bufferSpanPair =
+          Utils.createRequestCharBufferSpanPair(httpServletRequest, requestSpan);
+      contextStore.put(reader, bufferSpanPair);
     }
   }
 }

@@ -29,7 +29,7 @@ public class Utils {
 
   private Utils() {}
 
-  public static ByteBufferSpanPair createRequestByteBufferMetadata(
+  public static ByteBufferSpanPair createRequestByteBufferSpanPair(
       HttpServletRequest httpServletRequest, Span span) {
     String charsetStr = httpServletRequest.getCharacterEncoding();
     Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
@@ -40,7 +40,7 @@ public class Utils {
     return new ByteBufferSpanPair(span, BoundedBuffersFactory.createStream(contentLength, charset));
   }
 
-  public static CharBufferSpanPair createRequestCharBufferMetadata(
+  public static CharBufferSpanPair createRequestCharBufferSpanPair(
       HttpServletRequest httpServletRequest, Span span) {
     int contentLength = httpServletRequest.getContentLength();
     if (contentLength < 0) {
