@@ -34,11 +34,12 @@ dependencies {
 
     compileOnly("javax.servlet:javax.servlet-api:3.1.0")
 
+    testImplementation(project(":instrumentation:servlet:servlet-rw"))
+    testImplementation("org.mockito:mockito-core:3.7.0")
+
     testImplementation(project(":testing-common")) {
         exclude(group ="org.eclipse.jetty", module= "jetty-server")
     }
-    testImplementation(project(":instrumentation:servlet:servlet-rw"))
-    testImplementation("org.eclipse.jetty:jetty-server:9.4.32.v20200930")
-    testImplementation("org.eclipse.jetty:jetty-servlet:9.4.32.v20200930")
-    testImplementation("org.mockito:mockito-core:3.7.0")
+    testImplementation("org.eclipse.jetty:jetty-server:8.1.22.v20160922")
+    testImplementation("org.eclipse.jetty:jetty-servlet:8.1.22.v20160922")
 }

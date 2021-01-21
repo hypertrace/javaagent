@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package org;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.request;
 
 import java.io.IOException;
 import java.io.InputStream;
-import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 
 public class TestInputStream extends ServletInputStream {
@@ -28,19 +27,6 @@ public class TestInputStream extends ServletInputStream {
   public TestInputStream(InputStream wrapped) {
     this.wrapped = wrapped;
   }
-
-  @Override
-  public boolean isFinished() {
-    return false;
-  }
-
-  @Override
-  public boolean isReady() {
-    return true;
-  }
-
-  @Override
-  public void setReadListener(ReadListener readListener) {}
 
   @Override
   public int read() throws IOException {

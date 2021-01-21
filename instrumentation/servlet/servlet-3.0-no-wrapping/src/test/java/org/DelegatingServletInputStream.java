@@ -17,7 +17,6 @@
 package org;
 
 import java.io.IOException;
-import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 
 public class DelegatingServletInputStream extends ServletInputStream {
@@ -26,21 +25,6 @@ public class DelegatingServletInputStream extends ServletInputStream {
 
   public DelegatingServletInputStream(ServletInputStream wrapped) {
     this.wrapped = wrapped;
-  }
-
-  @Override
-  public boolean isFinished() {
-    return wrapped.isFinished();
-  }
-
-  @Override
-  public boolean isReady() {
-    return wrapped.isReady();
-  }
-
-  @Override
-  public void setReadListener(ReadListener readListener) {
-    wrapped.setReadListener(readListener);
   }
 
   @Override

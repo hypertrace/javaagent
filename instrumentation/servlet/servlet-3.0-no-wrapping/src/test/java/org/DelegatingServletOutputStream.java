@@ -18,7 +18,6 @@ package org;
 
 import java.io.IOException;
 import javax.servlet.ServletOutputStream;
-import javax.servlet.WriteListener;
 
 public class DelegatingServletOutputStream extends ServletOutputStream {
 
@@ -26,16 +25,6 @@ public class DelegatingServletOutputStream extends ServletOutputStream {
 
   public DelegatingServletOutputStream(ServletOutputStream delegate) {
     this.delegate = delegate;
-  }
-
-  @Override
-  public boolean isReady() {
-    return delegate.isReady();
-  }
-
-  @Override
-  public void setWriteListener(WriteListener writeListener) {
-    this.delegate.setWriteListener(writeListener);
   }
 
   @Override

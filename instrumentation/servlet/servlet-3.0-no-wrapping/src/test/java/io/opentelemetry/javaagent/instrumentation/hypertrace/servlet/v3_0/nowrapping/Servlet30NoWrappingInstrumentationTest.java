@@ -32,7 +32,6 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
@@ -41,7 +40,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class Servlet31InstrumentationTest extends AbstractInstrumenterTest {
+public class Servlet30NoWrappingInstrumentationTest extends AbstractInstrumenterTest {
   private static final String REQUEST_BODY = "hello";
   private static final String REQUEST_HEADER = "requestheader";
   private static final String REQUEST_HEADER_VALUE = "requestvalue";
@@ -70,7 +69,7 @@ public class Servlet31InstrumentationTest extends AbstractInstrumenterTest {
         TestServlets.EchoWriter_readLine_print_arr.class, "/echo_writer_readLine_print_arr");
     server.setHandler(handler);
     server.start();
-    serverPort = ((ServerConnector) server.getConnectors()[0]).getLocalPort();
+    serverPort = server.getConnectors()[0].getLocalPort();
   }
 
   @AfterAll
