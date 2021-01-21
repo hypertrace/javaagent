@@ -18,6 +18,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowra
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -82,6 +83,7 @@ public class WrappingFilter implements Filter {
   static class RespWrapper extends HttpServletResponseWrapper {
 
     private ServletOutputStream servletOutputStream;
+    private PrintWriter printWriter;
 
     public RespWrapper(HttpServletResponse response) {
       super(response);
@@ -94,5 +96,13 @@ public class WrappingFilter implements Filter {
       }
       return servletOutputStream;
     }
+
+    //    @Override
+    //    public PrintWriter getWriter() throws IOException {
+    //      if (printWriter == null) {
+    //        printWriter = new PrintWriter(super.getWriter());
+    //      }
+    //      return printWriter;
+    //    }
   }
 }

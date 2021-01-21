@@ -84,55 +84,62 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
 
   static class OutputStream_write {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static void enter(@Advice.This ServletOutputStream thizz, @Advice.Argument(0) int b) {
+    public static BoundedByteArrayOutputStream enter(
+        @Advice.This ServletOutputStream thizz, @Advice.Argument(0) int b) {
       BoundedByteArrayOutputStream buffer =
           InstrumentationContext.get(ServletOutputStream.class, BoundedByteArrayOutputStream.class)
               .get(thizz);
       if (buffer == null) {
-        return;
+        return null;
       }
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletOutputStream.class);
       if (callDepth > 0) {
-        return;
+        return null;
       }
 
       buffer.write(b);
+      return buffer;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
-    public static void exit() {
-      CallDepthThreadLocalMap.decrementCallDepth(ServletOutputStream.class);
+    public static void exit(@Advice.Enter BoundedByteArrayOutputStream buffer) {
+      if (buffer != null) {
+        CallDepthThreadLocalMap.decrementCallDepth(ServletOutputStream.class);
+      }
     }
   }
 
   static class OutputStream_writeByteArr {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static void enter(@Advice.This ServletOutputStream thizz, @Advice.Argument(0) byte[] b)
-        throws IOException {
+    public static BoundedByteArrayOutputStream enter(
+        @Advice.This ServletOutputStream thizz, @Advice.Argument(0) byte[] b) throws IOException {
 
       BoundedByteArrayOutputStream buffer =
           InstrumentationContext.get(ServletOutputStream.class, BoundedByteArrayOutputStream.class)
               .get(thizz);
       if (buffer == null) {
-        return;
+        return null;
       }
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletOutputStream.class);
       if (callDepth > 0) {
-        return;
+        return null;
       }
 
       buffer.write(b);
+      return buffer;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
-    public static void exit() {
-      CallDepthThreadLocalMap.decrementCallDepth(ServletOutputStream.class);
+    public static void exit(@Advice.Enter BoundedByteArrayOutputStream buffer) {
+      if (buffer != null) {
+        CallDepthThreadLocalMap.decrementCallDepth(ServletOutputStream.class);
+      }
     }
   }
 
   static class OutputStream_writeByteArrOffset {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static void enter(
+    public static BoundedByteArrayOutputStream enter(
         @Advice.This ServletOutputStream thizz,
         @Advice.Argument(0) byte b[],
         @Advice.Argument(1) int off,
@@ -142,45 +149,51 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
           InstrumentationContext.get(ServletOutputStream.class, BoundedByteArrayOutputStream.class)
               .get(thizz);
       if (buffer == null) {
-        return;
+        return null;
       }
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletOutputStream.class);
       if (callDepth > 0) {
-        return;
+        return null;
       }
 
       buffer.write(b, off, len);
+      return buffer;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
-    public static void exit() {
-      CallDepthThreadLocalMap.decrementCallDepth(ServletOutputStream.class);
+    public static void exit(@Advice.Enter BoundedByteArrayOutputStream buffer) {
+      if (buffer != null) {
+        CallDepthThreadLocalMap.decrementCallDepth(ServletOutputStream.class);
+      }
     }
   }
 
   static class ServletOutputStream_print {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static void enter(@Advice.This ServletOutputStream thizz, @Advice.Argument(0) String s)
-        throws IOException {
+    public static BoundedByteArrayOutputStream enter(
+        @Advice.This ServletOutputStream thizz, @Advice.Argument(0) String s) throws IOException {
 
       BoundedByteArrayOutputStream buffer =
           InstrumentationContext.get(ServletOutputStream.class, BoundedByteArrayOutputStream.class)
               .get(thizz);
       if (buffer == null) {
-        return;
+        return null;
       }
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(ServletOutputStream.class);
       if (callDepth > 0) {
-        return;
+        return null;
       }
 
       String bodyPart = s == null ? "null" : s;
       buffer.write(bodyPart.getBytes());
+      return buffer;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
-    public static void exit() {
-      CallDepthThreadLocalMap.decrementCallDepth(ServletOutputStream.class);
+    public static void exit(@Advice.Enter BoundedByteArrayOutputStream buffer) {
+      if (buffer != null) {
+        CallDepthThreadLocalMap.decrementCallDepth(ServletOutputStream.class);
+      }
     }
   }
 }
