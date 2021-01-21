@@ -30,9 +30,9 @@ public class HypertraceGlobalIgnoreMatcher implements IgnoreMatcherProvider {
           || actualName.equals("java.io.OutputStream")
           || actualName.equals("java.io.ByteArrayInputStream")
           || actualName.equals("java.io.ByteArrayOutputStream")
-          // servlet request instrumentation
-          || actualName.equals("java.io.Reader")
-          || actualName.equals("java.io.BufferedReader")) {
+          // servlet request/response body capture instrumentation
+          || actualName.equals("java.io.BufferedReader")
+          || actualName.equals("java.io.PrintWriter")) {
         return Result.ALLOW;
       }
     }

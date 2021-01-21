@@ -97,12 +97,12 @@ public class WrappingFilter implements Filter {
       return servletOutputStream;
     }
 
-    //    @Override
-    //    public PrintWriter getWriter() throws IOException {
-    //      if (printWriter == null) {
-    //        printWriter = new PrintWriter(super.getWriter());
-    //      }
-    //      return printWriter;
-    //    }
+    @Override
+    public PrintWriter getWriter() throws IOException {
+      if (printWriter == null) {
+        printWriter = new PrintWriter(super.getWriter());
+      }
+      return printWriter;
+    }
   }
 }

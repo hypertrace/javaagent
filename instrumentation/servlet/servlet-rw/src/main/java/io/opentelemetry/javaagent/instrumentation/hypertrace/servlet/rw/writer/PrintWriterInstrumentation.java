@@ -71,6 +71,14 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
             .and(isPublic()),
         PrintWriterInstrumentation.class.getName() + "$PrintWriter_print");
     transformers.put(
+        named("write")
+            .and(takesArguments(3))
+            .and(takesArgument(0, is(String.class)))
+            .and(takesArgument(1, is(int.class)))
+            .and(takesArgument(2, is(int.class)))
+            .and(isPublic()),
+        PrintWriterInstrumentation.class.getName() + "$Writer_writeOffset_str");
+    transformers.put(
         named("print")
             .and(takesArguments(1))
             .and(takesArgument(0, is(String.class)))
@@ -90,131 +98,193 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
 
   static class Writer_writeChar {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static void enter(@Advice.This PrintWriter thizz, @Advice.Argument(0) int ch) {
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
-      if (callDepth > 0) {
-        return;
-      }
+    public static BoundedCharArrayWriter enter(
+        @Advice.This PrintWriter thizz, @Advice.Argument(0) int ch) {
       BoundedCharArrayWriter buffer =
           InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class).get(thizz);
-      if (buffer != null) {
-        buffer.write(ch);
+      if (buffer == null) {
+        return null;
       }
+      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
+      if (callDepth > 0) {
+        return buffer;
+      }
+
+      buffer.write(ch);
+      return buffer;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
-    public static void exit() {
-      CallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
+    public static void exit(@Advice.Enter BoundedCharArrayWriter buffer) {
+      if (buffer != null) {
+        CallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
+      }
     }
   }
 
   static class Writer_writeArr {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static void enter(@Advice.This PrintWriter thizz, @Advice.Argument(0) char[] buf)
-        throws IOException {
+    public static BoundedCharArrayWriter enter(
+        @Advice.This PrintWriter thizz, @Advice.Argument(0) char[] buf) throws IOException {
 
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
-      if (callDepth > 0) {
-        return;
-      }
       BoundedCharArrayWriter buffer =
           InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class).get(thizz);
-      if (buffer != null) {
-        buffer.write(buf);
+      if (buffer == null) {
+        return null;
       }
+      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
+      if (callDepth > 0) {
+        return buffer;
+      }
+
+      buffer.write(buf);
+      return buffer;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
-    public static void exit() {
-      CallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
+    public static void exit(@Advice.Enter BoundedCharArrayWriter buffer) {
+      if (buffer != null) {
+        CallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
+      }
     }
   }
 
   static class Writer_writeOffset {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static void enter(
+    public static BoundedCharArrayWriter enter(
         @Advice.This PrintWriter thizz,
         @Advice.Argument(0) char[] buf,
         @Advice.Argument(1) int offset,
         @Advice.Argument(2) int len) {
 
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
-      if (callDepth > 0) {
-        return;
-      }
       BoundedCharArrayWriter buffer =
           InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class).get(thizz);
-      if (buffer != null) {
-        buffer.write(buf, offset, len);
+      if (buffer == null) {
+        return null;
       }
+      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
+      if (callDepth > 0) {
+        return buffer;
+      }
+
+      buffer.write(buf, offset, len);
+      return buffer;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
-    public static void exit() {
-      CallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
+    public static void exit(@Advice.Enter BoundedCharArrayWriter buffer) {
+      if (buffer != null) {
+        CallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
+      }
+    }
+  }
+
+  static class Writer_writeOffset_str {
+    @Advice.OnMethodEnter(suppress = Throwable.class)
+    public static BoundedCharArrayWriter enter(
+        @Advice.This PrintWriter thizz,
+        @Advice.Argument(0) String str,
+        @Advice.Argument(1) int offset,
+        @Advice.Argument(2) int len) {
+
+      BoundedCharArrayWriter buffer =
+          InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class).get(thizz);
+      if (buffer == null) {
+        return null;
+      }
+      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
+      if (callDepth > 0) {
+        return buffer;
+      }
+
+      buffer.write(str, offset, len);
+      return buffer;
+    }
+
+    @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
+    public static void exit(@Advice.Enter BoundedCharArrayWriter buffer) {
+      if (buffer != null) {
+        CallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
+      }
     }
   }
 
   static class PrintWriter_print {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static void enter(@Advice.This PrintWriter thizz, @Advice.Argument(0) String str)
-        throws IOException {
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
-      if (callDepth > 0) {
-        return;
-      }
+    public static BoundedCharArrayWriter enter(
+        @Advice.This PrintWriter thizz, @Advice.Argument(0) String str) throws IOException {
+
       BoundedCharArrayWriter buffer =
           InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class).get(thizz);
-      if (buffer != null) {
-        buffer.write(str);
+      if (buffer == null) {
+        return null;
       }
+      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
+      if (callDepth > 0) {
+        return buffer;
+      }
+
+      buffer.write(str);
+      return buffer;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
-    public static void exit() {
-      CallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
+    public static void exit(@Advice.Enter BoundedCharArrayWriter buffer) {
+      if (buffer != null) {
+        CallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
+      }
     }
   }
 
   static class PrintWriter_println {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static void enter(@Advice.This PrintWriter thizz) {
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
-      if (callDepth > 0) {
-        return;
-      }
+    public static BoundedCharArrayWriter enter(@Advice.This PrintWriter thizz) {
       BoundedCharArrayWriter buffer =
           InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class).get(thizz);
-      if (buffer != null) {
-        buffer.append('\n');
+      if (buffer == null) {
+        return null;
       }
+      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
+      if (callDepth > 0) {
+        return buffer;
+      }
+
+      buffer.append('\n');
+      return buffer;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
-    public static void exit() {
-      CallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
+    public static void exit(@Advice.Enter BoundedCharArrayWriter buffer) {
+      if (buffer != null) {
+        CallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
+      }
     }
   }
 
   static class PrintWriter_printlnStr {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static void enter(@Advice.This PrintWriter thizz, @Advice.Argument(0) String str)
-        throws IOException {
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
-      if (callDepth > 0) {
-        return;
-      }
+    public static BoundedCharArrayWriter enter(
+        @Advice.This PrintWriter thizz, @Advice.Argument(0) String str) throws IOException {
       BoundedCharArrayWriter buffer =
           InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class).get(thizz);
-      if (buffer != null) {
-        buffer.write(str);
-        buffer.append('\n');
+      if (buffer == null) {
+        return null;
       }
+      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
+      if (callDepth > 0) {
+        return buffer;
+      }
+
+      buffer.write(str);
+      buffer.append('\n');
+      return buffer;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
-    public static void exit() {
-      CallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
+    public static void exit(@Advice.Enter BoundedCharArrayWriter buffer) {
+      if (buffer != null) {
+        CallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
+      }
     }
   }
 }

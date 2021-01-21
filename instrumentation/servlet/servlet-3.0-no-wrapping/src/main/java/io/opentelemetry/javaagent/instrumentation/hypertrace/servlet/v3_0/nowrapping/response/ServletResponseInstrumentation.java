@@ -177,7 +177,10 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
           && ContentTypeUtils.shouldCapture(contentType)) {
 
         System.out.printf(
-            "created response char buffer: %s", httpServletResponse.getClass().getName());
+            "created response char buffer: %s, %s, %d\n",
+            httpServletResponse.getClass().getName(),
+            printWriter.getClass().getName(),
+            System.identityHashCode(printWriter));
 
         BoundedCharArrayWriter writer = BoundedBuffersFactory.createWriter();
         contextStore.put(printWriter, writer);
