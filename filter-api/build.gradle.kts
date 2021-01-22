@@ -6,6 +6,9 @@ plugins {
 wasm {
    // this is used as the top-level package name for this project.
    packageName = "org.hypertrace.agent.filter.wasm.generated"
+
+
+   classNameByFile = mapOf("add.wasm" to "Adder")
 }
 
 val versions: Map<String, String> by extra
