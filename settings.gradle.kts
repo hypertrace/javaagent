@@ -2,6 +2,7 @@ rootProject.name = "hypertrace-agent"
 
 pluginManagement {
     repositories {
+        jcenter()
         mavenLocal()
         gradlePluginPortal()
         maven("https://dl.bintray.com/hypertrace/maven")

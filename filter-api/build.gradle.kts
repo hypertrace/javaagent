@@ -1,5 +1,6 @@
 plugins {
    `java-library`
+   id("com.athaydes.wasm")
 }
 
 val versions: Map<String, String> by extra
