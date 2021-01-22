@@ -14,19 +14,25 @@
  * limitations under the License.
  */
 
-import com.google.auto.service.AutoService;
+package org.hypertrace.agent.filter.wasm;
+
+import io.opentelemetry.api.trace.Span;
+import java.util.Map;
 import org.hypertrace.agent.filter.api.Filter;
-import org.hypertrace.agent.filter.spi.FilterProvider;
+import org.hypertrace.agent.filter.wasm.generated.HelloWasm;
 
-@AutoService(FilterProvider.class)
-public class WasmFilterProvider implements FilterProvider {
+public class WasmFilter implements Filter {
 
-  public WasmFilterProvider() {
-    System.out.println("Wasm filter provider created");
+  private HelloWasm helloWasm = new HelloWasm();
+
+  @Override
+  public boolean evaluateRequestHeaders(Span span, Map<String, String> headers) {
+    System.out.printf("wasm  filter output: %d\n", helloWasm.hello());
+    return false;
   }
 
   @Override
-  public Filter create() {
-    return new WasmFilter();
+  public boolean evaluateRequestBody(Span span, String body) {
+    return false;
   }
 }

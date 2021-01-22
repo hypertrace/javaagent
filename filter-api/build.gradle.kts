@@ -3,6 +3,11 @@ plugins {
    id("com.athaydes.wasm")
 }
 
+wasm {
+   // this is used as the top-level package name for this project.
+   packageName = "org.hypertrace.agent.filter.wasm.generated"
+}
+
 val versions: Map<String, String> by extra
 
 dependencies {
