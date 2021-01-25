@@ -92,6 +92,7 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(
         @Advice.Enter HttpServletResponse httpServletResponse,
+        @Advice.Thrown Throwable throwable,
         @Advice.Return ServletOutputStream servletOutputStream) {
 
       if (httpServletResponse == null) {
@@ -100,6 +101,9 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
 
       int callDepth = CallDepthThreadLocalMap.decrementCallDepth(ServletResponse.class);
       if (callDepth > 0) {
+        return;
+      }
+      if (throwable != null) {
         return;
       }
 
@@ -120,7 +124,8 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
         Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
         BoundedByteArrayOutputStream buffer = BoundedBuffersFactory.createStream(charset);
         contextStore.put(servletOutputStream, buffer);
-        // override the metadata that is used by the OutputStream instrumentation
+        InstrumentationContext.get(HttpServletResponse.class, ResponseStreamWriterHolder.class)
+            .put(httpServletResponse, new ResponseStreamWriterHolder(servletOutputStream));
       }
     }
   }
@@ -144,6 +149,7 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(
         @Advice.Enter HttpServletResponse httpServletResponse,
+        @Advice.Thrown Throwable throwable,
         @Advice.Return PrintWriter printWriter) {
 
       if (httpServletResponse == null) {
@@ -152,6 +158,9 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
 
       int callDepth = CallDepthThreadLocalMap.decrementCallDepth(ServletResponse.class);
       if (callDepth > 0) {
+        return;
+      }
+      if (throwable != null) {
         return;
       }
 
@@ -170,6 +179,8 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
 
         BoundedCharArrayWriter writer = BoundedBuffersFactory.createWriter();
         contextStore.put(printWriter, writer);
+        InstrumentationContext.get(HttpServletResponse.class, ResponseStreamWriterHolder.class)
+            .put(httpServletResponse, new ResponseStreamWriterHolder(printWriter));
       }
     }
   }

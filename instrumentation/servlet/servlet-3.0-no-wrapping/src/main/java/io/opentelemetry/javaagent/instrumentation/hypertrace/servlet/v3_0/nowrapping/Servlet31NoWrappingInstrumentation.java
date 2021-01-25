@@ -29,6 +29,7 @@ import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.request.RequestStreamReaderHolder;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.response.ResponseStreamWriterHolder;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
@@ -156,6 +157,10 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
       ContextStore<PrintWriter, BoundedCharArrayWriter> writerContextStore =
           InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class);
 
+      // response context to capture body and clear the context
+      ContextStore<HttpServletResponse, ResponseStreamWriterHolder> responseContextStore =
+          InstrumentationContext.get(HttpServletResponse.class, ResponseStreamWriterHolder.class);
+
       // request context to clear body buffer
       ContextStore<HttpServletRequest, RequestStreamReaderHolder> requestContextStore =
           InstrumentationContext.get(HttpServletRequest.class, RequestStreamReaderHolder.class);
@@ -173,6 +178,7 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
                   new BodyCaptureAsyncListener(
                       responseHandled,
                       currentSpan,
+                      responseContextStore,
                       outputStreamContextStore,
                       writerContextStore,
                       requestContextStore,
@@ -197,7 +203,11 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
         if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()
             && ContentTypeUtils.shouldCapture(httpResponse.getContentType())) {
           Utils.captureResponseBody(
-              currentSpan, outputStreamContextStore, writerContextStore, httpResponse);
+              currentSpan,
+              httpResponse,
+              responseContextStore,
+              outputStreamContextStore,
+              writerContextStore);
         }
 
         // remove request body buffers from context stores, otherwise they might get reused

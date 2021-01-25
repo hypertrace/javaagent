@@ -19,9 +19,10 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowra
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.request.RequestStreamReaderHolder;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.response.ResponseStreamWriterHolder;
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -48,28 +49,38 @@ public class Utils {
 
   public static void captureResponseBody(
       Span span,
+      HttpServletResponse httpServletResponse,
+      ContextStore<HttpServletResponse, ResponseStreamWriterHolder> responseContextStore,
       ContextStore<ServletOutputStream, BoundedByteArrayOutputStream> streamContextStore,
-      ContextStore<PrintWriter, BoundedCharArrayWriter> writerContextStore,
-      HttpServletResponse httpResponse) {
+      ContextStore<PrintWriter, BoundedCharArrayWriter> writerContextStore) {
 
-    try {
-      ServletOutputStream outputStream = httpResponse.getOutputStream();
-      BoundedByteArrayOutputStream buffer = streamContextStore.get(outputStream);
+    ResponseStreamWriterHolder responseStreamWriterHolder =
+        responseContextStore.get(httpServletResponse);
+    if (responseStreamWriterHolder == null) {
+      return;
+    }
+
+    if (responseStreamWriterHolder.getServletOutputStream() != null) {
+      ServletOutputStream servletOutputStream = responseStreamWriterHolder.getServletOutputStream();
+      BoundedByteArrayOutputStream buffer = streamContextStore.get(servletOutputStream);
       if (buffer != null) {
-        span.setAttribute(
-            HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, buffer.toStringWithSuppliedCharset());
-        streamContextStore.put(outputStream, null);
-      }
-    } catch (IllegalStateException | IOException exOutStream) {
-      // getWriter was called
-      try {
-        PrintWriter writer = httpResponse.getWriter();
-        BoundedCharArrayWriter buffer = writerContextStore.get(writer);
-        if (buffer != null) {
-          span.setAttribute(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, buffer.toString());
-          writerContextStore.put(writer, null);
+        try {
+          span.setAttribute(
+              HypertraceSemanticAttributes.HTTP_RESPONSE_BODY,
+              buffer.toStringWithSuppliedCharset());
+        } catch (UnsupportedEncodingException e) {
+          // should not happen
         }
-      } catch (IllegalStateException | IOException exPrintWriter) {
+        streamContextStore.put(servletOutputStream, null);
+      }
+    }
+
+    if (responseStreamWriterHolder.getPrintWriter() != null) {
+      PrintWriter printWriter = responseStreamWriterHolder.getPrintWriter();
+      BoundedCharArrayWriter buffer = writerContextStore.get(printWriter);
+      if (buffer != null) {
+        span.setAttribute(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, buffer.toString());
+        writerContextStore.put(printWriter, null);
       }
     }
   }

@@ -19,6 +19,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowra
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.request.RequestStreamReaderHolder;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.response.ResponseStreamWriterHolder;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -43,6 +44,8 @@ public class BodyCaptureAsyncListener implements AsyncListener {
 
   private final AtomicBoolean responseHandled;
   private final Span span;
+
+  private final ContextStore<HttpServletResponse, ResponseStreamWriterHolder> responseContextStore;
   private final ContextStore<ServletOutputStream, BoundedByteArrayOutputStream> streamContextStore;
   private final ContextStore<PrintWriter, BoundedCharArrayWriter> writerContextStore;
 
@@ -55,6 +58,7 @@ public class BodyCaptureAsyncListener implements AsyncListener {
   public BodyCaptureAsyncListener(
       AtomicBoolean responseHandled,
       Span span,
+      ContextStore<HttpServletResponse, ResponseStreamWriterHolder> responseContextStore,
       ContextStore<ServletOutputStream, BoundedByteArrayOutputStream> streamContextStore,
       ContextStore<PrintWriter, BoundedCharArrayWriter> writerContextStore,
       ContextStore<HttpServletRequest, RequestStreamReaderHolder> requestContextStore,
@@ -62,6 +66,7 @@ public class BodyCaptureAsyncListener implements AsyncListener {
       ContextStore<BufferedReader, CharBufferSpanPair> readerContextStore) {
     this.responseHandled = responseHandled;
     this.span = span;
+    this.responseContextStore = responseContextStore;
     this.streamContextStore = streamContextStore;
     this.writerContextStore = writerContextStore;
     this.requestContextStore = requestContextStore;
@@ -98,7 +103,8 @@ public class BodyCaptureAsyncListener implements AsyncListener {
 
       if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()
           && ContentTypeUtils.shouldCapture(httpResponse.getContentType())) {
-        Utils.captureResponseBody(span, streamContextStore, writerContextStore, httpResponse);
+        Utils.captureResponseBody(
+            span, httpResponse, responseContextStore, streamContextStore, writerContextStore);
       }
 
       if (agentConfig.getDataCapture().getHttpHeaders().getResponse().getValue()) {
