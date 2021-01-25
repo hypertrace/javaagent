@@ -50,8 +50,8 @@ public class BodyCaptureAsyncListener implements AsyncListener {
   private final ContextStore<PrintWriter, BoundedCharArrayWriter> writerContextStore;
 
   private final ContextStore<HttpServletRequest, RequestStreamReaderHolder> requestContextStore;
-  private final ContextStore<ServletInputStream, ByteBufferSpanPair> inputStreamContext;
-  private final ContextStore<BufferedReader, CharBufferSpanPair> readerContext;
+  private final ContextStore<ServletInputStream, ByteBufferSpanPair> inputStreamContextStore;
+  private final ContextStore<BufferedReader, CharBufferSpanPair> readerContextStore;
 
   private final AgentConfig agentConfig = HypertraceConfig.get();
 
@@ -70,8 +70,8 @@ public class BodyCaptureAsyncListener implements AsyncListener {
     this.streamContextStore = streamContextStore;
     this.writerContextStore = writerContextStore;
     this.requestContextStore = requestContextStore;
-    this.inputStreamContext = inputStreamContextStore;
-    this.readerContext = readerContextStore;
+    this.inputStreamContextStore = inputStreamContextStore;
+    this.readerContextStore = readerContextStore;
   }
 
   @Override
@@ -122,7 +122,7 @@ public class BodyCaptureAsyncListener implements AsyncListener {
       if (agentConfig.getDataCapture().getHttpBody().getRequest().getValue()
           && ContentTypeUtils.shouldCapture(httpRequest.getContentType())) {
         Utils.resetRequestBodyBuffers(
-            httpRequest, requestContextStore, inputStreamContext, readerContext);
+            httpRequest, requestContextStore, inputStreamContextStore, readerContextStore);
       }
     }
   }

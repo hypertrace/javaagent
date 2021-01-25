@@ -59,6 +59,7 @@ public class Utils {
     if (responseStreamWriterHolder == null) {
       return;
     }
+    responseContextStore.put(httpServletResponse, null);
 
     if (responseStreamWriterHolder.getServletOutputStream() != null) {
       ServletOutputStream servletOutputStream = responseStreamWriterHolder.getServletOutputStream();
