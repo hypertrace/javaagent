@@ -19,9 +19,10 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowra
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMatcher.hasClassesNamed;
 
 import com.google.auto.service.AutoService;
-import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.request.RequestStreamReaderHolder;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.request.ServletInputStreamInstrumentation;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.request.ServletRequestInstrumentation;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.response.ResponseStreamWriterHolder;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.response.ServletOutputStreamInstrumentation;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.response.ServletResponseInstrumentation;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
@@ -67,11 +68,13 @@ public class Servlet31NoWrappingInstrumentationModule extends InstrumentationMod
   protected Map<String, String> contextStore() {
     Map<String, String> context = new HashMap<>();
     // capture request body
-    context.put("javax.servlet.http.HttpServletRequest", Span.class.getName());
+    context.put("javax.servlet.http.HttpServletRequest", RequestStreamReaderHolder.class.getName());
     context.put("javax.servlet.ServletInputStream", ByteBufferSpanPair.class.getName());
     context.put("java.io.BufferedReader", CharBufferSpanPair.class.getName());
 
     // capture response body
+    context.put(
+        "javax.servlet.http.HttpServletResponse", ResponseStreamWriterHolder.class.getName());
     context.put("javax.servlet.ServletOutputStream", BoundedByteArrayOutputStream.class.getName());
     context.put("java.io.PrintWriter", BoundedCharArrayWriter.class.getName());
     return context;

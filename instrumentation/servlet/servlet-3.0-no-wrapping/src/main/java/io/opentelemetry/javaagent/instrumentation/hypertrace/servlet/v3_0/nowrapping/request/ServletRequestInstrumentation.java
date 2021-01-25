@@ -22,7 +22,6 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.returns;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
-import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
@@ -68,27 +67,29 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
 
   static class ServletRequest_getInputStream_advice {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static Span enter(@Advice.This ServletRequest servletRequest) {
+    public static RequestStreamReaderHolder enter(@Advice.This ServletRequest servletRequest) {
       HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
       // span is added in servlet/filter instrumentation if data capture is enabled
-      Span requestSpan =
-          InstrumentationContext.get(HttpServletRequest.class, Span.class).get(httpServletRequest);
-      if (requestSpan == null) {
+      RequestStreamReaderHolder requestBufferWrapper =
+          InstrumentationContext.get(HttpServletRequest.class, RequestStreamReaderHolder.class)
+              .get(httpServletRequest);
+      if (requestBufferWrapper == null) {
         return null;
       }
 
       // the getReader method might call getInputStream
       CallDepthThreadLocalMap.incrementCallDepth(ServletRequest.class);
-      return requestSpan;
+      return requestBufferWrapper;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(
         @Advice.This ServletRequest servletRequest,
         @Advice.Return ServletInputStream servletInputStream,
-        @Advice.Enter Span requestSpan) {
+        @Advice.Thrown Throwable throwable,
+        @Advice.Enter RequestStreamReaderHolder requestStreamReaderHolder) {
 
-      if (requestSpan == null) {
+      if (requestStreamReaderHolder == null) {
         return;
       }
 
@@ -97,7 +98,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
         return;
       }
 
-      if (!(servletRequest instanceof HttpServletRequest)) {
+      if (!(servletRequest instanceof HttpServletRequest) || throwable != null) {
         return;
       }
       HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
@@ -110,32 +111,36 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
       }
 
       ByteBufferSpanPair bufferSpanPair =
-          Utils.createRequestByteBufferSpanPair(httpServletRequest, requestSpan);
+          Utils.createRequestByteBufferSpanPair(
+              httpServletRequest, requestStreamReaderHolder.getSpan());
       contextStore.put(servletInputStream, bufferSpanPair);
+      requestStreamReaderHolder.setServletInputStream(servletInputStream);
     }
   }
 
   static class ServletRequest_getReader_advice {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static Span enter(@Advice.This ServletRequest servletRequest) {
+    public static RequestStreamReaderHolder enter(@Advice.This ServletRequest servletRequest) {
       HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
-      Span requestSpan =
-          InstrumentationContext.get(HttpServletRequest.class, Span.class).get(httpServletRequest);
-      if (requestSpan == null) {
+      RequestStreamReaderHolder requestStreamReaderHolder =
+          InstrumentationContext.get(HttpServletRequest.class, RequestStreamReaderHolder.class)
+              .get(httpServletRequest);
+      if (requestStreamReaderHolder == null) {
         return null;
       }
 
       CallDepthThreadLocalMap.incrementCallDepth(ServletRequest.class);
-      return requestSpan;
+      return requestStreamReaderHolder;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(
         @Advice.This ServletRequest servletRequest,
         @Advice.Return BufferedReader reader,
-        @Advice.Enter Span requestSpan) {
+        @Advice.Thrown Throwable throwable,
+        @Advice.Enter RequestStreamReaderHolder requestStreamReaderHolder) {
 
-      if (requestSpan == null) {
+      if (requestStreamReaderHolder == null) {
         return;
       }
 
@@ -144,7 +149,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
         return;
       }
 
-      if (!(servletRequest instanceof HttpServletRequest)) {
+      if (!(servletRequest instanceof HttpServletRequest) || throwable != null) {
         return;
       }
       HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
@@ -157,8 +162,10 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
       }
 
       CharBufferSpanPair bufferSpanPair =
-          Utils.createRequestCharBufferSpanPair(httpServletRequest, requestSpan);
+          Utils.createRequestCharBufferSpanPair(
+              httpServletRequest, requestStreamReaderHolder.getSpan());
       contextStore.put(reader, bufferSpanPair);
+      requestStreamReaderHolder.setBufferedReader(reader);
     }
   }
 }

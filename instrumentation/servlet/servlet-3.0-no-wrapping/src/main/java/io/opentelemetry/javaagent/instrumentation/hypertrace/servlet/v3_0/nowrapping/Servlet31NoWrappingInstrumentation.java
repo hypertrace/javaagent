@@ -28,9 +28,10 @@ import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.request.RequestStreamReaderHolder;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.response.ResponseStreamWriterHolder;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -102,8 +103,8 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
           && ContentTypeUtils.shouldCapture(contentType)) {
         // The HttpServletRequest instrumentation uses this to
         // enable the instrumentation
-        InstrumentationContext.get(HttpServletRequest.class, Span.class)
-            .put(httpRequest, currentSpan);
+        InstrumentationContext.get(HttpServletRequest.class, RequestStreamReaderHolder.class)
+            .put(httpRequest, new RequestStreamReaderHolder(currentSpan));
       }
 
       Utils.addSessionId(currentSpan, httpRequest);
@@ -135,8 +136,7 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
     public static void exit(
         @Advice.Argument(0) ServletRequest request,
         @Advice.Argument(1) ServletResponse response,
-        @Advice.Local("currentSpan") Span currentSpan)
-        throws IOException {
+        @Advice.Local("currentSpan") Span currentSpan) {
       int callDepth =
           CallDepthThreadLocalMap.decrementCallDepth(Servlet31InstrumentationName.class);
       if (callDepth > 0) {
@@ -152,15 +152,21 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
       HttpServletRequest httpRequest = (HttpServletRequest) request;
       AgentConfig agentConfig = HypertraceConfig.get();
 
-      ContextStore<ServletOutputStream, BoundedByteArrayOutputStream> outputStreamContext =
+      ContextStore<ServletOutputStream, BoundedByteArrayOutputStream> outputStreamContextStore =
           InstrumentationContext.get(ServletOutputStream.class, BoundedByteArrayOutputStream.class);
-      ContextStore<PrintWriter, BoundedCharArrayWriter> writerContext =
+      ContextStore<PrintWriter, BoundedCharArrayWriter> writerContextStore =
           InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class);
 
+      // response context to capture body and clear the context
+      ContextStore<HttpServletResponse, ResponseStreamWriterHolder> responseContextStore =
+          InstrumentationContext.get(HttpServletResponse.class, ResponseStreamWriterHolder.class);
+
       // request context to clear body buffer
-      ContextStore<ServletInputStream, ByteBufferSpanPair> inputStreamContext =
+      ContextStore<HttpServletRequest, RequestStreamReaderHolder> requestContextStore =
+          InstrumentationContext.get(HttpServletRequest.class, RequestStreamReaderHolder.class);
+      ContextStore<ServletInputStream, ByteBufferSpanPair> inputStreamContextStore =
           InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class);
-      ContextStore<BufferedReader, CharBufferSpanPair> readerContext =
+      ContextStore<BufferedReader, CharBufferSpanPair> readerContextStore =
           InstrumentationContext.get(BufferedReader.class, CharBufferSpanPair.class);
 
       AtomicBoolean responseHandled = new AtomicBoolean(false);
@@ -172,10 +178,12 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
                   new BodyCaptureAsyncListener(
                       responseHandled,
                       currentSpan,
-                      outputStreamContext,
-                      writerContext,
-                      inputStreamContext,
-                      readerContext));
+                      responseContextStore,
+                      outputStreamContextStore,
+                      writerContextStore,
+                      requestContextStore,
+                      inputStreamContextStore,
+                      readerContextStore));
         } catch (IllegalStateException e) {
           // org.eclipse.jetty.server.Request may throw an exception here if request became
           // finished after check above. We just ignore that exception and move on.
@@ -194,13 +202,19 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
         // capture response body
         if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()
             && ContentTypeUtils.shouldCapture(httpResponse.getContentType())) {
-          Utils.captureResponseBody(currentSpan, outputStreamContext, writerContext, httpResponse);
+          Utils.captureResponseBody(
+              currentSpan,
+              httpResponse,
+              responseContextStore,
+              outputStreamContextStore,
+              writerContextStore);
         }
 
         // remove request body buffers from context stores, otherwise they might get reused
         if (agentConfig.getDataCapture().getHttpBody().getRequest().getValue()
             && ContentTypeUtils.shouldCapture(httpRequest.getContentType())) {
-          Utils.resetRequestBodyBuffers(inputStreamContext, readerContext, httpRequest);
+          Utils.resetRequestBodyBuffers(
+              httpRequest, requestContextStore, inputStreamContextStore, readerContextStore);
         }
       }
     }
