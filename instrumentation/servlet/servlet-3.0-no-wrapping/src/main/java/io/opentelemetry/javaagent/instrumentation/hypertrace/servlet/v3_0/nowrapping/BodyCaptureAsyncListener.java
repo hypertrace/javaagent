@@ -18,6 +18,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowra
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.request.RequestStreamReaderHolder;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -45,6 +46,7 @@ public class BodyCaptureAsyncListener implements AsyncListener {
   private final ContextStore<ServletOutputStream, BoundedByteArrayOutputStream> streamContextStore;
   private final ContextStore<PrintWriter, BoundedCharArrayWriter> writerContextStore;
 
+  private final ContextStore<HttpServletRequest, RequestStreamReaderHolder> requestContextStore;
   private final ContextStore<ServletInputStream, ByteBufferSpanPair> inputStreamContext;
   private final ContextStore<BufferedReader, CharBufferSpanPair> readerContext;
 
@@ -55,14 +57,16 @@ public class BodyCaptureAsyncListener implements AsyncListener {
       Span span,
       ContextStore<ServletOutputStream, BoundedByteArrayOutputStream> streamContextStore,
       ContextStore<PrintWriter, BoundedCharArrayWriter> writerContextStore,
-      ContextStore<ServletInputStream, ByteBufferSpanPair> inputStreamContext,
-      ContextStore<BufferedReader, CharBufferSpanPair> readerContext) {
+      ContextStore<HttpServletRequest, RequestStreamReaderHolder> requestContextStore,
+      ContextStore<ServletInputStream, ByteBufferSpanPair> inputStreamContextStore,
+      ContextStore<BufferedReader, CharBufferSpanPair> readerContextStore) {
     this.responseHandled = responseHandled;
     this.span = span;
     this.streamContextStore = streamContextStore;
     this.writerContextStore = writerContextStore;
-    this.inputStreamContext = inputStreamContext;
-    this.readerContext = readerContext;
+    this.requestContextStore = requestContextStore;
+    this.inputStreamContext = inputStreamContextStore;
+    this.readerContext = readerContextStore;
   }
 
   @Override
@@ -111,7 +115,8 @@ public class BodyCaptureAsyncListener implements AsyncListener {
       // remove request body buffers from context stores, otherwise they might get reused
       if (agentConfig.getDataCapture().getHttpBody().getRequest().getValue()
           && ContentTypeUtils.shouldCapture(httpRequest.getContentType())) {
-        Utils.resetRequestBodyBuffers(inputStreamContext, readerContext, httpRequest);
+        Utils.resetRequestBodyBuffers(
+            httpRequest, requestContextStore, inputStreamContext, readerContext);
       }
     }
   }

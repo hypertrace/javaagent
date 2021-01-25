@@ -18,6 +18,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowra
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.request.RequestStreamReaderHolder;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -74,25 +75,23 @@ public class Utils {
   }
 
   public static void resetRequestBodyBuffers(
+      HttpServletRequest httpServletRequest,
+      ContextStore<HttpServletRequest, RequestStreamReaderHolder> requestContextStore,
       ContextStore<ServletInputStream, ByteBufferSpanPair> streamContextStore,
-      ContextStore<BufferedReader, CharBufferSpanPair> printContextStore,
-      HttpServletRequest httpRequest) {
-    try {
-      ServletInputStream inputStream = httpRequest.getInputStream();
-      ByteBufferSpanPair bufferSpanPair = streamContextStore.get(inputStream);
-      if (bufferSpanPair != null) {
-        streamContextStore.put(inputStream, null);
-      }
-    } catch (IllegalStateException | IOException exOutStream) {
-      // getWriter was called
-      try {
-        BufferedReader reader = httpRequest.getReader();
-        CharBufferSpanPair bufferSpanPair = printContextStore.get(reader);
-        if (bufferSpanPair != null) {
-          printContextStore.put(reader, null);
-        }
-      } catch (IllegalStateException | IOException exPrintWriter) {
-      }
+      ContextStore<BufferedReader, CharBufferSpanPair> bufferedReaderContextStore) {
+
+    RequestStreamReaderHolder requestStreamReaderHolder =
+        requestContextStore.get(httpServletRequest);
+    if (requestContextStore == null) {
+      return;
+    }
+    requestContextStore.put(httpServletRequest, null);
+
+    if (requestStreamReaderHolder.getServletInputStream() != null) {
+      streamContextStore.put(requestStreamReaderHolder.getServletInputStream(), null);
+    }
+    if (requestStreamReaderHolder.getBufferedReader() != null) {
+      bufferedReaderContextStore.put(requestStreamReaderHolder.getBufferedReader(), null);
     }
   }
 }
