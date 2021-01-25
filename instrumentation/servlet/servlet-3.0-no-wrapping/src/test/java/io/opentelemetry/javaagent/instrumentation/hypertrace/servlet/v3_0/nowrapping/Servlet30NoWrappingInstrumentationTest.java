@@ -16,6 +16,8 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping;
 
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoAsyncResponse_stream;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoAsyncResponse_writer;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoStream_arr;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoStream_arr_offset;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoStream_readLine_print;
@@ -63,12 +65,14 @@ public class Servlet30NoWrappingInstrumentationTest extends AbstractInstrumenter
     handler.addServlet(TestServlets.EchoWriter_arr.class, "/echo_writer_arr");
     handler.addServlet(TestServlets.EchoWriter_arr_offset.class, "/echo_writer_arr_offset");
     handler.addServlet(TestServlets.EchoWriter_readLine_write.class, "/echo_writer_readLine_write");
+    handler.addServlet(TestServlets.EchoWriter_readLines.class, "/echo_writer_readLines");
     handler.addServlet(
         TestServlets.EchoWriter_readLine_print_str.class, "/echo_writer_readLine_print_str");
     handler.addServlet(
         TestServlets.EchoWriter_readLine_print_arr.class, "/echo_writer_readLine_print_arr");
     handler.addServlet(TestServlets.Forward_to_post.class, "/forward_to_echo");
-    handler.addServlet(TestServlets.EchoAsyncResponse.class, "/echo_async_response");
+    handler.addServlet(EchoAsyncResponse_stream.class, "/echo_async_response_stream");
+    handler.addServlet(EchoAsyncResponse_writer.class, "/echo_async_response_writer");
     server.setHandler(handler);
     server.start();
     serverPort = server.getConnectors()[0].getLocalPort();
@@ -85,8 +89,13 @@ public class Servlet30NoWrappingInstrumentationTest extends AbstractInstrumenter
   }
 
   @Test
-  public void echo_async_response() throws Exception {
-    postJson(String.format("http://localhost:%d/echo_async_response", serverPort));
+  public void echo_async_response_stream() throws Exception {
+    postJson(String.format("http://localhost:%d/echo_async_response_stream", serverPort));
+  }
+
+  @Test
+  public void echo_async_response_writer() throws Exception {
+    postJson(String.format("http://localhost:%d/echo_async_response_writer", serverPort));
   }
 
   @Test
@@ -132,6 +141,11 @@ public class Servlet30NoWrappingInstrumentationTest extends AbstractInstrumenter
   @Test
   public void postJson_writer_readLine_print_str() throws Exception {
     postJson(String.format("http://localhost:%d/echo_writer_readLine_print_str", serverPort));
+  }
+
+  @Test
+  public void postJson_writer_readLines() throws Exception {
+    postJson(String.format("http://localhost:%d/echo_writer_readLines", serverPort));
   }
 
   @Test

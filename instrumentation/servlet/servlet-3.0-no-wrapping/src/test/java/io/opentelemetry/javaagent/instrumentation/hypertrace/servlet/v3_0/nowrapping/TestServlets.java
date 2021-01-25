@@ -17,6 +17,7 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping;
 
 import java.io.IOException;
+import java.util.stream.Stream;
 import javax.servlet.AsyncContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -147,6 +148,20 @@ public class TestServlets {
     }
   }
 
+  public static class EchoWriter_readLines extends HttpServlet {
+    @Override
+    protected void service(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+      Stream<String> lines = req.getReader().lines();
+      lines.forEach(s -> {});
+
+      resp.setStatus(200);
+      resp.setContentType("application/json");
+      resp.setHeader(RESPONSE_HEADER, RESPONSE_HEADER_VALUE);
+
+      resp.getWriter().write(RESPONSE_BODY);
+    }
+  }
+
   public static class EchoWriter_readLine_print_str extends HttpServlet {
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -173,14 +188,21 @@ public class TestServlets {
     }
   }
 
-  public static class EchoAsyncResponse extends HttpServlet {
+  public static class EchoAsyncResponse_stream extends HttpServlet {
     @Override
-    protected void service(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-      while (req.getReader().readLine() != null) {}
+    protected void service(HttpServletRequest req, HttpServletResponse resp) {
 
       AsyncContext asyncContext = req.startAsync();
       asyncContext.start(
           () -> {
+            while (true) {
+              try {
+                if (!(req.getInputStream().read() != -1)) break;
+              } catch (IOException e) {
+                e.printStackTrace();
+              }
+            }
+
             try {
               Thread.sleep(100);
             } catch (InterruptedException e) {
@@ -192,7 +214,42 @@ public class TestServlets {
             httpServletResponse.setContentType("application/json");
             httpServletResponse.setHeader(RESPONSE_HEADER, RESPONSE_HEADER_VALUE);
             try {
-              httpServletResponse.getWriter().print(RESPONSE_BODY.toCharArray());
+              httpServletResponse.getOutputStream().print(RESPONSE_BODY);
+            } catch (IOException e) {
+              e.printStackTrace();
+            }
+            asyncContext.complete();
+          });
+    }
+  }
+
+  public static class EchoAsyncResponse_writer extends HttpServlet {
+    @Override
+    protected void service(HttpServletRequest req, HttpServletResponse resp) {
+
+      AsyncContext asyncContext = req.startAsync();
+      asyncContext.start(
+          () -> {
+            while (true) {
+              try {
+                if (!(req.getReader().read() != -1)) break;
+              } catch (IOException e) {
+                e.printStackTrace();
+              }
+            }
+
+            try {
+              Thread.sleep(100);
+            } catch (InterruptedException e) {
+              e.printStackTrace();
+            }
+            HttpServletResponse httpServletResponse =
+                (HttpServletResponse) asyncContext.getResponse();
+            httpServletResponse.setStatus(200);
+            httpServletResponse.setContentType("application/json");
+            httpServletResponse.setHeader(RESPONSE_HEADER, RESPONSE_HEADER_VALUE);
+            try {
+              httpServletResponse.getWriter().print(RESPONSE_BODY);
             } catch (IOException e) {
               e.printStackTrace();
             }

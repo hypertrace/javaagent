@@ -157,15 +157,11 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
       ContextStore<PrintWriter, BoundedCharArrayWriter> writerContext =
           InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class);
 
-      // remove request body buffers from context stores, otherwise they might get reused
-      if (agentConfig.getDataCapture().getHttpBody().getRequest().getValue()
-          && ContentTypeUtils.shouldCapture(httpRequest.getContentType())) {
-        ContextStore<ServletInputStream, ByteBufferSpanPair> inputStreamContext =
-            InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class);
-        ContextStore<BufferedReader, CharBufferSpanPair> readerContext =
-            InstrumentationContext.get(BufferedReader.class, CharBufferSpanPair.class);
-        Utils.resetRequestBodyBuffers(inputStreamContext, readerContext, httpRequest);
-      }
+      // request context to clear body buffer
+      ContextStore<ServletInputStream, ByteBufferSpanPair> inputStreamContext =
+          InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class);
+      ContextStore<BufferedReader, CharBufferSpanPair> readerContext =
+          InstrumentationContext.get(BufferedReader.class, CharBufferSpanPair.class);
 
       AtomicBoolean responseHandled = new AtomicBoolean(false);
       if (request.isAsyncStarted()) {
@@ -174,7 +170,12 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
               .getAsyncContext()
               .addListener(
                   new BodyCaptureAsyncListener(
-                      responseHandled, currentSpan, outputStreamContext, writerContext));
+                      responseHandled,
+                      currentSpan,
+                      outputStreamContext,
+                      writerContext,
+                      inputStreamContext,
+                      readerContext));
         } catch (IllegalStateException e) {
           // org.eclipse.jetty.server.Request may throw an exception here if request became
           // finished after check above. We just ignore that exception and move on.
@@ -194,6 +195,12 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
         if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()
             && ContentTypeUtils.shouldCapture(httpResponse.getContentType())) {
           Utils.captureResponseBody(currentSpan, outputStreamContext, writerContext, httpResponse);
+        }
+
+        // remove request body buffers from context stores, otherwise they might get reused
+        if (agentConfig.getDataCapture().getHttpBody().getRequest().getValue()
+            && ContentTypeUtils.shouldCapture(httpRequest.getContentType())) {
+          Utils.resetRequestBodyBuffers(inputStreamContext, readerContext, httpRequest);
         }
       }
     }
