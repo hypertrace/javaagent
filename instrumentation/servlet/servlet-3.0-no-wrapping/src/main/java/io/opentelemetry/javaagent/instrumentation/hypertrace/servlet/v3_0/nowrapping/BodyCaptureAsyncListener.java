@@ -68,14 +68,16 @@ public class BodyCaptureAsyncListener implements AsyncListener {
   @Override
   public void onComplete(AsyncEvent event) {
     if (responseHandled.compareAndSet(false, true)) {
-      captureResponseData(event.getSuppliedResponse(), event.getSuppliedRequest());
+      captureResponseDataAndClearRequestBuffer(
+          event.getSuppliedResponse(), event.getSuppliedRequest());
     }
   }
 
   @Override
   public void onError(AsyncEvent event) {
     if (responseHandled.compareAndSet(false, true)) {
-      captureResponseData(event.getSuppliedResponse(), event.getSuppliedRequest());
+      captureResponseDataAndClearRequestBuffer(
+          event.getSuppliedResponse(), event.getSuppliedRequest());
     }
   }
 
@@ -85,7 +87,8 @@ public class BodyCaptureAsyncListener implements AsyncListener {
   @Override
   public void onStartAsync(AsyncEvent event) {}
 
-  private void captureResponseData(ServletResponse servletResponse, ServletRequest servletRequest) {
+  private void captureResponseDataAndClearRequestBuffer(
+      ServletResponse servletResponse, ServletRequest servletRequest) {
     if (servletResponse instanceof HttpServletResponse) {
       HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
 
