@@ -86,6 +86,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
     public static void exit(
         @Advice.This ServletRequest servletRequest,
         @Advice.Return ServletInputStream servletInputStream,
+        @Advice.Thrown Throwable throwable,
         @Advice.Enter RequestStreamReaderHolder requestStreamReaderHolder) {
 
       if (requestStreamReaderHolder == null) {
@@ -96,9 +97,8 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
       if (callDepth > 0) {
         return;
       }
-      // TODO what to do on exception?
 
-      if (!(servletRequest instanceof HttpServletRequest)) {
+      if (!(servletRequest instanceof HttpServletRequest) || throwable != null) {
         return;
       }
       HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
@@ -137,6 +137,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
     public static void exit(
         @Advice.This ServletRequest servletRequest,
         @Advice.Return BufferedReader reader,
+        @Advice.Thrown Throwable throwable,
         @Advice.Enter RequestStreamReaderHolder requestStreamReaderHolder) {
 
       if (requestStreamReaderHolder == null) {
@@ -148,7 +149,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
         return;
       }
 
-      if (!(servletRequest instanceof HttpServletRequest)) {
+      if (!(servletRequest instanceof HttpServletRequest) || throwable != null) {
         return;
       }
       HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
