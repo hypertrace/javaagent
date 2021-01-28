@@ -90,7 +90,7 @@ public class StrutsInstrumentationTest extends AbstractInstrumenterTest {
     assertEquals(1, spans.size());
     SpanData spanData = spans.get(0);
     assertEquals(
-        "\"" + Struts2Action.sample + "\"",
+        "\"" + new Struts2Action().getJsonString() + "\"",
         spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
     assertEquals(
         REQUEST_BODY, spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));

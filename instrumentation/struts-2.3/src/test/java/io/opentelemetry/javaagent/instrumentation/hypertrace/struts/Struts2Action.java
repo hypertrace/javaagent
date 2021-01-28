@@ -17,7 +17,6 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.struts;
 
 import com.opensymphony.xwork2.ActionSupport;
-import java.io.IOException;
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.convention.annotation.Result;
 
@@ -25,12 +24,9 @@ import org.apache.struts2.convention.annotation.Result;
 @ParentPackage("json-default")
 public class Struts2Action extends ActionSupport {
 
-  private String jsonString;
+  private String jsonString = "{'balance':1000.21,'is_vip':true,'num':100,'name':'foo'}";
 
-  static final String sample = "{'balance':1000.21,'is_vip':true,'num':100,'name':'foo'}";
-
-  public String body() throws IOException {
-    jsonString = sample;
+  public String body() {
     return "body";
   }
 
