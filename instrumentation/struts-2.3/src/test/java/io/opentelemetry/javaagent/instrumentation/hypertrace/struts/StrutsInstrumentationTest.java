@@ -16,13 +16,14 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.struts;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 import javax.servlet.DispatcherType;
-
-import io.opentelemetry.sdk.trace.data.SpanData;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -38,8 +39,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class StrutsInstrumentationTest extends AbstractInstrumenterTest {
 
@@ -59,7 +58,8 @@ public class StrutsInstrumentationTest extends AbstractInstrumenterTest {
     handler.setContextPath("/context");
     handler.setBaseResource(resource);
     handler.addServlet(DefaultServlet.class, "/");
-    handler.addFilter(StrutsPrepareAndExecuteFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
+    handler.addFilter(
+        StrutsPrepareAndExecuteFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
     server.setHandler(handler);
     server.start();
     serverPort = server.getConnectors()[0].getLocalPort();
@@ -75,7 +75,9 @@ public class StrutsInstrumentationTest extends AbstractInstrumenterTest {
     Request request =
         new Request.Builder()
             .url(String.format("http://localhost:%d/context/body", serverPort))
-            .post(RequestBody.create(REQUEST_BODY, MediaType.get("application/x-www-form-urlencoded")))
+            .post(
+                RequestBody.create(
+                    REQUEST_BODY, MediaType.get("application/x-www-form-urlencoded")))
             .build();
     try (Response response = httpClient.newCall(request).execute()) {
       assertEquals(200, response.code());
@@ -87,18 +89,21 @@ public class StrutsInstrumentationTest extends AbstractInstrumenterTest {
     List<SpanData> spans = traces.get(0);
     assertEquals(1, spans.size());
     SpanData spanData = spans.get(0);
-    assertEquals("\"" + Struts2Action.sample + "\"", spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
-    assertEquals(REQUEST_BODY, spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+    assertEquals(
+        "\"" + Struts2Action.sample + "\"",
+        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+    assertEquals(
+        REQUEST_BODY, spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
   }
 
   @Test
   public void testHeaders() throws IOException, TimeoutException, InterruptedException {
     Request request =
-            new Request.Builder()
-                    .url(String.format("http://localhost:%d/context/headers", serverPort))
-                    .get()
-                    .header(REQUEST_HEADER, REQUEST_HEADER_VALUE)
-                    .build();
+        new Request.Builder()
+            .url(String.format("http://localhost:%d/context/headers", serverPort))
+            .get()
+            .header(REQUEST_HEADER, REQUEST_HEADER_VALUE)
+            .build();
     try (Response response = httpClient.newCall(request).execute()) {
       assertEquals(200, response.code());
     }
@@ -109,18 +114,26 @@ public class StrutsInstrumentationTest extends AbstractInstrumenterTest {
     List<SpanData> spans = traces.get(0);
     assertEquals(1, spans.size());
     SpanData spanData = spans.get(0);
-    assertEquals(RESPONSE_HEADER_VALUE, spanData.getAttributes().get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_HEADER)));
-    assertEquals(REQUEST_HEADER_VALUE, spanData.getAttributes().get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER)));
+    assertEquals(
+        RESPONSE_HEADER_VALUE,
+        spanData
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_HEADER)));
+    assertEquals(
+        REQUEST_HEADER_VALUE,
+        spanData
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER)));
   }
 
   @Test
   public void testBlocking() throws IOException, TimeoutException, InterruptedException {
     Request request =
-            new Request.Builder()
-                    .url(String.format("http://localhost:%d/context/body", serverPort))
-                    .get()
-                    .header("mockblock", "true")
-                    .build();
+        new Request.Builder()
+            .url(String.format("http://localhost:%d/context/body", serverPort))
+            .get()
+            .header("mockblock", "true")
+            .build();
     try (Response response = httpClient.newCall(request).execute()) {
       Assertions.assertEquals(403, response.code());
     }
@@ -132,11 +145,12 @@ public class StrutsInstrumentationTest extends AbstractInstrumenterTest {
     Assertions.assertEquals(1, spans.size());
     SpanData spanData = spans.get(0);
     Assertions.assertNull(
-            spanData.getAttributes().get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_HEADER)));
+        spanData
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_HEADER)));
     Assertions.assertNull(
-            spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
     Assertions.assertNull(
-            spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
   }
-
 }

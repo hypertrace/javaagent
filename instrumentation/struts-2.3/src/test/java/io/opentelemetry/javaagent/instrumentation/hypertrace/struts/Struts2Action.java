@@ -17,10 +17,9 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.struts;
 
 import com.opensymphony.xwork2.ActionSupport;
+import java.io.IOException;
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.convention.annotation.Result;
-
-import java.io.IOException;
 
 @Result(type = "json")
 @ParentPackage("json-default")
