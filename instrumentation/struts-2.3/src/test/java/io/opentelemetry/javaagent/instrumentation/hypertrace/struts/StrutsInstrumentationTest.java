@@ -71,7 +71,7 @@ public class StrutsInstrumentationTest extends AbstractInstrumenterTest {
   }
 
   @Test
-  public void testBody() throws IOException, TimeoutException, InterruptedException {
+  public void postUrlEncoded() throws IOException, TimeoutException, InterruptedException {
     Request request =
         new Request.Builder()
             .url(String.format("http://localhost:%d/context/body", serverPort))
@@ -97,7 +97,7 @@ public class StrutsInstrumentationTest extends AbstractInstrumenterTest {
   }
 
   @Test
-  public void testHeaders() throws IOException, TimeoutException, InterruptedException {
+  public void getHeaders() throws IOException, TimeoutException, InterruptedException {
     Request request =
         new Request.Builder()
             .url(String.format("http://localhost:%d/context/headers", serverPort))
@@ -127,7 +127,7 @@ public class StrutsInstrumentationTest extends AbstractInstrumenterTest {
   }
 
   @Test
-  public void testBlocking() throws IOException, TimeoutException, InterruptedException {
+  public void block() throws IOException, TimeoutException, InterruptedException {
     Request request =
         new Request.Builder()
             .url(String.format("http://localhost:%d/context/body", serverPort))

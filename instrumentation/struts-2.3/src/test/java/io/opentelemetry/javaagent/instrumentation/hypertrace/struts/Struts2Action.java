@@ -27,7 +27,7 @@ public class Struts2Action extends ActionSupport {
 
   private String jsonString;
 
-  public static String sample = "{'balance':1000.21,'is_vip':true,'num':100,'name':'foo'}";
+  static final String sample = "{'balance':1000.21,'is_vip':true,'num':100,'name':'foo'}";
 
   public String body() throws IOException {
     jsonString = sample;
