@@ -25,6 +25,7 @@ List of supported frameworks with additional capabilities:
 | [Spark Web Framework](https://github.com/perwendel/spark)                                              | 2.3+            |
 | [Spring Webflux](https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/web/reactive/package-summary.html)       | 5.0+            |
 | [Vert.x](https://vertx.io)                                                                             | 3.0+            |
+| [Struts](https://struts.apache.org/)                                                                   | 2.3+            |
 
 ### Adding custom filter implementation
 
