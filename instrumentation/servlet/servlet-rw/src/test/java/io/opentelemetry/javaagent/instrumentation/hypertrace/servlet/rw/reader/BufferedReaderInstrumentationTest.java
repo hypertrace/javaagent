@@ -41,7 +41,8 @@ public class BufferedReaderInstrumentationTest extends AbstractInstrumenterTest 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
     CharBufferSpanPair bufferSpanPair = new CharBufferSpanPair(span, buffer);
 
-    BufferedReaderPrintWriterContextAccess.addToBufferedReaderContext(bufferedReader, bufferSpanPair);
+    BufferedReaderPrintWriterContextAccess.addToBufferedReaderContext(
+        bufferedReader, bufferSpanPair);
 
     while (bufferedReader.read() != -1) {}
     Assertions.assertEquals(BODY, buffer.toString());
@@ -57,7 +58,8 @@ public class BufferedReaderInstrumentationTest extends AbstractInstrumenterTest 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
     CharBufferSpanPair bufferSpanPair = new CharBufferSpanPair(span, buffer);
 
-    BufferedReaderPrintWriterContextAccess.addToBufferedReaderContext(bufferedReader, bufferSpanPair);
+    BufferedReaderPrintWriterContextAccess.addToBufferedReaderContext(
+        bufferedReader, bufferSpanPair);
 
     while (bufferedReader.read() != -1) {}
     Assertions.assertEquals(BODY.substring(1), buffer.toString());
@@ -72,7 +74,8 @@ public class BufferedReaderInstrumentationTest extends AbstractInstrumenterTest 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
     CharBufferSpanPair bufferSpanPair = new CharBufferSpanPair(span, buffer);
 
-    BufferedReaderPrintWriterContextAccess.addToBufferedReaderContext(bufferedReader, bufferSpanPair);
+    BufferedReaderPrintWriterContextAccess.addToBufferedReaderContext(
+        bufferedReader, bufferSpanPair);
 
     while (bufferedReader.read(new char[BODY.length()]) != -1) {}
     Assertions.assertEquals(BODY, buffer.toString());
@@ -88,7 +91,8 @@ public class BufferedReaderInstrumentationTest extends AbstractInstrumenterTest 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
     CharBufferSpanPair bufferSpanPair = new CharBufferSpanPair(span, buffer);
 
-    BufferedReaderPrintWriterContextAccess.addToBufferedReaderContext(bufferedReader, bufferSpanPair);
+    BufferedReaderPrintWriterContextAccess.addToBufferedReaderContext(
+        bufferedReader, bufferSpanPair);
 
     while (bufferedReader.read(new char[BODY.length()]) != -1) {}
     Assertions.assertEquals(BODY.substring(2), buffer.toString());
@@ -103,10 +107,11 @@ public class BufferedReaderInstrumentationTest extends AbstractInstrumenterTest 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
     CharBufferSpanPair bufferSpanPair = new CharBufferSpanPair(span, buffer);
 
-    BufferedReaderPrintWriterContextAccess.addToBufferedReaderContext(bufferedReader, bufferSpanPair);
+    BufferedReaderPrintWriterContextAccess.addToBufferedReaderContext(
+        bufferedReader, bufferSpanPair);
 
     bufferedReader.read(new char[BODY.length()], 0, 2);
-    bufferedReader.read(new char[BODY.length()], 2, BODY.length()-2);
+    bufferedReader.read(new char[BODY.length()], 2, BODY.length() - 2);
     Assertions.assertEquals(BODY, buffer.toString());
   }
 
@@ -114,12 +119,14 @@ public class BufferedReaderInstrumentationTest extends AbstractInstrumenterTest 
   public void readLine() throws IOException {
     Span span = TEST_TRACER.spanBuilder(TEST_SPAN_NAME).startSpan();
 
-    BufferedReader bufferedReader = new TestBufferedReader(new CharArrayReader((BODY+"\n").toCharArray()));
+    BufferedReader bufferedReader =
+        new TestBufferedReader(new CharArrayReader((BODY + "\n").toCharArray()));
 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
     CharBufferSpanPair bufferSpanPair = new CharBufferSpanPair(span, buffer);
 
-    BufferedReaderPrintWriterContextAccess.addToBufferedReaderContext(bufferedReader, bufferSpanPair);
+    BufferedReaderPrintWriterContextAccess.addToBufferedReaderContext(
+        bufferedReader, bufferSpanPair);
 
     bufferedReader.readLine();
     Assertions.assertEquals(BODY, buffer.toString());
