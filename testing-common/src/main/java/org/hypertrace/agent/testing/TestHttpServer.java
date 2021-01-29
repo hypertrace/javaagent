@@ -41,6 +41,7 @@ public class TestHttpServer implements AutoCloseable {
     handlerList.addHandler(new GetJsonHandler());
     handlerList.addHandler(new PostHandler());
     handlerList.addHandler(new PostRedirect());
+    handlerList.addHandler(new EchoHandler());
     server.setHandler(handlerList);
     server.start();
   }
@@ -148,6 +149,33 @@ public class TestHttpServer implements AutoCloseable {
           && "post".equalsIgnoreCase(request.getMethod())) {
         response.sendRedirect(
             String.format("http://localhost:%d/get_no_content", baseRequest.getServerPort()));
+        baseRequest.setHandled(true);
+      }
+    }
+  }
+
+  static class EchoHandler extends ResponseTestHeadersHandler {
+    @Override
+    public void handle(
+            String target,
+            Request baseRequest,
+            HttpServletRequest request,
+            HttpServletResponse response)
+            throws IOException {
+      super.handle(target, baseRequest, request, response);
+
+      if (target.equals("/echo")
+              && "post".equalsIgnoreCase(request.getMethod())) {
+        ServletInputStream inputStream = request.getInputStream();
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        int nRead;
+        while ((nRead = inputStream.read()) != -1) {
+          buffer.write((byte) nRead);
+        }
+
+        response.setStatus(200);
+        response.setContentType(request.getContentType());
+        response.getWriter().print(buffer.toString());
         baseRequest.setHandled(true);
       }
     }
