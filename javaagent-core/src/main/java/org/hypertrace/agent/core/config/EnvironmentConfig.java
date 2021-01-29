@@ -73,6 +73,7 @@ public class EnvironmentConfig {
   private static void applyPropagationFormat(AgentConfig.Builder builder) {
     String propagationFormats = getProperty(PROPAGATION_FORMATS);
     if (propagationFormats != null) {
+      builder.clearPropagationFormats();
       String[] formats = propagationFormats.split(",");
       for (String format : formats) {
         builder.addPropagationFormats(PropagationFormat.valueOf(format));
