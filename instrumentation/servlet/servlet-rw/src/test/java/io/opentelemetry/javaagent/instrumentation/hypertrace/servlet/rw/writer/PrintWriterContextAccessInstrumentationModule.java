@@ -56,7 +56,7 @@ public class PrintWriterContextAccessInstrumentationModule extends Instrumentati
 
     @Override
     public ElementMatcher<? super TypeDescription> typeMatcher() {
-      return named("org.ServletReadWriteContextAccess");
+      return named("org.BufferedReaderPrintWriterContextAccess");
     }
 
     @Override

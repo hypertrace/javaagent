@@ -54,7 +54,7 @@ public class BufferedReaderContextAccessInstrumentationModule extends Instrument
 
     @Override
     public ElementMatcher<? super TypeDescription> typeMatcher() {
-      return named("org.ServletReadWriteContextAccess");
+      return named("org.BufferedReaderPrintWriterContextAccess");
     }
 
     @Override

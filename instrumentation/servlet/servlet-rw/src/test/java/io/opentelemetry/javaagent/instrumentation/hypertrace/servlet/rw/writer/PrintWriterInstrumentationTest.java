@@ -18,7 +18,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.rw.writer;
 
 import java.io.CharArrayWriter;
 import java.io.PrintWriter;
-import org.ServletReadWriteContextAccess;
+import org.BufferedReaderPrintWriterContextAccess;
 import org.TestPrintWriter;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
@@ -35,7 +35,7 @@ public class PrintWriterInstrumentationTest extends AbstractInstrumenterTest {
     PrintWriter printWriter = new TestPrintWriter(new CharArrayWriter());
 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
-    ServletReadWriteContextAccess.addToPrintWriterContext(printWriter, buffer);
+    BufferedReaderPrintWriterContextAccess.addToPrintWriterContext(printWriter, buffer);
 
     char[] chars = BODY.toCharArray();
     for (int i = 0; i < BODY.length(); i++) {
@@ -49,7 +49,7 @@ public class PrintWriterInstrumentationTest extends AbstractInstrumenterTest {
     PrintWriter printWriter = new TestPrintWriter(new CharArrayWriter());
 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
-    ServletReadWriteContextAccess.addToPrintWriterContext(printWriter, buffer);
+    BufferedReaderPrintWriterContextAccess.addToPrintWriterContext(printWriter, buffer);
 
     printWriter.write(BODY.toCharArray());
     Assertions.assertEquals(BODY, buffer.toString());
@@ -60,7 +60,7 @@ public class PrintWriterInstrumentationTest extends AbstractInstrumenterTest {
     PrintWriter printWriter = new TestPrintWriter(new CharArrayWriter());
 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
-    ServletReadWriteContextAccess.addToPrintWriterContext(printWriter, buffer);
+    BufferedReaderPrintWriterContextAccess.addToPrintWriterContext(printWriter, buffer);
 
     char[] chars = BODY.toCharArray();
     printWriter.write(chars, 0, 2);
@@ -73,7 +73,7 @@ public class PrintWriterInstrumentationTest extends AbstractInstrumenterTest {
     PrintWriter printWriter = new TestPrintWriter(new CharArrayWriter());
 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
-    ServletReadWriteContextAccess.addToPrintWriterContext(printWriter, buffer);
+    BufferedReaderPrintWriterContextAccess.addToPrintWriterContext(printWriter, buffer);
 
     printWriter.write(BODY);
     Assertions.assertEquals(BODY, buffer.toString());
@@ -84,7 +84,7 @@ public class PrintWriterInstrumentationTest extends AbstractInstrumenterTest {
     PrintWriter printWriter = new TestPrintWriter(new CharArrayWriter());
 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
-    ServletReadWriteContextAccess.addToPrintWriterContext(printWriter, buffer);
+    BufferedReaderPrintWriterContextAccess.addToPrintWriterContext(printWriter, buffer);
 
     printWriter.write(BODY, 0, 2);
     printWriter.write(BODY, 2, BODY.length() - 2);
@@ -96,10 +96,21 @@ public class PrintWriterInstrumentationTest extends AbstractInstrumenterTest {
     PrintWriter printWriter = new TestPrintWriter(new CharArrayWriter());
 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
-    ServletReadWriteContextAccess.addToPrintWriterContext(printWriter, buffer);
+    BufferedReaderPrintWriterContextAccess.addToPrintWriterContext(printWriter, buffer);
 
     printWriter.print(BODY);
     Assertions.assertEquals(BODY, buffer.toString());
+  }
+
+  @Test
+  public void println() {
+    PrintWriter printWriter = new TestPrintWriter(new CharArrayWriter());
+
+    BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
+    BufferedReaderPrintWriterContextAccess.addToPrintWriterContext(printWriter, buffer);
+
+    printWriter.println();
+    Assertions.assertEquals("\n", buffer.toString());
   }
 
   @Test
@@ -107,7 +118,7 @@ public class PrintWriterInstrumentationTest extends AbstractInstrumenterTest {
     PrintWriter printWriter = new TestPrintWriter(new CharArrayWriter());
 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
-    ServletReadWriteContextAccess.addToPrintWriterContext(printWriter, buffer);
+    BufferedReaderPrintWriterContextAccess.addToPrintWriterContext(printWriter, buffer);
 
     printWriter.println(BODY);
     Assertions.assertEquals(BODY + "\n", buffer.toString());

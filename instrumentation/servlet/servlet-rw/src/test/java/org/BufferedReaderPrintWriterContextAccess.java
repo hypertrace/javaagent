@@ -21,7 +21,9 @@ import java.io.PrintWriter;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
 import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
 
-public class ServletReadWriteContextAccess {
+public class BufferedReaderPrintWriterContextAccess {
+
+  private BufferedReaderPrintWriterContextAccess() {}
 
   public static void addToBufferedReaderContext(
       BufferedReader bufferedReader, CharBufferSpanPair buffer) {}

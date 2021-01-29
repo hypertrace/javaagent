@@ -18,10 +18,9 @@ package org;
 
 import java.io.BufferedReader;
 import java.io.Reader;
-import org.jetbrains.annotations.NotNull;
 
 public class TestBufferedReader extends BufferedReader {
-  public TestBufferedReader(@NotNull Reader in) {
+  public TestBufferedReader(Reader in) {
     super(in);
   }
 }

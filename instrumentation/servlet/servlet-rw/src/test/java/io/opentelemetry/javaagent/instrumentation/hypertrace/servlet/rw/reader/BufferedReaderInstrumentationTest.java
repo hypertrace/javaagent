@@ -20,7 +20,7 @@ import io.opentelemetry.api.trace.Span;
 import java.io.BufferedReader;
 import java.io.CharArrayReader;
 import java.io.IOException;
-import org.ServletReadWriteContextAccess;
+import org.BufferedReaderPrintWriterContextAccess;
 import org.TestBufferedReader;
 import org.hypertrace.agent.core.instrumentation.buffer.*;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
@@ -41,7 +41,7 @@ public class BufferedReaderInstrumentationTest extends AbstractInstrumenterTest 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
     CharBufferSpanPair bufferSpanPair = new CharBufferSpanPair(span, buffer);
 
-    ServletReadWriteContextAccess.addToBufferedReaderContext(bufferedReader, bufferSpanPair);
+    BufferedReaderPrintWriterContextAccess.addToBufferedReaderContext(bufferedReader, bufferSpanPair);
 
     while (bufferedReader.read() != -1) {}
     Assertions.assertEquals(BODY, buffer.toString());
@@ -57,14 +57,29 @@ public class BufferedReaderInstrumentationTest extends AbstractInstrumenterTest 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
     CharBufferSpanPair bufferSpanPair = new CharBufferSpanPair(span, buffer);
 
-    ServletReadWriteContextAccess.addToBufferedReaderContext(bufferedReader, bufferSpanPair);
+    BufferedReaderPrintWriterContextAccess.addToBufferedReaderContext(bufferedReader, bufferSpanPair);
 
     while (bufferedReader.read() != -1) {}
     Assertions.assertEquals(BODY.substring(1), buffer.toString());
   }
 
   @Test
-  public void read_callDepth_char_arr_offset() throws IOException {
+  public void read_char_arr() throws IOException {
+    Span span = TEST_TRACER.spanBuilder(TEST_SPAN_NAME).startSpan();
+
+    BufferedReader bufferedReader = new TestBufferedReader(new CharArrayReader(BODY.toCharArray()));
+
+    BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
+    CharBufferSpanPair bufferSpanPair = new CharBufferSpanPair(span, buffer);
+
+    BufferedReaderPrintWriterContextAccess.addToBufferedReaderContext(bufferedReader, bufferSpanPair);
+
+    while (bufferedReader.read(new char[BODY.length()]) != -1) {}
+    Assertions.assertEquals(BODY, buffer.toString());
+  }
+
+  @Test
+  public void read_callDepth_char_arr() throws IOException {
     Span span = TEST_TRACER.spanBuilder(TEST_SPAN_NAME).startSpan();
 
     BufferedReader bufferedReader = new TestBufferedReader(new CharArrayReader(BODY.toCharArray()));
@@ -73,9 +88,40 @@ public class BufferedReaderInstrumentationTest extends AbstractInstrumenterTest 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
     CharBufferSpanPair bufferSpanPair = new CharBufferSpanPair(span, buffer);
 
-    ServletReadWriteContextAccess.addToBufferedReaderContext(bufferedReader, bufferSpanPair);
+    BufferedReaderPrintWriterContextAccess.addToBufferedReaderContext(bufferedReader, bufferSpanPair);
 
     while (bufferedReader.read(new char[BODY.length()]) != -1) {}
     Assertions.assertEquals(BODY.substring(2), buffer.toString());
+  }
+
+  @Test
+  public void read_char_arr_offset() throws IOException {
+    Span span = TEST_TRACER.spanBuilder(TEST_SPAN_NAME).startSpan();
+
+    BufferedReader bufferedReader = new TestBufferedReader(new CharArrayReader(BODY.toCharArray()));
+
+    BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
+    CharBufferSpanPair bufferSpanPair = new CharBufferSpanPair(span, buffer);
+
+    BufferedReaderPrintWriterContextAccess.addToBufferedReaderContext(bufferedReader, bufferSpanPair);
+
+    bufferedReader.read(new char[BODY.length()], 0, 2);
+    bufferedReader.read(new char[BODY.length()], 2, BODY.length()-2);
+    Assertions.assertEquals(BODY, buffer.toString());
+  }
+
+  @Test
+  public void readLine() throws IOException {
+    Span span = TEST_TRACER.spanBuilder(TEST_SPAN_NAME).startSpan();
+
+    BufferedReader bufferedReader = new TestBufferedReader(new CharArrayReader((BODY+"\n").toCharArray()));
+
+    BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
+    CharBufferSpanPair bufferSpanPair = new CharBufferSpanPair(span, buffer);
+
+    BufferedReaderPrintWriterContextAccess.addToBufferedReaderContext(bufferedReader, bufferSpanPair);
+
+    bufferedReader.readLine();
+    Assertions.assertEquals(BODY, buffer.toString());
   }
 }

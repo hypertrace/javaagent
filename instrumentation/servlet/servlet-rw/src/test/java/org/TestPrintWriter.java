@@ -18,10 +18,9 @@ package org;
 
 import java.io.PrintWriter;
 import java.io.Writer;
-import org.jetbrains.annotations.NotNull;
 
 public class TestPrintWriter extends PrintWriter {
-  public TestPrintWriter(@NotNull Writer out) {
+  public TestPrintWriter(Writer out) {
     super(out);
   }
 }
