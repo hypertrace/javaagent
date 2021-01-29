@@ -1,0 +1,2 @@
+io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.rw.reader.BufferedReaderContextAccessInstrumentationModule
+io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.rw.writer.PrintWriterContextAccessInstrumentationModule
