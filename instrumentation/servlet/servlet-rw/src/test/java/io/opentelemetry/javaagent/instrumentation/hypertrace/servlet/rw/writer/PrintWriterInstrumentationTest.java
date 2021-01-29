@@ -19,7 +19,6 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.rw.writer;
 import java.io.CharArrayWriter;
 import java.io.PrintWriter;
 import org.BufferedReaderPrintWriterContextAccess;
-import org.TestPrintWriter;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
@@ -32,7 +31,7 @@ public class PrintWriterInstrumentationTest extends AbstractInstrumenterTest {
 
   @Test
   public void write_single_char() {
-    PrintWriter printWriter = new TestPrintWriter(new CharArrayWriter());
+    PrintWriter printWriter = new PrintWriter(new CharArrayWriter());
 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
     BufferedReaderPrintWriterContextAccess.addToPrintWriterContext(printWriter, buffer);
@@ -46,7 +45,7 @@ public class PrintWriterInstrumentationTest extends AbstractInstrumenterTest {
 
   @Test
   public void write_char_arr() {
-    PrintWriter printWriter = new TestPrintWriter(new CharArrayWriter());
+    PrintWriter printWriter = new PrintWriter(new CharArrayWriter());
 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
     BufferedReaderPrintWriterContextAccess.addToPrintWriterContext(printWriter, buffer);
@@ -57,7 +56,7 @@ public class PrintWriterInstrumentationTest extends AbstractInstrumenterTest {
 
   @Test
   public void write_char_arr_offset() {
-    PrintWriter printWriter = new TestPrintWriter(new CharArrayWriter());
+    PrintWriter printWriter = new PrintWriter(new CharArrayWriter());
 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
     BufferedReaderPrintWriterContextAccess.addToPrintWriterContext(printWriter, buffer);
@@ -70,7 +69,7 @@ public class PrintWriterInstrumentationTest extends AbstractInstrumenterTest {
 
   @Test
   public void write_str() {
-    PrintWriter printWriter = new TestPrintWriter(new CharArrayWriter());
+    PrintWriter printWriter = new PrintWriter(new CharArrayWriter());
 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
     BufferedReaderPrintWriterContextAccess.addToPrintWriterContext(printWriter, buffer);
@@ -81,7 +80,7 @@ public class PrintWriterInstrumentationTest extends AbstractInstrumenterTest {
 
   @Test
   public void write_str_offset() {
-    PrintWriter printWriter = new TestPrintWriter(new CharArrayWriter());
+    PrintWriter printWriter = new PrintWriter(new CharArrayWriter());
 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
     BufferedReaderPrintWriterContextAccess.addToPrintWriterContext(printWriter, buffer);
@@ -93,7 +92,7 @@ public class PrintWriterInstrumentationTest extends AbstractInstrumenterTest {
 
   @Test
   public void print_str() {
-    PrintWriter printWriter = new TestPrintWriter(new CharArrayWriter());
+    PrintWriter printWriter = new PrintWriter(new CharArrayWriter());
 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
     BufferedReaderPrintWriterContextAccess.addToPrintWriterContext(printWriter, buffer);
@@ -104,7 +103,7 @@ public class PrintWriterInstrumentationTest extends AbstractInstrumenterTest {
 
   @Test
   public void println() {
-    PrintWriter printWriter = new TestPrintWriter(new CharArrayWriter());
+    PrintWriter printWriter = new PrintWriter(new CharArrayWriter());
 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
     BufferedReaderPrintWriterContextAccess.addToPrintWriterContext(printWriter, buffer);
@@ -115,7 +114,7 @@ public class PrintWriterInstrumentationTest extends AbstractInstrumenterTest {
 
   @Test
   public void println_str() {
-    PrintWriter printWriter = new TestPrintWriter(new CharArrayWriter());
+    PrintWriter printWriter = new PrintWriter(new CharArrayWriter());
 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
     BufferedReaderPrintWriterContextAccess.addToPrintWriterContext(printWriter, buffer);

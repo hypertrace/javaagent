@@ -21,7 +21,6 @@ import java.io.BufferedReader;
 import java.io.CharArrayReader;
 import java.io.IOException;
 import org.BufferedReaderPrintWriterContextAccess;
-import org.TestBufferedReader;
 import org.hypertrace.agent.core.instrumentation.buffer.*;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.junit.jupiter.api.Assertions;
@@ -36,7 +35,7 @@ public class BufferedReaderInstrumentationTest extends AbstractInstrumenterTest 
   public void read() throws IOException {
     Span span = TEST_TRACER.spanBuilder(TEST_SPAN_NAME).startSpan();
 
-    BufferedReader bufferedReader = new TestBufferedReader(new CharArrayReader(BODY.toCharArray()));
+    BufferedReader bufferedReader = new BufferedReader(new CharArrayReader(BODY.toCharArray()));
 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
     CharBufferSpanPair bufferSpanPair = new CharBufferSpanPair(span, buffer);
@@ -52,7 +51,7 @@ public class BufferedReaderInstrumentationTest extends AbstractInstrumenterTest 
   public void read_callDepth_isCleared() throws IOException {
     Span span = TEST_TRACER.spanBuilder(TEST_SPAN_NAME).startSpan();
 
-    BufferedReader bufferedReader = new TestBufferedReader(new CharArrayReader(BODY.toCharArray()));
+    BufferedReader bufferedReader = new BufferedReader(new CharArrayReader(BODY.toCharArray()));
     bufferedReader.read();
 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
@@ -69,7 +68,7 @@ public class BufferedReaderInstrumentationTest extends AbstractInstrumenterTest 
   public void read_char_arr() throws IOException {
     Span span = TEST_TRACER.spanBuilder(TEST_SPAN_NAME).startSpan();
 
-    BufferedReader bufferedReader = new TestBufferedReader(new CharArrayReader(BODY.toCharArray()));
+    BufferedReader bufferedReader = new BufferedReader(new CharArrayReader(BODY.toCharArray()));
 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
     CharBufferSpanPair bufferSpanPair = new CharBufferSpanPair(span, buffer);
@@ -85,7 +84,7 @@ public class BufferedReaderInstrumentationTest extends AbstractInstrumenterTest 
   public void read_callDepth_char_arr() throws IOException {
     Span span = TEST_TRACER.spanBuilder(TEST_SPAN_NAME).startSpan();
 
-    BufferedReader bufferedReader = new TestBufferedReader(new CharArrayReader(BODY.toCharArray()));
+    BufferedReader bufferedReader = new BufferedReader(new CharArrayReader(BODY.toCharArray()));
     bufferedReader.read(new char[2]);
 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
@@ -102,7 +101,7 @@ public class BufferedReaderInstrumentationTest extends AbstractInstrumenterTest 
   public void read_char_arr_offset() throws IOException {
     Span span = TEST_TRACER.spanBuilder(TEST_SPAN_NAME).startSpan();
 
-    BufferedReader bufferedReader = new TestBufferedReader(new CharArrayReader(BODY.toCharArray()));
+    BufferedReader bufferedReader = new BufferedReader(new CharArrayReader(BODY.toCharArray()));
 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
     CharBufferSpanPair bufferSpanPair = new CharBufferSpanPair(span, buffer);
@@ -120,7 +119,7 @@ public class BufferedReaderInstrumentationTest extends AbstractInstrumenterTest 
     Span span = TEST_TRACER.spanBuilder(TEST_SPAN_NAME).startSpan();
 
     BufferedReader bufferedReader =
-        new TestBufferedReader(new CharArrayReader((BODY + "\n").toCharArray()));
+        new BufferedReader(new CharArrayReader((BODY + "\n").toCharArray()));
 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
     CharBufferSpanPair bufferSpanPair = new CharBufferSpanPair(span, buffer);
