@@ -21,19 +21,17 @@ import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
 
   protected static final TestHttpServer testHttpServer = new TestHttpServer();
-
-  public static final String GET_NO_CONTENT_PATH = "http://localhost:%d/get_no_content";
-
-  public static final String GET_JSON_PATH = "http://localhost:%d/get_json";
-
-  public static final String POST_PATH = "http://localhost:%d/post";
-
-  public static final String POST_REDIRECT_PATH =
-      "http://localhost:%d/post_redirect_to_get_no_content";
 
   public static final String ECHO_PATH = "http://localhost:%d/echo";
 
@@ -48,19 +46,75 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
   }
 
   /**
-   * Test for post request with json body. Use ECHO_PATH as url string
+   * Make request using client and return response status code
+   * @param uri URI to send request to
+   * @param headers Request headers
+   * @param body Request body if applicable on given method
+   * @param contentType Content-type of request body
+   * @return status code of response
    */
-  public abstract void echoJson() throws Exception;
+  public abstract int doPostRequest(String uri, Map<String, String> headers, String body, String contentType) throws IOException;
 
-  /**
-   * Test for post request with url encoded form body. Use ECHO_PATH as url string
-   */
-  public abstract void echoUrlEncoded() throws Exception;
+  @Test
+  public void echoJson() throws TimeoutException, InterruptedException, IOException {
+    String body = "{\"foo\": \"bar\"}";
+    Map<String, String> headers = new HashMap<>();
+    headers.put("headerName", "headerValue");
+    String uri = String.format(ECHO_PATH, testHttpServer.port());
 
-  /**
-   * Test for post request with plain text body. Use ECHO_PATH as url string
-   */
-  public abstract void echoPlainText() throws Exception;
+    int status = doPostRequest(uri, headers, body, "application/json");
+
+    Assertions.assertEquals(200, status);
+
+    TEST_WRITER.waitForTraces(1);
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    Assertions.assertEquals(1, traces.size());
+    Assertions.assertEquals(1, traces.get(0).size());
+    SpanData clientSpan = traces.get(0).get(0);
+
+    assertEchoJson(clientSpan, body);
+  }
+
+  @Test
+  public void echoUrlEncoded() throws TimeoutException, InterruptedException, IOException {
+    String body = "key1=value1&key2=value2";
+    Map<String, String> headers = new HashMap<>();
+    headers.put("headerName", "headerValue");
+    String uri = String.format(ECHO_PATH, testHttpServer.port());
+
+    int status = doPostRequest(uri, headers, body, "application/x-www-form-urlencoded");
+
+    Assertions.assertEquals(200, status);
+
+    TEST_WRITER.waitForTraces(1);
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    Assertions.assertEquals(1, traces.size());
+    Assertions.assertEquals(1, traces.get(0).size());
+    SpanData clientSpan = traces.get(0).get(0);
+
+    assertEchoUrlEncoded(clientSpan, body);
+  }
+
+  @Test
+  public void echoPlainText() throws TimeoutException, InterruptedException, IOException {
+    String body = "foobar";
+    Map<String, String> headers = new HashMap<>();
+    headers.put("headerName", "headerValue");
+    String uri = String.format(ECHO_PATH, testHttpServer.port());
+
+    int status = doPostRequest(uri, headers, body, "text/plain");
+
+    Assertions.assertEquals(200, status);
+
+    TEST_WRITER.waitForTraces(1);
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    Assertions.assertEquals(1, traces.size());
+    Assertions.assertEquals(1, traces.get(0).size());
+    SpanData clientSpan = traces.get(0).get(0);
+
+    assertEchoPlainText(clientSpan);
+  }
+
 
   public void assertResponseHeaders(SpanData spanData) {
     Assertions.assertEquals(
@@ -72,26 +126,16 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
                     TestHttpServer.RESPONSE_HEADER_NAME)));
   }
 
-  public void assertGetJsonResponseBody(SpanData spanData) {
-    Assertions.assertEquals(
-        TestHttpServer.GetJsonHandler.RESPONSE_BODY,
-        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
-  }
-
-  public void assertEchoJson(SpanData spanData) {
+  public void assertEchoJson(SpanData spanData, String requestBody) {
     assertResponseHeaders(spanData);
-    Assertions.assertNotNull(spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+    Assertions.assertEquals(requestBody, spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
     Assertions.assertEquals(
             spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY),
             spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
   }
 
-  public void assertEchoUrlEncoded(SpanData spanData) {
-    assertResponseHeaders(spanData);
-    Assertions.assertNotNull(spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
-    Assertions.assertEquals(
-            spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY),
-            spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+  public void assertEchoUrlEncoded(SpanData spanData, String requestBody) {
+    assertEchoJson(spanData, requestBody);
   }
 
   public void assertEchoPlainText(SpanData spanData) {
