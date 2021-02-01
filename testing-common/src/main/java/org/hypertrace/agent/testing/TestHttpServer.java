@@ -157,15 +157,14 @@ public class TestHttpServer implements AutoCloseable {
   static class EchoHandler extends ResponseTestHeadersHandler {
     @Override
     public void handle(
-            String target,
-            Request baseRequest,
-            HttpServletRequest request,
-            HttpServletResponse response)
-            throws IOException {
+        String target,
+        Request baseRequest,
+        HttpServletRequest request,
+        HttpServletResponse response)
+        throws IOException {
       super.handle(target, baseRequest, request, response);
 
-      if (target.equals("/echo")
-              && "post".equalsIgnoreCase(request.getMethod())) {
+      if (target.equals("/echo") && "post".equalsIgnoreCase(request.getMethod())) {
         ServletInputStream inputStream = request.getInputStream();
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         int nRead;
