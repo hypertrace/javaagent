@@ -19,6 +19,7 @@ package org.hypertrace.agent.testing;
 import io.opentelemetry.javaagent.instrumentation.api.Pair;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,10 +37,6 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
 
   private final boolean hasResponseBodySpan;
 
-  public AbstractHttpClientTest(boolean hasResponseBodySpan) {
-    this.hasResponseBodySpan = hasResponseBodySpan;
-  }
-
   private static final String ECHO_PATH_FORMAT = "http://localhost:%d/echo";
   private static final String GET_NO_CONTENT_PATH_FORMAT = "http://localhost:%d/get_no_content";
   private static final String GET_JSON_PATH_FORMAT = "http://localhost:%d/get_json";
@@ -49,8 +46,13 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
   private static final String HEADER_VALUE = "headerValue";
 
   static {
-    headers = new HashMap<>();
-    headers.put("headerName", "headerValue");
+    Map<String, String> headersMap = new HashMap<>();
+    headersMap.put(HEADER_NAME, HEADER_VALUE);
+    headers = Collections.unmodifiableMap(headersMap);
+  }
+
+  public AbstractHttpClientTest(boolean hasResponseBodySpan) {
+    this.hasResponseBodySpan = hasResponseBodySpan;
   }
 
   @BeforeAll
@@ -87,7 +89,7 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
       throws IOException, ExecutionException, InterruptedException;
 
   @Test
-  public void echoJson()
+  public void postJson_echo()
       throws TimeoutException, InterruptedException, IOException, ExecutionException {
     String body = "{\"foo\": \"bar\"}";
     String uri = String.format(ECHO_PATH_FORMAT, testHttpServer.port());
@@ -100,21 +102,20 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
     TEST_WRITER.waitForTraces(1);
     List<List<SpanData>> traces = TEST_WRITER.getTraces();
     Assertions.assertEquals(1, traces.size());
+    SpanData clientSpan = traces.get(0).get(0);
 
     if (hasResponseBodySpan) {
       Assertions.assertEquals(2, traces.get(0).size());
-      SpanData clientSpan = traces.get(0).get(0);
       SpanData responseBodySpan = traces.get(0).get(1);
-      assertEchoJsonSpans(clientSpan, responseBodySpan, body);
+      assertEchoBodyInSpans(clientSpan, responseBodySpan, body);
     } else {
       Assertions.assertEquals(1, traces.get(0).size());
-      SpanData clientSpan = traces.get(0).get(0);
-      assertEchoJson(clientSpan, body);
+      assertEchoBodyInSpan(clientSpan, body);
     }
   }
 
   @Test
-  public void echoUrlEncoded()
+  public void postUrlEncoded_echo()
       throws TimeoutException, InterruptedException, IOException, ExecutionException {
     String body = "key1=value1&key2=value2";
     String uri = String.format(ECHO_PATH_FORMAT, testHttpServer.port());
@@ -128,21 +129,20 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
     TEST_WRITER.waitForTraces(1);
     List<List<SpanData>> traces = TEST_WRITER.getTraces();
     Assertions.assertEquals(1, traces.size());
+    SpanData clientSpan = traces.get(0).get(0);
 
     if (hasResponseBodySpan) {
       Assertions.assertEquals(2, traces.get(0).size());
-      SpanData clientSpan = traces.get(0).get(0);
       SpanData responseBodySpan = traces.get(0).get(1);
-      assertEchoUrlEncodedSpans(clientSpan, responseBodySpan, body);
+      assertEchoBodyInSpans(clientSpan, responseBodySpan, body);
     } else {
       Assertions.assertEquals(1, traces.get(0).size());
-      SpanData clientSpan = traces.get(0).get(0);
-      assertEchoUrlEncoded(clientSpan, body);
+      assertEchoBodyInSpan(clientSpan, body);
     }
   }
 
   @Test
-  public void echoPlainText()
+  public void postPlainText_echo()
       throws TimeoutException, InterruptedException, IOException, ExecutionException {
     String body = "foobar";
     String uri = String.format(ECHO_PATH_FORMAT, testHttpServer.port());
@@ -158,7 +158,7 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
     Assertions.assertEquals(1, traces.get(0).size());
     SpanData clientSpan = traces.get(0).get(0);
 
-    assertNullBodies(clientSpan);
+    assertNoBodies(clientSpan);
   }
 
   @Test
@@ -177,7 +177,7 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
     Assertions.assertEquals(1, traces.get(0).size());
     SpanData clientSpan = traces.get(0).get(0);
 
-    assertNullBodies(clientSpan);
+    assertNoBodies(clientSpan);
   }
 
   @Test
@@ -193,21 +193,18 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
     TEST_WRITER.waitForTraces(1);
     List<List<SpanData>> traces = TEST_WRITER.getTraces();
     Assertions.assertEquals(1, traces.size());
+    SpanData clientSpan = traces.get(0).get(0);
+    Assertions.assertNull(
+        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
 
     if (hasResponseBodySpan) {
       Assertions.assertEquals(2, traces.get(0).size());
-      SpanData clientSpan = traces.get(0).get(0);
       SpanData responseBodySpan = traces.get(0).get(1);
-      Assertions.assertNull(
-          clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
       Assertions.assertEquals(
           TestHttpServer.GetJsonHandler.RESPONSE_BODY,
           responseBodySpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
     } else {
       Assertions.assertEquals(1, traces.get(0).size());
-      SpanData clientSpan = traces.get(0).get(0);
-      Assertions.assertNull(
-          clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
       Assertions.assertEquals(
           TestHttpServer.GetJsonHandler.RESPONSE_BODY,
           clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
@@ -227,7 +224,7 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
         spanData.getAttributes().get(HypertraceSemanticAttributes.httpRequestHeader(HEADER_NAME)));
   }
 
-  private void assertEchoJson(SpanData spanData, String requestBody) {
+  private void assertEchoBodyInSpan(SpanData spanData, String requestBody) {
     Assertions.assertEquals(
         requestBody, spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
     Assertions.assertEquals(
@@ -235,7 +232,7 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
         spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
   }
 
-  private void assertEchoJsonSpans(
+  private void assertEchoBodyInSpans(
       SpanData clientSpan, SpanData responseBodySpan, String requestBody) {
     Assertions.assertEquals(
         requestBody,
@@ -245,16 +242,7 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
         responseBodySpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
   }
 
-  private void assertEchoUrlEncoded(SpanData spanData, String requestBody) {
-    assertEchoJson(spanData, requestBody);
-  }
-
-  private void assertEchoUrlEncodedSpans(
-      SpanData clientSpan, SpanData responseBodySpan, String requestBody) {
-    assertEchoJsonSpans(clientSpan, responseBodySpan, requestBody);
-  }
-
-  private void assertNullBodies(SpanData spanData) {
+  private void assertNoBodies(SpanData spanData) {
     assertHeaders(spanData);
     Assertions.assertNull(
         spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
