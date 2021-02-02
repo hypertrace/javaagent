@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.junit.jupiter.api.AfterAll;
@@ -72,7 +73,8 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
    * @return status code and body of response
    */
   public abstract Pair<Integer, String> doPostRequest(
-      String uri, Map<String, String> headers, String body, String contentType) throws IOException;
+      String uri, Map<String, String> headers, String body, String contentType)
+      throws IOException, ExecutionException, InterruptedException;
 
   /**
    * Make request using client and return response status code and body
@@ -82,10 +84,11 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
    * @return status code and body of response
    */
   public abstract Pair<Integer, String> doGetRequest(String uri, Map<String, String> headers)
-      throws IOException;
+      throws IOException, ExecutionException, InterruptedException;
 
   @Test
-  public void echoJson() throws TimeoutException, InterruptedException, IOException {
+  public void echoJson()
+      throws TimeoutException, InterruptedException, IOException, ExecutionException {
     String body = "{\"foo\": \"bar\"}";
     String uri = String.format(ECHO_PATH_FORMAT, testHttpServer.port());
 
@@ -111,7 +114,8 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
   }
 
   @Test
-  public void echoUrlEncoded() throws TimeoutException, InterruptedException, IOException {
+  public void echoUrlEncoded()
+      throws TimeoutException, InterruptedException, IOException, ExecutionException {
     String body = "key1=value1&key2=value2";
     String uri = String.format(ECHO_PATH_FORMAT, testHttpServer.port());
 
@@ -138,7 +142,8 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
   }
 
   @Test
-  public void echoPlainText() throws TimeoutException, InterruptedException, IOException {
+  public void echoPlainText()
+      throws TimeoutException, InterruptedException, IOException, ExecutionException {
     String body = "foobar";
     String uri = String.format(ECHO_PATH_FORMAT, testHttpServer.port());
 
@@ -157,7 +162,8 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
   }
 
   @Test
-  public void getNoContent() throws IOException, TimeoutException, InterruptedException {
+  public void getNoContent()
+      throws IOException, TimeoutException, InterruptedException, ExecutionException {
     String uri = String.format(GET_NO_CONTENT_PATH_FORMAT, testHttpServer.port());
 
     Pair<Integer, String> statusBodyPair = doGetRequest(uri, headers);
@@ -175,7 +181,8 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
   }
 
   @Test
-  public void getJson() throws IOException, TimeoutException, InterruptedException {
+  public void getJson()
+      throws IOException, TimeoutException, InterruptedException, ExecutionException {
     String uri = String.format(GET_JSON_PATH_FORMAT, testHttpServer.port());
 
     Pair<Integer, String> statusBodyPair = doGetRequest(uri, headers);
