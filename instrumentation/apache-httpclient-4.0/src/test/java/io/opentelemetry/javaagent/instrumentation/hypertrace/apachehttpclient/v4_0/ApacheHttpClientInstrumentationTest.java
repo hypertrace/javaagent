@@ -16,14 +16,9 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v4_0;
 
-import io.opentelemetry.javaagent.instrumentation.api.Pair;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URI;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -42,9 +37,8 @@ public class ApacheHttpClientInstrumentationTest extends AbstractHttpClientTest 
   }
 
   @Override
-  public Pair<Integer, String> doPostRequest(
-      String uri, Map<String, String> headers, String body, String contentType)
-      throws IOException, InterruptedException {
+  public Response doPostRequest(
+      String uri, Map<String, String> headers, String body, String contentType) throws IOException {
 
     HttpPost request = new HttpPost();
     for (String key : headers.keySet()) {
@@ -56,39 +50,22 @@ public class ApacheHttpClientInstrumentationTest extends AbstractHttpClientTest 
     request.setEntity(entity);
     request.addHeader("Content-type", contentType);
     HttpResponse response = client.execute(request);
-    Thread.sleep(200);
     InputStream inputStream = response.getEntity().getContent();
-    return Pair.of(response.getStatusLine().getStatusCode(), readInputStream(inputStream));
+    return new Response(readInputStream(inputStream), response.getStatusLine().getStatusCode());
   }
 
   @Override
-  public Pair<Integer, String> doGetRequest(String uri, Map<String, String> headers)
-      throws IOException, InterruptedException {
+  public Response doGetRequest(String uri, Map<String, String> headers) throws IOException {
     HttpGet request = new HttpGet();
     for (String key : headers.keySet()) {
       request.addHeader(key, headers.get(key));
     }
     request.setURI(URI.create(uri));
     HttpResponse response = client.execute(request);
-    Thread.sleep(200);
     if (response.getEntity() == null || response.getEntity().getContentLength() <= 0) {
-      return Pair.of(response.getStatusLine().getStatusCode(), null);
+      return new Response(null, response.getStatusLine().getStatusCode());
     }
     InputStream inputStream = response.getEntity().getContent();
-    return Pair.of(response.getStatusLine().getStatusCode(), readInputStream(inputStream));
-  }
-
-  private static String readInputStream(InputStream inputStream) throws IOException {
-    StringBuilder textBuilder = new StringBuilder();
-
-    try (BufferedReader reader =
-        new BufferedReader(
-            new InputStreamReader(inputStream, Charset.forName(StandardCharsets.UTF_8.name())))) {
-      int c;
-      while ((c = reader.read()) != -1) {
-        textBuilder.append((char) c);
-      }
-    }
-    return textBuilder.toString();
+    return new Response(readInputStream(inputStream), response.getStatusLine().getStatusCode());
   }
 }

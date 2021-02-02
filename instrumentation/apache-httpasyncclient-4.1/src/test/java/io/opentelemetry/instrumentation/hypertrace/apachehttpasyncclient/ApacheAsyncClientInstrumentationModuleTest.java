@@ -16,88 +16,138 @@
 
 package io.opentelemetry.instrumentation.hypertrace.apachehttpasyncclient;
 
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.javaagent.instrumentation.api.Pair;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeoutException;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.concurrent.FutureCallback;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
-import org.hypertrace.agent.testing.AbstractHttpClientTest;
+import org.apache.http.message.BasicHeader;
+import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.testing.AbstractInstrumenterTest;
+import org.hypertrace.agent.testing.TestHttpServer;
+import org.hypertrace.agent.testing.TestHttpServer.GetJsonHandler;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-class ApacheAsyncClientInstrumentationModuleTest extends AbstractHttpClientTest {
+class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTest {
+
+  private static final String JSON = "{\"id\":1,\"name\":\"John\"}";
+  private static final TestHttpServer testHttpServer = new TestHttpServer();
 
   private static final CloseableHttpAsyncClient client = HttpAsyncClients.createDefault();
 
-  public ApacheAsyncClientInstrumentationModuleTest() {
-    super(true);
-  }
-
   @BeforeAll
-  public static void startClient() throws Exception {
+  public static void startServer() throws Exception {
+    testHttpServer.start();
     client.start();
   }
 
   @AfterAll
-  public static void closeClient() throws IOException {
-    client.close();
+  public static void closeServer() throws Exception {
+    testHttpServer.close();
   }
 
-  @Override
-  public Pair<Integer, String> doPostRequest(
-      String uri, Map<String, String> headers, String body, String contentType)
-      throws IOException, ExecutionException, InterruptedException {
-    HttpPost request = new HttpPost();
-    for (String key : headers.keySet()) {
-      request.addHeader(key, headers.get(key));
-    }
-    request.setURI(URI.create(uri));
-    StringEntity entity = new StringEntity(body);
-    entity.setContentType(contentType);
-    request.setEntity(entity);
-    request.addHeader("Content-type", contentType);
-    Future<HttpResponse> responseFuture = client.execute(request, new NoopFutureCallback());
-    HttpResponse response = responseFuture.get();
-    Thread.sleep(200);
-    if (response.getEntity() == null || response.getEntity().getContentLength() <= 0) {
-      return Pair.of(response.getStatusLine().getStatusCode(), null);
-    }
+  @Test
+  public void getJson()
+      throws ExecutionException, InterruptedException, TimeoutException, IOException {
+    HttpGet getRequest =
+        new HttpGet(String.format("http://localhost:%s/get_json", testHttpServer.port()));
+    getRequest.addHeader("foo", "bar");
+    Future<HttpResponse> futureResponse = client.execute(getRequest, new NoopFutureCallback());
+
+    HttpResponse response = futureResponse.get();
+    Assertions.assertEquals(200, response.getStatusLine().getStatusCode());
     String responseBody = readInputStream(response.getEntity().getContent());
-    Assertions.assertFalse(Span.current().isRecording());
-    return Pair.of(response.getStatusLine().getStatusCode(), responseBody);
+    Assertions.assertEquals(GetJsonHandler.RESPONSE_BODY, responseBody);
+
+    TEST_WRITER.waitForTraces(1);
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    Assertions.assertEquals(1, traces.size());
+    Assertions.assertEquals(2, traces.get(0).size());
+    SpanData clientSpan = traces.get(0).get(0);
+
+    Assertions.assertEquals(
+        "test-value",
+        clientSpan
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
+    Assertions.assertEquals(
+        "bar",
+        clientSpan.getAttributes().get(HypertraceSemanticAttributes.httpRequestHeader("foo")));
+    Assertions.assertNull(
+        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+    SpanData responseBodySpan = traces.get(0).get(1);
+    Assertions.assertEquals(
+        GetJsonHandler.RESPONSE_BODY,
+        responseBodySpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
   }
 
-  @Override
-  public Pair<Integer, String> doGetRequest(String uri, Map<String, String> headers)
-      throws IOException, ExecutionException, InterruptedException {
-    HttpGet request = new HttpGet(uri);
-    for (String key : headers.keySet()) {
-      request.addHeader(key, headers.get(key));
-    }
-    Future<HttpResponse> responseFuture = client.execute(request, new NoopFutureCallback());
+  @Test
+  public void postJson()
+      throws IOException, TimeoutException, InterruptedException, ExecutionException {
+    StringEntity entity =
+        new StringEntity(JSON, ContentType.create(ContentType.APPLICATION_JSON.getMimeType()));
+    postJsonEntity(entity);
+  }
+
+  @Test
+  public void postJsonNonRepeatableEntity()
+      throws IOException, TimeoutException, InterruptedException, ExecutionException {
+    StringEntity entity = new NonRepeatableStringEntity(JSON);
+    postJsonEntity(entity);
+  }
+
+  public void postJsonEntity(HttpEntity entity)
+      throws TimeoutException, InterruptedException, IOException, ExecutionException {
+    HttpPost postRequest = new HttpPost();
+    postRequest.setEntity(entity);
+    postRequest.setHeader("Content-type", "application/json");
+    postRequest.setURI(
+        URI.create(String.format("http://localhost:%d/post", testHttpServer.port())));
+
+    Future<HttpResponse> responseFuture = client.execute(postRequest, new NoopFutureCallback());
+
     HttpResponse response = responseFuture.get();
-    Thread.sleep(200);
-    if (response.getEntity() == null || response.getEntity().getContentLength() <= 0) {
-      return Pair.of(response.getStatusLine().getStatusCode(), null);
-    }
-    String responseBody = readInputStream(response.getEntity().getContent());
-    Assertions.assertFalse(Span.current().isRecording());
-    return Pair.of(response.getStatusLine().getStatusCode(), responseBody);
+    Assertions.assertEquals(204, response.getStatusLine().getStatusCode());
+
+    TEST_WRITER.waitForTraces(1);
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    Assertions.assertEquals(1, traces.size());
+    Assertions.assertEquals(1, traces.get(0).size());
+    SpanData clientSpan = traces.get(0).get(0);
+
+    String requestBody = readInputStream(entity.getContent());
+    Assertions.assertEquals(
+        "test-value",
+        clientSpan
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
+    Assertions.assertEquals(
+        requestBody,
+        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+    Assertions.assertNull(
+        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
   }
 
   private static String readInputStream(InputStream inputStream) throws IOException {
@@ -112,6 +162,28 @@ class ApacheAsyncClientInstrumentationModuleTest extends AbstractHttpClientTest 
       }
     }
     return textBuilder.toString();
+  }
+
+  class NonRepeatableStringEntity extends StringEntity {
+
+    public NonRepeatableStringEntity(String s) throws UnsupportedEncodingException {
+      super(s);
+    }
+
+    @Override
+    public Header getContentType() {
+      return new BasicHeader("Content-Type", "json");
+    }
+
+    @Override
+    public boolean isRepeatable() {
+      return false;
+    }
+
+    @Override
+    public InputStream getContent() {
+      return new ByteArrayInputStream(this.content);
+    }
   }
 
   static class NoopFutureCallback implements FutureCallback<HttpResponse> {

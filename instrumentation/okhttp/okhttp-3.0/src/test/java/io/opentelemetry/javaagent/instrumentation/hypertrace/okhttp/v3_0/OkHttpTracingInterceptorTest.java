@@ -16,7 +16,6 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.okhttp.v3_0;
 
-import io.opentelemetry.javaagent.instrumentation.api.Pair;
 import java.io.IOException;
 import java.util.Map;
 import okhttp3.Headers;
@@ -24,7 +23,6 @@ import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
-import okhttp3.Response;
 import org.hypertrace.agent.testing.AbstractHttpClientTest;
 
 public class OkHttpTracingInterceptorTest extends AbstractHttpClientTest {
@@ -36,7 +34,7 @@ public class OkHttpTracingInterceptorTest extends AbstractHttpClientTest {
   }
 
   @Override
-  public Pair<Integer, String> doPostRequest(
+  public Response doPostRequest(
       String uri, Map<String, String> headersMap, String body, String contentType)
       throws IOException {
 
@@ -52,14 +50,14 @@ public class OkHttpTracingInterceptorTest extends AbstractHttpClientTest {
             .headers(headers.build())
             .build();
 
-    Response response = client.newCall(request).execute();
+    okhttp3.Response response = client.newCall(request).execute();
 
-    return Pair.of(response.code(), response.body() != null ? response.body().string() : null);
+    String responseBody = response.body() != null ? response.body().string() : null;
+    return new Response(responseBody, response.code());
   }
 
   @Override
-  public Pair<Integer, String> doGetRequest(String uri, Map<String, String> headersMap)
-      throws IOException {
+  public Response doGetRequest(String uri, Map<String, String> headersMap) throws IOException {
     Headers.Builder headers = new Headers.Builder();
     for (String key : headersMap.keySet()) {
       headers.add(key, headersMap.get(key));
@@ -67,12 +65,12 @@ public class OkHttpTracingInterceptorTest extends AbstractHttpClientTest {
 
     Request request = new Request.Builder().url(uri).headers(headers.build()).get().build();
 
-    Response response = client.newCall(request).execute();
+    okhttp3.Response response = client.newCall(request).execute();
 
-    return Pair.of(
-        response.code(),
+    String responseBody =
         (response.body() != null && response.body().contentLength() > 0)
             ? response.body().string()
-            : null);
+            : null;
+    return new Response(responseBody, response.code());
   }
 }
