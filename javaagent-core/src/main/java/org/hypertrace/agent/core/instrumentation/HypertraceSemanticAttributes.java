@@ -30,11 +30,11 @@ public class HypertraceSemanticAttributes {
   public static final String ADDITIONAL_DATA_SPAN_NAME = "additional-data";
 
   public static AttributeKey<String> httpRequestHeader(String header) {
-    return AttributeKey.stringKey("http.request.header." + header);
+    return AttributeKey.stringKey("http.request.header." + header.toLowerCase());
   }
 
   public static AttributeKey<String> httpResponseHeader(String header) {
-    return AttributeKey.stringKey("http.response.header." + header);
+    return AttributeKey.stringKey("http.response.header." + header.toLowerCase());
   }
 
   public static final AttributeKey<String> HTTP_REQUEST_BODY =
@@ -51,10 +51,10 @@ public class HypertraceSemanticAttributes {
       AttributeKey.stringKey("rpc.response.body");
 
   public static final AttributeKey<String> rpcRequestMetadata(String key) {
-    return AttributeKey.stringKey("rpc.request.metadata." + key);
+    return AttributeKey.stringKey("rpc.request.metadata." + key.toLowerCase());
   }
 
   public static final AttributeKey<String> rpcResponseMetadata(String key) {
-    return AttributeKey.stringKey("rpc.response.metadata." + key);
+    return AttributeKey.stringKey("rpc.response.metadata." + key.toLowerCase());
   }
 }
