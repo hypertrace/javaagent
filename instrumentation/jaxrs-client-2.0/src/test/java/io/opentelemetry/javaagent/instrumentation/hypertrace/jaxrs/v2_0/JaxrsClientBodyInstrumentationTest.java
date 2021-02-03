@@ -16,240 +16,52 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.jaxrs.v2_0;
 
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.sdk.trace.data.SpanData;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeoutException;
-import javax.ws.rs.WebApplicationException;
+import java.util.Map;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.MessageBodyWriter;
-import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
-import org.hypertrace.agent.testing.AbstractInstrumenterTest;
-import org.hypertrace.agent.testing.TestHttpServer;
-import org.hypertrace.agent.testing.TestHttpServer.GetJsonHandler;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.hypertrace.agent.testing.AbstractHttpClientTest;
 
-public class JaxrsClientBodyInstrumentationTest extends AbstractInstrumenterTest {
+public class JaxrsClientBodyInstrumentationTest extends AbstractHttpClientTest {
 
-  private static final String JSON = "{\"id\":1,\"name\":\"John\"}";
-  private static final TestHttpServer testHttpServer = new TestHttpServer();
+  private static final Client client = ClientBuilder.newBuilder().build();
 
-  @BeforeAll
-  public static void startServer() throws Exception {
-    testHttpServer.start();
+  public JaxrsClientBodyInstrumentationTest() {
+    super(true);
   }
 
-  @AfterAll
-  public static void closeServer() throws Exception {
-    testHttpServer.close();
-  }
+  @Override
+  public AbstractHttpClientTest.Response doPostRequest(
+      String uri, Map<String, String> headers, String body, String contentType) {
 
-  @Test
-  public void getJson() throws TimeoutException, InterruptedException {
-    ClientBuilder clientBuilder = ClientBuilder.newBuilder();
-    Client client = clientBuilder.build();
+    Invocation.Builder builder = client.target(uri).request();
 
-    Response response =
-        client
-            .target(String.format("http://localhost:%d/get_json", testHttpServer.port()))
-            .request()
-            .header("test-request-header", "test-header-value")
-            .get();
-    assertGetJson(response);
-  }
-
-  @Test
-  public void getJsonAsync() throws TimeoutException, InterruptedException, ExecutionException {
-    ClientBuilder clientBuilder = ClientBuilder.newBuilder();
-    Client client = clientBuilder.build();
-
-    Future<Response> responseFuture =
-        client
-            .target(String.format("http://localhost:%d/get_json", testHttpServer.port()))
-            .request()
-            .header("test-request-header", "test-header-value")
-            .async()
-            .get();
-
-    Response response = responseFuture.get();
-    assertGetJson(response);
-  }
-
-  public void assertGetJson(Response response) throws TimeoutException, InterruptedException {
-    Assertions.assertEquals(200, response.getStatus());
-    // read entity has to happen before response.close()
-    String entity = response.readEntity(String.class);
-    Assertions.assertEquals(GetJsonHandler.RESPONSE_BODY, entity);
-    Assertions.assertEquals(false, Span.current().isRecording());
-    response.close();
-
-    TEST_WRITER.waitForTraces(1);
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
-    Assertions.assertEquals(1, traces.size());
-    Assertions.assertEquals(2, traces.get(0).size());
-    SpanData clientSpan = traces.get(0).get(0);
-
-    Assertions.assertEquals(
-        "test-value",
-        clientSpan
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
-    Assertions.assertEquals(
-        "test-header-value",
-        clientSpan
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpRequestHeader("test-request-header")));
-    Assertions.assertNull(
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
-    SpanData responseBodySpan = traces.get(0).get(1);
-    Assertions.assertEquals(
-        GetJsonHandler.RESPONSE_BODY,
-        responseBodySpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
-  }
-
-  @Test
-  public void postJson() throws TimeoutException, InterruptedException {
-    ClientBuilder clientBuilder = ClientBuilder.newBuilder();
-    Client client = clientBuilder.build();
-
-    MyDto myDto = new MyDto();
-    myDto.name = "foo";
-
-    Response response =
-        client
-            .target(String.format("http://localhost:%d/post", testHttpServer.port()))
-            .request()
-            .header("test-request-header", "test-header-value")
-            .post(Entity.entity(JSON, MediaType.APPLICATION_JSON_TYPE));
-    Assertions.assertEquals(204, response.getStatus());
-
-    TEST_WRITER.waitForTraces(1);
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
-    Assertions.assertEquals(1, traces.size());
-    Assertions.assertEquals(1, traces.get(0).size());
-    SpanData clientSpan = traces.get(0).get(0);
-
-    Assertions.assertEquals(
-        "test-value",
-        clientSpan
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
-    Assertions.assertEquals(
-        JSON, clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
-    Assertions.assertNull(
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
-  }
-
-  @Test
-  public void postJsonDtoAsync() throws TimeoutException, InterruptedException, ExecutionException {
-    ClientBuilder clientBuilder = ClientBuilder.newBuilder();
-    Client client = clientBuilder.register(MyDtoMessageBodyWriter.class).build();
-
-    MyDto myDto = new MyDto();
-    myDto.name = "name";
-
-    Future<Response> post =
-        client
-            .target(String.format("http://localhost:%d/post", testHttpServer.port()))
-            .request()
-            .header("test-request-header", "test-header-value")
-            .async()
-            .post(Entity.json(myDto));
-    Response response = post.get();
-    Assertions.assertEquals(204, response.getStatus());
-
-    TEST_WRITER.waitForTraces(1);
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
-    Assertions.assertEquals(1, traces.size());
-    Assertions.assertEquals(1, traces.get(0).size());
-    SpanData clientSpan = traces.get(0).get(0);
-
-    Assertions.assertEquals(
-        "test-value",
-        clientSpan
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
-    Assertions.assertEquals(
-        myDto.getJson(),
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
-    Assertions.assertNull(
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
-  }
-
-  @Test
-  public void postUrlEncoded() throws TimeoutException, InterruptedException {
-    ClientBuilder clientBuilder = ClientBuilder.newBuilder();
-    Client client = clientBuilder.build();
-
-    WebTarget webTarget =
-        client.target(String.format("http://localhost:%d/post", testHttpServer.port()));
-    MultivaluedMap<String, String> formData = new MultivaluedHashMap<>();
-    formData.add("key1", "value1");
-    formData.add("key2", "value2");
-    Response response = webTarget.request().post(Entity.form(formData));
-    Assertions.assertEquals(204, response.getStatus());
-
-    TEST_WRITER.waitForTraces(1);
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
-    Assertions.assertEquals(1, traces.size());
-    Assertions.assertEquals(1, traces.get(0).size());
-    SpanData clientSpan = traces.get(0).get(0);
-
-    Assertions.assertEquals(
-        "test-value",
-        clientSpan
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
-    Assertions.assertEquals(
-        "key1=value1&key2=value2",
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
-    Assertions.assertNull(
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
-  }
-
-  public static class MyDto {
-    public String name;
-
-    public String getJson() {
-      return "{name:\"" + name + "\"}";
-    }
-  }
-
-  public static class MyDtoMessageBodyWriter implements MessageBodyWriter<MyDto> {
-
-    @Override
-    public boolean isWriteable(
-        Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-      return true;
+    for (Map.Entry<String, String> entry : headers.entrySet()) {
+      builder = builder.header(entry.getKey(), entry.getValue());
     }
 
-    @Override
-    public void writeTo(
-        MyDto myDto,
-        Class<?> type,
-        Type genericType,
-        Annotation[] annotations,
-        MediaType mediaType,
-        MultivaluedMap<String, Object> httpHeaders,
-        OutputStream entityStream)
-        throws IOException, WebApplicationException {
-      entityStream.write((myDto.getJson()).getBytes());
+    javax.ws.rs.core.Response response =
+        builder.post(Entity.entity(body, MediaType.valueOf(contentType)));
+
+    return new Response(response.readEntity(String.class), response.getStatus());
+  }
+
+  @Override
+  public AbstractHttpClientTest.Response doGetRequest(String uri, Map<String, String> headers) {
+
+    Invocation.Builder builder = client.target(uri).request();
+
+    for (Map.Entry<String, String> entry : headers.entrySet()) {
+      builder = builder.header(entry.getKey(), entry.getValue());
     }
+
+    javax.ws.rs.core.Response response = builder.get();
+
+    String responseBody = response.readEntity(String.class);
+
+    return new Response(
+        responseBody == null || responseBody.isEmpty() ? null : responseBody, response.getStatus());
   }
 }
