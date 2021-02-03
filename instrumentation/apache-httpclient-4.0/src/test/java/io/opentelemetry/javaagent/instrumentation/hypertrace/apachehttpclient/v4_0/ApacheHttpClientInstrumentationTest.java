@@ -41,8 +41,8 @@ public class ApacheHttpClientInstrumentationTest extends AbstractHttpClientTest 
       String uri, Map<String, String> headers, String body, String contentType) throws IOException {
 
     HttpPost request = new HttpPost();
-    for (String key : headers.keySet()) {
-      request.addHeader(key, headers.get(key));
+    for (Map.Entry<String, String> entry : headers.entrySet()) {
+      request.addHeader(entry.getKey(), entry.getValue());
     }
     request.setURI(URI.create(uri));
     StringEntity entity = new StringEntity(body);
@@ -57,8 +57,8 @@ public class ApacheHttpClientInstrumentationTest extends AbstractHttpClientTest 
   @Override
   public Response doGetRequest(String uri, Map<String, String> headers) throws IOException {
     HttpGet request = new HttpGet();
-    for (String key : headers.keySet()) {
-      request.addHeader(key, headers.get(key));
+    for (Map.Entry<String, String> entry : headers.entrySet()) {
+      request.addHeader(entry.getKey(), entry.getValue());
     }
     request.setURI(URI.create(uri));
     HttpResponse response = client.execute(request);

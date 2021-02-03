@@ -39,8 +39,8 @@ public class OkHttpTracingInterceptorTest extends AbstractHttpClientTest {
       throws IOException {
 
     Headers.Builder headers = new Headers.Builder();
-    for (String key : headersMap.keySet()) {
-      headers.add(key, headersMap.get(key));
+    for (Map.Entry<String, String> entry : headersMap.entrySet()) {
+      headers.add(entry.getKey(), entry.getValue());
     }
 
     Request request =
@@ -59,8 +59,8 @@ public class OkHttpTracingInterceptorTest extends AbstractHttpClientTest {
   @Override
   public Response doGetRequest(String uri, Map<String, String> headersMap) throws IOException {
     Headers.Builder headers = new Headers.Builder();
-    for (String key : headersMap.keySet()) {
-      headers.add(key, headersMap.get(key));
+    for (Map.Entry<String, String> entry : headersMap.entrySet()) {
+      headers.add(entry.getKey(), entry.getValue());
     }
 
     Request request = new Request.Builder().url(uri).headers(headers.build()).get().build();
