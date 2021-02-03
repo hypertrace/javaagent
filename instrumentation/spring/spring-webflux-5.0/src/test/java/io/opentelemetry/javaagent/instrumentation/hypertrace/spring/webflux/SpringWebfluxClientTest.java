@@ -16,106 +16,50 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.spring.webflux;
 
-import io.opentelemetry.sdk.trace.data.SpanData;
-import java.util.List;
-import java.util.concurrent.TimeoutException;
-import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
-import org.hypertrace.agent.testing.AbstractInstrumenterTest;
-import org.hypertrace.agent.testing.TestHttpServer;
-import org.hypertrace.agent.testing.TestHttpServer.GetJsonHandler;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import java.util.Map;
+import org.hypertrace.agent.testing.AbstractHttpClientTest;
+import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClient.RequestHeadersUriSpec;
 import reactor.core.publisher.Mono;
 
-public class SpringWebfluxClientTest extends AbstractInstrumenterTest {
+public class SpringWebfluxClientTest extends AbstractHttpClientTest {
 
-  private static final String REQUEST_BODY = "hello_foo_bar";
-  private static final String REQUEST_HEADER_NAME = "reqheadername";
-  private static final String REQUEST_HEADER_VALUE = "reqheadervalue";
-
-  private static final TestHttpServer testHttpServer = new TestHttpServer();
-
-  @BeforeAll
-  public static void startServer() throws Exception {
-    testHttpServer.start();
+  public SpringWebfluxClientTest() {
+    super(false);
   }
 
-  @AfterAll
-  public static void closeServer() throws Exception {
-    testHttpServer.close();
+  @Override
+  public Response doPostRequest(
+      String uri, Map<String, String> headers, String body, String contentType) {
+    WebClient.Builder clientBuilder = WebClient.builder().baseUrl(uri);
+    for (Map.Entry<String, String> entry : headers.entrySet()) {
+      clientBuilder = clientBuilder.defaultHeader(entry.getKey(), entry.getValue());
+    }
+    clientBuilder = clientBuilder.defaultHeader("Content-Type", contentType);
+    WebClient client = clientBuilder.build();
+
+    ClientResponse clientResponse =
+        client.post().body(Mono.just(body), String.class).exchange().block();
+    if (clientResponse == null) fail();
+    int responseStatus = clientResponse.statusCode().value();
+    String responseBody = clientResponse.bodyToMono(String.class).block();
+    return new Response(responseBody, responseStatus);
   }
 
-  @Test
-  public void getJson() throws InterruptedException, TimeoutException {
-    WebClient client =
-        WebClient.builder()
-            .baseUrl(String.format("http://localhost:%d/get_json", testHttpServer.port()))
-            .defaultHeader(REQUEST_HEADER_NAME, REQUEST_HEADER_VALUE)
-            .build();
-    RequestHeadersUriSpec<?> requestHeadersUriSpec = client.get();
-    Mono<String> stringMono = requestHeadersUriSpec.retrieve().bodyToMono(String.class);
-    String responseBody = stringMono.block();
-    Assertions.assertEquals(GetJsonHandler.RESPONSE_BODY, responseBody);
+  @Override
+  public Response doGetRequest(String uri, Map<String, String> headers) {
+    WebClient.Builder clientBuilder = WebClient.builder().baseUrl(uri);
+    for (Map.Entry<String, String> entry : headers.entrySet()) {
+      clientBuilder = clientBuilder.defaultHeader(entry.getKey(), entry.getValue());
+    }
+    WebClient client = clientBuilder.build();
 
-    TEST_WRITER.waitForTraces(1);
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
-    Assertions.assertEquals(1, traces.size());
-    Assertions.assertEquals(1, traces.get(0).size());
-    SpanData clientSpan = traces.get(0).get(0);
-    Assertions.assertEquals(
-        REQUEST_HEADER_VALUE,
-        clientSpan
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
-    Assertions.assertEquals(
-        TestHttpServer.RESPONSE_HEADER_VALUE,
-        clientSpan
-            .getAttributes()
-            .get(
-                HypertraceSemanticAttributes.httpResponseHeader(
-                    TestHttpServer.RESPONSE_HEADER_NAME)));
-    Assertions.assertNull(
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
-    Assertions.assertEquals(
-        GetJsonHandler.RESPONSE_BODY,
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
-  }
-
-  @Test
-  public void post() throws InterruptedException, TimeoutException {
-    WebClient client =
-        WebClient.builder()
-            .baseUrl(String.format("http://localhost:%d/post", testHttpServer.port()))
-            .defaultHeader(REQUEST_HEADER_NAME, REQUEST_HEADER_VALUE)
-            .defaultHeader("Content-Type", "application/json")
-            .build();
-    client.post().body(Mono.just(REQUEST_BODY), String.class).exchange().block();
-
-    TEST_WRITER.waitForTraces(1);
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
-    Assertions.assertEquals(1, traces.size());
-    Assertions.assertEquals(1, traces.get(0).size());
-    SpanData clientSpan = traces.get(0).get(0);
-    Assertions.assertEquals(
-        REQUEST_HEADER_VALUE,
-        clientSpan
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
-    Assertions.assertEquals(
-        TestHttpServer.RESPONSE_HEADER_VALUE,
-        clientSpan
-            .getAttributes()
-            .get(
-                HypertraceSemanticAttributes.httpResponseHeader(
-                    TestHttpServer.RESPONSE_HEADER_NAME)));
-    Assertions.assertEquals(
-        REQUEST_BODY,
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
-    Assertions.assertNull(
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+    ClientResponse clientResponse = client.get().exchange().block();
+    if (clientResponse == null) fail();
+    int responseStatus = clientResponse.statusCode().value();
+    String responseBody = clientResponse.bodyToMono(String.class).block();
+    return new Response(responseBody, responseStatus);
   }
 }

@@ -16,128 +16,102 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.vertx;
 
-import io.opentelemetry.sdk.trace.data.SpanData;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.HttpMethod;
-import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeoutException;
-import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
-import org.hypertrace.agent.testing.AbstractInstrumenterTest;
-import org.hypertrace.agent.testing.TestHttpServer;
-import org.hypertrace.agent.testing.TestHttpServer.GetJsonHandler;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.hypertrace.agent.testing.AbstractHttpClientTest;
 
-public class VertxClientInstrumentationTest extends AbstractInstrumenterTest {
-
-  private static final String REQUEST_BODY = "hello_foo_bar";
-  private static final String REQUEST_HEADER_NAME = "reqheadername";
-  private static final String REQUEST_HEADER_VALUE = "reqheadervalue";
-
-  private static final TestHttpServer testHttpServer = new TestHttpServer();
+public class VertxClientInstrumentationTest extends AbstractHttpClientTest {
 
   private static final Vertx vertx = Vertx.vertx(new VertxOptions());
   private final HttpClientOptions clientOptions = new HttpClientOptions();
   private final HttpClient httpClient = vertx.createHttpClient(clientOptions);
 
-  @BeforeAll
-  public static void startServer() throws Exception {
-    testHttpServer.start();
+  public VertxClientInstrumentationTest() {
+    super(false);
   }
 
-  @AfterAll
-  public static void closeServer() throws Exception {
-    testHttpServer.close();
-  }
-
-  @Test
-  public void getJson() throws InterruptedException, TimeoutException {
+  @Override
+  public Response doPostRequest(
+      String uri, Map<String, String> headers, String body, String contentType)
+      throws InterruptedException {
     CountDownLatch countDownLatch = new CountDownLatch(1);
-    httpClient
-        .request(HttpMethod.GET, testHttpServer.port(), "localhost", "/get_json")
-        .putHeader(REQUEST_HEADER_NAME, REQUEST_HEADER_VALUE)
-        .handler(
-            new Handler<HttpClientResponse>() {
-              @Override
-              public void handle(HttpClientResponse response) {
-                Assertions.assertEquals(200, response.statusCode());
-                countDownLatch.countDown();
-              }
-            })
-        .end();
-    countDownLatch.await();
 
-    TEST_WRITER.waitForTraces(1);
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
-    Assertions.assertEquals(1, traces.size());
-    Assertions.assertEquals(1, traces.get(0).size());
-    SpanData clientSpan = traces.get(0).get(0);
-    Assertions.assertEquals(
-        REQUEST_HEADER_VALUE,
-        clientSpan
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
-    Assertions.assertEquals(
-        TestHttpServer.RESPONSE_HEADER_VALUE,
-        clientSpan
-            .getAttributes()
-            .get(
-                HypertraceSemanticAttributes.httpResponseHeader(
-                    TestHttpServer.RESPONSE_HEADER_NAME)));
-    Assertions.assertNull(
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
-    Assertions.assertEquals(
-        GetJsonHandler.RESPONSE_BODY,
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+    HttpClientRequest request = httpClient.requestAbs(HttpMethod.POST, uri);
+
+    for (Map.Entry<String, String> entry : headers.entrySet()) {
+      request = request.putHeader(entry.getKey(), entry.getValue());
+    }
+    request = request.putHeader("Content-Type", contentType);
+    BufferHandler bufferHandler = new BufferHandler(countDownLatch);
+    ResponseHandler responseHandler = new ResponseHandler(bufferHandler);
+
+    request.handler(responseHandler).end(body);
+
+    countDownLatch.await();
+    return new Response(bufferHandler.responseBody, responseHandler.responseStatus);
   }
 
-  @Test
-  public void post() throws InterruptedException, TimeoutException {
+  @Override
+  public Response doGetRequest(String uri, Map<String, String> headers)
+      throws InterruptedException {
     CountDownLatch countDownLatch = new CountDownLatch(1);
-    httpClient
-        .request(HttpMethod.POST, testHttpServer.port(), "localhost", "/post")
-        .putHeader(REQUEST_HEADER_NAME, REQUEST_HEADER_VALUE)
-        .putHeader("Content-Type", "application/json")
-        .handler(
-            new Handler<HttpClientResponse>() {
-              @Override
-              public void handle(HttpClientResponse response) {
-                Assertions.assertEquals(204, response.statusCode());
-                countDownLatch.countDown();
-              }
-            })
-        .end(REQUEST_BODY);
-    countDownLatch.await();
 
-    TEST_WRITER.waitForTraces(1);
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
-    Assertions.assertEquals(1, traces.size());
-    Assertions.assertEquals(1, traces.get(0).size());
-    SpanData clientSpan = traces.get(0).get(0);
-    Assertions.assertEquals(
-        REQUEST_HEADER_VALUE,
-        clientSpan
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
-    Assertions.assertEquals(
-        TestHttpServer.RESPONSE_HEADER_VALUE,
-        clientSpan
-            .getAttributes()
-            .get(
-                HypertraceSemanticAttributes.httpResponseHeader(
-                    TestHttpServer.RESPONSE_HEADER_NAME)));
-    Assertions.assertEquals(
-        REQUEST_BODY,
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
-    Assertions.assertNull(
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+    HttpClientRequest request = httpClient.requestAbs(HttpMethod.GET, uri);
+
+    for (Map.Entry<String, String> entry : headers.entrySet()) {
+      request = request.putHeader(entry.getKey(), entry.getValue());
+    }
+    BufferHandler bufferHandler = new BufferHandler(countDownLatch);
+    ResponseHandler responseHandler = new ResponseHandler(bufferHandler);
+
+    request.handler(responseHandler).end();
+
+    countDownLatch.await();
+    return new Response(
+        bufferHandler.responseBody == null || bufferHandler.responseBody.isEmpty()
+            ? null
+            : bufferHandler.responseBody,
+        responseHandler.responseStatus);
+  }
+
+  static class ResponseHandler implements Handler<HttpClientResponse> {
+
+    int responseStatus;
+    final BufferHandler bufferHandler;
+
+    ResponseHandler(BufferHandler bufferHandler) {
+      this.bufferHandler = bufferHandler;
+    }
+
+    @Override
+    public void handle(HttpClientResponse response) {
+      response.bodyHandler(bufferHandler);
+      responseStatus = response.statusCode();
+    }
+  }
+
+  static class BufferHandler implements Handler<Buffer> {
+
+    String responseBody;
+    final CountDownLatch countDownLatch;
+
+    BufferHandler(CountDownLatch countDownLatch) {
+      this.countDownLatch = countDownLatch;
+    }
+
+    @Override
+    public void handle(Buffer responseBodyBuffer) {
+      responseBody = responseBodyBuffer.getString(0, responseBodyBuffer.length());
+      countDownLatch.countDown();
+    }
   }
 }
