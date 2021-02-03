@@ -60,12 +60,12 @@ public class MicronautClientInstrumentationTest extends AbstractInstrumenterTest
   @Test
   public void getJson() throws InterruptedException, TimeoutException {
     String retrieve =
-            client
-                    .toBlocking()
-                    .retrieve(
-                            HttpRequest.GET(
-                                    String.format("http://localhost:%d/get_json", testHttpServer.port()))
-                                    .header(REQUEST_HEADER_NAME, REQUEST_HEADER_VALUE));
+        client
+            .toBlocking()
+            .retrieve(
+                HttpRequest.GET(
+                        String.format("http://localhost:%d/get_json", testHttpServer.port()))
+                    .header(REQUEST_HEADER_NAME, REQUEST_HEADER_VALUE));
     Assertions.assertEquals(GetJsonHandler.RESPONSE_BODY, retrieve);
 
     TEST_WRITER.waitForTraces(1);
@@ -74,35 +74,35 @@ public class MicronautClientInstrumentationTest extends AbstractInstrumenterTest
     Assertions.assertEquals(1, traces.get(0).size());
     SpanData clientSpan = traces.get(0).get(0);
     Assertions.assertEquals(
-            REQUEST_HEADER_VALUE,
-            clientSpan
-                    .getAttributes()
-                    .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
+        REQUEST_HEADER_VALUE,
+        clientSpan
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
     Assertions.assertEquals(
-            TestHttpServer.RESPONSE_HEADER_VALUE,
-            clientSpan
-                    .getAttributes()
-                    .get(
-                            HypertraceSemanticAttributes.httpResponseHeader(
-                                    TestHttpServer.RESPONSE_HEADER_NAME)));
+        TestHttpServer.RESPONSE_HEADER_VALUE,
+        clientSpan
+            .getAttributes()
+            .get(
+                HypertraceSemanticAttributes.httpResponseHeader(
+                    TestHttpServer.RESPONSE_HEADER_NAME)));
     Assertions.assertNull(
-            clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
     Assertions.assertEquals(
-            GetJsonHandler.RESPONSE_BODY,
-            clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+        GetJsonHandler.RESPONSE_BODY,
+        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
   }
 
   @Test
   public void post() throws InterruptedException, TimeoutException {
     HttpResponse<Object> response =
-            client
-                    .toBlocking()
-                    .exchange(
-                            HttpRequest.POST(
-                                    String.format("http://localhost:%d/post", testHttpServer.port()),
-                                    REQUEST_BODY)
-                                    .header(REQUEST_HEADER_NAME, REQUEST_HEADER_VALUE)
-                                    .header("Content-Type", "application/json"));
+        client
+            .toBlocking()
+            .exchange(
+                HttpRequest.POST(
+                        String.format("http://localhost:%d/post", testHttpServer.port()),
+                        REQUEST_BODY)
+                    .header(REQUEST_HEADER_NAME, REQUEST_HEADER_VALUE)
+                    .header("Content-Type", "application/json"));
     Assertions.assertEquals(204, response.getStatus().getCode());
 
     TEST_WRITER.waitForTraces(1);
@@ -111,21 +111,21 @@ public class MicronautClientInstrumentationTest extends AbstractInstrumenterTest
     Assertions.assertEquals(1, traces.get(0).size());
     SpanData clientSpan = traces.get(0).get(0);
     Assertions.assertEquals(
-            REQUEST_HEADER_VALUE,
-            clientSpan
-                    .getAttributes()
-                    .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
+        REQUEST_HEADER_VALUE,
+        clientSpan
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
     Assertions.assertEquals(
-            TestHttpServer.RESPONSE_HEADER_VALUE,
-            clientSpan
-                    .getAttributes()
-                    .get(
-                            HypertraceSemanticAttributes.httpResponseHeader(
-                                    TestHttpServer.RESPONSE_HEADER_NAME)));
+        TestHttpServer.RESPONSE_HEADER_VALUE,
+        clientSpan
+            .getAttributes()
+            .get(
+                HypertraceSemanticAttributes.httpResponseHeader(
+                    TestHttpServer.RESPONSE_HEADER_NAME)));
     Assertions.assertEquals(
-            REQUEST_BODY,
-            clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+        REQUEST_BODY,
+        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
     Assertions.assertNull(
-            clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
   }
 }
