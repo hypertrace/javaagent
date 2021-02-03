@@ -16,204 +16,56 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v4_0;
 
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.sdk.trace.data.SpanData;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeoutException;
-import org.apache.http.HttpEntity;
+import java.util.Map;
 import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.protocol.HTTP;
-import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
-import org.hypertrace.agent.testing.AbstractInstrumenterTest;
-import org.hypertrace.agent.testing.TestHttpServer;
-import org.hypertrace.agent.testing.TestHttpServer.GetJsonHandler;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.hypertrace.agent.testing.AbstractHttpClientTest;
 
-public class ApacheHttpClientInstrumentationTest extends AbstractInstrumenterTest {
-
-  private static final String JSON = "{\"id\":1,\"name\":\"John\"}";
-  private static final TestHttpServer testHttpServer = new TestHttpServer();
+public class ApacheHttpClientInstrumentationTest extends AbstractHttpClientTest {
 
   private final HttpClient client = new DefaultHttpClient();
 
-  @BeforeAll
-  public static void startServer() throws Exception {
-    testHttpServer.start();
+  public ApacheHttpClientInstrumentationTest() {
+    super(true);
   }
 
-  @AfterAll
-  public static void closeServer() throws Exception {
-    testHttpServer.close();
-  }
+  @Override
+  public Response doPostRequest(
+      String uri, Map<String, String> headers, String body, String contentType) throws IOException {
 
-  @Test
-  public void getJson() throws IOException, TimeoutException, InterruptedException {
-    HttpGet getRequest = new HttpGet();
-    getRequest.addHeader("foo", "bar");
-    getRequest.setURI(
-        URI.create(String.format("http://localhost:%d/get_json", testHttpServer.port())));
-    HttpResponse response = client.execute(getRequest);
-    Assertions.assertEquals(200, response.getStatusLine().getStatusCode());
+    HttpPost request = new HttpPost();
+    for (Map.Entry<String, String> entry : headers.entrySet()) {
+      request.addHeader(entry.getKey(), entry.getValue());
+    }
+    request.setURI(URI.create(uri));
+    StringEntity entity = new StringEntity(body);
+    entity.setContentType(contentType);
+    request.setEntity(entity);
+    request.addHeader("Content-type", contentType);
+    HttpResponse response = client.execute(request);
     InputStream inputStream = response.getEntity().getContent();
-    Assertions.assertEquals(GetJsonHandler.RESPONSE_BODY, readInputStream(inputStream));
-
-    Assertions.assertEquals(false, Span.current().isRecording());
-
-    TEST_WRITER.waitForTraces(1);
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
-    Assertions.assertEquals(1, traces.size());
-    Assertions.assertEquals(2, traces.get(0).size());
-    SpanData clientSpan = traces.get(0).get(0);
-
-    Assertions.assertEquals(
-        "test-value",
-        clientSpan
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
-    Assertions.assertEquals(
-        "bar",
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.httpRequestHeader("foo")));
-    Assertions.assertNull(
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
-    SpanData responseBodySpan = traces.get(0).get(1);
-    Assertions.assertEquals(
-        GetJsonHandler.RESPONSE_BODY,
-        responseBodySpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+    return new Response(readInputStream(inputStream), response.getStatusLine().getStatusCode());
   }
 
-  @Test
-  public void postUrlEncoded() throws IOException, TimeoutException, InterruptedException {
-    List<NameValuePair> nvps = new ArrayList<>();
-    nvps.add(new BasicNameValuePair("key1", "value1"));
-    nvps.add(new BasicNameValuePair("key2", "value2"));
-
-    HttpPost postRequest = new HttpPost();
-    postRequest.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
-    postRequest.setURI(
-        URI.create(String.format("http://localhost:%d/post", testHttpServer.port())));
-    HttpResponse response = client.execute(postRequest);
-    Assertions.assertEquals(204, response.getStatusLine().getStatusCode());
-
-    TEST_WRITER.waitForTraces(1);
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
-    Assertions.assertEquals(1, traces.size());
-    Assertions.assertEquals(1, traces.get(0).size());
-    SpanData clientSpan = traces.get(0).get(0);
-
-    Assertions.assertEquals(
-        "test-value",
-        clientSpan
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
-    Assertions.assertEquals(
-        "key1=value1&key2=value2",
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
-    Assertions.assertNull(
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
-  }
-
-  @Test
-  public void postJson() throws IOException, TimeoutException, InterruptedException {
-    StringEntity entity = new StringEntity(JSON);
-    entity.setContentType("application/json");
-    postJsonEntity(entity);
-  }
-
-  @Test
-  public void postJsonNonRepeatableEntity()
-      throws IOException, TimeoutException, InterruptedException {
-    StringEntity entity = new NonRepeatableStringEntity(JSON);
-    entity.setContentType("application/json");
-    postJsonEntity(entity);
-  }
-
-  public void postJsonEntity(HttpEntity entity)
-      throws TimeoutException, InterruptedException, IOException {
-    HttpPost postRequest = new HttpPost();
-    postRequest.setEntity(entity);
-    postRequest.setHeader("Content-type", "application/json");
-    postRequest.setURI(
-        URI.create(String.format("http://localhost:%d/post", testHttpServer.port())));
-    HttpResponse response = client.execute(postRequest);
-    Assertions.assertEquals(204, response.getStatusLine().getStatusCode());
-
-    TEST_WRITER.waitForTraces(1);
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
-    Assertions.assertEquals(1, traces.size());
-    Assertions.assertEquals(1, traces.get(0).size());
-    SpanData clientSpan = traces.get(0).get(0);
-
-    Assertions.assertEquals(
-        "test-value",
-        clientSpan
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
-    Assertions.assertEquals(
-        readInputStream(entity.getContent()),
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
-    Assertions.assertNull(
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
-  }
-
-  @Test
-  public void getContent_throws_exception() throws IOException {
-    HttpClient client = new DefaultHttpClient();
-    HttpGet getRequest = new HttpGet();
-    getRequest.setURI(
-        URI.create(String.format("http://localhost:%d/get_json", testHttpServer.port())));
-    HttpResponse response = client.execute(getRequest);
-    HttpEntity entity = response.getEntity();
-    Assertions.assertNotNull(entity.getContent());
-    try {
-      entity.getContent();
-    } catch (Exception ex) {
-      Assertions.assertEquals(IllegalStateException.class, ex.getClass());
+  @Override
+  public Response doGetRequest(String uri, Map<String, String> headers) throws IOException {
+    HttpGet request = new HttpGet();
+    for (Map.Entry<String, String> entry : headers.entrySet()) {
+      request.addHeader(entry.getKey(), entry.getValue());
     }
-  }
-
-  private static String readInputStream(InputStream inputStream) throws IOException {
-    StringBuilder textBuilder = new StringBuilder();
-
-    try (BufferedReader reader =
-        new BufferedReader(
-            new InputStreamReader(inputStream, Charset.forName(StandardCharsets.UTF_8.name())))) {
-      int c;
-      while ((c = reader.read()) != -1) {
-        textBuilder.append((char) c);
-      }
+    request.setURI(URI.create(uri));
+    HttpResponse response = client.execute(request);
+    if (response.getEntity() == null || response.getEntity().getContentLength() <= 0) {
+      return new Response(null, response.getStatusLine().getStatusCode());
     }
-    return textBuilder.toString();
-  }
-
-  class NonRepeatableStringEntity extends StringEntity {
-
-    public NonRepeatableStringEntity(String s) throws UnsupportedEncodingException {
-      super(s);
-    }
-
-    @Override
-    public boolean isRepeatable() {
-      return false;
-    }
+    InputStream inputStream = response.getEntity().getContent();
+    return new Response(readInputStream(inputStream), response.getStatusLine().getStatusCode());
   }
 }
