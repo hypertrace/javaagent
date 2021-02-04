@@ -1,5 +1,6 @@
 plugins {
    `java-library`
+   id("org.hypertrace.publish-plugin")
 }
 
 val versions: Map<String, String> by extra
