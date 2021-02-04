@@ -16,131 +16,77 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.client;
 
-import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.ByteArrayInputStream;
-import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 import org.asynchttpclient.AsyncCompletionHandler;
 import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.BoundRequestBuilder;
 import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 import org.asynchttpclient.Dsl;
 import org.asynchttpclient.ListenableFuture;
-import org.asynchttpclient.Response;
-import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
-import org.hypertrace.agent.testing.AbstractInstrumenterTest;
-import org.hypertrace.agent.testing.TestHttpServer;
-import org.hypertrace.agent.testing.TestHttpServer.GetJsonHandler;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.hypertrace.agent.testing.AbstractHttpClientTest;
 
-public class Netty40ClientInstrumentationTest extends AbstractInstrumenterTest {
-
-  private static final String REQUEST_BODY = "hello_foo_bar";
-  private static final String REQUEST_HEADER_NAME = "reqheadername";
-  private static final String REQUEST_HEADER_VALUE = "reqheadervalue";
-
-  private static final TestHttpServer testHttpServer = new TestHttpServer();
+public class Netty40ClientInstrumentationTest extends AbstractHttpClientTest {
 
   private final DefaultAsyncHttpClientConfig clientConfig =
       new DefaultAsyncHttpClientConfig.Builder().setRequestTimeout(30000).build();
   private final AsyncHttpClient asyncHttpClient = Dsl.asyncHttpClient(clientConfig);
 
-  @BeforeAll
-  public static void startServer() throws Exception {
-    testHttpServer.start();
+  public Netty40ClientInstrumentationTest() {
+    super(false);
   }
 
-  @AfterAll
-  public static void closeServer() throws Exception {
-    testHttpServer.close();
-  }
+  @Override
+  public Response doPostRequest(
+      String uri, Map<String, String> headers, String body, String contentType)
+      throws ExecutionException, InterruptedException {
 
-  @Test
-  public void getJson() throws ExecutionException, InterruptedException, TimeoutException {
-    ListenableFuture<Object> response =
-        asyncHttpClient
-            .prepareGet(String.format("http://localhost:%d/get_json", testHttpServer.port()))
-            .addHeader(REQUEST_HEADER_NAME, REQUEST_HEADER_VALUE)
-            .execute(
-                new AsyncCompletionHandler<Object>() {
-                  @Override
-                  public Object onCompleted(Response response) throws Exception {
-                    return null;
-                  }
-                });
+    ByteArrayInputStream inputStream = new ByteArrayInputStream(body.getBytes());
+    BoundRequestBuilder requestBuilder = asyncHttpClient.preparePost(uri).setBody(inputStream);
+
+    for (Map.Entry<String, String> entry : headers.entrySet()) {
+      requestBuilder = requestBuilder.addHeader(entry.getKey(), entry.getValue());
+    }
+
+    requestBuilder = requestBuilder.addHeader("Content-Type", contentType);
+    ListenableFuture<Response> response =
+        requestBuilder.execute(
+            new AsyncCompletionHandler<Response>() {
+              @Override
+              public Response onCompleted(org.asynchttpclient.Response response) {
+                return new Response(
+                    response.hasResponseBody() ? response.getResponseBody() : null,
+                    response.getStatusCode());
+              }
+            });
 
     // wait for the result
-    response.get();
-
-    TEST_WRITER.waitForTraces(1);
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
-    Assertions.assertEquals(1, traces.size());
-    Assertions.assertEquals(1, traces.get(0).size());
-    SpanData clientSpan = traces.get(0).get(0);
-    Assertions.assertEquals(
-        REQUEST_HEADER_VALUE,
-        clientSpan
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
-    Assertions.assertEquals(
-        TestHttpServer.RESPONSE_HEADER_VALUE,
-        clientSpan
-            .getAttributes()
-            .get(
-                HypertraceSemanticAttributes.httpResponseHeader(
-                    TestHttpServer.RESPONSE_HEADER_NAME)));
-    Assertions.assertNull(
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
-    Assertions.assertEquals(
-        GetJsonHandler.RESPONSE_BODY,
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+    return response.get();
   }
 
-  @Test
-  public void post() throws ExecutionException, InterruptedException, TimeoutException {
-    ByteArrayInputStream inputStream = new ByteArrayInputStream(REQUEST_BODY.getBytes());
+  @Override
+  public Response doGetRequest(String uri, Map<String, String> headers)
+      throws ExecutionException, InterruptedException {
 
-    ListenableFuture<Object> response =
-        asyncHttpClient
-            .preparePost(String.format("http://localhost:%d/post", testHttpServer.port()))
-            .setBody(inputStream)
-            .addHeader("Content-Type", "application/json")
-            .addHeader(REQUEST_HEADER_NAME, REQUEST_HEADER_VALUE)
-            .execute(
-                new AsyncCompletionHandler<Object>() {
-                  @Override
-                  public Object onCompleted(Response response) throws Exception {
-                    return null;
-                  }
-                });
+    BoundRequestBuilder requestBuilder = asyncHttpClient.prepareGet(uri);
+
+    for (Map.Entry<String, String> entry : headers.entrySet()) {
+      requestBuilder = requestBuilder.addHeader(entry.getKey(), entry.getValue());
+    }
+
+    ListenableFuture<Response> response =
+        requestBuilder.execute(
+            new AsyncCompletionHandler<Response>() {
+              @Override
+              public Response onCompleted(org.asynchttpclient.Response response) {
+                return new Response(
+                    response.hasResponseBody() ? response.getResponseBody() : null,
+                    response.getStatusCode());
+              }
+            });
 
     // wait for the result
-    response.get();
-
-    TEST_WRITER.waitForTraces(1);
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
-    Assertions.assertEquals(1, traces.size());
-    Assertions.assertEquals(1, traces.get(0).size());
-    SpanData clientSpan = traces.get(0).get(0);
-    Assertions.assertEquals(
-        REQUEST_HEADER_VALUE,
-        clientSpan
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
-    Assertions.assertEquals(
-        TestHttpServer.RESPONSE_HEADER_VALUE,
-        clientSpan
-            .getAttributes()
-            .get(
-                HypertraceSemanticAttributes.httpResponseHeader(
-                    TestHttpServer.RESPONSE_HEADER_NAME)));
-    Assertions.assertEquals(
-        REQUEST_BODY,
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
-    Assertions.assertNull(
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+    return response.get();
   }
 }
