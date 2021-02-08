@@ -147,11 +147,13 @@ public class InputStreamUtils {
     }
     SpanAndBuffer spanAndBuffer =
         GlobalObjectRegistry.inputStreamToSpanAndBufferMap.get(inputStream);
-    InputStreamUtils.addBody(
-        spanAndBuffer.span,
-        spanAndBuffer.attributeKey,
-        spanAndBuffer.byteArrayBuffer,
-        spanAndBuffer.charset);
-    GlobalObjectRegistry.inputStreamToSpanAndBufferMap.remove(inputStream);
+    if (spanAndBuffer != null) {
+      InputStreamUtils.addBody(
+          spanAndBuffer.span,
+          spanAndBuffer.attributeKey,
+          spanAndBuffer.byteArrayBuffer,
+          spanAndBuffer.charset);
+      GlobalObjectRegistry.inputStreamToSpanAndBufferMap.remove(inputStream);
+    }
   }
 }
