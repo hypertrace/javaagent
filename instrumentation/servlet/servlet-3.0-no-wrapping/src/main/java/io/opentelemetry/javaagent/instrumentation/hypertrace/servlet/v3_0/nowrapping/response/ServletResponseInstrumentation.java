@@ -41,6 +41,7 @@ import net.bytebuddy.matcher.ElementMatcher;
 import net.bytebuddy.matcher.ElementMatcher.Junction;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.core.config.HypertraceConfig;
+import org.hypertrace.agent.core.instrumentation.SpanAndObjectPair;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
@@ -124,8 +125,10 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
         Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
         BoundedByteArrayOutputStream buffer = BoundedBuffersFactory.createStream(charset);
         contextStore.put(servletOutputStream, buffer);
-        InstrumentationContext.get(HttpServletResponse.class, ResponseStreamWriterHolder.class)
-            .put(httpServletResponse, new ResponseStreamWriterHolder(servletOutputStream));
+        SpanAndObjectPair spanAndObjectPair = new SpanAndObjectPair(null);
+        spanAndObjectPair.setAssociatedObject(servletOutputStream);
+        InstrumentationContext.get(HttpServletResponse.class, SpanAndObjectPair.class)
+            .put(httpServletResponse, spanAndObjectPair);
       }
     }
   }
@@ -179,8 +182,10 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
 
         BoundedCharArrayWriter writer = BoundedBuffersFactory.createWriter();
         contextStore.put(printWriter, writer);
-        InstrumentationContext.get(HttpServletResponse.class, ResponseStreamWriterHolder.class)
-            .put(httpServletResponse, new ResponseStreamWriterHolder(printWriter));
+        SpanAndObjectPair spanAndObjectPair = new SpanAndObjectPair(null);
+        spanAndObjectPair.setAssociatedObject(printWriter);
+        InstrumentationContext.get(HttpServletResponse.class, SpanAndObjectPair.class)
+            .put(httpServletResponse, spanAndObjectPair);
       }
     }
   }

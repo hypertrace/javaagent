@@ -18,8 +18,6 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowra
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.request.RequestStreamReaderHolder;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.response.ResponseStreamWriterHolder;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -29,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.instrumentation.SpanAndObjectPair;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
 import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
@@ -50,19 +49,19 @@ public class Utils {
   public static void captureResponseBody(
       Span span,
       HttpServletResponse httpServletResponse,
-      ContextStore<HttpServletResponse, ResponseStreamWriterHolder> responseContextStore,
+      ContextStore<HttpServletResponse, SpanAndObjectPair> responseContextStore,
       ContextStore<ServletOutputStream, BoundedByteArrayOutputStream> streamContextStore,
       ContextStore<PrintWriter, BoundedCharArrayWriter> writerContextStore) {
 
-    ResponseStreamWriterHolder responseStreamWriterHolder =
-        responseContextStore.get(httpServletResponse);
+    SpanAndObjectPair responseStreamWriterHolder = responseContextStore.get(httpServletResponse);
     if (responseStreamWriterHolder == null) {
       return;
     }
     responseContextStore.put(httpServletResponse, null);
 
-    if (responseStreamWriterHolder.getServletOutputStream() != null) {
-      ServletOutputStream servletOutputStream = responseStreamWriterHolder.getServletOutputStream();
+    if (responseStreamWriterHolder.getAssociatedObject() instanceof ServletOutputStream) {
+      ServletOutputStream servletOutputStream =
+          (ServletOutputStream) responseStreamWriterHolder.getAssociatedObject();
       BoundedByteArrayOutputStream buffer = streamContextStore.get(servletOutputStream);
       if (buffer != null) {
         try {
@@ -74,10 +73,8 @@ public class Utils {
         }
         streamContextStore.put(servletOutputStream, null);
       }
-    }
-
-    if (responseStreamWriterHolder.getPrintWriter() != null) {
-      PrintWriter printWriter = responseStreamWriterHolder.getPrintWriter();
+    } else if (responseStreamWriterHolder.getAssociatedObject() instanceof PrintWriter) {
+      PrintWriter printWriter = (PrintWriter) responseStreamWriterHolder.getAssociatedObject();
       BoundedCharArrayWriter buffer = writerContextStore.get(printWriter);
       if (buffer != null) {
         span.setAttribute(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, buffer.toString());
@@ -88,22 +85,22 @@ public class Utils {
 
   public static void resetRequestBodyBuffers(
       HttpServletRequest httpServletRequest,
-      ContextStore<HttpServletRequest, RequestStreamReaderHolder> requestContextStore,
+      ContextStore<HttpServletRequest, SpanAndObjectPair> requestContextStore,
       ContextStore<ServletInputStream, ByteBufferSpanPair> streamContextStore,
       ContextStore<BufferedReader, CharBufferSpanPair> bufferedReaderContextStore) {
 
-    RequestStreamReaderHolder requestStreamReaderHolder =
-        requestContextStore.get(httpServletRequest);
+    SpanAndObjectPair requestStreamReaderHolder = requestContextStore.get(httpServletRequest);
     if (requestContextStore == null) {
       return;
     }
     requestContextStore.put(httpServletRequest, null);
 
-    if (requestStreamReaderHolder.getServletInputStream() != null) {
-      streamContextStore.put(requestStreamReaderHolder.getServletInputStream(), null);
-    }
-    if (requestStreamReaderHolder.getBufferedReader() != null) {
-      bufferedReaderContextStore.put(requestStreamReaderHolder.getBufferedReader(), null);
+    if (requestStreamReaderHolder.getAssociatedObject() instanceof ServletInputStream) {
+      streamContextStore.put(
+          (ServletInputStream) requestStreamReaderHolder.getAssociatedObject(), null);
+    } else if (requestStreamReaderHolder.getAssociatedObject() instanceof BufferedReader) {
+      bufferedReaderContextStore.put(
+          (BufferedReader) requestStreamReaderHolder.getAssociatedObject(), null);
     }
   }
 }
