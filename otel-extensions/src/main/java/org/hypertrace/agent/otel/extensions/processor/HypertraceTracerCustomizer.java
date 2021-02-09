@@ -33,9 +33,6 @@ public class HypertraceTracerCustomizer implements TracerCustomizer {
 
   @Override
   public void configure(SdkTracerManagement tracerManagement) {
-    String exporter = System.getProperty("otel.exporter");
-    if (exporter != null && exporter.contains("zipkin")) {
-      tracerManagement.addSpanProcessor(new AddTagsSpanProcessor());
-    }
+    tracerManagement.addSpanProcessor(new AddTagsSpanProcessor());
   }
 }
