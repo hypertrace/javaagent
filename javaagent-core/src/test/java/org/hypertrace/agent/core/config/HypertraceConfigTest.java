@@ -16,6 +16,7 @@
 
 package org.hypertrace.agent.core.config;
 
+import com.google.protobuf.StringValue;
 import com.google.protobuf.util.JsonFormat;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -67,6 +68,7 @@ public class HypertraceConfigTest {
         true, agentConfig.getDataCapture().getRpcBody().getRequest().getValue());
     Assertions.assertEquals(
         true, agentConfig.getDataCapture().getRpcBody().getResponse().getValue());
+    Assertions.assertTrue(agentConfig.hasJavaagent());
   }
 
   @Test
@@ -111,6 +113,17 @@ public class HypertraceConfigTest {
         true, agentConfig.getDataCapture().getHttpBody().getRequest().getValue());
     Assertions.assertEquals(
         true, agentConfig.getDataCapture().getRpcBody().getRequest().getValue());
+    Assertions.assertEquals(2, agentConfig.getJavaagent().getFilterJarPathsCount());
+    Assertions.assertTrue(
+        agentConfig
+            .getJavaagent()
+            .getFilterJarPathsList()
+            .contains(StringValue.newBuilder().setValue("/path1.jar").build()));
+    Assertions.assertTrue(
+        agentConfig
+            .getJavaagent()
+            .getFilterJarPathsList()
+            .contains(StringValue.newBuilder().setValue("/path/2/jar.jar").build()));
   }
 
   @Test

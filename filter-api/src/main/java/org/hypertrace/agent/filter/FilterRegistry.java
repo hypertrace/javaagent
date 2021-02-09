@@ -16,13 +16,20 @@
 
 package org.hypertrace.agent.filter;
 
+import com.google.protobuf.StringValue;
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceLoader;
 import org.hypertrace.agent.core.config.EnvironmentConfig;
+import org.hypertrace.agent.core.config.HypertraceConfig;
 import org.hypertrace.agent.filter.api.Filter;
 import org.hypertrace.agent.filter.spi.FilterProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Provides access to the {@link Filter} implementations. The {@link Filter} implementation are
@@ -32,6 +39,8 @@ import org.hypertrace.agent.filter.spi.FilterProvider;
  * @see FilterProvider
  */
 public class FilterRegistry {
+
+  private static final Logger logger = LoggerFactory.getLogger(FilterRegistry.class);
 
   private FilterRegistry() {}
 
@@ -54,11 +63,10 @@ public class FilterRegistry {
   }
 
   private static Filter load() {
-    ServiceLoader<FilterProvider> providers = ServiceLoader.load(FilterProvider.class);
+    ClassLoader cl = loadJars();
+    ServiceLoader<FilterProvider> providers = ServiceLoader.load(FilterProvider.class, cl);
     List<Filter> filters = new ArrayList<>();
-    Iterator<FilterProvider> iterator = providers.iterator();
-    while (iterator.hasNext()) {
-      FilterProvider provider = iterator.next();
+    for (FilterProvider provider : providers) {
       String disabled =
           EnvironmentConfig.getProperty(getProviderDisabledPropertyName(provider.getClass()));
       if ("true".equalsIgnoreCase(disabled)) {
@@ -68,6 +76,27 @@ public class FilterRegistry {
       filters.add(filter);
     }
     return new MultiFilter(filters);
+  }
+
+  private static ClassLoader loadJars() {
+    List<StringValue> jarPaths = HypertraceConfig.get().getJavaagent().getFilterJarPathsList();
+    List<File> files = new ArrayList<>();
+    jarPaths.forEach(
+        jarPath -> {
+          File file = new File(jarPath.getValue());
+          System.out.println(jarPath.getValue());
+          files.add(file);
+        });
+    int i = 0;
+    URL[] urls = new URL[jarPaths.size()];
+    for (File file : files) {
+      try {
+        urls[i] = file.toURI().toURL();
+      } catch (MalformedURLException e) {
+        logger.warn("Malformed URL exception for jar on path: {}", file.getPath());
+      }
+    }
+    return new URLClassLoader(urls, Thread.currentThread().getContextClassLoader());
   }
 
   public static String getProviderDisabledPropertyName(Class<?> clazz) {
