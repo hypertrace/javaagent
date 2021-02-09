@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.instrument;
+package org.hypertrace.agent.otel.extensions;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,12 +22,13 @@ import org.hypertrace.agent.config.Config.PropagationFormat;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class HypertraceAgentTest {
+public class HypertraceAgentConfigurationTest {
 
   @Test
   public void propagationFormatList() {
     List<PropagationFormat> formats =
         Arrays.asList(PropagationFormat.B3, PropagationFormat.TRACECONTEXT);
-    Assertions.assertEquals("b3,tracecontext", HypertraceAgent.toOtelPropagators(formats));
+    Assertions.assertEquals(
+        "b3,tracecontext", HypertraceAgentConfiguration.toOtelPropagators(formats));
   }
 }
