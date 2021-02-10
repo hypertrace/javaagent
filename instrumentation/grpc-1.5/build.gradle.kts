@@ -55,38 +55,38 @@ protobuf {
 }
 
 val versions: Map<String, String> by extra
+val grpcVersion = "1.5.0"
 
 dependencies {
     api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-grpc-1.5:${versions["opentelemetry_java_agent"]}")
     api("io.opentelemetry.instrumentation:opentelemetry-grpc-1.5:${versions["opentelemetry_java_agent"]}")
-    implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${versions["opentelemetry_java_agent"]}")
 
-    compileOnly("io.grpc:grpc-core:1.5.0")
-    compileOnly("io.grpc:grpc-protobuf:1.5.0")
-    compileOnly("io.grpc:grpc-stub:1.5.0")
-    compileOnly("io.grpc:grpc-netty:1.5.0")
+    compileOnly("io.grpc:grpc-core:${grpcVersion}")
+    compileOnly("io.grpc:grpc-protobuf:${grpcVersion}")
+    compileOnly("io.grpc:grpc-stub:${grpcVersion}")
+    compileOnly("io.grpc:grpc-netty:${grpcVersion}")
 
     implementation("javax.annotation:javax.annotation-api:1.3.2")
 
     testImplementation(project(":testing-common"))
-    testImplementation("io.grpc:grpc-core:1.5.0") {
+    testImplementation("io.grpc:grpc-core:${grpcVersion}") {
         version {
-            strictly("1.5.0")
+            strictly(grpcVersion)
         }
     }
-    testImplementation("io.grpc:grpc-protobuf:1.5.0") {
+    testImplementation("io.grpc:grpc-protobuf:${grpcVersion}") {
         version {
-            strictly("1.5.0")
+            strictly(grpcVersion)
         }
     }
-    testImplementation("io.grpc:grpc-stub:1.5.0") {
+    testImplementation("io.grpc:grpc-stub:${grpcVersion}") {
         version {
-            strictly("1.5.0")
+            strictly(grpcVersion)
         }
     }
-    testImplementation("io.grpc:grpc-netty:1.5.0") {
+    testImplementation("io.grpc:grpc-netty:${grpcVersion}") {
         version {
-            strictly("1.5.0")
+            strictly(grpcVersion)
         }
     }
 }
