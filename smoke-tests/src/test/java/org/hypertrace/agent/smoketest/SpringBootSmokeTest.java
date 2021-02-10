@@ -62,7 +62,7 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
   }
 
   @Test
-  public void get() throws IOException {
+  public void get() throws IOException, InterruptedException {
     String url = String.format("http://localhost:%d/greeting", app.getMappedPort(8080));
     Request request = new Request.Builder().url(url).get().build();
 
