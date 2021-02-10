@@ -31,7 +31,8 @@ import org.hypertrace.agent.core.config.HypertraceConfig;
 public class HypertraceAgentConfiguration implements PropertySource {
 
   // https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/sdk-environment-variables.md
-  private static final String OTEL_EXPORTER = "otel.exporter";
+  private static final String OTEL_TRACE_EXPORTER = "otel.trace.exporter";
+  private static final String OTEL_METRICS_EXPORTER = "otel.metrics.exporter";
   private static final String OTEL_PROPAGATORS = "otel.propagators";
   private static final String OTEL_EXPORTER_ZIPKIN_ENDPOINT = "otel.exporter.zipkin.endpoint";
   private static final String OTEL_EXPORTER_ZIPKIN_SERVICE_NAME =
@@ -45,14 +46,15 @@ public class HypertraceAgentConfiguration implements PropertySource {
     AgentConfig agentConfig = HypertraceConfig.get();
 
     Map<String, String> configProperties = new HashMap<>();
-    configProperties.put(OTEL_EXPORTER, "zipkin");
+    configProperties.put(OTEL_TRACE_EXPORTER, "zipkin");
     configProperties.put(
         OTEL_EXPORTER_ZIPKIN_SERVICE_NAME, agentConfig.getServiceName().getValue());
     configProperties.put(
         OTEL_EXPORTER_ZIPKIN_ENDPOINT, agentConfig.getReporting().getEndpoint().getValue());
     configProperties.put(
         OTEL_PROPAGATORS, toOtelPropagators(agentConfig.getPropagationFormatsList()));
-
+    // metrics are not reported
+    configProperties.put(OTEL_METRICS_EXPORTER, "none");
     return configProperties;
   }
 

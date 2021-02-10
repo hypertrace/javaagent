@@ -45,8 +45,9 @@ dependencies {
     implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.0:${versions["opentelemetry_java_agent"]}")
 
     implementation("io.netty:netty-codec-http:4.0.0.Final")
-
-    testImplementation(project(":testing-common"))
+    testImplementation(project(":testing-common")) {
+        exclude(group = "io.netty")
+    }
     testImplementation("org.asynchttpclient:async-http-client:2.0.9")
 }
 

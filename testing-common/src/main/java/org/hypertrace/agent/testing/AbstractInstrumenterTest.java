@@ -22,8 +22,6 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.javaagent.spi.ComponentInstaller;
 import io.opentelemetry.javaagent.tooling.AgentInstaller;
-import io.opentelemetry.javaagent.tooling.config.ConfigInitializer;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
 import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
@@ -57,11 +55,10 @@ public abstract class AbstractInstrumenterTest {
    */
   public static final InMemoryExporter TEST_WRITER = new InMemoryExporter();;
 
-  protected static final Tracer TEST_TRACER;
+  protected static Tracer TEST_TRACER;
   private static final Instrumentation INSTRUMENTATION;
 
   static {
-    ConfigInitializer.initialize();
     // always run with the thread propagation debugger to help track down sporadic test failures
     System.setProperty("otel.threadPropagationDebugger", "true");
     System.setProperty("otel.internal.failOnContextLeak", "true");
@@ -74,8 +71,6 @@ public abstract class AbstractInstrumenterTest {
     ((Logger) LoggerFactory.getLogger("io.opentelemetry")).setLevel(Level.DEBUG);
 
     COMPONENT_INSTALLER = new TestOpenTelemetryInstaller(TEST_WRITER);
-    OpenTelemetrySdk.getGlobalTracerManagement().addSpanProcessor(TEST_WRITER);
-    TEST_TRACER = GlobalOpenTelemetry.getTracer("io.opentelemetry.auto");
   }
 
   private static ClassFileTransformer classFileTransformer;
@@ -94,6 +89,9 @@ public abstract class AbstractInstrumenterTest {
       classFileTransformer =
           AgentInstaller.installBytebuddyAgent(
               INSTRUMENTATION, Collections.singleton(COMPONENT_INSTALLER));
+    }
+    if (TEST_TRACER == null) {
+      TEST_TRACER = GlobalOpenTelemetry.getTracer("io.opentelemetry.auto");
     }
   }
 

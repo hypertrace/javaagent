@@ -46,7 +46,9 @@ dependencies {
 
     implementation("io.netty:netty-codec-http:4.1.0.Final")
 
-    testImplementation(project(":testing-common"))
+    testImplementation(project(":testing-common")) {
+        exclude(group = "io.netty")
+    }
     testImplementation("io.netty:netty-handler:4.1.0.Final")
     testImplementation("org.asynchttpclient:async-http-client:2.1.0")
 }

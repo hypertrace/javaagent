@@ -66,7 +66,9 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
     String url = String.format("http://localhost:%d/greeting", app.getMappedPort(8080));
     Request request = new Request.Builder().url(url).get().build();
 
-    Response response = client.newCall(request).execute();
+    try (Response response = client.newCall(request).execute()) {
+      Assertions.assertEquals(response.body().string(), "Hi!");
+    }
     ArrayList<ExportTraceServiceRequest> traces = new ArrayList<>(waitForTraces());
 
     Object currentAgentVersion =
@@ -79,6 +81,7 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
     Assertions.assertEquals(
         ResourceAttributes.SERVICE_NAME.getKey(),
         traces.get(0).getResourceSpans(0).getResource().getAttributes(0).getKey());
+    System.out.println(traces.get(0).getResourceSpans(0).getResource().getAttributesList());
     Assertions.assertEquals(
         ResourceAttributes.CONTAINER_ID.getKey(),
         traces.get(0).getResourceSpans(0).getResource().getAttributes(1).getKey());
@@ -93,7 +96,6 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
             .getValue()
             .getStringValue());
 
-    Assertions.assertEquals(response.body().string(), "Hi!");
     Assertions.assertEquals(1, countSpansByName(traces, "/greeting"));
     Assertions.assertEquals(1, countSpansByName(traces, "webcontroller.greeting"));
     Assertions.assertTrue(
