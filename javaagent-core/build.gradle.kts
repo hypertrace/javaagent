@@ -4,6 +4,7 @@ plugins {
     `java-library`
     idea
     id("com.google.protobuf") version "0.8.13"
+    id("org.hypertrace.publish-plugin")
 }
 
 protobuf {

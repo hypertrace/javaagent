@@ -17,6 +17,7 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping;
 
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.safeHasSuperType;
+import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMatcher.hasClassesNamed;
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.NameMatchers.namedOneOf;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
@@ -28,8 +29,6 @@ import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.request.RequestStreamReaderHolder;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.response.ResponseStreamWriterHolder;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
@@ -51,6 +50,7 @@ import net.bytebuddy.matcher.ElementMatcher.Junction;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.core.config.HypertraceConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.instrumentation.SpanAndObjectPair;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
 import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
@@ -61,8 +61,13 @@ import org.hypertrace.agent.filter.FilterRegistry;
 public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
 
   @Override
+  public ElementMatcher<ClassLoader> classLoaderOptimization() {
+    return hasClassesNamed("javax.servlet.Filter");
+  }
+
+  @Override
   public ElementMatcher<? super TypeDescription> typeMatcher() {
-    return safeHasSuperType(namedOneOf("javax.servlet.Filter", "javax.servlet.http.HttpServlet"));
+    return safeHasSuperType(namedOneOf("javax.servlet.Filter", "javax.servlet.Servlet"));
   }
 
   @Override
@@ -103,8 +108,8 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
           && ContentTypeUtils.shouldCapture(contentType)) {
         // The HttpServletRequest instrumentation uses this to
         // enable the instrumentation
-        InstrumentationContext.get(HttpServletRequest.class, RequestStreamReaderHolder.class)
-            .put(httpRequest, new RequestStreamReaderHolder(currentSpan));
+        InstrumentationContext.get(HttpServletRequest.class, SpanAndObjectPair.class)
+            .put(httpRequest, new SpanAndObjectPair(currentSpan));
       }
 
       Utils.addSessionId(currentSpan, httpRequest);
@@ -152,18 +157,17 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
       HttpServletRequest httpRequest = (HttpServletRequest) request;
       AgentConfig agentConfig = HypertraceConfig.get();
 
+      // response context to capture body and clear the context
+      ContextStore<HttpServletResponse, SpanAndObjectPair> responseContextStore =
+          InstrumentationContext.get(HttpServletResponse.class, SpanAndObjectPair.class);
       ContextStore<ServletOutputStream, BoundedByteArrayOutputStream> outputStreamContextStore =
           InstrumentationContext.get(ServletOutputStream.class, BoundedByteArrayOutputStream.class);
       ContextStore<PrintWriter, BoundedCharArrayWriter> writerContextStore =
           InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class);
 
-      // response context to capture body and clear the context
-      ContextStore<HttpServletResponse, ResponseStreamWriterHolder> responseContextStore =
-          InstrumentationContext.get(HttpServletResponse.class, ResponseStreamWriterHolder.class);
-
       // request context to clear body buffer
-      ContextStore<HttpServletRequest, RequestStreamReaderHolder> requestContextStore =
-          InstrumentationContext.get(HttpServletRequest.class, RequestStreamReaderHolder.class);
+      ContextStore<HttpServletRequest, SpanAndObjectPair> requestContextStore =
+          InstrumentationContext.get(HttpServletRequest.class, SpanAndObjectPair.class);
       ContextStore<ServletInputStream, ByteBufferSpanPair> inputStreamContextStore =
           InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class);
       ContextStore<BufferedReader, CharBufferSpanPair> readerContextStore =

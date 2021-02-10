@@ -14,6 +14,7 @@ dependencies {
 
     api("io.opentelemetry:opentelemetry-api:${versions["opentelemetry"]}")
     api("io.opentelemetry:opentelemetry-sdk:${versions["opentelemetry"]}")
+    compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${versions["opentelemetry"]}-alpha")
     api("com.squareup.okhttp3:okhttp:4.9.0")
     implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${versions["opentelemetry_java_agent"]}")
     implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-spi:${versions["opentelemetry_java_agent"]}")

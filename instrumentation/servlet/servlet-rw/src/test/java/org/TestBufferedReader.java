@@ -14,20 +14,21 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.instrument;
+package org;
 
-import java.util.Arrays;
-import java.util.List;
-import org.hypertrace.agent.config.Config.PropagationFormat;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
 
-public class HypertraceAgentTest {
+public class TestBufferedReader extends BufferedReader {
 
-  @Test
-  public void propagationFormatList() {
-    List<PropagationFormat> formats =
-        Arrays.asList(PropagationFormat.B3, PropagationFormat.TRACECONTEXT);
-    Assertions.assertEquals("b3,tracecontext", HypertraceAgent.toOtelPropagators(formats));
+  public TestBufferedReader(Reader in) {
+    super(in);
+  }
+
+  @Override
+  public String readLine() throws IOException {
+    System.out.println("override readline");
+    return super.readLine();
   }
 }

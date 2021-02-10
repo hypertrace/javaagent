@@ -16,28 +16,13 @@
 
 package org.hypertrace.agent.instrument;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.javaagent.OpenTelemetryAgent;
 import java.lang.instrument.Instrumentation;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import org.hypertrace.agent.config.Config.AgentConfig;
-import org.hypertrace.agent.config.Config.PropagationFormat;
-import org.hypertrace.agent.core.config.HypertraceConfig;
 
 public class HypertraceAgent {
-  // https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/sdk-environment-variables.md
-  private static final String OTEL_EXPORTER = "otel.exporter";
-  private static final String OTEL_PROPAGATORS = "otel.propagators";
-  private static final String OTEL_EXPORTER_ZIPKIN_ENDPOINT = "otel.exporter.zipkin.endpoint";
-  private static final String OTEL_EXPORTER_ZIPKIN_SERVICE_NAME =
-      "otel.exporter.zipkin.service.name";
-  private static final String OTEL_PROCESSOR_BATCH_MAX_QUEUE = "otel.bsp.max.queue.size";
-  private static final String OTEL_DEFAULT_LOG_LEVEL =
-      "io.opentelemetry.javaagent.slf4j.simpleLogger.defaultLogLevel";
 
   private static HypertraceAgent instance;
 
@@ -64,32 +49,10 @@ public class HypertraceAgent {
     }
 
     instance = new HypertraceAgent();
-    setDefaultConfig();
     OpenTelemetryAgent.premain(agentArgs, inst);
     System.out.printf(
         "Hypertrace agent started, version: %s\n",
         HypertraceAgent.class.getPackage().getImplementationVersion());
-  }
-
-  /** Set default values to OTEL config. OTEL config has a higher precedence. */
-  private static void setDefaultConfig() {
-    AgentConfig agentConfig = HypertraceConfig.get();
-    OpenTelemetryConfig.setDefault(OTEL_EXPORTER, "zipkin");
-    OpenTelemetryConfig.setDefault(
-        OTEL_EXPORTER_ZIPKIN_SERVICE_NAME, agentConfig.getServiceName().getValue());
-    OpenTelemetryConfig.setDefault(
-        OTEL_PROPAGATORS, toOtelPropagators(agentConfig.getPropagationFormatsList()));
-    OpenTelemetryConfig.setDefault(
-        OTEL_EXPORTER_ZIPKIN_ENDPOINT, agentConfig.getReporting().getEndpoint().getValue());
-    OpenTelemetryConfig.setDefault(
-        OTEL_EXPORTER_ZIPKIN_SERVICE_NAME, agentConfig.getServiceName().getValue());
-  }
-
-  @VisibleForTesting
-  static String toOtelPropagators(List<PropagationFormat> propagationFormats) {
-    return propagationFormats.stream()
-        .map(v -> v.name().toLowerCase())
-        .collect(Collectors.joining(","));
   }
 
   // Expected format is "arg1=val1,arg2=val2,arg3=val3"

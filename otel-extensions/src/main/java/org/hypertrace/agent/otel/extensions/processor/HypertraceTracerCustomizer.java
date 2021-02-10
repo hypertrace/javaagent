@@ -17,8 +17,8 @@
 package org.hypertrace.agent.otel.extensions.processor;
 
 import com.google.auto.service.AutoService;
-import io.opentelemetry.javaagent.spi.TracerCustomizer;
-import io.opentelemetry.sdk.trace.SdkTracerManagement;
+import io.opentelemetry.sdk.autoconfigure.spi.SdkTracerProviderConfigurer;
+import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 
 /**
  * This is a workaround to add container ID tags to spans when Zipkin exporter is used. Zipkin
@@ -28,14 +28,11 @@ import io.opentelemetry.sdk.trace.SdkTracerManagement;
  * <p>Remove this once we migrate to OTEL exporter
  * https://github.com/hypertrace/javaagent/issues/132
  */
-@AutoService(TracerCustomizer.class)
-public class HypertraceTracerCustomizer implements TracerCustomizer {
+@AutoService(SdkTracerProviderConfigurer.class)
+public class HypertraceTracerCustomizer implements SdkTracerProviderConfigurer {
 
   @Override
-  public void configure(SdkTracerManagement tracerManagement) {
-    String exporter = System.getProperty("otel.exporter");
-    if (exporter != null && exporter.contains("zipkin")) {
-      tracerManagement.addSpanProcessor(new AddTagsSpanProcessor());
-    }
+  public void configure(SdkTracerProviderBuilder tracerProvider) {
+    tracerProvider.addSpanProcessor(new AddTagsSpanProcessor());
   }
 }

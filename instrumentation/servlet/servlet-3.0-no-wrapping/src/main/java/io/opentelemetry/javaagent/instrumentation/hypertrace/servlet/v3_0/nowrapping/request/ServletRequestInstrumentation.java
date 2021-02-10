@@ -37,6 +37,7 @@ import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import net.bytebuddy.matcher.ElementMatcher.Junction;
+import org.hypertrace.agent.core.instrumentation.SpanAndObjectPair;
 import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
 import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
 
@@ -67,11 +68,11 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
 
   static class ServletRequest_getInputStream_advice {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static RequestStreamReaderHolder enter(@Advice.This ServletRequest servletRequest) {
+    public static SpanAndObjectPair enter(@Advice.This ServletRequest servletRequest) {
       HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
       // span is added in servlet/filter instrumentation if data capture is enabled
-      RequestStreamReaderHolder requestBufferWrapper =
-          InstrumentationContext.get(HttpServletRequest.class, RequestStreamReaderHolder.class)
+      SpanAndObjectPair requestBufferWrapper =
+          InstrumentationContext.get(HttpServletRequest.class, SpanAndObjectPair.class)
               .get(httpServletRequest);
       if (requestBufferWrapper == null) {
         return null;
@@ -87,9 +88,9 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
         @Advice.This ServletRequest servletRequest,
         @Advice.Return ServletInputStream servletInputStream,
         @Advice.Thrown Throwable throwable,
-        @Advice.Enter RequestStreamReaderHolder requestStreamReaderHolder) {
+        @Advice.Enter SpanAndObjectPair spanAndObjectPair) {
 
-      if (requestStreamReaderHolder == null) {
+      if (spanAndObjectPair == null) {
         return;
       }
 
@@ -111,26 +112,25 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
       }
 
       ByteBufferSpanPair bufferSpanPair =
-          Utils.createRequestByteBufferSpanPair(
-              httpServletRequest, requestStreamReaderHolder.getSpan());
+          Utils.createRequestByteBufferSpanPair(httpServletRequest, spanAndObjectPair.getSpan());
       contextStore.put(servletInputStream, bufferSpanPair);
-      requestStreamReaderHolder.setServletInputStream(servletInputStream);
+      spanAndObjectPair.setAssociatedObject(servletInputStream);
     }
   }
 
   static class ServletRequest_getReader_advice {
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static RequestStreamReaderHolder enter(@Advice.This ServletRequest servletRequest) {
+    public static SpanAndObjectPair enter(@Advice.This ServletRequest servletRequest) {
       HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
-      RequestStreamReaderHolder requestStreamReaderHolder =
-          InstrumentationContext.get(HttpServletRequest.class, RequestStreamReaderHolder.class)
+      SpanAndObjectPair spanAndObjectPair =
+          InstrumentationContext.get(HttpServletRequest.class, SpanAndObjectPair.class)
               .get(httpServletRequest);
-      if (requestStreamReaderHolder == null) {
+      if (spanAndObjectPair == null) {
         return null;
       }
 
       CallDepthThreadLocalMap.incrementCallDepth(ServletRequest.class);
-      return requestStreamReaderHolder;
+      return spanAndObjectPair;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
@@ -138,9 +138,9 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
         @Advice.This ServletRequest servletRequest,
         @Advice.Return BufferedReader reader,
         @Advice.Thrown Throwable throwable,
-        @Advice.Enter RequestStreamReaderHolder requestStreamReaderHolder) {
+        @Advice.Enter SpanAndObjectPair spanAndObjectPair) {
 
-      if (requestStreamReaderHolder == null) {
+      if (spanAndObjectPair == null) {
         return;
       }
 
@@ -162,10 +162,9 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
       }
 
       CharBufferSpanPair bufferSpanPair =
-          Utils.createRequestCharBufferSpanPair(
-              httpServletRequest, requestStreamReaderHolder.getSpan());
+          Utils.createRequestCharBufferSpanPair(httpServletRequest, spanAndObjectPair.getSpan());
       contextStore.put(reader, bufferSpanPair);
-      requestStreamReaderHolder.setBufferedReader(reader);
+      spanAndObjectPair.setAssociatedObject(reader);
     }
   }
 }
