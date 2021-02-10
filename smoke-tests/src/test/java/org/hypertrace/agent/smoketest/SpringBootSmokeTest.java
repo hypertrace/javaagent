@@ -40,7 +40,9 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
 
   @Override
   protected String getTargetImage(int jdk) {
-    return "ghcr.io/open-telemetry/java-test-containers:smoke-springboot-jdk" + jdk + "-20210209.550405798";
+    return "ghcr.io/open-telemetry/java-test-containers:smoke-springboot-jdk"
+        + jdk
+        + "-20210209.550405798";
   }
 
   private static GenericContainer app;
