@@ -32,7 +32,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.config.Config.DataCapture;
-import org.hypertrace.agent.config.Config.JavaAgent;
 import org.hypertrace.agent.config.Config.Message;
 import org.hypertrace.agent.config.Config.Opa;
 import org.hypertrace.agent.config.Config.Opa.Builder;
@@ -174,9 +173,6 @@ public class HypertraceConfig {
 
     if (configBuilder.getPropagationFormatsList().isEmpty()) {
       configBuilder.addPropagationFormats(PropagationFormat.TRACECONTEXT);
-    }
-    if (!configBuilder.hasJavaagent()) {
-      configBuilder.setJavaagent(JavaAgent.newBuilder());
     }
     return configBuilder;
   }

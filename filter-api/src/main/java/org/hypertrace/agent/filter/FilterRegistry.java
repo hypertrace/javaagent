@@ -17,7 +17,6 @@
 package org.hypertrace.agent.filter;
 
 import com.google.protobuf.StringValue;
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -80,20 +79,16 @@ public class FilterRegistry {
 
   private static ClassLoader loadJars() {
     List<StringValue> jarPaths = HypertraceConfig.get().getJavaagent().getFilterJarPathsList();
-    List<File> files = new ArrayList<>();
-    jarPaths.forEach(
-        jarPath -> {
-          File file = new File(jarPath.getValue());
-          System.out.println(jarPath.getValue());
-          files.add(file);
-        });
-    int i = 0;
     URL[] urls = new URL[jarPaths.size()];
-    for (File file : files) {
+    int i = 0;
+    for (StringValue jarPath : jarPaths) {
       try {
-        urls[i] = file.toURI().toURL();
+        URL url = new URL("file", "", -1, jarPath.getValue());
+        urls[i] = url;
+        i++;
       } catch (MalformedURLException e) {
-        logger.warn("Malformed URL exception for jar on path: {}", file.getPath());
+        logger.warn(
+            String.format("Malformed URL exception for jar on path: %s", jarPath.getValue()), e);
       }
     }
     return new URLClassLoader(urls, Thread.currentThread().getContextClassLoader());

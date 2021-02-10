@@ -68,15 +68,11 @@ class EnvironmentConfigTest {
     Assertions.assertEquals(
         true, agentConfig.getDataCapture().getHttpBody().getRequest().getValue());
     Assertions.assertEquals(2, agentConfig.getJavaagent().getFilterJarPathsCount());
-    Assertions.assertTrue(
-        agentConfig
-            .getJavaagent()
-            .getFilterJarPathsList()
-            .contains(StringValue.newBuilder().setValue("/path1.jar").build()));
-    Assertions.assertTrue(
-        agentConfig
-            .getJavaagent()
-            .getFilterJarPathsList()
-            .contains(StringValue.newBuilder().setValue("/path/2/jar.jar").build()));
+    Assertions.assertEquals(
+        StringValue.newBuilder().setValue("/path1.jar").build(),
+        agentConfig.getJavaagent().getFilterJarPaths(0));
+    Assertions.assertEquals(
+        StringValue.newBuilder().setValue("/path/2/jar.jar").build(),
+        agentConfig.getJavaagent().getFilterJarPaths(1));
   }
 }
