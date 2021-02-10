@@ -40,11 +40,48 @@ afterEvaluate{
 }
 
 val versions: Map<String, String> by extra
+// version used by async-http-client:2.0.9
+val nettyVersion = "4.0.38.Final"
 
 dependencies {
     implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.0:${versions["opentelemetry_java_agent"]}")
 
-    implementation("io.netty:netty-codec-http:4.0.0.Final")
+    compileOnly("io.netty:netty-codec-http:${nettyVersion}") {
+        version {
+            strictly(nettyVersion)
+        }
+    }
+
+    testImplementation("io.netty:netty-codec-http:${nettyVersion}") {
+        version {
+            strictly(nettyVersion)
+        }
+    }
+    testImplementation("io.netty:netty-transport:${nettyVersion}") {
+        version {
+            strictly(nettyVersion)
+        }
+    }
+    testImplementation("io.netty:netty-common:${nettyVersion}") {
+        version {
+            strictly(nettyVersion)
+        }
+    }
+    testImplementation("io.netty:netty-codec:${nettyVersion}") {
+        version {
+            strictly(nettyVersion)
+        }
+    }
+    testImplementation("io.netty:netty-handler:${nettyVersion}") {
+        version {
+            strictly(nettyVersion)
+        }
+    }
+    testImplementation("io.netty:netty-buffer:${nettyVersion}") {
+        version {
+            strictly(nettyVersion)
+        }
+    }
 
     testImplementation(project(":testing-common"))
     testImplementation("org.asynchttpclient:async-http-client:2.0.9")

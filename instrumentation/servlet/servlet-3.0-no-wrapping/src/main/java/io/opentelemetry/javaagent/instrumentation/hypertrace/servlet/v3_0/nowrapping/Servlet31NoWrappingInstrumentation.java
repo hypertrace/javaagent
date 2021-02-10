@@ -17,6 +17,7 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping;
 
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.safeHasSuperType;
+import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMatcher.hasClassesNamed;
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.NameMatchers.namedOneOf;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
@@ -60,8 +61,13 @@ import org.hypertrace.agent.filter.FilterRegistry;
 public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
 
   @Override
+  public ElementMatcher<ClassLoader> classLoaderOptimization() {
+    return hasClassesNamed("javax.servlet.Filter");
+  }
+
+  @Override
   public ElementMatcher<? super TypeDescription> typeMatcher() {
-    return safeHasSuperType(namedOneOf("javax.servlet.Filter", "javax.servlet.http.HttpServlet"));
+    return safeHasSuperType(namedOneOf("javax.servlet.Filter", "javax.servlet.Servlet"));
   }
 
   @Override
