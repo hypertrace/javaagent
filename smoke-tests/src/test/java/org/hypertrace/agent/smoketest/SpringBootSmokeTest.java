@@ -40,7 +40,9 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
 
   @Override
   protected String getTargetImage(int jdk) {
-    return "open-telemetry-docker-dev.bintray.io/java/smoke-springboot-jdk" + jdk + ":latest";
+    return "ghcr.io/open-telemetry/java-test-containers:smoke-springboot-jdk"
+        + jdk
+        + "-20210209.550405798";
   }
 
   private static GenericContainer app;
@@ -62,11 +64,13 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
   }
 
   @Test
-  public void get() throws IOException {
+  public void get() throws IOException, InterruptedException {
     String url = String.format("http://localhost:%d/greeting", app.getMappedPort(8080));
     Request request = new Request.Builder().url(url).get().build();
 
-    Response response = client.newCall(request).execute();
+    try (Response response = client.newCall(request).execute()) {
+      Assertions.assertEquals(response.body().string(), "Hi!");
+    }
     ArrayList<ExportTraceServiceRequest> traces = new ArrayList<>(waitForTraces());
 
     Object currentAgentVersion =
@@ -93,7 +97,6 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
             .getValue()
             .getStringValue());
 
-    Assertions.assertEquals(response.body().string(), "Hi!");
     Assertions.assertEquals(1, countSpansByName(traces, "/greeting"));
     Assertions.assertEquals(1, countSpansByName(traces, "webcontroller.greeting"));
     Assertions.assertTrue(

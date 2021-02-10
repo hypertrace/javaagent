@@ -18,8 +18,6 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowra
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.request.RequestStreamReaderHolder;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.response.ResponseStreamWriterHolder;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -34,6 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.core.config.HypertraceConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.instrumentation.SpanAndObjectPair;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
 import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
@@ -45,11 +44,11 @@ public class BodyCaptureAsyncListener implements AsyncListener {
   private final AtomicBoolean responseHandled;
   private final Span span;
 
-  private final ContextStore<HttpServletResponse, ResponseStreamWriterHolder> responseContextStore;
+  private final ContextStore<HttpServletResponse, SpanAndObjectPair> responseContextStore;
   private final ContextStore<ServletOutputStream, BoundedByteArrayOutputStream> streamContextStore;
   private final ContextStore<PrintWriter, BoundedCharArrayWriter> writerContextStore;
 
-  private final ContextStore<HttpServletRequest, RequestStreamReaderHolder> requestContextStore;
+  private final ContextStore<HttpServletRequest, SpanAndObjectPair> requestContextStore;
   private final ContextStore<ServletInputStream, ByteBufferSpanPair> inputStreamContextStore;
   private final ContextStore<BufferedReader, CharBufferSpanPair> readerContextStore;
 
@@ -58,10 +57,10 @@ public class BodyCaptureAsyncListener implements AsyncListener {
   public BodyCaptureAsyncListener(
       AtomicBoolean responseHandled,
       Span span,
-      ContextStore<HttpServletResponse, ResponseStreamWriterHolder> responseContextStore,
+      ContextStore<HttpServletResponse, SpanAndObjectPair> responseContextStore,
       ContextStore<ServletOutputStream, BoundedByteArrayOutputStream> streamContextStore,
       ContextStore<PrintWriter, BoundedCharArrayWriter> writerContextStore,
-      ContextStore<HttpServletRequest, RequestStreamReaderHolder> requestContextStore,
+      ContextStore<HttpServletRequest, SpanAndObjectPair> requestContextStore,
       ContextStore<ServletInputStream, ByteBufferSpanPair> inputStreamContextStore,
       ContextStore<BufferedReader, CharBufferSpanPair> readerContextStore) {
     this.responseHandled = responseHandled;

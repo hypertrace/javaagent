@@ -200,6 +200,7 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
         return;
       }
 
+      System.out.println("Capturing readLine");
       if (line == null) {
         bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
       } else {
