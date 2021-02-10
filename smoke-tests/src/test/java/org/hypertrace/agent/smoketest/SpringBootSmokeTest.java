@@ -81,7 +81,6 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
     Assertions.assertEquals(
         ResourceAttributes.SERVICE_NAME.getKey(),
         traces.get(0).getResourceSpans(0).getResource().getAttributes(0).getKey());
-    System.out.println(traces.get(0).getResourceSpans(0).getResource().getAttributesList());
     Assertions.assertEquals(
         ResourceAttributes.CONTAINER_ID.getKey(),
         traces.get(0).getResourceSpans(0).getResource().getAttributes(1).getKey());

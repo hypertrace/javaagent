@@ -22,6 +22,7 @@ afterEvaluate{
 }
 
 val versions: Map<String, String> by extra
+// version used by io.vertx:vertx-web:3.0.0
 val nettyVersion = "4.0.28.Final"
 
 dependencies {
