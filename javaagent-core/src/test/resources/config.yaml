@@ -14,3 +14,7 @@ dataCapture:
     request: true
     response: false
   httpBody:
+javaagent:
+  filter_jar_paths:
+    - /path1.jar
+    - /path/2/jar.jar

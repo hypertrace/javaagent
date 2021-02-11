@@ -35,6 +35,7 @@ class EnvironmentConfigTest {
   @ClearSystemProperty(key = EnvironmentConfig.PROPAGATION_FORMATS)
   @ClearSystemProperty(key = EnvironmentConfig.CAPTURE_HTTP_BODY_PREFIX + "request")
   @ClearSystemProperty(key = EnvironmentConfig.CAPTURE_BODY_MAX_SIZE_BYTES)
+  @ClearSystemProperty(key = EnvironmentConfig.JAVAAGENT_FILTER_JAR_PATHS)
   public void systemProperties() {
     // when tests are run in parallel the env vars/sys props set it junit-pioneer are visible to
     // parallel tests
@@ -46,6 +47,7 @@ class EnvironmentConfigTest {
     System.setProperty(EnvironmentConfig.OPA_ENABLED, "true");
     System.setProperty(EnvironmentConfig.PROPAGATION_FORMATS, "B3,TRACECONTEXT");
     System.setProperty(EnvironmentConfig.CAPTURE_BODY_MAX_SIZE_BYTES, "512");
+    System.setProperty(EnvironmentConfig.JAVAAGENT_FILTER_JAR_PATHS, "/path1.jar,/path/2/jar.jar");
 
     AgentConfig.Builder configBuilder = AgentConfig.newBuilder();
     configBuilder.setServiceName(StringValue.newBuilder().setValue("foo"));
@@ -65,5 +67,12 @@ class EnvironmentConfigTest {
     Assertions.assertEquals(true, agentConfig.getReporting().getSecure().getValue());
     Assertions.assertEquals(
         true, agentConfig.getDataCapture().getHttpBody().getRequest().getValue());
+    Assertions.assertEquals(2, agentConfig.getJavaagent().getFilterJarPathsCount());
+    Assertions.assertEquals(
+        StringValue.newBuilder().setValue("/path1.jar").build(),
+        agentConfig.getJavaagent().getFilterJarPaths(0));
+    Assertions.assertEquals(
+        StringValue.newBuilder().setValue("/path/2/jar.jar").build(),
+        agentConfig.getJavaagent().getFilterJarPaths(1));
   }
 }
