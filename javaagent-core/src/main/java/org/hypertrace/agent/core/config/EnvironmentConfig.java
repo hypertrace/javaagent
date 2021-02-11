@@ -36,6 +36,7 @@ public class EnvironmentConfig {
 
   public static final String CONFIG_FILE_PROPERTY = HT_PREFIX + "config.file";
   static final String SERVICE_NAME = HT_PREFIX + "service.name";
+  static final String ENABLED = HT_PREFIX + "enabled";
 
   static final String PROPAGATION_FORMATS = HT_PREFIX + "propagation.formats";
 
@@ -62,6 +63,10 @@ public class EnvironmentConfig {
     String serviceName = getProperty(SERVICE_NAME);
     if (serviceName != null) {
       builder.setServiceName(StringValue.newBuilder().setValue(serviceName).build());
+    }
+    String enabled = getProperty(ENABLED);
+    if (enabled != null) {
+      builder.setEnabled(BoolValue.newBuilder().setValue(Boolean.valueOf(enabled)).build());
     }
 
     Reporting.Builder reportingBuilder = applyReporting(builder.getReporting().toBuilder());
