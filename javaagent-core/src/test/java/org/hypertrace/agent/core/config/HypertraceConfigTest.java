@@ -36,6 +36,7 @@ public class HypertraceConfigTest {
   public void defaultValues() throws IOException {
     URL resource = getClass().getClassLoader().getResource("emptyconfig.yaml");
     AgentConfig agentConfig = HypertraceConfig.load(resource.getPath());
+    Assertions.assertTrue(agentConfig.getEnabled().getValue());
     Assertions.assertEquals("unknown", agentConfig.getServiceName().getValue());
     Assertions.assertEquals(
         HypertraceConfig.DEFAULT_REPORTING_ENDPOINT,
@@ -69,6 +70,7 @@ public class HypertraceConfigTest {
     Assertions.assertEquals(
         true, agentConfig.getDataCapture().getRpcBody().getResponse().getValue());
     Assertions.assertTrue(agentConfig.hasJavaagent());
+    Assertions.assertEquals(0, agentConfig.getJavaagent().getFilterJarPathsCount());
   }
 
   @Test
@@ -95,6 +97,7 @@ public class HypertraceConfigTest {
 
   private void assertConfig(AgentConfig agentConfig) {
     Assertions.assertEquals("service", agentConfig.getServiceName().getValue());
+    Assertions.assertEquals(false, agentConfig.getEnabled().getValue());
     Assertions.assertEquals(
         Arrays.asList(PropagationFormat.B3), agentConfig.getPropagationFormatsList());
     Assertions.assertEquals(

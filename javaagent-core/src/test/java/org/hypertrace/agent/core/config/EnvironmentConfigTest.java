@@ -36,6 +36,7 @@ class EnvironmentConfigTest {
   @ClearSystemProperty(key = EnvironmentConfig.CAPTURE_HTTP_BODY_PREFIX + "request")
   @ClearSystemProperty(key = EnvironmentConfig.CAPTURE_BODY_MAX_SIZE_BYTES)
   @ClearSystemProperty(key = EnvironmentConfig.JAVAAGENT_FILTER_JAR_PATHS)
+  @ClearSystemProperty(key = EnvironmentConfig.ENABLED)
   public void systemProperties() {
     // when tests are run in parallel the env vars/sys props set it junit-pioneer are visible to
     // parallel tests
@@ -48,11 +49,13 @@ class EnvironmentConfigTest {
     System.setProperty(EnvironmentConfig.PROPAGATION_FORMATS, "B3,TRACECONTEXT");
     System.setProperty(EnvironmentConfig.CAPTURE_BODY_MAX_SIZE_BYTES, "512");
     System.setProperty(EnvironmentConfig.JAVAAGENT_FILTER_JAR_PATHS, "/path1.jar,/path/2/jar.jar");
+    System.setProperty(EnvironmentConfig.ENABLED, "false");
 
     AgentConfig.Builder configBuilder = AgentConfig.newBuilder();
     configBuilder.setServiceName(StringValue.newBuilder().setValue("foo"));
 
     AgentConfig agentConfig = EnvironmentConfig.applyPropertiesAndEnvVars(configBuilder).build();
+    Assertions.assertEquals(false, agentConfig.getEnabled().getValue());
     Assertions.assertEquals("foo", agentConfig.getServiceName().getValue());
     Assertions.assertEquals(
         Arrays.asList(PropagationFormat.B3, PropagationFormat.TRACECONTEXT),

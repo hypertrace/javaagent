@@ -1,5 +1,6 @@
 # use snake case for newly added fields
 service_name: service
+enabled: false
 propagationFormats:
   - B3
 reporting:

@@ -162,6 +162,9 @@ public class HypertraceConfig {
     if (configBuilder.getServiceName().getValue().isEmpty()) {
       configBuilder.setServiceName(StringValue.newBuilder().setValue(DEFAULT_SERVICE_NAME).build());
     }
+    if (!configBuilder.hasEnabled()) {
+      configBuilder.setEnabled(BoolValue.newBuilder().setValue(true).build());
+    }
 
     Reporting.Builder reportingBuilder =
         applyReportingDefaults(configBuilder.getReporting().toBuilder());

@@ -41,11 +41,14 @@ public class HypertraceAgentConfiguration implements PropertySource {
   private static final String OTEL_DEFAULT_LOG_LEVEL =
       "io.opentelemetry.javaagent.slf4j.simpleLogger.defaultLogLevel";
 
+  private static final String OTEL_ENABLED = "otel.javaagent.enabled";
+
   @Override
   public Map<String, String> getProperties() {
     AgentConfig agentConfig = HypertraceConfig.get();
 
     Map<String, String> configProperties = new HashMap<>();
+    configProperties.put(OTEL_ENABLED, String.valueOf(agentConfig.getEnabled().getValue()));
     configProperties.put(OTEL_TRACE_EXPORTER, "zipkin");
     configProperties.put(
         OTEL_EXPORTER_ZIPKIN_SERVICE_NAME, agentConfig.getServiceName().getValue());
