@@ -28,7 +28,6 @@ public class TestBufferedReader extends BufferedReader {
 
   @Override
   public String readLine() throws IOException {
-    System.out.println("override readline");
     return super.readLine();
   }
 }
