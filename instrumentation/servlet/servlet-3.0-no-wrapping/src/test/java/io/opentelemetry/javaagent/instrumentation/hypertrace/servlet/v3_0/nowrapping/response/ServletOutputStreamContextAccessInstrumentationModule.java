@@ -76,7 +76,6 @@ public class ServletOutputStreamContextAccessInstrumentationModule extends Instr
     public static void enter(
         @Advice.Argument(0) ServletOutputStream servletOutputStream,
         @Advice.Argument(1) BoundedByteArrayOutputStream buffer) {
-      System.out.println("adding to context");
       ContextStore<ServletOutputStream, BoundedByteArrayOutputStream> contextStore =
           InstrumentationContext.get(ServletOutputStream.class, BoundedByteArrayOutputStream.class);
       contextStore.put(servletOutputStream, buffer);
