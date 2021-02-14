@@ -51,6 +51,9 @@ public class CgroupsReader {
     try (BufferedReader br = new BufferedReader(new FileReader(cgroupsPath))) {
       String line;
       while ((line = br.readLine()) != null) {
+        if (line.endsWith(".scope")) {
+          line = line.substring(0, line.length() - ".scope".length());
+        }
         if (line.length() > CONTAINER_ID_LENGTH) {
           String id = line.substring(line.length() - CONTAINER_ID_LENGTH);
           if (!id.contains("/")) {
