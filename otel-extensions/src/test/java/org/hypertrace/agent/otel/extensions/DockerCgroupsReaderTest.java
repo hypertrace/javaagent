@@ -42,4 +42,16 @@ public class DockerCgroupsReaderTest {
     CgroupsReader cgroupsReader = new CgroupsReader(file.getPath());
     Assertions.assertEquals(expected, cgroupsReader.readContainerId());
   }
+
+  @Test
+  void readScopedContainerId(@TempDir File tempFolder) throws IOException {
+    File file = new File(tempFolder, "cgroup");
+    String expected = "736665661f3cf3ec691b2feeb2a1ec78918c0ef65381160bbb04f4c298169679";
+    String content =
+        "1:name=systemd:/kubepods.slice/kubepods-besteffort.slice/kubepods-besteffort-podab2df320_6a91_4bc7_bd18_0d4328f04a8f.slice/crio-736665661f3cf3ec691b2feeb2a1ec78918c0ef65381160bbb04f4c298169679.scope";
+    Files.write(content.getBytes(Charsets.UTF_8), file);
+
+    CgroupsReader cgroupsReader = new CgroupsReader(file.getPath());
+    Assertions.assertEquals(expected, cgroupsReader.readContainerId());
+  }
 }

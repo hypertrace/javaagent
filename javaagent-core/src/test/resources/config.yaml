@@ -1,5 +1,6 @@
 # use snake case for newly added fields
 service_name: service
+enabled: false
 propagationFormats:
   - B3
 reporting:
@@ -14,3 +15,7 @@ dataCapture:
     request: true
     response: false
   httpBody:
+javaagent:
+  filter_jar_paths:
+    - /path1.jar
+    - /path/2/jar.jar

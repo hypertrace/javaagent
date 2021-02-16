@@ -205,7 +205,6 @@ public class ApacheClientReadAllInstrumentationModule extends InstrumentationMod
           }
 
           byte[] bodyBytes = buffer.toByteArray();
-          System.out.printf("Captured response body: %s\n", new String(bodyBytes));
           currentSpan.setAttribute(
               HypertraceSemanticAttributes.HTTP_RESPONSE_BODY.getKey(), new String(bodyBytes));
           ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bodyBytes);
@@ -216,8 +215,6 @@ public class ApacheClientReadAllInstrumentationModule extends InstrumentationMod
           // TODO log
           e.printStackTrace();
         }
-      } else {
-        System.out.println("\n\nIt is not HttpResponse #execute");
       }
     }
   }
