@@ -5,7 +5,7 @@ plugins {
 val versions: Map<String, String> by extra
 
 dependencies {
-    api(project(":filter-custom-opa"))
+    api(project(":filter-api"))
 
     compileOnly("io.opentelemetry:opentelemetry-sdk:${versions["opentelemetry"]}")
     compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${versions["opentelemetry"]}-alpha")
