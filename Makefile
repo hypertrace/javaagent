@@ -7,11 +7,11 @@ assemble:
 
 .PHONY: build
 build:
-	./gradlew build -x :smoke-tests:test --debug --stacktrace
+	./gradlew build -x :smoke-tests:test --stacktrace
 
 .PHONY: smoke-test
 smoke-test:
-	./gradlew :smoke-tests:test --debug --stacktrace
+	./gradlew :smoke-tests:test --stacktrace
 
 .PHONY: muzzle
 muzzle:
