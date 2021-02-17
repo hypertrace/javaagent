@@ -63,7 +63,9 @@ jobs:
     steps:
       - setup_build_environment
       - populate_and_save_cache
-      - run: make smoke-test
+      - run:
+          no_output_timeout: 30m
+          command: make smoke-test
 
   muzzle:
     docker:
