@@ -64,7 +64,7 @@ jobs:
       - setup_build_environment
       - populate_and_save_cache
       - run:
-          no_output_timeout: 30m
+          no_output_timeout: 10m
           command: make smoke-test
 
   muzzle:
