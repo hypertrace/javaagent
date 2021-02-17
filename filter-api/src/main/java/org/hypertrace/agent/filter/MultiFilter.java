@@ -20,8 +20,12 @@ import io.opentelemetry.api.trace.Span;
 import java.util.List;
 import java.util.Map;
 import org.hypertrace.agent.filter.api.Filter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class MultiFilter implements Filter {
+
+  private static final Logger logger = LoggerFactory.getLogger(MultiFilter.class);
 
   private final List<Filter> filters;
 
@@ -33,8 +37,16 @@ class MultiFilter implements Filter {
   public boolean evaluateRequestHeaders(Span span, Map<String, String> headers) {
     boolean shouldBlock = false;
     for (Filter filter : filters) {
-      if (filter.evaluateRequestHeaders(span, headers)) {
-        shouldBlock = true;
+      try {
+        if (filter.evaluateRequestHeaders(span, headers)) {
+          shouldBlock = true;
+        }
+      } catch (Throwable t) {
+        logger.warn(
+            String.format(
+                "Throwable thrown while evaluating Request headers for filter %s",
+                filter.getClass().getName()),
+            t);
       }
     }
     return shouldBlock;
@@ -44,8 +56,16 @@ class MultiFilter implements Filter {
   public boolean evaluateRequestBody(Span span, String body) {
     boolean shouldBlock = false;
     for (Filter filter : filters) {
-      if (filter.evaluateRequestBody(span, body)) {
-        shouldBlock = true;
+      try {
+        if (filter.evaluateRequestBody(span, body)) {
+          shouldBlock = true;
+        }
+      } catch (Throwable t) {
+        logger.warn(
+            String.format(
+                "Throwable thrown while evaluating Request body for filter %s",
+                filter.getClass().getName()),
+            t);
       }
     }
     return shouldBlock;
