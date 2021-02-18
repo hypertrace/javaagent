@@ -28,6 +28,9 @@ jobs:
             gradle-packages-${{ runner.os }}-${{ github.job }}
             gradle-packages-${{ runner.os }}
 
+      - name: init submodules
+        run: make init-submodules
+
       - name: build
         run: make build
         env: 
@@ -55,6 +58,9 @@ jobs:
           restore-keys: |
             gradle-packages-${{ runner.os }}-${{ github.job }}
             gradle-packages-${{ runner.os }}
+
+      - name: init submodules
+        run: make init-submodules
 
       - name: smoke-test
         run: make smoke-test
