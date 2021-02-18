@@ -51,21 +51,6 @@ jobs:
       - populate_and_save_cache
       - run: make build
 
-  smoke-test:
-    # For testcontainers.org
-    machine:
-      image: ubuntu-2004:202101-01
-    working_directory: ~/repo
-    environment:
-      # Customize the JVM maximum heap limit
-      TERM: dumb
-    steps:
-      - setup_build_environment
-      - populate_and_save_cache
-      - run:
-          no_output_timeout: 60m
-          command: make smoke-test
-
   muzzle:
     docker:
       - image: cimg/openjdk:11.0
@@ -117,10 +102,6 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - smoke-test:
-          filters:
-            tags:
-              only: /.*/
       - muzzle:
           filters:
             tags:
@@ -130,7 +111,6 @@ workflows:
           requires:
             - build
             - muzzle
-            - smoke-test
           filters:
             branches:
               ignore: /.*/
