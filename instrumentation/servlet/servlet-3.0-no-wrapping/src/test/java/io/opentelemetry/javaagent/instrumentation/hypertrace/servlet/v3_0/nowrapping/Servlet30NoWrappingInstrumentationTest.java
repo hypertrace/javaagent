@@ -18,9 +18,11 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowra
 
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoAsyncResponse_stream;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoAsyncResponse_writer;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoReader_read_large_array;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoStream_arr;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoStream_arr_offset;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoStream_readLine_print;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoStream_read_large_array;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoStream_single_byte;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoWriter_single_char;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.GetHello;
@@ -73,6 +75,8 @@ public class Servlet30NoWrappingInstrumentationTest extends AbstractInstrumenter
     handler.addServlet(TestServlets.Forward_to_post.class, "/forward_to_echo");
     handler.addServlet(EchoAsyncResponse_stream.class, "/echo_async_response_stream");
     handler.addServlet(EchoAsyncResponse_writer.class, "/echo_async_response_writer");
+    handler.addServlet(EchoStream_read_large_array.class, "/echo_stream_read_large_array");
+    handler.addServlet(EchoReader_read_large_array.class, "/echo_reader_read_large_array");
     server.setHandler(handler);
     server.start();
     serverPort = server.getConnectors()[0].getLocalPort();
@@ -101,6 +105,16 @@ public class Servlet30NoWrappingInstrumentationTest extends AbstractInstrumenter
   @Test
   public void postJson_stream_single_byte() throws Exception {
     postJson(String.format("http://localhost:%d/echo_stream_single_byte", serverPort));
+  }
+
+  @Test
+  public void postJson_stream_read_large_array() throws Exception {
+    postJson(String.format("http://localhost:%d/echo_stream_read_large_array", serverPort));
+  }
+
+  @Test
+  public void postJson_reader_read_large_array() throws Exception {
+    postJson(String.format("http://localhost:%d/echo_reader_read_large_array", serverPort));
   }
 
   @Test

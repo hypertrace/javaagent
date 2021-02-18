@@ -96,11 +96,24 @@ public class Utils {
     requestContextStore.put(httpServletRequest, null);
 
     if (requestStreamReaderHolder.getAssociatedObject() instanceof ServletInputStream) {
-      streamContextStore.put(
-          (ServletInputStream) requestStreamReaderHolder.getAssociatedObject(), null);
+      ServletInputStream servletInputStream =
+          (ServletInputStream) requestStreamReaderHolder.getAssociatedObject();
+      ByteBufferSpanPair byteBufferSpanPair = streamContextStore.get(servletInputStream);
+      if (byteBufferSpanPair != null) {
+        // capture body explicitly e.g. Jackson does not call ServletInputStream$read() until -1 is
+        // returned
+        // it does not even call ServletInputStream#available()
+        byteBufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
+        streamContextStore.put(servletInputStream, null);
+      }
     } else if (requestStreamReaderHolder.getAssociatedObject() instanceof BufferedReader) {
-      bufferedReaderContextStore.put(
-          (BufferedReader) requestStreamReaderHolder.getAssociatedObject(), null);
+      BufferedReader bufferedReader =
+          (BufferedReader) requestStreamReaderHolder.getAssociatedObject();
+      CharBufferSpanPair charBufferSpanPair = bufferedReaderContextStore.get(bufferedReader);
+      if (charBufferSpanPair != null) {
+        charBufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
+        bufferedReaderContextStore.put(bufferedReader, null);
+      }
     }
   }
 }
