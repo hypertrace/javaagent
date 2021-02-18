@@ -6,7 +6,7 @@ val versions: Map<String, String> by extra
 
 dependencies{
     testImplementation(project(":javaagent-core"))
-    testImplementation("org.testcontainers:testcontainers:1.15.0")
+    testImplementation("org.testcontainers:testcontainers:1.15.2")
     testImplementation("com.squareup.okhttp3:okhttp:4.9.0")
     testImplementation("org.awaitility:awaitility:4.0.3")
     testImplementation("io.opentelemetry:opentelemetry-proto:${versions["opentelemetry"]}")
