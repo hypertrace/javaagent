@@ -6,35 +6,6 @@ on:
   pull_request:
 
 jobs:
-  build:
-    runs-on: ubuntu-20.04
-    steps:
-       # Set fetch-depth: 0 to fetch commit history and tags for use in version calculation
-      - name: Check out code
-        uses: actions/checkout@v2.3.4
-        with:
-          fetch-depth: 0
-          submodules: true
-      
-      - name: create checksum file
-        uses: hypertrace/github-actions/checksum@main
-
-      - name: Cache packages
-        id: cache-packages
-        uses: actions/cache@v2
-        with:
-          path: ~/.gradle
-          key: gradle-packages-${{ runner.os }}-${{ github.job }}-${{ hashFiles('**/checksum.txt') }}
-          restore-keys: |
-            gradle-packages-${{ runner.os }}-${{ github.job }}
-            gradle-packages-${{ runner.os }}
-
-      - name: build
-        run: make build
-        env: 
-          JVM_OPTS: -Xmx1g
-          TERM: dumb
-
   smoke-test:
     runs-on: ubuntu-20.04
     steps:
