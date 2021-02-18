@@ -16,9 +16,9 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_1;
 
-import static io.opentelemetry.javaagent.tooling.ClassLoaderMatcher.hasClassesNamed;
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.safeHasSuperType;
-import static io.opentelemetry.javaagent.tooling.matcher.NameMatchers.namedOneOf;
+import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMatcher.hasClassesNamed;
+import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.NameMatchers.namedOneOf;
 import static java.util.Collections.singletonMap;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
@@ -48,6 +48,11 @@ public class Servlet31BodyInstrumentationModule extends InstrumentationModule {
   public Servlet31BodyInstrumentationModule(
       String mainInstrumentationName, String... otherInstrumentationNames) {
     super(mainInstrumentationName, otherInstrumentationNames);
+  }
+
+  @Override
+  protected boolean defaultEnabled() {
+    return false;
   }
 
   @Override

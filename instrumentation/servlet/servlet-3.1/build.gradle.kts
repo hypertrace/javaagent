@@ -42,3 +42,7 @@ dependencies {
     testImplementation("org.eclipse.jetty:jetty-server:9.4.32.v20200930")
     testImplementation("org.eclipse.jetty:jetty-servlet:9.4.32.v20200930")
 }
+
+tasks.withType<Test> {
+    jvmArgs = mutableListOf("-Dotel.instrumentation.servlet.enabled=true")
+}

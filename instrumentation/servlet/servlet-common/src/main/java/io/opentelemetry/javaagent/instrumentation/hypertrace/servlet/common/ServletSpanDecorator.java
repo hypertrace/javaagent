@@ -19,7 +19,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.common;
 import io.opentelemetry.api.trace.Span;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import org.hypertrace.agent.core.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 
 public class ServletSpanDecorator {
 

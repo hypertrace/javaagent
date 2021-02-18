@@ -19,7 +19,11 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.java.outputstream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import org.hypertrace.agent.core.GlobalObjectRegistry;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import org.hypertrace.agent.core.instrumentation.GlobalObjectRegistry;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -28,9 +32,12 @@ class OutputStreamInstrumentationModuleTest extends AbstractInstrumenterTest {
   private static final String STR1 = "hellofoobarrandom";
   private static final String STR2 = "someother";
 
+  private static final int MAX_SIZE = Integer.MAX_VALUE;
+  private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
+
   @Test
   public void write() {
-    OutputStream outputStream = new TestByteArrayOutputStream();
+    OutputStream outputStream = new ByteArrayOutputStream();
     write(
         outputStream,
         () -> {
@@ -47,7 +54,7 @@ class OutputStreamInstrumentationModuleTest extends AbstractInstrumenterTest {
 
   @Test
   public void writeBytes() {
-    OutputStream outputStream = new TestByteArrayOutputStream();
+    OutputStream outputStream = new ByteArrayOutputStream();
     write(
         outputStream,
         () -> {
@@ -63,7 +70,7 @@ class OutputStreamInstrumentationModuleTest extends AbstractInstrumenterTest {
 
   @Test
   public void writeBytesOffset() {
-    OutputStream outputStream = new TestByteArrayOutputStream();
+    OutputStream outputStream = new ByteArrayOutputStream();
     write(
         outputStream,
         () -> {
@@ -79,31 +86,10 @@ class OutputStreamInstrumentationModuleTest extends AbstractInstrumenterTest {
   }
 
   private void write(OutputStream outputStream, Runnable read, String expected) {
-    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+    BoundedByteArrayOutputStream buffer =
+        BoundedBuffersFactory.createStream(MAX_SIZE, DEFAULT_CHARSET);
     GlobalObjectRegistry.outputStreamToBufferMap.put(outputStream, buffer);
     read.run();
     Assertions.assertEquals(expected, buffer.toString());
-  }
-
-  /**
-   * Each method has to be overridden because OTEL agent ignores classes from java.
-   * https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/8baa897e8bf09359da848aaaa98d2b4eb7fbf4c1/javaagent-tooling/src/main/java/io/opentelemetry/javaagent/tooling/matcher/GlobalIgnoresMatcher.java#L105
-   */
-  static class TestByteArrayOutputStream extends ByteArrayOutputStream {
-
-    @Override
-    public synchronized void write(int b) {
-      super.write(b);
-    }
-
-    @Override
-    public void write(byte[] b) throws IOException {
-      super.write(b);
-    }
-
-    @Override
-    public synchronized void write(byte[] b, int off, int len) {
-      super.write(b, off, len);
-    }
   }
 }

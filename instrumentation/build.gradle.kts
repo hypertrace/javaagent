@@ -33,6 +33,8 @@ dependencies{
     implementation(project(":instrumentation:servlet:servlet-2.3"))
     implementation(project(":instrumentation:servlet:servlet-3.0"))
     implementation(project(":instrumentation:servlet:servlet-3.1"))
+    implementation(project(":instrumentation:servlet:servlet-rw"))
+    implementation(project(":instrumentation:servlet:servlet-3.0-no-wrapping"))
     implementation(project(":instrumentation:spark-2.3"))
     implementation(project(":instrumentation:grpc-1.5"))
     implementation(project(":instrumentation:okhttp:okhttp-3.0"))
@@ -40,6 +42,8 @@ dependencies{
     implementation(project(":instrumentation:jaxrs-client-2.0"))
     implementation(project(":instrumentation:java-streams"))
     implementation(project(":instrumentation:apache-httpasyncclient-4.1"))
+    implementation(project(":instrumentation:netty:netty-4.0"))
+    implementation(project(":instrumentation:netty:netty-4.1"))
     implementation(project(":otel-extensions"))
 }
 
@@ -75,8 +79,10 @@ tasks {
 
         // relocate OpenTelemetry API
         relocate("io.opentelemetry.api", "io.opentelemetry.javaagent.shaded.io.opentelemetry.api")
+        relocate("io.opentelemetry.semconv", "io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv")
         relocate("io.opentelemetry.spi", "io.opentelemetry.javaagent.shaded.io.opentelemetry.spi")
         relocate("io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context")
+        relocate("io.opentelemetry.extension.kotlin", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.kotlin")
         relocate ("io.opentelemetry.extension.trace.propagation", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.trace.propagation")
     }
 }

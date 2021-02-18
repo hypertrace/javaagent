@@ -25,7 +25,7 @@ import okhttp3.Request;
 import okhttp3.Request.Builder;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.hypertrace.agent.core.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -50,6 +50,8 @@ public class SparkJavaInstrumentationTest extends AbstractInstrumenterTest {
     Spark.post(
         "/",
         (req, res) -> {
+          System.out.printf("Spark received: %s\n", req.body());
+
           res.header(RESPONSE_HEADER, RESPONSE_HEADER_VALUE);
           res.type("application/json");
           return RESPONSE_BODY;

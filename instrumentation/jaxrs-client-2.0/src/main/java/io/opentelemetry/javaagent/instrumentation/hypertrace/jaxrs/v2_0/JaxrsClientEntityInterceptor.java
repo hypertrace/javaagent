@@ -19,10 +19,10 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.jaxrs.v2_0;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.javaagent.instrumentation.jaxrsclient.v2_0.ClientTracingFilter;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -31,14 +31,15 @@ import javax.ws.rs.ext.ReaderInterceptorContext;
 import javax.ws.rs.ext.WriterInterceptor;
 import javax.ws.rs.ext.WriterInterceptorContext;
 import org.hypertrace.agent.config.Config.AgentConfig;
-import org.hypertrace.agent.core.BoundedByteArrayOutputStreamFactory;
-import org.hypertrace.agent.core.ContentEncodingUtils;
-import org.hypertrace.agent.core.ContentLengthUtils;
-import org.hypertrace.agent.core.ContentTypeUtils;
-import org.hypertrace.agent.core.GlobalObjectRegistry;
-import org.hypertrace.agent.core.GlobalObjectRegistry.SpanAndBuffer;
-import org.hypertrace.agent.core.HypertraceConfig;
-import org.hypertrace.agent.core.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.config.HypertraceConfig;
+import org.hypertrace.agent.core.instrumentation.GlobalObjectRegistry;
+import org.hypertrace.agent.core.instrumentation.GlobalObjectRegistry.SpanAndBuffer;
+import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
+import org.hypertrace.agent.core.instrumentation.utils.ContentLengthUtils;
+import org.hypertrace.agent.core.instrumentation.utils.ContentTypeCharsetUtils;
+import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,18 +76,21 @@ public class JaxrsClientEntityInterceptor implements ReaderInterceptor, WriterIn
     InputStream entityStream = responseContext.getInputStream();
     Object entity = null;
     try {
-      String encodingStr = responseContext.getHeaders().getFirst(HttpHeaders.CONTENT_ENCODING);
       String contentLengthStr = responseContext.getHeaders().getFirst(HttpHeaders.CONTENT_LENGTH);
       int contentLength = ContentLengthUtils.parseLength(contentLengthStr);
 
-      ByteArrayOutputStream buffer = BoundedByteArrayOutputStreamFactory.create(contentLength);
+      String charsetStr = null;
+      if (mediaType != null) {
+        charsetStr = mediaType.getParameters().get(MediaType.CHARSET_PARAMETER);
+      }
+      Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
+
+      BoundedByteArrayOutputStream buffer =
+          BoundedBuffersFactory.createStream(contentLength, charset);
       GlobalObjectRegistry.inputStreamToSpanAndBufferMap.put(
           entityStream,
           new SpanAndBuffer(
-              currentSpan,
-              buffer,
-              HypertraceSemanticAttributes.HTTP_RESPONSE_BODY,
-              ContentEncodingUtils.toCharset(encodingStr)));
+              currentSpan, buffer, HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, charset));
       entity = responseContext.proceed();
     } catch (Exception ex) {
       log.error("Exception while capturing response body", ex);
@@ -118,8 +122,15 @@ public class JaxrsClientEntityInterceptor implements ReaderInterceptor, WriterIn
       }
     }
 
+    MediaType mediaType = requestContext.getMediaType();
+    String charsetStr = null;
+    if (mediaType != null) {
+      charsetStr = mediaType.getParameters().get(MediaType.CHARSET_PARAMETER);
+    }
+    Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
+
     // TODO length is not known
-    ByteArrayOutputStream buffer = BoundedByteArrayOutputStreamFactory.create();
+    BoundedByteArrayOutputStream buffer = BoundedBuffersFactory.createStream(charset);
     OutputStream entityStream = requestContext.getOutputStream();
     try {
       GlobalObjectRegistry.outputStreamToBufferMap.put(entityStream, buffer);
@@ -128,8 +139,8 @@ public class JaxrsClientEntityInterceptor implements ReaderInterceptor, WriterIn
       log.error("Failed to capture request body", ex);
     } finally {
       GlobalObjectRegistry.outputStreamToBufferMap.remove(entityStream);
-      // TODO encoding is not known
-      currentSpan.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, buffer.toString());
+      currentSpan.setAttribute(
+          HypertraceSemanticAttributes.HTTP_REQUEST_BODY, buffer.toStringWithSuppliedCharset());
     }
   }
 }

@@ -18,18 +18,21 @@ package org.hypertrace.agent.testing;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.javaagent.spi.ComponentInstaller;
 import io.opentelemetry.javaagent.tooling.AgentInstaller;
-import io.opentelemetry.javaagent.tooling.config.ConfigInitializer;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
+import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import net.bytebuddy.agent.ByteBuddyAgent;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
+import okhttp3.RequestBody;
+import okio.BufferedSink;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.LoggerFactory;
@@ -52,11 +55,10 @@ public abstract class AbstractInstrumenterTest {
    */
   public static final InMemoryExporter TEST_WRITER = new InMemoryExporter();;
 
-  protected static final Tracer TEST_TRACER;
+  protected static Tracer TEST_TRACER;
   private static final Instrumentation INSTRUMENTATION;
 
   static {
-    ConfigInitializer.initialize();
     // always run with the thread propagation debugger to help track down sporadic test failures
     System.setProperty("otel.threadPropagationDebugger", "true");
     System.setProperty("otel.internal.failOnContextLeak", "true");
@@ -69,25 +71,59 @@ public abstract class AbstractInstrumenterTest {
     ((Logger) LoggerFactory.getLogger("io.opentelemetry")).setLevel(Level.DEBUG);
 
     COMPONENT_INSTALLER = new TestOpenTelemetryInstaller(TEST_WRITER);
-    OpenTelemetrySdk.getGlobalTracerManagement().addSpanProcessor(TEST_WRITER);
-    TEST_TRACER = OpenTelemetry.getGlobalTracer("io.opentelemetry.auto");
   }
 
   private static ClassFileTransformer classFileTransformer;
+
+  private static final int DEFAULT_TIMEOUT_SECONDS = 30;
   protected OkHttpClient httpClient =
-      new OkHttpClient.Builder().callTimeout(30, TimeUnit.SECONDS).build();
+      new OkHttpClient.Builder()
+          .callTimeout(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+          .connectTimeout(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+          .readTimeout(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+          .build();
 
   @BeforeAll
   public static void beforeAll() {
     if (classFileTransformer == null) {
       classFileTransformer =
           AgentInstaller.installBytebuddyAgent(
-              INSTRUMENTATION, true, Collections.singleton(COMPONENT_INSTALLER));
+              INSTRUMENTATION, Collections.singleton(COMPONENT_INSTALLER));
+    }
+    if (TEST_TRACER == null) {
+      TEST_TRACER = GlobalOpenTelemetry.getTracer("io.opentelemetry.auto");
     }
   }
 
   @BeforeEach
   public void beforeEach() {
     TEST_WRITER.clear();
+  }
+
+  public static RequestBody requestBody(
+      final boolean chunked, final long size, final int writeSize) {
+    final byte[] buffer = new byte[writeSize];
+    Arrays.fill(buffer, (byte) 'x');
+
+    return new RequestBody() {
+      @Override
+      public MediaType contentType() {
+        return MediaType.get("application/json; charset=utf-8");
+      }
+
+      @Override
+      public long contentLength() throws IOException {
+        return chunked ? -1L : size;
+      }
+
+      @Override
+      public void writeTo(BufferedSink sink) throws IOException {
+        sink.write("{\"body\":\"".getBytes());
+        for (int count = 0; count < size; count += writeSize) {
+          sink.write(buffer, 0, (int) Math.min(size - count, writeSize));
+        }
+        sink.write("\"}".getBytes());
+      }
+    };
   }
 }

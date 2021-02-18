@@ -1,0 +1,2 @@
+io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.request.ServletInputStreamContextAccessInstrumentationModule
+io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.response.ServletOutputStreamContextAccessInstrumentationModule

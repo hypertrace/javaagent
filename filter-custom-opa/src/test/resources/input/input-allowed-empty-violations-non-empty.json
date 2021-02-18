@@ -1,7 +1,0 @@
-{
-  "http.request.header.x-real-ip": "127.0.2.1",
-  "http.request.header.x-forwarded-for": "127.0.0.2,9.2.3",
-  "http.request.header.x-proxyuser-ip": "127.0.0.3",
-  "http.request.header.forwarded": "for=127.0.0.31;for=127.0.0.32;for=127.0.0.41;for=127.0.2.42;f=127.0.0.43;127.0.0.44;",
-  "proxy.client.addr": "127.0.0.5"
-}

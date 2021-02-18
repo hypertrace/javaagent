@@ -17,7 +17,7 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0;
 
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Status;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import java.util.List;
 import okhttp3.MediaType;
 import okhttp3.Request;
@@ -25,7 +25,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.hypertrace.agent.core.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -108,7 +108,7 @@ public class Servlet30InstrumentationTest extends AbstractInstrumenterTest {
     List<SpanData> spans = traces.get(0);
     Assertions.assertEquals(1, spans.size());
     SpanData spanData = spans.get(0);
-    Assertions.assertEquals(Status.error(), spanData.getStatus());
+    Assertions.assertEquals(StatusData.error(), spanData.getStatus());
     Assertions.assertEquals(
         REQUEST_HEADER_VALUE,
         spanData

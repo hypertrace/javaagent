@@ -27,7 +27,8 @@ class MockFilter implements Filter {
 
   @Override
   public boolean evaluateRequestHeaders(Span span, Map<String, String> headers) {
-    if (headers.containsKey("mockblock")) {
+    if (headers.containsKey("http.request.header.mockblock")
+        || headers.containsKey("rpc.request.metadata.mockblock")) {
       span.setAttribute("hypertrace.mock.filter.result", "true");
       return true;
     }

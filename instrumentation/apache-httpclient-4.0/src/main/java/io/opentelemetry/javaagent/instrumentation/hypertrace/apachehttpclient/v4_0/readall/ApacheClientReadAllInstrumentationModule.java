@@ -35,6 +35,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -48,10 +49,10 @@ import net.bytebuddy.matcher.ElementMatcher;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.hypertrace.agent.core.BoundedByteArrayOutputStreamFactory;
-import org.hypertrace.agent.core.ContentTypeUtils;
-import org.hypertrace.agent.core.GlobalObjectRegistry;
-import org.hypertrace.agent.core.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.instrumentation.GlobalObjectRegistry;
+import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
+import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 
 @AutoService(InstrumentationModule.class)
 public class ApacheClientReadAllInstrumentationModule extends InstrumentationModule {
@@ -197,14 +198,13 @@ public class ApacheClientReadAllInstrumentationModule extends InstrumentationMod
 
           BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
           ByteArrayOutputStream buffer =
-              BoundedByteArrayOutputStreamFactory.create((int) contentSize);
+              BoundedBuffersFactory.createStream((int) contentSize, Charset.defaultCharset());
           byte ch;
           while ((ch = (byte) bufferedInputStream.read()) != -1) {
             buffer.write(ch);
           }
 
           byte[] bodyBytes = buffer.toByteArray();
-          System.out.printf("Captured response body: %s\n", new String(bodyBytes));
           currentSpan.setAttribute(
               HypertraceSemanticAttributes.HTTP_RESPONSE_BODY.getKey(), new String(bodyBytes));
           ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bodyBytes);
@@ -215,8 +215,6 @@ public class ApacheClientReadAllInstrumentationModule extends InstrumentationMod
           // TODO log
           e.printStackTrace();
         }
-      } else {
-        System.out.println("\n\nIt is not HttpResponse #execute");
       }
     }
   }

@@ -49,7 +49,7 @@ public abstract class AbstractSmokeTest {
   private static final Logger log = LoggerFactory.getLogger(OpenTelemetryStorage.class);
   private static final String OTEL_COLLECTOR_IMAGE = "otel/opentelemetry-collector:latest";
   private static final String MOCK_BACKEND_IMAGE =
-      "open-telemetry-docker-dev.bintray.io/java/smoke-fake-backend:latest";
+      "ghcr.io/open-telemetry/java-test-containers:smoke-fake-backend-20201128.1734635";
   private static final String NETWORK_ALIAS_OTEL_COLLECTOR = "collector";
   private static final String NETWORK_ALIAS_OTEL_MOCK_STORAGE = "storage";
   private static final String OTEL_EXPORTER_ENDPOINT =
@@ -63,11 +63,12 @@ public abstract class AbstractSmokeTest {
   private static OpenTelemetryStorage openTelemetryStorage;
 
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+  private static final int DEFAULT_TIMEOUT_SECONDS = 30;
   protected OkHttpClient client =
       new OkHttpClient.Builder()
-          .connectTimeout(30, TimeUnit.SECONDS)
-          .readTimeout(30, TimeUnit.SECONDS)
-          .writeTimeout(30, TimeUnit.SECONDS)
+          .connectTimeout(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+          .readTimeout(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+          .writeTimeout(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
           .followRedirects(true)
           .build();
 
@@ -131,7 +132,7 @@ public abstract class AbstractSmokeTest {
             MountableFile.forClasspathResource("/ht-config.yaml"), "/etc/ht-config.yaml")
         .withEnv("JAVA_TOOL_OPTIONS", "-javaagent:/javaagent.jar")
         .withEnv("HT_CONFIG_FILE", "/etc/ht-config.yaml")
-        .withEnv("OTEL_BSP_MAX_EXPORT_BATCH", "1")
+        .withEnv("OTEL_BSP_MAX_EXPORT_BATCH_SIZE", "1")
         .withEnv("OTEL_BSP_SCHEDULE_DELAY", "10")
         .withEnv("HT_REPORTING_ENDPOINT", OTEL_EXPORTER_ENDPOINT);
   }

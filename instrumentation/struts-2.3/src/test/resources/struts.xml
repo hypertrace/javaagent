@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.3//EN"
+        "http://struts.apache.org/dtds/struts-2.3.dtd">
+
+<struts>
+
+    <constant name="struts.enable.SlashesInActionNames" value="true"/>
+    <constant name="struts.patternMatcher" value="namedVariable"/>
+
+    <package name="basic-struts2" extends="struts-default">
+        <global-results>
+            <result name="headers" type="httpheader" >
+                <param name="headers.headerName">headerValue</param>
+            </result>
+        </global-results>
+        <action name="headers" class="io.opentelemetry.javaagent.instrumentation.hypertrace.struts.Struts2Action" method="headers"/>
+    </package>
+
+    <package name="json-struts2" extends="json-default">
+        <action name="body" class="io.opentelemetry.javaagent.instrumentation.hypertrace.struts.Struts2Action" method="body">
+            <result name="body" type="json">
+                <param name="noCache">true</param>
+                <param name="excludeNullProperties">true</param>
+                <param name="root">jsonString</param>
+            </result>
+        </action>
+    </package>
+
+</struts>

@@ -16,9 +16,9 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v2_3;
 
-import static io.opentelemetry.javaagent.tooling.ClassLoaderMatcher.hasClassesNamed;
 import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers.safeHasSuperType;
-import static io.opentelemetry.javaagent.tooling.matcher.NameMatchers.namedOneOf;
+import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.ClassLoaderMatcher.hasClassesNamed;
+import static io.opentelemetry.javaagent.tooling.bytebuddy.matcher.NameMatchers.namedOneOf;
 import static java.util.Collections.singletonMap;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
@@ -26,6 +26,7 @@ import static net.bytebuddy.matcher.ElementMatchers.not;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
 import com.google.auto.service.AutoService;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.common.ServletSpanDecorator;
@@ -44,8 +45,8 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import org.hypertrace.agent.core.HypertraceConfig;
-import org.hypertrace.agent.core.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.config.HypertraceConfig;
+import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.filter.FilterRegistry;
 
 /**
@@ -146,18 +147,18 @@ public class Servlet2BodyInstrumentationModule extends InstrumentationModule {
       @SuppressWarnings("unchecked")
       Enumeration<String> headerNames = httpRequest.getHeaderNames();
       Map<String, String> headers = new HashMap<>();
-
       while (headerNames.hasMoreElements()) {
         String headerName = headerNames.nextElement();
         String headerValue = httpRequest.getHeader(headerName);
+        AttributeKey<String> attributeKey =
+            HypertraceSemanticAttributes.httpRequestHeader(headerName);
+
         if (HypertraceConfig.get().getDataCapture().getHttpHeaders().getRequest().getValue()) {
-          currentSpan.setAttribute(
-              HypertraceSemanticAttributes.httpRequestHeader(headerName), headerValue);
+          currentSpan.setAttribute(attributeKey, headerValue);
         }
-        headers.put(headerName, headerValue);
+        headers.put(attributeKey.getKey(), headerValue);
       }
-      boolean block = FilterRegistry.getFilter().evaluateRequestHeaders(currentSpan, headers);
-      if (block) {
+      if (FilterRegistry.getFilter().evaluateRequestHeaders(currentSpan, headers)) {
         httpResponse.setStatus(403);
         return true;
       }

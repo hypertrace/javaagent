@@ -18,9 +18,14 @@ List of supported frameworks with additional capabilities:
 | [Apache HttpClient](https://hc.apache.org/index.html)                                                  | 4.0+            |
 | [gRPC](https://github.com/grpc/grpc-java)                                                              | 1.5+            |
 | [JAX-RS Client](https://javaee.github.io/javaee-spec/javadocs/javax/ws/rs/client/package-summary.html) | 2.0+            |
+| [Micronaut](https://micronaut.io/)  (basic support via Netty)                                          | 1.0+            |
+| [Netty](https://github.com/netty/netty)                                                                | 4.0+            |
 | [OkHttp](https://github.com/square/okhttp/)                                                            | 3.0+            |
 | [Servlet](https://javaee.github.io/javaee-spec/javadocs/javax/servlet/package-summary.html)            | 2.3+            |
 | [Spark Web Framework](https://github.com/perwendel/spark)                                              | 2.3+            |
+| [Spring Webflux](https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/web/reactive/package-summary.html)       | 5.0+            |
+| [Vert.x](https://vertx.io)                                                                             | 3.0+            |
+| [Struts](https://struts.apache.org/)                                                                   | 2.3+            |
 
 ### Adding custom filter implementation
 

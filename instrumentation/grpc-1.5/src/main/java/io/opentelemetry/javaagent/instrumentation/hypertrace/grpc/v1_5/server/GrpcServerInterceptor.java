@@ -28,8 +28,8 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.v1_5.GrpcInstrumentationName;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.v1_5.GrpcSpanDecorator;
 import java.util.Map;
-import org.hypertrace.agent.core.HypertraceConfig;
-import org.hypertrace.agent.core.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.config.HypertraceConfig;
+import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.filter.FilterRegistry;
 
 public class GrpcServerInterceptor implements ServerInterceptor {
@@ -47,8 +47,7 @@ public class GrpcServerInterceptor implements ServerInterceptor {
     Map<String, String> mapHeaders = GrpcSpanDecorator.metadataToMap(headers);
 
     if (HypertraceConfig.get().getDataCapture().getRpcMetadata().getRequest().getValue()) {
-      GrpcSpanDecorator.addMetadataAttributes(
-          mapHeaders, currentSpan, HypertraceSemanticAttributes::rpcRequestMetadata);
+      GrpcSpanDecorator.addMetadataAttributes(mapHeaders, currentSpan);
     }
 
     boolean block = FilterRegistry.getFilter().evaluateRequestHeaders(currentSpan, mapHeaders);

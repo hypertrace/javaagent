@@ -25,7 +25,6 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v4_0.ApacheHttpClientObjectRegistry.SpanAndAttributeKey;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -36,12 +35,15 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.hypertrace.agent.core.BoundedByteArrayOutputStreamFactory;
-import org.hypertrace.agent.core.ContentEncodingUtils;
-import org.hypertrace.agent.core.ContentLengthUtils;
-import org.hypertrace.agent.core.GlobalObjectRegistry;
-import org.hypertrace.agent.core.GlobalObjectRegistry.SpanAndBuffer;
+import org.hypertrace.agent.core.instrumentation.GlobalObjectRegistry;
+import org.hypertrace.agent.core.instrumentation.GlobalObjectRegistry.SpanAndBuffer;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
+import org.hypertrace.agent.core.instrumentation.utils.ContentLengthUtils;
+import org.hypertrace.agent.core.instrumentation.utils.ContentTypeCharsetUtils;
+import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 
 public class HttpEntityInstrumentation implements TypeInstrumentation {
 
@@ -88,13 +90,17 @@ public class HttpEntityInstrumentation implements TypeInstrumentation {
         contentSize = ContentLengthUtils.DEFAULT;
       }
 
-      String encoding =
-          thizz.getContentEncoding() != null ? thizz.getContentEncoding().getValue() : "";
-      Charset charset = ContentEncodingUtils.toCharset(encoding);
+      Header contentTypeHeader = thizz.getContentType();
+      String charsetStr = null;
+      if (contentTypeHeader != null) {
+        charsetStr = ContentTypeUtils.parseCharset(contentTypeHeader.getValue());
+      }
+      Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
+
       SpanAndBuffer spanAndBuffer =
           new SpanAndBuffer(
               clientSpan.span,
-              BoundedByteArrayOutputStreamFactory.create((int) contentSize),
+              BoundedBuffersFactory.createStream((int) contentSize, charset),
               clientSpan.attributeKey,
               charset);
       GlobalObjectRegistry.inputStreamToSpanAndBufferMap.put(inputStream, spanAndBuffer);
@@ -114,8 +120,16 @@ public class HttpEntityInstrumentation implements TypeInstrumentation {
       if (contentSize <= 0 || contentSize == Long.MAX_VALUE) {
         contentSize = ContentLengthUtils.DEFAULT;
       }
-      ByteArrayOutputStream byteArrayOutputStream =
-          BoundedByteArrayOutputStreamFactory.create((int) contentSize);
+
+      Header contentTypeHeader = thizz.getContentType();
+      String charsetStr = null;
+      if (contentTypeHeader != null) {
+        charsetStr = ContentTypeUtils.parseCharset(contentTypeHeader.getValue());
+      }
+      Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
+
+      BoundedByteArrayOutputStream byteArrayOutputStream =
+          BoundedBuffersFactory.createStream((int) contentSize, charset);
 
       GlobalObjectRegistry.outputStreamToBufferMap.put(outputStream, byteArrayOutputStream);
     }
@@ -129,14 +143,10 @@ public class HttpEntityInstrumentation implements TypeInstrumentation {
         return;
       }
 
-      String encoding =
-          thizz.getContentEncoding() != null ? thizz.getContentEncoding().getValue() : "";
-      Charset charset = ContentEncodingUtils.toCharset(encoding);
-
-      ByteArrayOutputStream bufferedOutStream =
+      BoundedByteArrayOutputStream bufferedOutStream =
           GlobalObjectRegistry.outputStreamToBufferMap.remove(outputStream);
       try {
-        String requestBody = bufferedOutStream.toString(charset.name());
+        String requestBody = bufferedOutStream.toStringWithSuppliedCharset();
         spanAndAttributeKey.span.setAttribute(spanAndAttributeKey.attributeKey, requestBody);
       } catch (UnsupportedEncodingException e) {
         // should not happen, the charset has been parsed before
