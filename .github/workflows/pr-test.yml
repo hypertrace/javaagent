@@ -29,6 +29,12 @@ jobs:
             gradle-packages-${{ runner.os }}-${{ github.job }}
             gradle-packages-${{ runner.os }}
 
+      - name: pwd
+        run: pwd
+
+      - name: list files
+        run: ls -lrt
+
       - name: list files 1
         run: ls -lrt javaagent-core/src/main/proto/tools/env-vars-generator/protobuf/third_party/benchmark/datasets
 
@@ -66,6 +72,12 @@ jobs:
 
       #- name: init submodules
       #  run: make init-submodules
+
+      - name: pwd
+        run: pwd
+
+      - name: list files
+        run: ls -lrt
 
       - name: list files 1
         run: ls -lrt javaagent-core/src/main/proto/tools/env-vars-generator/protobuf/third_party/benchmark/datasets
