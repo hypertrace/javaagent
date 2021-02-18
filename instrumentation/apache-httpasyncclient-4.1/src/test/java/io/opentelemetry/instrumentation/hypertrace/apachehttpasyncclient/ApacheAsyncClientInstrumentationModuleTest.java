@@ -48,6 +48,7 @@ import org.hypertrace.agent.testing.TestHttpServer.GetJsonHandler;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTest {
@@ -68,6 +69,7 @@ class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTes
     testHttpServer.close();
   }
 
+  @Disabled("This is flaky !!")
   @Test
   public void getJson()
       throws ExecutionException, InterruptedException, TimeoutException, IOException {
