@@ -43,9 +43,8 @@ class MultiFilter implements Filter {
         }
       } catch (Throwable t) {
         logger.warn(
-            String.format(
-                "Throwable thrown while evaluating Request headers for filter %s",
-                filter.getClass().getName()),
+            "Throwable thrown while evaluating Request headers for filter {}",
+            filter.getClass().getName(),
             t);
       }
     }
@@ -62,9 +61,8 @@ class MultiFilter implements Filter {
         }
       } catch (Throwable t) {
         logger.warn(
-            String.format(
-                "Throwable thrown while evaluating Request body for filter %s",
-                filter.getClass().getName()),
+            "Throwable thrown while evaluating Request body for filter {}",
+            filter.getClass().getName(),
             t);
       }
     }
