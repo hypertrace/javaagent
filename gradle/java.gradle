@@ -1,0 +1,209 @@
+import java.time.Duration
+
+apply plugin: 'java-library'
+apply plugin: 'groovy'
+apply plugin: 'org.gradle.test-retry'
+
+// Version to use to compile code and run tests.
+def DEFAULT_JAVA_VERSION = 11
+
+jar {
+    /*
+    Make Jar build fail on duplicate files
+
+    By default Gradle Jar task can put multiple files with the same name
+    into a Jar. This may lead to confusion. For example if auto-service
+    annotation processing creates files with same name in `scala` and
+    `java` directory this would result in Jar having two files with the
+    same name in it. Which in turn would result in only one of those
+    files being actually considered when that Jar is used leading to very
+    confusing failures.
+
+    Instead we should 'fail early' and avoid building such Jars.
+    */
+    duplicatesStrategy = 'fail'
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    jcenter()
+    maven {
+        url "https://repo.typesafe.com/typesafe/releases"
+    }
+    // this is only needed for the working against unreleased otel-java snapshots
+    maven {
+        url "https://oss.jfrog.org/artifactory/oss-snapshot-local"
+        content {
+            includeGroup "io.opentelemetry"
+        }
+    }
+}
+
+ext {
+    deps = [
+            spock      : [
+                    dependencies.create("org.spockframework:spock-core:1.3-groovy-2.5", {
+                        exclude group: 'org.codehaus.groovy', module: 'groovy-all'
+                    }),
+                    // Used by Spock for mocking:
+                    dependencies.create(group: 'org.objenesis', name: 'objenesis', version: '3.1')
+            ],
+            groovy     : "org.codehaus.groovy:groovy-all:2.5.11",
+            testLogging: [
+                    dependencies.create(group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'),
+                    dependencies.create(group: 'org.slf4j', name: 'log4j-over-slf4j', version: '1.7.30'),
+                    dependencies.create(group: 'org.slf4j', name: 'jcl-over-slf4j', version: '1.7.30'),
+                    dependencies.create(group: 'org.slf4j', name: 'jul-to-slf4j', version: '1.7.30'),
+            ]
+    ]
+}
+
+dependencies {
+    compileOnly group: 'org.checkerframework', name: 'checker-qual', version: '3.6.1'
+
+    testImplementation enforcedPlatform(group: 'org.junit', name: 'junit-bom', version: '5.7.0-M1')
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params'
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
+    testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine'
+
+    testImplementation deps.spock
+    testImplementation deps.groovy
+    testImplementation deps.testLogging
+    testImplementation group: 'info.solidsoft.spock', name: 'spock-global-unroll', version: '0.5.1'
+    testImplementation group: 'com.github.stefanbirkner', name: 'system-rules', version: '1.19.0'
+}
+
+jar {
+    manifest {
+        attributes(
+                "Implementation-Title": project.name,
+                "Implementation-Version": project.version,
+                "Implementation-Vendor": "Hypertace",
+                "Implementation-URL": "https://github.com/hypertrace/hypertrace",
+        )
+    }
+}
+
+normalization {
+    runtimeClasspath {
+        metaInf {
+            ignoreAttribute("Implementation-Version")
+        }
+    }
+}
+
+javadoc {
+    options.addStringOption('Xdoclint:none', '-quiet')
+
+    doFirst {
+        if (project.ext.has("apiLinks")) {
+            options.links(*project.apiLinks)
+        }
+    }
+    source = sourceSets.main.allJava
+    classpath = configurations.compileClasspath
+
+    options {
+        encoding = "utf-8"
+        docEncoding = "utf-8"
+        charSet = "utf-8"
+
+        setMemberLevel JavadocMemberLevel.PUBLIC
+        setAuthor true
+
+        links "https://docs.oracle.com/javase/8/docs/api/"
+        source = 8
+    }
+}
+
+project.afterEvaluate {
+    if (project.plugins.hasPlugin('org.unbroken-dome.test-sets') && configurations.hasProperty("latestDepTestRuntime")) {
+        tasks.withType(Test).configureEach {
+            doFirst {
+                def testArtifacts = configurations.testRuntimeClasspath.resolvedConfiguration.resolvedArtifacts
+                def latestTestArtifacts = configurations.latestDepTestRuntimeClasspath.resolvedConfiguration.resolvedArtifacts
+                assert testArtifacts != latestTestArtifacts: "latestDepTest dependencies are identical to test"
+            }
+        }
+    }
+}
+
+def isJavaVersionAllowed(JavaVersion version) {
+    if (project.hasProperty('minJavaVersionForTests') && project.getProperty('minJavaVersionForTests').compareTo(version) > 0) {
+        return false
+    }
+    if (project.hasProperty('maxJavaVersionForTests') && project.getProperty('maxJavaVersionForTests').compareTo(version) < 0) {
+        return false
+    }
+    return true
+}
+
+def testJavaVersion = rootProject.findProperty('testJavaVersion')
+if (testJavaVersion != null) {
+    def requestedJavaVersion = JavaVersion.toVersion(testJavaVersion)
+    tasks.withType(Test).all {
+        javaLauncher = javaToolchains.launcherFor {
+            languageVersion = JavaLanguageVersion.of(requestedJavaVersion.majorVersion)
+        }
+        enabled = isJavaVersionAllowed(requestedJavaVersion)
+    }
+} else {
+    // We default to testing with Java 11 for most tests, but some tests don't support it, where we change
+    // the default test task's version so commands like `./gradlew check` can test all projects regardless
+    // of Java version.
+    if (!isJavaVersionAllowed(JavaVersion.toVersion(DEFAULT_JAVA_VERSION))) {
+        tasks.withType(Test) {
+            javaLauncher = javaToolchains.launcherFor {
+                languageVersion = JavaLanguageVersion.of(project.getProperty('maxJavaVersionForTests').majorVersion)
+            }
+        }
+    }
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+
+    // All tests must complete within 30 minutes.
+    // This value is quite big because with lower values (3 mins) we were experiencing large number of false positives
+    timeout = Duration.ofMinutes(30)
+
+    retry {
+        // You can see tests that were retried by this mechanism in the collected test reports and build scans.
+        maxRetries = System.getenv("CI") != null ? 5 : 0
+    }
+
+    reports {
+        junitXml.outputPerTestCase = true
+    }
+
+    testLogging {
+        exceptionFormat = 'full'
+    }
+}
+
+tasks.withType(AbstractArchiveTask) {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+plugins.withId('net.ltgt.errorprone') {
+    dependencies {
+        annotationProcessor group: "com.uber.nullaway", name: "nullaway", version: versions.nullaway
+        errorprone group: "com.google.errorprone", name: "error_prone_core", version: versions.errorprone
+    }
+
+    tasks.withType(JavaCompile) {
+        if (!name.toLowerCase().contains("test")) {
+            options.errorprone {
+                error("NullAway")
+
+                // Doesn't work well with Java 8
+                disable("FutureReturnValueIgnored")
+
+                option("NullAway:AnnotatedPackages", "io.opentelemetry,com.linecorp.armeria,com.google.common")
+            }
+        }
+    }
+}
