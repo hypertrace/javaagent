@@ -77,7 +77,7 @@ jobs:
         run: pwd
 
       - name: list files
-        run: ls -lrt
+        run: ls -R javaagent-core
 
       - name: list files 1
         run: ls -lrt javaagent-core/src/main/proto/tools/env-vars-generator/protobuf/third_party/benchmark/datasets
