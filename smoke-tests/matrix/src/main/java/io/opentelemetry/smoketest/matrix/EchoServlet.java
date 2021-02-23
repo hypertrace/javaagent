@@ -1,7 +1,5 @@
 package io.opentelemetry.smoketest.matrix;
 
-import com.google.gson.Gson;
-import io.opentelemetry.smoketest.matrix.model.GreetingWithHeader;
 import io.opentelemetry.smoketest.matrix.util.StreamTransferUtil;
 
 import javax.servlet.ServletException;
@@ -11,14 +9,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.stream.Collectors;
+import java.util.Base64;
 
-public class ReceiveSendGreetingServlet extends HttpServlet {
-
-  private final Gson gson = new Gson();
+public class EchoServlet extends HttpServlet {
 
   @Override
   protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -28,23 +23,28 @@ public class ReceiveSendGreetingServlet extends HttpServlet {
     URLConnection urlConnection = url.openConnection();
     ByteArrayOutputStream buffer = new ByteArrayOutputStream();
     try (InputStream remoteInputStream = urlConnection.getInputStream()) {
-      
-      //get headers
-      long bytesRead = StreamTransferUtil.transfer(remoteInputStream, buffer);
-      String headerResponseBody = buffer.toString("UTF-8");
-      headerResponseBody = bytesRead + " bytes read by " + urlConnection.getClass().getName() + "\n" + headerResponseBody;
-      
-      //get set echo body
-      String input = request.getReader().lines().collect(Collectors.joining());
-      GreetingWithHeader greetingWithHeader = new GreetingWithHeader(headerResponseBody, input);
-      String returnGreetingHeaderString = this.gson.toJson(greetingWithHeader);
-      
-      //set response
+
+      //set ContentType & CharacterEncoding
       response.setContentType(request.getContentType());
       response.setCharacterEncoding(request.getCharacterEncoding());
-      PrintWriter out = response.getWriter();
-      out.print(returnGreetingHeaderString);
-      out.flush();
+
+      //get & set headers
+      long bytesRead = StreamTransferUtil.transfer(remoteInputStream, buffer);
+      String headers = buffer.toString("UTF-8");
+      String headerResponseBody =
+          Base64.getEncoder().encodeToString((bytesRead + " bytes read by " + urlConnection.getClass().getName() +
+              "\n" + headers).getBytes());
+      response.setHeader("Header-Dump", headerResponseBody);
+
+
+      //get set echo body
+      int requestBodySize = request.getContentLength();
+      byte[] bytes = new byte[requestBodySize];
+      if (bytes.length > 0) {
+        final int read = request.getInputStream().read(bytes);
+        response.getOutputStream().write(bytes, 0, read);
+      }
+      response.getOutputStream().flush();
     }
   }
 }

@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.util.Objects;
 
 public final class StreamTransferUtil {
+
   // We have to run on Java 8, so no Java 9 stream transfer goodies for us.
   public static long transfer(InputStream from, OutputStream to) throws IOException {
     Objects.requireNonNull(to, "out");

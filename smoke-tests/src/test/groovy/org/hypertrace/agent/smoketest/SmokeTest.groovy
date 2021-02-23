@@ -69,22 +69,23 @@ abstract class SmokeTest extends Specification {
 
   def setupSpec() {
     backend = new GenericContainer<>("ghcr.io/open-telemetry/java-test-containers:smoke-fake-backend-20201128.1734635")
-      .withExposedPorts(8080)
-      .waitingFor(Wait.forHttp("/health").forPort(8080))
-      .withNetwork(network)
-      .withNetworkAliases("backend")
-      .withImagePullPolicy(PullPolicy.alwaysPull())
-      .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("smoke.tests.backend")))
+            .withExposedPorts(8080)
+            .waitingFor(Wait.forHttp("/health").forPort(8080))
+            .withNetwork(network)
+            .withNetworkAliases("backend")
+    //     .withImagePullPolicy(PullPolicy.alwaysPull())
+            .withImagePullPolicy(PullPolicy.defaultPolicy())
+            .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("smoke.tests.backend")))
     backend.start()
 
     collector = new GenericContainer<>("otel/opentelemetry-collector-dev:latest")
-      .dependsOn(backend)
-      .withNetwork(network)
-      .withNetworkAliases("collector")
-      .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("smoke.tests.collector")))
-      .withImagePullPolicy(PullPolicy.alwaysPull())
-      .withCopyFileToContainer(MountableFile.forClasspathResource("/otel.yaml"), "/etc/otel.yaml")
-      .withCommand("--config /etc/otel.yaml")
+            .dependsOn(backend)
+            .withNetwork(network)
+            .withNetworkAliases("collector")
+            .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("smoke.tests.collector")))
+            .withImagePullPolicy(PullPolicy.defaultPolicy())
+            .withCopyFileToContainer(MountableFile.forClasspathResource("/otel.yaml"), "/etc/otel.yaml")
+            .withCommand("--config /etc/otel.yaml")
     collector.start()
   }
 
@@ -95,13 +96,11 @@ abstract class SmokeTest extends Specification {
   def startTarget(String jdk, String serverVersion = null) {
     def output = new ToStringConsumer()
     target = new GenericContainer<>(getTargetImage(jdk, serverVersion))
-      .withExposedPorts(8080)
-      .withNetwork(network)
-      .withLogConsumer(output)
-      .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("smoke.tests.target")))
-      //.withCopyFileToContainer(MountableFile.forHostPath("/Users/samarth/Downloads/hypertrace-agent-all.jar"""),
-//"""/opentelemetry-javaagent-all.jar")
-      .withCopyFileToContainer(MountableFile.forHostPath(agentPath), "/hypertrace-agent-all.jar")
+            .withExposedPorts(8080)
+            .withNetwork(network)
+            .withLogConsumer(output)
+            .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("smoke.tests.target")))
+            .withCopyFileToContainer(MountableFile.forHostPath(agentPath), "/hypertrace-agent-all.jar")
             .withEnv("JAVA_TOOL_OPTIONS", "-javaagent:/hypertrace-agent-all.jar -Dorg.hypertrace.agent.slf4j.simpleLogger.log.muzzleMatcher=true")
             .withEnv("OTEL_BSP_MAX_EXPORT_BATCH_SIZE", "1")
             .withEnv("OTEL_BSP_SCHEDULE_DELAY_MILLIS", "10")
@@ -109,8 +108,8 @@ abstract class SmokeTest extends Specification {
             .withEnv("HT_SERVICE_NAME", "CIService")
             .withEnv("HT_REPORTING_ENDPOINT", "http://collector:9411/api/v2/spans")
             .withEnv("OTEL_TRACE_EXPORTER", "otlp")
-      .withImagePullPolicy(PullPolicy.alwaysPull())
-      .withEnv(extraEnv)
+            .withImagePullPolicy(PullPolicy.defaultPolicy())
+            .withEnv(extraEnv)
     customizeContainer(target)
 
     WaitStrategy waitStrategy = getWaitStrategy()
@@ -128,10 +127,10 @@ abstract class SmokeTest extends Specification {
 
   def cleanup() {
     CLIENT.newCall(new Request.Builder()
-      .url("http://localhost:${backend.getMappedPort(8080)}/clear-requests")
-      .build())
-      .execute()
-      .close()
+            .url("http://localhost:${backend.getMappedPort(8080)}/clear-requests")
+            .build())
+            .execute()
+            .close()
   }
 
   def stopTarget() {
@@ -147,10 +146,10 @@ abstract class SmokeTest extends Specification {
   protected static Stream<AnyValue> findResourceAttribute(Collection<ExportTraceServiceRequest> traces,
                                                           String attributeKey) {
     return traces.stream()
-      .flatMap { it.getResourceSpansList().stream() }
-      .flatMap { it.getResource().getAttributesList().stream() }
-      .filter { it.key == attributeKey }
-      .map { it.value }
+            .flatMap { it.getResourceSpansList().stream() }
+            .flatMap { it.getResource().getAttributesList().stream() }
+            .filter { it.key == attributeKey }
+            .map { it.value }
   }
 
   protected static int countSpansByName(Collection<ExportTraceServiceRequest> traces, String spanName) {
@@ -159,9 +158,9 @@ abstract class SmokeTest extends Specification {
 
   protected static Stream<Span> getSpanStream(Collection<ExportTraceServiceRequest> traces) {
     return traces.stream()
-      .flatMap { it.getResourceSpansList().stream() }
-      .flatMap { it.getInstrumentationLibrarySpansList().stream() }
-      .flatMap { it.getSpansList().stream() }
+            .flatMap { it.getResourceSpansList().stream() }
+            .flatMap { it.getInstrumentationLibrarySpansList().stream() }
+            .flatMap { it.getSpansList().stream() }
   }
 
   protected Collection<ExportTraceServiceRequest> waitForTraces() {
@@ -181,12 +180,13 @@ abstract class SmokeTest extends Specification {
     String content = "[]"
     while (System.currentTimeMillis() < deadline) {
       def body = content = CLIENT.newCall(new Request.Builder()
-        .url("http://localhost:${backend.getMappedPort(8080)}/get-requests")
-        .build())
-        .execute()
-        .body()
+              .url("http://localhost:${backend.getMappedPort(8080)}/get-requests")
+              .build())
+              .execute()
+              .body()
       try {
         content = body.string()
+        println "content: $content"
       } finally {
         body.close()
       }
@@ -203,8 +203,8 @@ abstract class SmokeTest extends Specification {
 
   protected static Set<String> getLoggedTraceIds(ToStringConsumer output) {
     output.toUtf8String().lines()
-      .flatMap(SmokeTest.&findTraceId)
-      .collect(toSet())
+            .flatMap(SmokeTest.&findTraceId)
+            .collect(toSet())
   }
 
   private static Stream<String> findTraceId(String log) {
@@ -214,9 +214,9 @@ abstract class SmokeTest extends Specification {
 
   protected static boolean isVersionLogged(ToStringConsumer output, String version) {
     output.toUtf8String().lines()
-      .filter({ it.contains("opentelemetry-javaagent - version: " + version) })
-      .findFirst()
-      .isPresent()
+            .filter({ it.contains("opentelemetry-javaagent - version: " + version) })
+            .findFirst()
+            .isPresent()
   }
 
   // TODO(anuraaga): Delete after https://github.com/open-telemetry/opentelemetry-java/pull/2750

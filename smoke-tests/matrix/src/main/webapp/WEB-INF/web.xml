@@ -37,7 +37,7 @@
   </servlet>
   <servlet>
     <servlet-name>Echo</servlet-name>
-    <servlet-class>io.opentelemetry.smoketest.matrix.ReceiveSendGreetingServlet</servlet-class>
+    <servlet-class>io.opentelemetry.smoketest.matrix.EchoServlet</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>Headers</servlet-name>
