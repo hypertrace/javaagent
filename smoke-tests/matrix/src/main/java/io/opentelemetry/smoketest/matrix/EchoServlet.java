@@ -3,6 +3,8 @@ package io.opentelemetry.smoketest.matrix;
 import io.opentelemetry.smoketest.matrix.util.StreamTransferUtil;
 
 import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -38,11 +40,12 @@ public class EchoServlet extends HttpServlet {
 
 
       //get set echo body
-      int requestBodySize = request.getContentLength();
-      byte[] bytes = new byte[requestBodySize];
-      if (bytes.length > 0) {
-        final int read = request.getInputStream().read(bytes);
-        response.getOutputStream().write(bytes, 0, read);
+      ServletInputStream inputStream = request.getInputStream();
+      ServletOutputStream outputStream = response.getOutputStream();
+      int currentByte = inputStream.read();
+      while (currentByte != -1)  {
+        outputStream.write(currentByte);
+        currentByte = inputStream.read();
       }
       response.getOutputStream().flush();
     }
