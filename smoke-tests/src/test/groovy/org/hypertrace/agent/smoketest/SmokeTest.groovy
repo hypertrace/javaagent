@@ -73,8 +73,7 @@ abstract class SmokeTest extends Specification {
             .waitingFor(Wait.forHttp("/health").forPort(8080))
             .withNetwork(network)
             .withNetworkAliases("backend")
-    //     .withImagePullPolicy(PullPolicy.alwaysPull())
-            .withImagePullPolicy(PullPolicy.defaultPolicy())
+            .withImagePullPolicy(PullPolicy.alwaysPull())
             .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("smoke.tests.backend")))
     backend.start()
 
@@ -83,7 +82,7 @@ abstract class SmokeTest extends Specification {
             .withNetwork(network)
             .withNetworkAliases("collector")
             .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("smoke.tests.collector")))
-            .withImagePullPolicy(PullPolicy.defaultPolicy())
+            .withImagePullPolicy(PullPolicy.alwaysPull())
             .withCopyFileToContainer(MountableFile.forClasspathResource("/otel.yaml"), "/etc/otel.yaml")
             .withCommand("--config /etc/otel.yaml")
     collector.start()
@@ -100,6 +99,8 @@ abstract class SmokeTest extends Specification {
             .withNetwork(network)
             .withLogConsumer(output)
             .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("smoke.tests.target")))
+    //.withCopyFileToContainer(MountableFile.forHostPath("/Users/samarth/Downloads/hypertrace-agent-all.jar"""),
+//"""/opentelemetry-javaagent-all.jar")
             .withCopyFileToContainer(MountableFile.forHostPath(agentPath), "/hypertrace-agent-all.jar")
             .withEnv("JAVA_TOOL_OPTIONS", "-javaagent:/hypertrace-agent-all.jar -Dorg.hypertrace.agent.slf4j.simpleLogger.log.muzzleMatcher=true")
             .withEnv("OTEL_BSP_MAX_EXPORT_BATCH_SIZE", "1")
@@ -108,7 +109,7 @@ abstract class SmokeTest extends Specification {
             .withEnv("HT_SERVICE_NAME", "CIService")
             .withEnv("HT_REPORTING_ENDPOINT", "http://collector:9411/api/v2/spans")
             .withEnv("OTEL_TRACE_EXPORTER", "otlp")
-            .withImagePullPolicy(PullPolicy.defaultPolicy())
+            .withImagePullPolicy(PullPolicy.alwaysPull())
             .withEnv(extraEnv)
     customizeContainer(target)
 
@@ -186,7 +187,6 @@ abstract class SmokeTest extends Specification {
               .body()
       try {
         content = body.string()
-        println "content: $content"
       } finally {
         body.close()
       }

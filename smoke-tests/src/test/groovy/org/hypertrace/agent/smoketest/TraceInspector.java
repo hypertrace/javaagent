@@ -69,22 +69,6 @@ public class TraceInspector {
         .count();
   }
 
-  public long countFilteredAttributes(String attributeName) {
-    return getSpanStream()
-        .flatMap(s -> s.getAttributesList().stream())
-        .filter(a -> a.getKey().equals(attributeName))
-        .map(a -> a.getValue().getStringValue())
-        .count();
-  }
-
-  public String getFilteredAttributeValue(String attributeName) {
-    return getSpanStream()
-        .flatMap(s -> s.getAttributesList().stream())
-        .filter(a -> a.getKey().equals(attributeName))
-        .map(a -> a.getValue().getStringValue())
-        .collect(Collectors.joining(","));
-  }
-
   public long countFilteredEventAttributes(String attributeName, Object attributeValue) {
     return getSpanStream()
         .flatMap(s -> s.getEventsList().stream())
