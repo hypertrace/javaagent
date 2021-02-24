@@ -316,7 +316,7 @@ abstract class AppServerTest extends SmokeTest {
 
   protected List<List<Object>> getTestParams() {
     return [
-      [serverVersion, jdk]
+            [serverVersion, jdk]
     ]
   }
 }

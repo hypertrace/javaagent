@@ -22,8 +22,8 @@ class LibertySmokeTest extends AppServerTest {
   @Override
   protected WaitStrategy getWaitStrategy() {
     return Wait
-      .forLogMessage(".*server is ready to run a smarter planet.*", 1)
-      .withStartupTimeout(Duration.ofMinutes(3))
+            .forLogMessage(".*server is ready to run a smarter planet.*", 1)
+            .withStartupTimeout(Duration.ofMinutes(3))
   }
 
   @Override
