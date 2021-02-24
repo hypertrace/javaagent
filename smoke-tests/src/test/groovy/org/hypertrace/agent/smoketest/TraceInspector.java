@@ -69,7 +69,6 @@ public class TraceInspector {
         .count();
   }
 
-
   public long countFilteredAttributes(String attributeName) {
     return getSpanStream()
         .flatMap(s -> s.getAttributesList().stream())
