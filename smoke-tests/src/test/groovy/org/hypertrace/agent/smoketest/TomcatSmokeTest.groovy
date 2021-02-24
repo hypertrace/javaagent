@@ -5,9 +5,6 @@
 
 package org.hypertrace.agent.smoketest
 
-import spock.lang.Ignore
-
-@Ignore
 @AppServer(version = "7.0.107", jdk = "8")
 @AppServer(version = "8.5.60", jdk = "8")
 @AppServer(version = "8.5.60", jdk = "11")

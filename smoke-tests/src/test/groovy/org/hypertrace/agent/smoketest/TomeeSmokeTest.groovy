@@ -5,10 +5,13 @@
 
 package org.hypertrace.agent.smoketest
 
+import spock.lang.Ignore
+
 import java.time.Duration
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.containers.wait.strategy.WaitStrategy
 
+@Ignore
 @AppServer(version = "7.0.0", jdk = "8")
 @AppServer(version = "8.0.6", jdk = "8")
 @AppServer(version = "8.0.6", jdk = "11")
