@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.config.Config.PropagationFormat;
+import org.hypertrace.agent.config.Config.TraceReporterType;
 import org.hypertrace.agent.core.config.HypertraceConfig;
 
 @AutoService(PropertySource.class)
@@ -49,11 +50,19 @@ public class HypertraceAgentConfiguration implements PropertySource {
 
     Map<String, String> configProperties = new HashMap<>();
     configProperties.put(OTEL_ENABLED, String.valueOf(agentConfig.getEnabled().getValue()));
-    configProperties.put(OTEL_TRACE_EXPORTER, "zipkin");
+    configProperties.put(
+        OTEL_TRACE_EXPORTER,
+        agentConfig.getReporting().getTraceReporterType().name().toLowerCase());
     configProperties.put(
         OTEL_EXPORTER_ZIPKIN_SERVICE_NAME, agentConfig.getServiceName().getValue());
-    configProperties.put(
-        OTEL_EXPORTER_ZIPKIN_ENDPOINT, agentConfig.getReporting().getEndpoint().getValue());
+    if (agentConfig.getReporting().getTraceReporterType() == TraceReporterType.ZIPKIN) {
+      configProperties.put(
+          OTEL_EXPORTER_ZIPKIN_ENDPOINT, agentConfig.getReporting().getEndpoint().getValue());
+    } else if (agentConfig.getReporting().getTraceReporterType() == TraceReporterType.OTLP) {
+      configProperties.put(
+          "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT",
+          agentConfig.getReporting().getEndpoint().getValue());
+    }
     configProperties.put(
         OTEL_PROPAGATORS, toOtelPropagators(agentConfig.getPropagationFormatsList()));
     // metrics are not reported
