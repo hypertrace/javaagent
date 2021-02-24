@@ -71,7 +71,7 @@ targets.each { server, data ->
           rename { _ -> "app.war" }
         }
       }
-      def image = "hypertrace/agent/java-test-containers:$server-$version-jdk$jdk-$extraTag"
+      def image = "hypertrace/java-agent-test-containers:$server-$version-jdk$jdk-$extraTag"
       matrix.add(image)
       def buildTask = tasks.register("${server}Image-$version-jdk$jdk", DockerBuildImage) {
         it.dependsOn(prepareTask)
