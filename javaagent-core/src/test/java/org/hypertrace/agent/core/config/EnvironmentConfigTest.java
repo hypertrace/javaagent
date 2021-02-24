@@ -20,6 +20,7 @@ import com.google.protobuf.StringValue;
 import java.util.Arrays;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.config.Config.PropagationFormat;
+import org.hypertrace.agent.config.Config.TraceReporterType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ClearSystemProperty;
@@ -29,6 +30,7 @@ class EnvironmentConfigTest {
   @Test
   @ClearSystemProperty(key = EnvironmentConfig.REPORTING_ENDPOINT)
   @ClearSystemProperty(key = EnvironmentConfig.REPORTING_SECURE)
+  @ClearSystemProperty(key = EnvironmentConfig.REPORTING_TRACE_TYPE)
   @ClearSystemProperty(key = EnvironmentConfig.OPA_ENDPOINT)
   @ClearSystemProperty(key = EnvironmentConfig.OPA_POLL_PERIOD)
   @ClearSystemProperty(key = EnvironmentConfig.OPA_ENABLED)
@@ -41,6 +43,7 @@ class EnvironmentConfigTest {
     // when tests are run in parallel the env vars/sys props set it junit-pioneer are visible to
     // parallel tests
     System.setProperty(EnvironmentConfig.REPORTING_ENDPOINT, "http://:-)");
+    System.setProperty(EnvironmentConfig.REPORTING_TRACE_TYPE, "OTLP");
     System.setProperty(EnvironmentConfig.REPORTING_SECURE, "true");
     System.setProperty(EnvironmentConfig.CAPTURE_HTTP_BODY_PREFIX + "request", "true");
     System.setProperty(EnvironmentConfig.OPA_ENDPOINT, "http://azkaban:9090");
@@ -61,6 +64,7 @@ class EnvironmentConfigTest {
         Arrays.asList(PropagationFormat.B3, PropagationFormat.TRACECONTEXT),
         agentConfig.getPropagationFormatsList());
     Assertions.assertEquals("http://:-)", agentConfig.getReporting().getEndpoint().getValue());
+    Assertions.assertEquals(TraceReporterType.OTLP, agentConfig.getReporting().getTraceReporterType());
     Assertions.assertEquals(
         "http://azkaban:9090", agentConfig.getReporting().getOpa().getEndpoint().getValue());
     Assertions.assertEquals(true, agentConfig.getReporting().getOpa().getEnabled().getValue());
