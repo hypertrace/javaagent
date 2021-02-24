@@ -11,8 +11,6 @@ import okhttp3.RequestBody
 import static org.junit.Assume.assumeTrue
 
 import io.opentelemetry.proto.trace.v1.Span
-import java.util.jar.Attributes
-import java.util.jar.JarFile
 import okhttp3.Request
 import org.junit.runner.RunWith
 import spock.lang.Shared

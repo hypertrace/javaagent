@@ -5,6 +5,9 @@
 
 package org.hypertrace.agent.smoketest
 
+import spock.lang.Ignore
+
+@Ignore
 @AppServer(version = "7.0.107", jdk = "8")
 @AppServer(version = "8.5.60", jdk = "8")
 @AppServer(version = "8.5.60", jdk = "11")
@@ -13,7 +16,7 @@ package org.hypertrace.agent.smoketest
 class TomcatSmokeTest extends AppServerTest {
 
   protected String getTargetImage(String jdk, String serverVersion) {
-    "ghcr.io/open-telemetry/java-test-containers:tomcat-${serverVersion}-jdk$jdk-20201215.422527843"
+    "hypertrace/java-agent-test-containers:tomcat-${serverVersion}-jdk$jdk-20210224.596496007"
   }
 
   @Override
