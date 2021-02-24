@@ -64,7 +64,8 @@ class EnvironmentConfigTest {
         Arrays.asList(PropagationFormat.B3, PropagationFormat.TRACECONTEXT),
         agentConfig.getPropagationFormatsList());
     Assertions.assertEquals("http://:-)", agentConfig.getReporting().getEndpoint().getValue());
-    Assertions.assertEquals(TraceReporterType.OTLP, agentConfig.getReporting().getTraceReporterType());
+    Assertions.assertEquals(
+        TraceReporterType.OTLP, agentConfig.getReporting().getTraceReporterType());
     Assertions.assertEquals(
         "http://azkaban:9090", agentConfig.getReporting().getOpa().getEndpoint().getValue());
     Assertions.assertEquals(true, agentConfig.getReporting().getOpa().getEnabled().getValue());

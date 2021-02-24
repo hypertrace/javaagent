@@ -50,7 +50,9 @@ public class HypertraceAgentConfiguration implements PropertySource {
 
     Map<String, String> configProperties = new HashMap<>();
     configProperties.put(OTEL_ENABLED, String.valueOf(agentConfig.getEnabled().getValue()));
-    configProperties.put(OTEL_TRACE_EXPORTER, agentConfig.getReporting().getTraceReporterType().name().toLowerCase());
+    configProperties.put(
+        OTEL_TRACE_EXPORTER,
+        agentConfig.getReporting().getTraceReporterType().name().toLowerCase());
     configProperties.put(
         OTEL_EXPORTER_ZIPKIN_SERVICE_NAME, agentConfig.getServiceName().getValue());
     if (agentConfig.getReporting().getTraceReporterType() == TraceReporterType.ZIPKIN) {
