@@ -5,7 +5,7 @@ on:
     paths:
       - 'smoke-tests/matrix/**'
       - '.github/workflows/build-test-matrix.yaml'
-    branches: 'test_docker_publish'
+    branches: 'main'
   workflow_dispatch:
 
 jobs:

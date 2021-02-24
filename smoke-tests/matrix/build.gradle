@@ -31,7 +31,7 @@ tasks.create("pushMatrix", DockerPushImage) {
 }
 
 def targets = [
-/*  "jetty"  : [
+  "jetty"  : [
     "9.4.35": ["8", "11", "15"],
     "10.0.0": ["11", "15"],
   ],
@@ -52,10 +52,6 @@ def targets = [
   ],
   "liberty": [
     "20.0.0.12": ["8", "11", "15", "8-jdk-openj9", "11-jdk-openj9", "15-jdk-openj9"]
-  ]*/
-
-  "liberty": [
-        "20.0.0.12": ["8"]
   ]
 ]
 
