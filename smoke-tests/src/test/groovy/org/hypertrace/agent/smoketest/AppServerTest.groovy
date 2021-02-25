@@ -96,15 +96,14 @@ abstract class AppServerTest extends SmokeTest {
 
     String url = "http://localhost:${target.getMappedPort(8080)}/app/echo"
     MediaType JSON = MediaType.parse("application/json; charset=utf-8")
-    String stringBody = "{\"greeting\" : \"Hello\",\"name\" : \"John\"}"
-    RequestBody requestBody = RequestBody.create(stringBody, JSON);
+    String requestData = "{\"greeting\" : \"Hello\",\"name\" : \"John\"}"
+    RequestBody requestBody = RequestBody.create(requestData, JSON);
     def request = new Request.Builder().url(url).post(requestBody).build();
 
     when:
     def response = CLIENT.newCall(request).execute()
     TraceInspector traces = new TraceInspector(waitForTraces())
     Set<String> traceIds = traces.traceIds
-    String responseBody = response.body().string()
     String headerValue = new String(Base64.getDecoder().decode(response.header("Header-Dump")));
 
     then: "There is one trace"
@@ -133,13 +132,10 @@ abstract class AppServerTest extends SmokeTest {
     traces.countFilteredAttributes("http.request.body") == 1
 
     and: "Request body should be same as sent content"
-    traces.getFilteredAttributeValue("http.request.body") == stringBody
+    traces.getFilteredAttributeValue("http.request.body") == requestData
 
     and: "Response body should be same as sent content"
-    traces.getFilteredAttributeValue("http.response.body") == stringBody
-
-    and: "Response body should be same as received response body"
-    traces.getFilteredAttributeValue("http.response.body") == responseBody
+    traces.getFilteredAttributeValue("http.response.body") == requestData
 
     cleanup:
     response?.close()
