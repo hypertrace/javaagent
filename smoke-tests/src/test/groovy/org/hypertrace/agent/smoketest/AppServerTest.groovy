@@ -5,11 +5,12 @@
 
 package org.hypertrace.agent.smoketest
 
+import okhttp3.MediaType
+import okhttp3.RequestBody
+
 import static org.junit.Assume.assumeTrue
 
 import io.opentelemetry.proto.trace.v1.Span
-import java.util.jar.Attributes
-import java.util.jar.JarFile
 import okhttp3.Request
 import org.junit.runner.RunWith
 import spock.lang.Shared
@@ -56,16 +57,12 @@ abstract class AppServerTest extends SmokeTest {
 
     String url = "http://localhost:${target.getMappedPort(8080)}/app/greeting"
     def request = new Request.Builder().url(url).get().build()
-    //def currentAgentVersion = new JarFile(agentPath).getManifest().getMainAttributes().get(Attributes.Name
-    //.IMPLEMENTATION_VERSION)
 
     when:
     def response = CLIENT.newCall(request).execute()
     TraceInspector traces = new TraceInspector(waitForTraces())
     Set<String> traceIds = traces.traceIds
     String responseBody = response.body().string()
-
-    println traces.getSpanStream().forEach({ span -> "************** " + span.toString() + " *******************************" });
 
     then: "There is one trace"
     traceIds.size() == 1
@@ -94,11 +91,63 @@ abstract class AppServerTest extends SmokeTest {
   }
 
   @Unroll
+  def "#appServer request response capture test smoke test on JDK #jdk"(String appServer, String jdk) {
+    assumeTrue(testSmoke())
+
+    String url = "http://localhost:${target.getMappedPort(8080)}/app/echo"
+    MediaType JSON = MediaType.parse("application/json; charset=utf-8")
+    String requestData = "{\"greeting\" : \"Hello\",\"name\" : \"John\"}"
+    RequestBody requestBody = RequestBody.create(requestData, JSON);
+    def request = new Request.Builder().url(url).post(requestBody).build();
+
+    when:
+    def response = CLIENT.newCall(request).execute()
+    TraceInspector traces = new TraceInspector(waitForTraces())
+    Set<String> traceIds = traces.traceIds
+    String headerValue = new String(Base64.getDecoder().decode(response.header("Header-Dump")));
+
+    then: "There is one trace"
+    traceIds.size() == 1
+
+    and: "trace id is present in the HTTP headers as reported by the called endpoint"
+    headerValue.contains(traceIds.find())
+
+    and: "Server spans in the distributed trace"
+    traces.countSpansByKind(Span.SpanKind.SPAN_KIND_SERVER) == 2
+
+    and: "Expected span names"
+    traces.countSpansByName(getSpanName('/app/echo')) == 1
+    traces.countSpansByName(getSpanName('/app/headers')) == 1
+
+    and: "The span for the initial web request"
+    traces.countFilteredAttributes("http.url", url) == 1
+
+    and: "Client and server spans for the remote call"
+    traces.countFilteredAttributes("http.url", "http://localhost:8080/app/headers") == 2
+
+    and: "response body attribute should be present"
+    traces.countFilteredAttributes("http.response.body") == 1
+
+    and: "request body attribute should be present"
+    traces.countFilteredAttributes("http.request.body") == 1
+
+    and: "Request body should be same as sent content"
+    traces.getFilteredAttributeValue("http.request.body") == requestData
+
+    and: "Response body should be same as sent content"
+    traces.getFilteredAttributeValue("http.response.body") == requestData
+
+    cleanup:
+    response?.close()
+
+    where:
+    [appServer, jdk] << getTestParams()
+  }
+
+  @Unroll
   def "#appServer test static file found on JDK #jdk"(String appServer, String jdk) {
     String url = "http://localhost:${target.getMappedPort(8080)}/app/hello.txt"
     def request = new Request.Builder().url(url).get().build()
-    //def currentAgentVersion = new JarFile(agentPath).getManifest().getMainAttributes().get(Attributes.Name
-    //.IMPLEMENTATION_VERSION)
 
     when:
     def response = CLIENT.newCall(request).execute()
@@ -132,8 +181,6 @@ abstract class AppServerTest extends SmokeTest {
   def "#appServer test static file not found on JDK #jdk"(String appServer, String jdk) {
     String url = "http://localhost:${target.getMappedPort(8080)}/app/file-that-does-not-exist"
     def request = new Request.Builder().url(url).get().build()
-    //def currentAgentVersion = new JarFile(agentPath).getManifest().getMainAttributes().get(Attributes.Name
-    //.IMPLEMENTATION_VERSION)
 
     when:
     def response = CLIENT.newCall(request).execute()
@@ -168,8 +215,6 @@ abstract class AppServerTest extends SmokeTest {
 
     String url = "http://localhost:${target.getMappedPort(8080)}/app/WEB-INF/web.xml"
     def request = new Request.Builder().url(url).get().build()
-    //def currentAgentVersion = new JarFile(agentPath).getManifest().getMainAttributes().get(Attributes.Name
-    //.IMPLEMENTATION_VERSION)
 
     when:
     def response = CLIENT.newCall(request).execute()
@@ -204,8 +249,6 @@ abstract class AppServerTest extends SmokeTest {
 
     String url = "http://localhost:${target.getMappedPort(8080)}/app/exception"
     def request = new Request.Builder().url(url).get().build()
-    //def currentAgentVersion = new JarFile(agentPath).getManifest().getMainAttributes().get(Attributes.Name
-    //.IMPLEMENTATION_VERSION)
 
     when:
     def response = CLIENT.newCall(request).execute()
@@ -241,8 +284,6 @@ abstract class AppServerTest extends SmokeTest {
   def "#appServer test request outside deployed application JDK #jdk"(String appServer, String jdk) {
     String url = "http://localhost:${target.getMappedPort(8080)}/this-is-definitely-not-there-but-there-should-be-a-trace-nevertheless"
     def request = new Request.Builder().url(url).get().build()
-    //def currentAgentVersion = new JarFile(agentPath).getManifest().getMainAttributes().get(Attributes.Name
-    //.IMPLEMENTATION_VERSION)
 
     when:
     def response = CLIENT.newCall(request).execute()
@@ -277,8 +318,6 @@ abstract class AppServerTest extends SmokeTest {
 
     String url = "http://localhost:${target.getMappedPort(8080)}/app/asyncgreeting"
     def request = new Request.Builder().url(url).get().build()
-    //def currentAgentVersion = new JarFile(agentPath).getManifest().getMainAttributes().get(Attributes.Name
-    //.IMPLEMENTATION_VERSION)
 
     when:
     def response = CLIENT.newCall(request).execute()

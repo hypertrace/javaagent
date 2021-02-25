@@ -12,7 +12,7 @@ package org.hypertrace.agent.smoketest
 class JettySmokeTest extends AppServerTest {
 
   protected String getTargetImage(String jdk, String serverVersion) {
-    "ghcr.io/open-telemetry/java-test-containers:jetty-${serverVersion}-jdk$jdk-20201215.422527843"
+    "hypertrace/java-agent-test-containers:jetty-${serverVersion}-jdk$jdk-20210224.596496007"
   }
 
   def getJettySpanName() {
