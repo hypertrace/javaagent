@@ -10,13 +10,13 @@ import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.containers.wait.strategy.WaitStrategy
 
 @AppServer(version = "20.0.0.12", jdk = "8")
+@AppServer(version = "20.0.0.12", jdk = "8-openj9")
 @AppServer(version = "20.0.0.12", jdk = "11")
-@AppServer(version = "20.0.0.12", jdk = "8-jdk-openj9")
-@AppServer(version = "20.0.0.12", jdk = "11-jdk-openj9")
+@AppServer(version = "20.0.0.12", jdk = "11-openj9")
 class LibertySmokeTest extends AppServerTest {
 
   protected String getTargetImage(String jdk, String serverVersion) {
-    "hypertrace/java-agent-test-containers:liberty-${serverVersion}-jdk$jdk-20210224.596496007"
+    "hypertrace/java-agent-test-containers:liberty-${serverVersion}-jdk$jdk-20210226.602156580"
   }
 
   @Override
@@ -33,6 +33,7 @@ class LibertySmokeTest extends AppServerTest {
       case "/app/headers":
       case "/app/exception":
       case "/app/asyncgreeting":
+      case "/app/echo":
         return path
     }
     return 'HTTP GET'

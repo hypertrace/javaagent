@@ -14,4 +14,5 @@ class LibertyServletOnlySmokeTest extends LibertySmokeTest {
   protected void customizeContainer(GenericContainer container) {
     container.withClasspathResourceMapping("liberty-servlet.xml", "/config/server.xml", BindMode.READ_ONLY)
   }
+
 }

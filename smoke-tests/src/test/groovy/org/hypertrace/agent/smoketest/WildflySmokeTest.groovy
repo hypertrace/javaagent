@@ -10,12 +10,15 @@ import okhttp3.Request
 import spock.lang.Unroll
 
 @AppServer(version = "13.0.0.Final", jdk = "8")
+@AppServer(version = "13.0.0.Final", jdk = "8-openj9")
 @AppServer(version = "17.0.1.Final", jdk = "11")
+@AppServer(version = "17.0.1.Final", jdk = "11-openj9")
 @AppServer(version = "21.0.0.Final", jdk = "11")
+@AppServer(version = "21.0.0.Final", jdk = "11-openj9")
 class WildflySmokeTest extends AppServerTest {
 
   protected String getTargetImage(String jdk, String serverVersion) {
-    "hypertrace/java-agent-test-containers:wildfly-${serverVersion}-jdk$jdk-20210224.596496007"
+    "hypertrace/java-agent-test-containers:wildfly-${serverVersion}-jdk$jdk-20210226.602156580"
   }
 
   @Override

@@ -6,17 +6,28 @@
 package org.hypertrace.agent.smoketest
 
 @AppServer(version = "9.4.35", jdk = "8")
+@AppServer(version = "9.4.35", jdk = "8-openj9")
 @AppServer(version = "9.4.35", jdk = "11")
+@AppServer(version = "9.4.35", jdk = "11-openj9")
 @AppServer(version = "10.0.0", jdk = "11")
+@AppServer(version = "10.0.0", jdk = "11-openj9")
 @AppServer(version = "10.0.0", jdk = "15")
+@AppServer(version = "10.0.0", jdk = "15-openj9")
 class JettySmokeTest extends AppServerTest {
 
   protected String getTargetImage(String jdk, String serverVersion) {
-    "hypertrace/java-agent-test-containers:jetty-${serverVersion}-jdk$jdk-20210224.596496007"
+    "hypertrace/java-agent-test-containers:jetty-${serverVersion}-jdk$jdk-20210226.602156580"
   }
 
   def getJettySpanName() {
-    return serverVersion.startsWith("10.") ? "HandlerList.handle" : "HandlerCollection.handle"
+    if (serverVersion == "9.4.35") {
+      //this need to be present till we sync HT java agent with at least v.0.18.x of OTEL which uniformly returns
+      //HandlerWrapper.handle
+      "HandlerCollection.handle"
+    }
+    else {
+      "HandlerList.handle"
+    }
   }
 
   @Override
