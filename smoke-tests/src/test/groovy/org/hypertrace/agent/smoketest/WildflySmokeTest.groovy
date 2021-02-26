@@ -15,7 +15,7 @@ import spock.lang.Unroll
 class WildflySmokeTest extends AppServerTest {
 
   protected String getTargetImage(String jdk, String serverVersion) {
-    "ghcr.io/open-telemetry/java-test-containers:wildfly-${serverVersion}-jdk$jdk-20201215.422527843"
+    "hypertrace/java-agent-test-containers:wildfly-${serverVersion}-jdk$jdk-20210224.596496007"
   }
 
   @Override

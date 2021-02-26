@@ -27,6 +27,7 @@ import org.hypertrace.agent.config.Config.Opa;
 import org.hypertrace.agent.config.Config.Opa.Builder;
 import org.hypertrace.agent.config.Config.PropagationFormat;
 import org.hypertrace.agent.config.Config.Reporting;
+import org.hypertrace.agent.config.Config.TraceReporterType;
 
 public class EnvironmentConfig {
 
@@ -42,6 +43,7 @@ public class EnvironmentConfig {
 
   private static final String REPORTING_PREFIX = HT_PREFIX + "reporting.";
   static final String REPORTING_ENDPOINT = REPORTING_PREFIX + "endpoint";
+  static final String REPORTING_TRACE_TYPE = REPORTING_PREFIX + "trace.reporter.type";
   static final String REPORTING_SECURE = REPORTING_PREFIX + "secure";
 
   private static final String OPA_PREFIX = REPORTING_PREFIX + "opa.";
@@ -108,6 +110,10 @@ public class EnvironmentConfig {
     String reporterAddress = getProperty(REPORTING_ENDPOINT);
     if (reporterAddress != null) {
       builder.setEndpoint(StringValue.newBuilder().setValue(reporterAddress).build());
+    }
+    String traceReportingType = getProperty(REPORTING_TRACE_TYPE);
+    if (traceReportingType != null) {
+      builder.setTraceReporterType(TraceReporterType.valueOf(traceReportingType));
     }
     String secure = getProperty(REPORTING_SECURE);
     if (secure != null) {

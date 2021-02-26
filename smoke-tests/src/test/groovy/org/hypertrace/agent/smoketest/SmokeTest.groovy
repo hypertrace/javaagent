@@ -99,8 +99,6 @@ abstract class SmokeTest extends Specification {
             .withNetwork(network)
             .withLogConsumer(output)
             .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("smoke.tests.target")))
-    //.withCopyFileToContainer(MountableFile.forHostPath("/Users/samarth/Downloads/hypertrace-agent-all.jar"""),
-//"""/opentelemetry-javaagent-all.jar")
             .withCopyFileToContainer(MountableFile.forHostPath(agentPath), "/hypertrace-agent-all.jar")
             .withEnv("JAVA_TOOL_OPTIONS", "-javaagent:/hypertrace-agent-all.jar -Dorg.hypertrace.agent.slf4j.simpleLogger.log.muzzleMatcher=true")
             .withEnv("OTEL_BSP_MAX_EXPORT_BATCH_SIZE", "1")
