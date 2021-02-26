@@ -21,8 +21,8 @@ class JaegerExporterSmokeTest extends SmokeTest {
   @Override
   protected Map<String, String> getExtraEnv() {
     return [
-      "OTEL_TRACES_EXPORTER"          : "jaeger",
-      "OTEL_EXPORTER_JAEGER_ENDPOINT" : "collector:14250"
+            "OTEL_TRACES_EXPORTER"          : "jaeger",
+            "OTEL_EXPORTER_JAEGER_ENDPOINT" : "http://collector:14250"
     ]
   }
 
@@ -33,6 +33,8 @@ class JaegerExporterSmokeTest extends SmokeTest {
     String url = "http://localhost:${target.getMappedPort(8080)}/greeting"
     def request = new Request.Builder().url(url).get().build()
 
+    def currentAgentVersion = new JarFile(agentPath).getManifest().getMainAttributes().get(Attributes.Name.IMPLEMENTATION_VERSION)
+
     when:
     def response = CLIENT.newCall(request).execute()
     Collection<ExportTraceServiceRequest> traces = waitForTraces()
@@ -42,6 +44,10 @@ class JaegerExporterSmokeTest extends SmokeTest {
     countSpansByName(traces, '/greeting') == 1
     countSpansByName(traces, 'WebController.greeting') == 1
     countSpansByName(traces, 'WebController.withSpan') == 1
+
+    [currentAgentVersion] as Set == findResourceAttribute(traces, "telemetry.auto.version")
+            .map { it.stringValue }
+            .collect(toSet())
 
     cleanup:
     stopTarget()

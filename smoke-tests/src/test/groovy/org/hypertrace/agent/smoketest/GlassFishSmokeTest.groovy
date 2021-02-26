@@ -13,11 +13,13 @@ import org.testcontainers.containers.wait.strategy.WaitStrategy
 
 @Ignore
 @AppServer(version = "5.2020.6", jdk = "8")
-@AppServer(version = "5.2020.6-jdk11", jdk = "11")
+@AppServer(version = "5.2020.6", jdk = "8-openj9")
+@AppServer(version = "5.2020.6", jdk = "11")
+@AppServer(version = "5.2020.6", jdk = "11-openj9")
 class GlassFishSmokeTest extends AppServerTest {
 
     protected String getTargetImage(String jdk, String serverVersion) {
-        "hypertrace/java-agent-test-containers:payara-${serverVersion}-jdk$jdk-20210224.596496007"
+        "hypertrace/java-agent-test-containers:payara-${serverVersion}-jdk$jdk-20210226.602156580"
     }
 
     @Override
