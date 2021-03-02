@@ -33,7 +33,7 @@ public class SpringBootDiabledAgentSmokeTest extends AbstractSmokeTest {
   protected String getTargetImage(int jdk) {
     return "ghcr.io/open-telemetry/java-test-containers:smoke-springboot-jdk"
         + jdk
-        + "-20210209.550405798";
+        + "-20210218.577304949";
   }
 
   private GenericContainer app;

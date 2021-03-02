@@ -31,18 +31,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 
-// @org.junitpioneer.jupiter.SetEnvironmentVariable(
-//    key = "SMOKETEST_JAVAAGENT_PATH",
-//    value =
-//
-// "/Users/ploffay/projects/hypertrace/javaagent/javaagent/build/libs/hypertrace-agent-0.3.3-SNAPSHOT-all.jar")
+@org.junitpioneer.jupiter.SetEnvironmentVariable(
+    key = "SMOKETEST_JAVAAGENT_PATH",
+    value =
+        "/Users/ploffay/projects/hypertrace/javaagent/javaagent/build/libs/hypertrace-agent-0.10.4-SNAPSHOT-all.jar")
 public class SpringBootSmokeTest extends AbstractSmokeTest {
 
   @Override
   protected String getTargetImage(int jdk) {
     return "ghcr.io/open-telemetry/java-test-containers:smoke-springboot-jdk"
         + jdk
-        + "-20210209.550405798";
+        + "-20210218.577304949";
   }
 
   private static GenericContainer app;

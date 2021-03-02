@@ -7,6 +7,7 @@ package org.hypertrace.agent.smoketest
 
 import okhttp3.MediaType
 import okhttp3.RequestBody
+import spock.lang.Ignore
 
 import static org.junit.Assume.assumeTrue
 
@@ -243,6 +244,7 @@ abstract class AppServerTest extends SmokeTest {
     [appServer, jdk] << getTestParams()
   }
 
+  @Ignore
   @Unroll
   def "#appServer test request with error JDK #jdk"(String appServer, String jdk) {
     assumeTrue(testException())

@@ -13,7 +13,7 @@ import spock.lang.Unroll
 class GrpcSmokeTest extends SmokeTest {
 
   protected String getTargetImage(String jdk, String serverVersion) {
-    "ghcr.io/open-telemetry/java-test-containers:smoke-grpc-jdk$jdk-20210129.520311770"
+    "ghcr.io/open-telemetry/java-test-containers:smoke-grpc-jdk$jdk-20210218.577304952"
   }
 
   @Unroll
@@ -31,8 +31,8 @@ class GrpcSmokeTest extends SmokeTest {
     Collection<ExportTraceServiceRequest> traces = waitForTraces()
 
     then:
-    countSpansByName(traces, 'opentelemetry.proto.collector.trace.v1.TraceService/Export') == 1
-    countSpansByName(traces, 'TestService.withSpan') == 1
+    countSpansByName(traces, 'opentelemetry.proto.collector.trace.v1.traceservice/export') == 1
+    countSpansByName(traces, 'testservice.withspan') == 1
 
     cleanup:
     stopTarget()

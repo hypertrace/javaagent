@@ -35,6 +35,6 @@ tasks.test {
     inputs.files(layout.files(shadowTask))
 
     doFirst {
-        jvmArgs("-Dsmoketest.javaagent.path=${shadowTask.archiveFile.get()}")
+        jvmArgs("-Dsmoketest.javaagent.path=/Users/ploffay/projects/hypertrace/javaagent/javaagent/build/libs/hypertrace-agent-0.10.4-SNAPSHOT-all.jar")
     }
 }
