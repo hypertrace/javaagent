@@ -51,8 +51,7 @@ public class HttpClientRequestTracingHandler extends ChannelOutboundHandlerAdapt
     Channel channel = ctx.channel();
     Context context =
         channel
-            .attr(
-                io.opentelemetry.javaagent.instrumentation.netty.v4_1.AttributeKeys.CLIENT_CONTEXT)
+            .attr(io.opentelemetry.instrumentation.netty.v4_1.AttributeKeys.CLIENT_CONTEXT)
             .get();
     if (context == null) {
       ctx.write(msg, prm);
