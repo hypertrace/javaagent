@@ -20,14 +20,7 @@ class JettySmokeTest extends AppServerTest {
   }
 
   def getJettySpanName() {
-    if (serverVersion == "9.4.35") {
-      //this need to be present till we sync HT java agent with at least v.0.18.x of OTEL which uniformly returns
-      //HandlerWrapper.handle
-      "HandlerCollection.handle"
-    }
-    else {
-      "HandlerList.handle"
-    }
+    "HandlerWrapper.handle"
   }
 
   @Override

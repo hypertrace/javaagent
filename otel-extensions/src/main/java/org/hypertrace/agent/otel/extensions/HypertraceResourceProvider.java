@@ -19,25 +19,27 @@ package org.hypertrace.agent.otel.extensions;
 import com.google.auto.service.AutoService;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.sdk.resources.ResourceAttributes;
-import io.opentelemetry.sdk.resources.ResourceProvider;
+import io.opentelemetry.sdk.autoconfigure.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.core.config.HypertraceConfig;
 
 @AutoService(ResourceProvider.class)
-public class HypertraceResourceProvider extends ResourceProvider {
+public class HypertraceResourceProvider implements ResourceProvider {
 
   private final CgroupsReader cgroupsReader = new CgroupsReader();
   private final AgentConfig agentConfig = HypertraceConfig.get();
 
   @Override
-  protected Attributes getAttributes() {
+  public Resource createResource(ConfigProperties config) {
     AttributesBuilder builder = Attributes.builder();
     String containerId = this.cgroupsReader.readContainerId();
     if (containerId != null && !containerId.isEmpty()) {
       builder.put(ResourceAttributes.CONTAINER_ID, containerId);
     }
     builder.put(ResourceAttributes.SERVICE_NAME, agentConfig.getServiceName().getValue());
-    return builder.build();
+    return Resource.create(builder.build());
   }
 }

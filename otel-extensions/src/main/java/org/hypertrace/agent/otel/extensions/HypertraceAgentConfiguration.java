@@ -32,7 +32,7 @@ import org.hypertrace.agent.core.config.HypertraceConfig;
 public class HypertraceAgentConfiguration implements PropertySource {
 
   // https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/sdk-environment-variables.md
-  private static final String OTEL_TRACE_EXPORTER = "otel.trace.exporter";
+  private static final String OTEL_TRACE_EXPORTER = "otel.traces.exporter";
   private static final String OTEL_METRICS_EXPORTER = "otel.metrics.exporter";
   private static final String OTEL_PROPAGATORS = "otel.propagators";
   private static final String OTEL_EXPORTER_ZIPKIN_ENDPOINT = "otel.exporter.zipkin.endpoint";

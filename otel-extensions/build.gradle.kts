@@ -16,5 +16,6 @@ dependencies {
     implementation("net.bytebuddy:byte-buddy:${versions["byte_buddy"]}")
     annotationProcessor("com.google.auto.service:auto-service:1.0-rc7")
 
+    testImplementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${versions["opentelemetry"]}-alpha")
     testImplementation("io.opentelemetry:opentelemetry-sdk:${versions["opentelemetry"]}")
 }

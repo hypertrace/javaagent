@@ -42,7 +42,8 @@ abstract class SmokeTest extends Specification {
   private Backend backend = Backend.getInstance()
 
   @Shared
-  protected String agentPath = System.getProperty("smoketest.javaagent.path")
+//  protected String agentPath = "/Users/ploffay/projects/hypertrace/javaagent/javaagent/build/libs/hypertrace-agent-0.10.4-SNAPSHOT-all.jar"// System.getProperty("smoketest.javaagent.path")
+  protected String agentPath =  System.getProperty("smoketest.javaagent.path")
 
   @Shared
   protected GenericContainer target
@@ -84,7 +85,7 @@ abstract class SmokeTest extends Specification {
             .withEnv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://collector:55680")
             .withEnv("HT_SERVICE_NAME", "CIService")
             .withEnv("HT_REPORTING_ENDPOINT", "http://collector:9411/api/v2/spans")
-            .withEnv("OTEL_TRACE_EXPORTER", "otlp")
+            .withEnv("OTEL_TRACES_EXPORTER", "otlp")
             .withImagePullPolicy(PullPolicy.alwaysPull())
             .withEnv(extraEnv)
     customizeContainer(target)

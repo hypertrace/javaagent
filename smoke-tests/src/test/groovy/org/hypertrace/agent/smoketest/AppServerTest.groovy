@@ -7,6 +7,7 @@ package org.hypertrace.agent.smoketest
 
 import okhttp3.MediaType
 import okhttp3.RequestBody
+import spock.lang.Ignore
 
 import static org.junit.Assume.assumeTrue
 
