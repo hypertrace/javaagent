@@ -31,10 +31,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 
-//@org.junitpioneer.jupiter.SetEnvironmentVariable(
+// @org.junitpioneer.jupiter.SetEnvironmentVariable(
 //    key = "SMOKETEST_JAVAAGENT_PATH",
 //    value =
-//        "/Users/ploffay/projects/hypertrace/javaagent/javaagent/build/libs/hypertrace-agent-0.10.4-SNAPSHOT-all.jar")
+//
+// "/Users/ploffay/projects/hypertrace/javaagent/javaagent/build/libs/hypertrace-agent-0.10.4-SNAPSHOT-all.jar")
 public class SpringBootSmokeTest extends AbstractSmokeTest {
 
   @Override
