@@ -100,12 +100,10 @@ workflows:
   build-and-publish:
     jobs:
       - build:
-          context: hypertrace-publishing
           filters:
             tags:
               only: /.*/
       - muzzle:
-          context: hypertrace-publishing
           filters:
             tags:
               only: /.*/

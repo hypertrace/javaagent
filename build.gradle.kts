@@ -72,8 +72,8 @@ subprojects {
             }
         }
         "uploadArchives"(Upload::class) {
-            val ossrhUsername: String by project
-            val ossrhPassword: String by project
+            val ossrhUsername: String? by project
+            val ossrhPassword: String? by project
             repositories {
                 withConvention(MavenRepositoryHandlerConvention::class) {
                     mavenDeployer {
