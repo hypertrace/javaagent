@@ -20,7 +20,7 @@ class JettySmokeTest extends AppServerTest {
   }
 
   def getJettySpanName() {
-    "handlerwrapper.handle"
+    "HandlerWrapper.handle"
   }
 
   @Override

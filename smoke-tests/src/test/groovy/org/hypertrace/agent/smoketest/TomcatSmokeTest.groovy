@@ -26,7 +26,7 @@ class TomcatSmokeTest extends AppServerTest {
     switch (path) {
       case "/app/WEB-INF/web.xml":
       case "/this-is-definitely-not-there-but-there-should-be-a-trace-nevertheless":
-        return "coyoteadapter.service"
+        return "CoyoteAdapter.service"
     }
     return path
   }

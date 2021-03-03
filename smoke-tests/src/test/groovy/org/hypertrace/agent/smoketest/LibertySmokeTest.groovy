@@ -37,6 +37,6 @@ class LibertySmokeTest extends AppServerTest {
       case "/app/echo":
         return path
     }
-    return 'http get'
+    return 'HTTP GET'
   }
 }
