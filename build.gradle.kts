@@ -1,5 +1,6 @@
 plugins {
     `java-library`
+    `maven`
     id("com.diffplug.spotless") version "5.2.0" apply false
     id("org.hypertrace.publish-plugin") version "0.3.3" apply false
     id("org.hypertrace.ci-utils-plugin") version "0.1.4"
@@ -25,6 +26,7 @@ val testDependencies by configurations.creating {
 }
 
 subprojects {
+    apply(plugin = "maven")
     group = "org.hypertrace.agent"
     description = "Hypertrace OpenTelemetry Javaagent"
 
@@ -67,6 +69,40 @@ subprojects {
             useJUnitPlatform()
             reports {
                 junitXml.isOutputPerTestCase = true
+            }
+        }
+        "uploadArchives"(Upload::class) {
+            val ossrhUsername: String by project
+            val ossrhPassword: String by project
+            repositories {
+                withConvention(MavenRepositoryHandlerConvention::class) {
+                    mavenDeployer {
+                        withGroovyBuilder {
+                            "repository"("url" to "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                                "authentication"("userName" to ossrhUsername, "password" to ossrhPassword)
+                            }
+                            "snapshotRepository"("url" to "https://s01.oss.sonatype.org/content/repositories/snapshots/") {
+                                "authentication"("userName" to ossrhUsername, "password" to ossrhPassword)
+                            }
+                        }
+                        pom.project {
+                            withGroovyBuilder {
+                                "licenses" {
+                                    "license" {
+                                        "name"("The Apache Software License, Version 2.0")
+                                        "url"("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                                        "distribution"("repo")
+                                    }
+                                }
+                                "scm" {
+                                    "connection"("scm:git:git://github.com/hypertrace/javaagent.git")
+                                    "developerConnection"("scm:git:ssh://github.com:hypertrace/javaagent.git")
+                                    "url"("https://github.com/hypertrace/javaagent/tree/main")
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
