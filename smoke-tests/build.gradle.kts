@@ -30,7 +30,7 @@ tasks.test {
         junitXml.isOutputPerTestCase = true
     }
 
-    maxParallelForks = 1
+    maxParallelForks = 2
     val shadowTask : Jar = project(":javaagent").tasks.named<Jar>("shadowJar").get()
     inputs.files(layout.files(shadowTask))
 
