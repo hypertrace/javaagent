@@ -109,7 +109,7 @@ class OtTracerPropagationTest extends SmokeTest {
 
   @Override
   protected Map<String, String> getExtraEnv() {
-    return ["otel.propagators": "ottracer"]
+    return ["otel.propagators": "ottrace"]
   }
 }
 
