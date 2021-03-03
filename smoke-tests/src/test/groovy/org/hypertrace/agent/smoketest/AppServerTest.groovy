@@ -244,7 +244,6 @@ abstract class AppServerTest extends SmokeTest {
     [appServer, jdk] << getTestParams()
   }
 
-  @Ignore
   @Unroll
   def "#appServer test request with error JDK #jdk"(String appServer, String jdk) {
     assumeTrue(testException())
