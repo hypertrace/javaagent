@@ -38,16 +38,13 @@ public class EchoServlet extends HttpServlet {
               "\n" + headers).getBytes());
       response.setHeader("Header-Dump", headerResponseBody);
 
-
       //get set echo body
       ServletInputStream inputStream = request.getInputStream();
-      ServletOutputStream outputStream = response.getOutputStream();
-      int currentByte = inputStream.read();
-      while (currentByte != -1)  {
-        outputStream.write(currentByte);
-        currentByte = inputStream.read();
-      }
-      response.getOutputStream().flush();
+      // read the body without waiting for -1
+      // e.g. Jackson reads the body without waiting for returning -1
+      byte[] bodyBytes = new byte[1500000];
+      inputStream.read(bodyBytes);
+      response.getOutputStream().write(bodyBytes);
     }
   }
 }
