@@ -8,6 +8,7 @@ package org.hypertrace.agent.smoketest
 import okhttp3.MediaType
 import okhttp3.RequestBody
 import spock.lang.Ignore
+import spock.lang.IgnoreIf
 
 import static org.junit.Assume.assumeTrue
 
@@ -211,7 +212,13 @@ abstract class AppServerTest extends SmokeTest {
   }
 
   @Unroll
+  @IgnoreIf({ System.getProperty("os.name").contains("windows") })
   def "#appServer test request for WEB-INF/web.xml on JDK #jdk"(String appServer, String jdk) {
+    // TODO https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/2499
+    if (getTargetImage(appServer, jdk).toLowerCase().contains("wildfly")) {
+      return
+    }
+
     assumeTrue(testRequestWebInfWebXml())
 
     String url = "http://localhost:${target.getMappedPort(8080)}/app/WEB-INF/web.xml"
@@ -283,6 +290,11 @@ abstract class AppServerTest extends SmokeTest {
 
   @Unroll
   def "#appServer test request outside deployed application JDK #jdk"(String appServer, String jdk) {
+    // TODO https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/2499
+    if (getTargetImage(appServer, jdk).toLowerCase().contains("wildfly")) {
+      return
+    }
+
     String url = "http://localhost:${target.getMappedPort(8080)}/this-is-definitely-not-there-but-there-should-be-a-trace-nevertheless"
     def request = new Request.Builder().url(url).get().build()
 

@@ -31,6 +31,16 @@ class WildflySmokeTest extends AppServerTest {
     return path
   }
 
+  // TODO These re ignored in the superclass for Wildfly
+//  @Ignore
+//  @Unroll
+//  def "#appServer test request outside deployed application JDK #jdk"(String appServer, String jdk) {
+//  }
+//
+//  @Ignore
+//  def "#appServer test request for WEB-INF/web.xml on JDK #jdk"(String appServer, String jdk) {
+//  }
+
   @Unroll
   def "JSP smoke test on WildFly"() {
     String url = "http://localhost:${target.getMappedPort(8080)}/app/jsp"
