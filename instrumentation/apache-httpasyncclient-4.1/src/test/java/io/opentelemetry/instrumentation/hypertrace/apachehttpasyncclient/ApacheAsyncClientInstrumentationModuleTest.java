@@ -84,6 +84,8 @@ class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTes
     Assertions.assertEquals(GetJsonHandler.RESPONSE_BODY, responseBody);
 
     TEST_WRITER.waitForTraces(1);
+    // TODO : It needs some time to create second span for responseBody
+    TEST_WRITER.waitForSpans(2);
     List<List<SpanData>> traces = TEST_WRITER.getTraces();
     Assertions.assertEquals(1, traces.size());
     Assertions.assertEquals(2, traces.get(0).size());
