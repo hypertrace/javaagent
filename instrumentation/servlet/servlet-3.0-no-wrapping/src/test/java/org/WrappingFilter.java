@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping;
+package org;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -31,10 +31,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
-import org.DelegatingBufferedReader;
-import org.DelegatingPrintWriter;
-import org.DelegatingServletInputStream;
-import org.DelegatingServletOutputStream;
 
 public class WrappingFilter implements Filter {
 
