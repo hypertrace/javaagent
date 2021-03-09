@@ -32,10 +32,13 @@ public class TestOpenTelemetryInstaller extends OpenTelemetryInstaller {
   }
 
   @Override
-  public void afterByteBuddyAgent() {
+  public void beforeByteBuddyAgent() {
     OpenTelemetrySdk.builder()
         .setTracerProvider(SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build())
         .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
         .buildAndRegisterGlobal();
   }
+
+  @Override
+  public void afterByteBuddyAgent() {}
 }

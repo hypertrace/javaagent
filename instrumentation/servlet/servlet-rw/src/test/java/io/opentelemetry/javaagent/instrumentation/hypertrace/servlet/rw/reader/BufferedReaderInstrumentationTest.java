@@ -21,6 +21,7 @@ import java.io.BufferedReader;
 import java.io.CharArrayReader;
 import java.io.IOException;
 import org.BufferedReaderPrintWriterContextAccess;
+import org.TestBufferedReader;
 import org.hypertrace.agent.core.instrumentation.buffer.*;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.junit.jupiter.api.Assertions;
@@ -119,7 +120,7 @@ public class BufferedReaderInstrumentationTest extends AbstractInstrumenterTest 
     Span span = TEST_TRACER.spanBuilder(TEST_SPAN_NAME).startSpan();
 
     BufferedReader bufferedReader =
-        new BufferedReader(new CharArrayReader((BODY + "\n").toCharArray()));
+        new TestBufferedReader(new CharArrayReader((BODY + "\n").toCharArray()));
 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
     CharBufferSpanPair bufferSpanPair = new CharBufferSpanPair(span, buffer);

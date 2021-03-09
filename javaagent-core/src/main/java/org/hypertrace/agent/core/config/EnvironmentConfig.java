@@ -21,6 +21,7 @@ import com.google.protobuf.Int32Value;
 import com.google.protobuf.StringValue;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.config.Config.DataCapture;
+import org.hypertrace.agent.config.Config.JavaAgent;
 import org.hypertrace.agent.config.Config.Message;
 import org.hypertrace.agent.config.Config.Opa;
 import org.hypertrace.agent.config.Config.Opa.Builder;
@@ -35,6 +36,7 @@ public class EnvironmentConfig {
 
   public static final String CONFIG_FILE_PROPERTY = HT_PREFIX + "config.file";
   static final String SERVICE_NAME = HT_PREFIX + "service.name";
+  static final String ENABLED = HT_PREFIX + "enabled";
 
   static final String PROPAGATION_FORMATS = HT_PREFIX + "propagation.formats";
 
@@ -54,10 +56,17 @@ public class EnvironmentConfig {
   public static final String CAPTURE_RPC_METADATA_PREFIX = CAPTURE_PREFIX + "rpc.metadata.";
   public static final String CAPTURE_RPC_BODY_PREFIX = CAPTURE_PREFIX + "rpc.body.";
 
+  private static final String JAVAAGENT_PREFIX = HT_PREFIX + "javaagent.";
+  public static final String JAVAAGENT_FILTER_JAR_PATHS = JAVAAGENT_PREFIX + "filter.jar.paths";
+
   public static AgentConfig.Builder applyPropertiesAndEnvVars(AgentConfig.Builder builder) {
     String serviceName = getProperty(SERVICE_NAME);
     if (serviceName != null) {
       builder.setServiceName(StringValue.newBuilder().setValue(serviceName).build());
+    }
+    String enabled = getProperty(ENABLED);
+    if (enabled != null) {
+      builder.setEnabled(BoolValue.newBuilder().setValue(Boolean.valueOf(enabled)).build());
     }
 
     Reporting.Builder reportingBuilder = applyReporting(builder.getReporting().toBuilder());
@@ -67,6 +76,20 @@ public class EnvironmentConfig {
         setDefaultsToDataCapture(builder.getDataCapture().toBuilder());
     builder.setDataCapture(dataCaptureBuilder);
     applyPropagationFormat(builder);
+    JavaAgent.Builder javaagentBuilder = applyJavaAgent(builder.getJavaagentBuilder());
+    builder.setJavaagent(javaagentBuilder);
+    return builder;
+  }
+
+  private static JavaAgent.Builder applyJavaAgent(JavaAgent.Builder builder) {
+    String filterJarPaths = getProperty(JAVAAGENT_FILTER_JAR_PATHS);
+    if (filterJarPaths != null) {
+      builder.clearFilterJarPaths();
+      String[] jarPaths = filterJarPaths.split(",");
+      for (String jarPath : jarPaths) {
+        builder.addFilterJarPaths(StringValue.newBuilder().setValue(jarPath));
+      }
+    }
     return builder;
   }
 

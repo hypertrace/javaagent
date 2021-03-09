@@ -14,19 +14,16 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.request;
+package org.hypertrace.agent.core.instrumentation;
 
 import io.opentelemetry.api.trace.Span;
-import java.io.BufferedReader;
-import javax.servlet.ServletInputStream;
 
-public class RequestStreamReaderHolder {
+public class SpanAndObjectPair {
 
   private final Span span;
-  private ServletInputStream servletInputStream;
-  private BufferedReader bufferedReader;
+  private Object associatedObject;
 
-  public RequestStreamReaderHolder(Span span) {
+  public SpanAndObjectPair(Span span) {
     this.span = span;
   }
 
@@ -34,19 +31,11 @@ public class RequestStreamReaderHolder {
     return span;
   }
 
-  public ServletInputStream getServletInputStream() {
-    return servletInputStream;
+  public Object getAssociatedObject() {
+    return associatedObject;
   }
 
-  public void setServletInputStream(ServletInputStream servletInputStream) {
-    this.servletInputStream = servletInputStream;
-  }
-
-  public BufferedReader getBufferedReader() {
-    return bufferedReader;
-  }
-
-  public void setBufferedReader(BufferedReader bufferedReader) {
-    this.bufferedReader = bufferedReader;
+  public void setAssociatedObject(Object associatedObject) {
+    this.associatedObject = associatedObject;
   }
 }
