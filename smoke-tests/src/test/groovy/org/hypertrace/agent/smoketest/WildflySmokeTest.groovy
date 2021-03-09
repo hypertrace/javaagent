@@ -21,16 +21,6 @@ class WildflySmokeTest extends AppServerTest {
     "hypertrace/java-agent-test-containers:wildfly-${serverVersion}-jdk$jdk-20210226.602156580"
   }
 
-  @Override
-  protected String getSpanName(String path) {
-    switch (path) {
-      case "/app/WEB-INF/web.xml":
-      case "/this-is-definitely-not-there-but-there-should-be-a-trace-nevertheless":
-        return "DisallowedMethodsHandler.handleRequest"
-    }
-    return path
-  }
-
   // TODO These re ignored in the superclass for Wildfly
 //  @Ignore
 //  @Unroll

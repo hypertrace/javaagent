@@ -20,14 +20,4 @@ class TomcatSmokeTest extends AppServerTest {
   protected String getTargetImage(String jdk, String serverVersion) {
     "hypertrace/java-agent-test-containers:tomcat-${serverVersion}-jdk$jdk-20210226.602156580"
   }
-
-  @Override
-  protected String getSpanName(String path) {
-    switch (path) {
-      case "/app/WEB-INF/web.xml":
-      case "/this-is-definitely-not-there-but-there-should-be-a-trace-nevertheless":
-        return "CoyoteAdapter.service"
-    }
-    return path
-  }
 }

@@ -9,6 +9,7 @@ dependencies {
 
     compileOnly("io.opentelemetry:opentelemetry-sdk:${versions["opentelemetry"]}")
     compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${versions["opentelemetry"]}-alpha")
+    implementation("io.opentelemetry:opentelemetry-semconv:${versions["opentelemetry"]}-alpha")
     implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-spi:${versions["opentelemetry_java_agent"]}")
 
     implementation("org.slf4j:slf4j-api:${versions["slf4j"]}")
