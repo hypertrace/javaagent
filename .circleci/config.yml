@@ -99,10 +99,12 @@ workflows:
   build-and-publish:
     jobs:
       - build:
+          context: maven-central-publish
           filters:
             tags:
               only: /.*/
       - muzzle:
+          context: maven-central-publish
           filters:
             tags:
               only: /.*/
