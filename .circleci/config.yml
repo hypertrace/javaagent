@@ -107,7 +107,9 @@ workflows:
             tags:
               only: /.*/
       - release-bintray-publish:
-          context: hypertrace-publishing
+          context:
+            - hypertrace-publishing
+            - maven-central-publish
           requires:
             - build
             - muzzle
