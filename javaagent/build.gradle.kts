@@ -1,7 +1,7 @@
 plugins {
     `java-library`
     id("com.github.johnrengelman.shadow") version "6.0.0"
-    id("org.hypertrace.publish-plugin")
+    id("org.hypertrace.publish-maven-central-plugin")
 }
 
 val versions: Map<String, String> by extra

@@ -63,7 +63,7 @@ jobs:
       - setup_build_environment
       - run: make muzzle
 
-  release-bintray-publish:
+  release-maven-publish:
     executor: gradle_docker
     steps:
       - setup_build_environment
@@ -106,8 +106,10 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - release-bintray-publish:
-          context: hypertrace-publishing
+      - release-maven-publish:
+          context:
+            - hypertrace-publishing
+            - maven-central-publish
           requires:
             - build
             - muzzle
@@ -119,7 +121,7 @@ workflows:
       - release-github-publish:
           context: hypertrace-publishing
           requires:
-            - release-bintray-publish
+            - release-maven-publish
           filters:
             branches:
               ignore: /.*/
