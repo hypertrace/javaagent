@@ -71,7 +71,11 @@ jobs:
           version: 19.03.13
       - docker_login
       - run: echo "Releasing version" && ./gradlew printVersion
-      - run: ./gradlew publish
+      - run:
+          name: Publish to Maven Central
+          command: |
+            export ORG_GRADLE_PROJECT_signingKey=$(echo $SIGNING_KEY | base64 -d)
+            ./gradlew publish
       - run: DOCKER_TAG=${CIRCLE_TAG} make docker docker-push
       - run:
           name: "Copy artifacts to workspace"
