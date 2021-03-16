@@ -41,6 +41,7 @@ public class HypertraceAgentConfiguration implements PropertySource {
   private static final String OTEL_PROCESSOR_BATCH_MAX_QUEUE = "otel.bsp.max.queue.size";
   private static final String OTEL_DEFAULT_LOG_LEVEL =
       "io.opentelemetry.javaagent.slf4j.simpleLogger.defaultLogLevel";
+  private static final String OTEL_EXPORTER_OTLP_ENDPOINT = "otel.exporter.otlp.endpoint";
 
   private static final String OTEL_ENABLED = "otel.javaagent.enabled";
 
@@ -60,8 +61,7 @@ public class HypertraceAgentConfiguration implements PropertySource {
           OTEL_EXPORTER_ZIPKIN_ENDPOINT, agentConfig.getReporting().getEndpoint().getValue());
     } else if (agentConfig.getReporting().getTraceReporterType() == TraceReporterType.OTLP) {
       configProperties.put(
-          "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT",
-          agentConfig.getReporting().getEndpoint().getValue());
+          OTEL_EXPORTER_OTLP_ENDPOINT, agentConfig.getReporting().getEndpoint().getValue());
     }
     configProperties.put(
         OTEL_PROPAGATORS, toOtelPropagators(agentConfig.getPropagationFormatsList()));
