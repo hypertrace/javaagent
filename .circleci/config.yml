@@ -76,6 +76,7 @@ jobs:
           command: |
             export ORG_GRADLE_PROJECT_signingKey=$(echo $SIGNING_KEY | base64 -d)
             ./gradlew publish
+      - run: ./gradlew closeAndReleaseRepository
       - run: DOCKER_TAG=${CIRCLE_TAG} make docker docker-push
       - run:
           name: "Copy artifacts to workspace"
