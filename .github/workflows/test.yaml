@@ -1,4 +1,4 @@
-name: test
+name: build
 on:
   push:
     branches:
@@ -12,7 +12,7 @@ jobs:
   smoke-test:
     runs-on: ubuntu-20.04
     steps:
-       # Set fetch-depth: 0 to fetch commit history and tags for use in version calculation
+      # Set fetch-depth: 0 to fetch commit history and tags for use in version calculation
       - name: Check out code
         uses: actions/checkout@v2.3.4
         with:
@@ -34,6 +34,6 @@ jobs:
 
       - name: smoke-test
         run: make smoke-test
-        env: 
+        env:
           JVM_OPTS: -Xmx1g
           TERM: dumb
