@@ -93,7 +93,8 @@ public abstract class AbstractSmokeTest {
             .withNetworkAliases(NETWORK_ALIAS_OTEL_COLLECTOR)
             .withLogConsumer(new Slf4jLogConsumer(log))
             .dependsOn(openTelemetryStorage)
-            .withCopyFileToContainer(MountableFile.forClasspathResource("/otel.yaml"), "/etc/otel.yaml")
+            .withCopyFileToContainer(
+                MountableFile.forClasspathResource("/otel.yaml"), "/etc/otel.yaml")
             .withCommand("--config /etc/otel.yaml");
     collector.start();
   }
