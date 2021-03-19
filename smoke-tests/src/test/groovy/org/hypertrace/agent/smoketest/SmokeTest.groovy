@@ -42,7 +42,7 @@ abstract class SmokeTest extends Specification {
   private Backend backend = Backend.getInstance()
 
   @Shared
-//  protected String agentPath = "/Users/ploffay/projects/hypertrace/javaagent/javaagent/build/libs/hypertrace-agent-0.11.2-SNAPSHOT-all.jar"// System.getProperty("smoketest.javaagent.path")
+//  protected String agentPath = "/Users/ploffay/projects/hypertrace/javaagent/javaagent/build/libs/hypertrace-agent-1.0.1-SNAPSHOT-all.jar"
   protected String agentPath =  System.getProperty("smoketest.javaagent.path")
 
   @Shared
