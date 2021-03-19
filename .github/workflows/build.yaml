@@ -32,8 +32,14 @@ jobs:
             gradle-packages-${{ runner.os }}-${{ github.job }}
             gradle-packages-${{ runner.os }}
 
-      - name: smoke-test
+      - name: build
         run: make build
+        env:
+          JVM_OPTS: -Xmx1g
+          TERM: dumb
+
+      - name: muzzle
+        run: make muzzle
         env:
           JVM_OPTS: -Xmx1g
           TERM: dumb
