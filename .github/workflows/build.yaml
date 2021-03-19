@@ -33,7 +33,7 @@ jobs:
             gradle-packages-${{ runner.os }}
 
       - name: smoke-test
-        run: make smoke-test
+        run: make build
         env:
           JVM_OPTS: -Xmx1g
           TERM: dumb
