@@ -41,10 +41,10 @@ jobs:
           TERM: dumb
 
       - name: Set release version env
-          run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
       - name: Create github release
-          uses: fnkr/github-action-ghr@v1
-          run: ghr -t ${GITHUB_TOKEN} -u hypertrace -r javaagent -n "Release ${RELEASE_VERSION}" -b "..." --soft ${RELEASE_VERSION} ./artifacts/
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: fnkr/github-action-ghr@v1
+        run: ghr -t ${GITHUB_TOKEN} -u hypertrace -r javaagent -n "Release ${RELEASE_VERSION}" -b "..." --soft ${RELEASE_VERSION} ./artifacts/
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
