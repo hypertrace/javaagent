@@ -1,11 +1,11 @@
-name: build
+name: release
 on:
   create:
     tags:
       - ^[0-9]+\.[0-9]+\.[0-9]+
 
 jobs:
-  build:
+  release:
     runs-on: ubuntu-20.04
     steps:
       # Set fetch-depth: 0 to fetch commit history and tags for use in version calculation
@@ -45,6 +45,6 @@ jobs:
 
       - name: Create github release
         uses: fnkr/github-action-ghr@v1
-        run: ghr -t ${GITHUB_TOKEN} -u hypertrace -r javaagent -n "Release ${RELEASE_VERSION}" -b "..." --soft ${RELEASE_VERSION} ./artifacts/
+        run: ls ./javaagent/build/libs && ghr -t ${GITHUB_TOKEN} -u hypertrace -r javaagent -n "Release ${RELEASE_VERSION}" -b "..." --soft ${RELEASE_VERSION} ./artifacts/
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
