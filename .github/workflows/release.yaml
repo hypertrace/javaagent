@@ -1,0 +1,50 @@
+name: build
+on:
+  create:
+    tags:
+      - ^[0-9]+\.[0-9]+\.[0-9]+
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+      # Set fetch-depth: 0 to fetch commit history and tags for use in version calculation
+      - name: Check out code
+        uses: actions/checkout@v2.3.4
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - name: create checksum file
+        uses: hypertrace/github-actions/checksum@main
+
+      - name: Cache packages
+        id: cache-packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle
+          key: gradle-packages-${{ runner.os }}-${{ github.job }}-${{ hashFiles('**/checksum.txt') }}
+          restore-keys: |
+            gradle-packages-${{ runner.os }}-${{ github.job }}
+            gradle-packages-${{ runner.os }}
+
+      - name: build
+        run: make build
+        env:
+          JVM_OPTS: -Xmx1g
+          TERM: dumb
+
+      - name: publish to maven
+        run: ./gradlew publish closeAndReleaseRepository
+        env:
+          JVM_OPTS: -Xmx1g
+          TERM: dumb
+
+      - name: Set release version env
+          run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+
+      - name: Create github release
+          uses: fnkr/github-action-ghr@v1
+          run: ghr -t ${GITHUB_TOKEN} -u hypertrace -r javaagent -n "Release ${RELEASE_VERSION}" -b "..." --soft ${RELEASE_VERSION} ./artifacts/
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
