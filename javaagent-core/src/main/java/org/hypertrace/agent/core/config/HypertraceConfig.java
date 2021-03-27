@@ -51,7 +51,8 @@ public class HypertraceConfig {
   // so avoiding for perf reasons
   private static volatile boolean servletCausingException;
 
-  private static AgentConfig agentConfig;
+  // volatile field in order to properly handle lazy initialization with double-checked locking
+  private static volatile AgentConfig agentConfig;
 
   static final String DEFAULT_SERVICE_NAME = "unknown";
   static final String DEFAULT_REPORTING_ENDPOINT = "http://localhost:9411/api/v2/spans";
@@ -123,7 +124,9 @@ public class HypertraceConfig {
   /** Reset the config, use only in tests. */
   @VisibleForTesting
   public static void reset() {
-    agentConfig = null;
+    synchronized (HypertraceConfig.class) {
+      agentConfig = null;
+    }
   }
 
   private static AgentConfig load() throws IOException {
