@@ -82,3 +82,7 @@ When running tests from IDE set `SMOKETEST_JAVAAGENT_PATH` env variable.
 ```bash
 make test
 ```
+
+### Further Reference
+
+Read more in our 'Introducing Hypertrace [Java Agent](https://blog.hypertrace.org/blog/introducing-hypertrace-java-agent/)' blog post. 
