@@ -51,8 +51,7 @@ public class HypertraceConfig {
   // so avoiding for perf reasons
   private static volatile boolean servletCausingException;
 
-  private static final AgentConfigSupplier agentConfigSupplier =
-      new AgentConfigSupplier(HypertraceConfig::load);
+  private static AgentConfig agentConfig;
 
   static final String DEFAULT_SERVICE_NAME = "unknown";
   static final String DEFAULT_REPORTING_ENDPOINT = "http://localhost:9411/api/v2/spans";
@@ -62,7 +61,21 @@ public class HypertraceConfig {
   static final int DEFAULT_BODY_MAX_SIZE_BYTES = 128 * 1024;
 
   public static AgentConfig get() {
-    return agentConfigSupplier.get();
+    if (agentConfig == null) {
+      synchronized (HypertraceConfig.class) {
+        if (agentConfig == null) {
+          try {
+            agentConfig = load();
+            log.info(
+                "Config loaded: {}",
+                JsonFormat.printer().omittingInsignificantWhitespace().print(agentConfig));
+          } catch (IOException e) {
+            throw new RuntimeException("Could not load config", e);
+          }
+        }
+      }
+    }
+    return agentConfig;
   }
 
   public static boolean isInstrumentationEnabled(String primaryName, String[] otherNames) {
@@ -110,20 +123,16 @@ public class HypertraceConfig {
   /** Reset the config, use only in tests. */
   @VisibleForTesting
   public static void reset() {
-    agentConfigSupplier.reset();
+    agentConfig = null;
   }
 
-  private static AgentConfig load() {
+  private static AgentConfig load() throws IOException {
     String configFile = EnvironmentConfig.getProperty(EnvironmentConfig.CONFIG_FILE_PROPERTY);
     if (configFile == null) {
       return EnvironmentConfig.applyPropertiesAndEnvVars(applyDefaults(AgentConfig.newBuilder()))
           .build();
     }
-    try {
-      return load(configFile);
-    } catch (IOException e) {
-      throw new RuntimeException("Could not load config", e);
-    }
+    return load(configFile);
   }
 
   @VisibleForTesting
