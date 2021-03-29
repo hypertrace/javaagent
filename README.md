@@ -35,7 +35,7 @@ The providers can be disabled at startup via `ht.filter.provider.<provider-class
 ## Build
 
 ```bash
-make build
+make init-submodules build
 ```
 
 The final artifact is in `javaagent/build/libs/hypertrace-agent-<version>-all.jar`
