@@ -17,7 +17,7 @@
 package org.hypertrace.agent.smoketest;
 
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
-import io.opentelemetry.sdk.resources.ResourceAttributes;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,14 +35,14 @@ import org.testcontainers.containers.GenericContainer;
 //    key = "SMOKETEST_JAVAAGENT_PATH",
 //    value =
 //
-// "/Users/ploffay/projects/hypertrace/javaagent/javaagent/build/libs/hypertrace-agent-0.3.3-SNAPSHOT-all.jar")
+// "/Users/ploffay/projects/hypertrace/javaagent/javaagent/build/libs/hypertrace-agent-1.0.1-SNAPSHOT-all.jar")
 public class SpringBootSmokeTest extends AbstractSmokeTest {
 
   @Override
   protected String getTargetImage(int jdk) {
     return "ghcr.io/open-telemetry/java-test-containers:smoke-springboot-jdk"
         + jdk
-        + "-20210209.550405798";
+        + "-20210218.577304949";
   }
 
   private static GenericContainer app;
@@ -79,7 +79,6 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
             .getMainAttributes()
             .get(Attributes.Name.IMPLEMENTATION_VERSION);
 
-    Assertions.assertEquals(1, traces.size());
     Assertions.assertEquals(
         ResourceAttributes.SERVICE_NAME.getKey(),
         traces.get(0).getResourceSpans(0).getResource().getAttributes(0).getKey());

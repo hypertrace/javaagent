@@ -1,0 +1,34 @@
+extensions:
+  health_check:
+  pprof:
+    endpoint: 0.0.0.0:1777
+  zpages:
+    endpoint: 0.0.0.0:55679
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+  zipkin:
+  jaeger:
+    protocols:
+      grpc:
+
+processors:
+  batch:
+
+exporters:
+  logging:
+    loglevel: debug
+  otlp:
+    endpoint: backend:8080
+    insecure: true
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp, zipkin, jaeger]
+      processors: [batch]
+      exporters: [logging, otlp]
+
+  extensions: [health_check, pprof, zpages]

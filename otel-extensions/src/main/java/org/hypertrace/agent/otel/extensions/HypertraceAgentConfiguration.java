@@ -25,13 +25,14 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.config.Config.PropagationFormat;
+import org.hypertrace.agent.config.Config.TraceReporterType;
 import org.hypertrace.agent.core.config.HypertraceConfig;
 
 @AutoService(PropertySource.class)
 public class HypertraceAgentConfiguration implements PropertySource {
 
   // https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/sdk-environment-variables.md
-  private static final String OTEL_TRACE_EXPORTER = "otel.trace.exporter";
+  private static final String OTEL_TRACE_EXPORTER = "otel.traces.exporter";
   private static final String OTEL_METRICS_EXPORTER = "otel.metrics.exporter";
   private static final String OTEL_PROPAGATORS = "otel.propagators";
   private static final String OTEL_EXPORTER_ZIPKIN_ENDPOINT = "otel.exporter.zipkin.endpoint";
@@ -40,6 +41,7 @@ public class HypertraceAgentConfiguration implements PropertySource {
   private static final String OTEL_PROCESSOR_BATCH_MAX_QUEUE = "otel.bsp.max.queue.size";
   private static final String OTEL_DEFAULT_LOG_LEVEL =
       "io.opentelemetry.javaagent.slf4j.simpleLogger.defaultLogLevel";
+  private static final String OTEL_EXPORTER_OTLP_ENDPOINT = "otel.exporter.otlp.endpoint";
 
   private static final String OTEL_ENABLED = "otel.javaagent.enabled";
 
@@ -49,15 +51,27 @@ public class HypertraceAgentConfiguration implements PropertySource {
 
     Map<String, String> configProperties = new HashMap<>();
     configProperties.put(OTEL_ENABLED, String.valueOf(agentConfig.getEnabled().getValue()));
-    configProperties.put(OTEL_TRACE_EXPORTER, "zipkin");
+    configProperties.put(
+        OTEL_TRACE_EXPORTER,
+        agentConfig.getReporting().getTraceReporterType().name().toLowerCase());
     configProperties.put(
         OTEL_EXPORTER_ZIPKIN_SERVICE_NAME, agentConfig.getServiceName().getValue());
-    configProperties.put(
-        OTEL_EXPORTER_ZIPKIN_ENDPOINT, agentConfig.getReporting().getEndpoint().getValue());
+    if (agentConfig.getReporting().getTraceReporterType() == TraceReporterType.ZIPKIN) {
+      configProperties.put(
+          OTEL_EXPORTER_ZIPKIN_ENDPOINT, agentConfig.getReporting().getEndpoint().getValue());
+    } else if (agentConfig.getReporting().getTraceReporterType() == TraceReporterType.OTLP) {
+      configProperties.put(
+          OTEL_EXPORTER_OTLP_ENDPOINT, agentConfig.getReporting().getEndpoint().getValue());
+    }
     configProperties.put(
         OTEL_PROPAGATORS, toOtelPropagators(agentConfig.getPropagationFormatsList()));
     // metrics are not reported
     configProperties.put(OTEL_METRICS_EXPORTER, "none");
+
+    // disable undertow because it is finishing span before payloads are captured in our filter
+    // TODO remove once fixed
+    // https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/2499
+    configProperties.put("otel.instrumentation.undertow.enabled", "false");
     return configProperties;
   }
 

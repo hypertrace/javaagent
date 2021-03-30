@@ -54,7 +54,11 @@ public class FilterRegistry {
     if (filter == null) {
       synchronized (FilterRegistry.class) {
         if (filter == null) {
-          filter = load();
+          try {
+            filter = load();
+          } catch (Throwable t) {
+            logger.error("Throwable thrown while loading filter jars", t);
+          }
         }
       }
     }

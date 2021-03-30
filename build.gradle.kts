@@ -1,8 +1,11 @@
+import org.hypertrace.gradle.publishing.License.APACHE_2_0;
+
 plugins {
     `java-library`
     id("com.diffplug.spotless") version "5.2.0" apply false
-    id("org.hypertrace.publish-plugin") version "0.3.3" apply false
+    id("org.hypertrace.publish-maven-central-plugin") version "0.4.3" apply false
     id("org.hypertrace.ci-utils-plugin") version "0.1.4"
+    id("org.gradle.test-retry") version "1.2.0" apply false
 }
 
 allprojects {
@@ -28,10 +31,11 @@ subprojects {
     description = "Hypertrace OpenTelemetry Javaagent"
 
     extra.set("versions", mapOf(
-            "opentelemetry" to "0.15.0",
-            "opentelemetry_java_agent" to "0.15.1",
+            "opentelemetry" to "1.0.0",
+            "opentelemetry_java_agent" to "1.0.0-alpha",
+            "opentelemetry_java_agent_all" to "1.0.0",
             "byte_buddy" to "1.10.18",
-            "slf4j" to "1.7.30"
+                "slf4j" to "1.7.30"
     ))
 
     apply<JavaPlugin>()
@@ -49,9 +53,10 @@ subprojects {
         }
     }
 
-    pluginManager.withPlugin("org.hypertrace.publish-plugin") {
-        configure<org.hypertrace.gradle.publishing.HypertracePublishExtension> {
-            license.set(org.hypertrace.gradle.publishing.License.APACHE_2_0)
+    pluginManager.withPlugin("org.hypertrace.publish-maven-central-plugin") {
+        configure<org.hypertrace.gradle.publishing.HypertracePublishMavenCentralExtension> {
+            repoName.set("javaagent")
+            license.set(APACHE_2_0)
         }
     }
 

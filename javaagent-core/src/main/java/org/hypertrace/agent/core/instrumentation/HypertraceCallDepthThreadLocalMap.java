@@ -23,7 +23,7 @@ package org.hypertrace.agent.core.instrumentation;
  * <p>The copy is needed because in some cases Hypertrace instrumentation wants to use the same
  * class as a key to the map.
  *
- * @see {@link io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap}.
+ * <p>see {@link io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap}.
  */
 public class HypertraceCallDepthThreadLocalMap {
   private static final ClassValue<HypertraceCallDepthThreadLocalMap.ThreadLocalDepth> TLS =

@@ -75,8 +75,7 @@ public class InMemoryExporter implements SpanProcessor {
         sd.getParentSpanId(),
         sd.getInstrumentationLibraryInfo());
     synchronized (tracesLock) {
-      spanOrders.put(
-          readWriteSpan.getSpanContext().getSpanIdAsHexString(), nextSpanOrder.getAndIncrement());
+      spanOrders.put(readWriteSpan.getSpanContext().getSpanId(), nextSpanOrder.getAndIncrement());
     }
   }
 

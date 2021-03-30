@@ -265,4 +265,30 @@ public class TestServlets {
       req.getRequestDispatcher("/echo_stream_single_byte").forward(req, resp);
     }
   }
+
+  public static class EchoStream_read_large_array extends HttpServlet {
+    @Override
+    protected void service(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+      req.getInputStream().read(new byte[1000], 0, 1000);
+
+      resp.setStatus(200);
+      resp.setContentType("application/json");
+      resp.setHeader(RESPONSE_HEADER, RESPONSE_HEADER_VALUE);
+
+      resp.getWriter().print(RESPONSE_BODY.toCharArray());
+    }
+  }
+
+  public static class EchoReader_read_large_array extends HttpServlet {
+    @Override
+    protected void service(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+      req.getReader().read(new char[1000], 0, 1000);
+
+      resp.setStatus(200);
+      resp.setContentType("application/json");
+      resp.setHeader(RESPONSE_HEADER, RESPONSE_HEADER_VALUE);
+
+      resp.getWriter().print(RESPONSE_BODY.toCharArray());
+    }
+  }
 }

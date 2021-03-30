@@ -18,10 +18,10 @@ package org.hypertrace.agent.otel.extensions.processor;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.resources.ResourceAttributes;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import org.hypertrace.agent.otel.extensions.CgroupsReader;
 
 public class AddTagsSpanProcessor implements SpanProcessor {
