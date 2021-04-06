@@ -35,8 +35,6 @@ public class HypertraceResourceProvider implements ResourceProvider {
   private static final Logger log =
       LoggerFactory.getLogger(HypertraceResourceProvider.class.getName());
 
-  private static final String HYPERTRACE = "hypertrace";
-  private static final String JAVA = "java";
   private static final String HYPERTRACE_MODULE_NAME = "hypertrace.module.name";
   private static final String HYPERTRACE_MODULE_VERSION = "hypertrace.module.version";
 
@@ -51,20 +49,25 @@ public class HypertraceResourceProvider implements ResourceProvider {
       builder.put(ResourceAttributes.CONTAINER_ID, containerId);
     }
     builder.put(ResourceAttributes.SERVICE_NAME, agentConfig.getServiceName().getValue());
-    builder.put(ResourceAttributes.TELEMETRY_SDK_NAME, HYPERTRACE);
-    builder.put(ResourceAttributes.TELEMETRY_SDK_LANGUAGE, JAVA);
+    builder.put(ResourceAttributes.TELEMETRY_SDK_NAME, "hypertrace");
+    builder.put(ResourceAttributes.TELEMETRY_SDK_LANGUAGE, "java");
+    String agentVersion = getAgentVersion();
+    builder.put(ResourceAttributes.TELEMETRY_SDK_VERSION, agentVersion);
+    builder.put(ResourceAttributes.TELEMETRY_AUTO_VERSION, agentVersion);
+    builder.put(AttributeKey.stringKey(HYPERTRACE_MODULE_NAME), "java");
+    builder.put(AttributeKey.stringKey(HYPERTRACE_MODULE_VERSION), agentVersion);
+    return Resource.create(builder.build());
+  }
+
+  private String getAgentVersion() {
     String agentVersion = "";
     try {
       Class<?> hypertraceAgentClass =
-          Class.forName("org.hypertrace.agent.instrument.HypertraceAgent", true, null);
+              Class.forName("org.hypertrace.agent.instrument.HypertraceAgent", true, null);
       agentVersion = hypertraceAgentClass.getPackage().getImplementationVersion();
     } catch (ClassNotFoundException e) {
       log.warn("Could not load HypertraceAgent class");
     }
-    builder.put(ResourceAttributes.TELEMETRY_SDK_VERSION, agentVersion);
-    builder.put(ResourceAttributes.TELEMETRY_AUTO_VERSION, agentVersion);
-    builder.put(AttributeKey.stringKey(HYPERTRACE_MODULE_NAME), JAVA);
-    builder.put(AttributeKey.stringKey(HYPERTRACE_MODULE_VERSION), agentVersion);
-    return Resource.create(builder.build());
+    return agentVersion;
   }
 }
