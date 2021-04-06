@@ -9,6 +9,8 @@ dependencies {
 
     compileOnly("io.opentelemetry:opentelemetry-sdk:${versions["opentelemetry"]}")
     compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${versions["opentelemetry"]}-alpha")
+    compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${versions["opentelemetry"]}-alpha")
+    implementation("io.opentelemetry:opentelemetry-sdk-common:${versions["opentelemetry"]}-alpha")
     implementation("io.opentelemetry:opentelemetry-semconv:${versions["opentelemetry"]}-alpha")
     implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-spi:${versions["opentelemetry_java_agent"]}")
 
@@ -19,4 +21,7 @@ dependencies {
 
     testImplementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${versions["opentelemetry"]}-alpha")
     testImplementation("io.opentelemetry:opentelemetry-sdk:${versions["opentelemetry"]}")
+
+    // for copied RateLimiterTest
+    testImplementation("org.assertj:assertj-core:3.19.0")
 }

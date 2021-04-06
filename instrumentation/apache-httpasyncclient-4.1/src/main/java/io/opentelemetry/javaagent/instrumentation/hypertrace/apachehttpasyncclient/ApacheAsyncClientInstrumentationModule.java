@@ -158,6 +158,8 @@ public class ApacheAsyncClientInstrumentationModule extends InstrumentationModul
     @Override
     public void cancelled() {
       HttpResponse httpResponse = getResponse(httpContext);
+      Span span = Span.fromContext(context);
+      span.getSpanContext().getTraceState();
       ApacheHttpClientUtils.traceResponse(Span.fromContext(context), httpResponse);
       delegate.cancelled();
     }
