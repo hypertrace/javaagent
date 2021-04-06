@@ -17,6 +17,7 @@
 package org.hypertrace.agent.otel.extensions;
 
 import com.google.auto.service.AutoService;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.autoconfigure.ConfigProperties;
@@ -29,6 +30,11 @@ import org.hypertrace.agent.core.config.HypertraceConfig;
 @AutoService(ResourceProvider.class)
 public class HypertraceResourceProvider implements ResourceProvider {
 
+  private static final String HYPERTRACE = "hypertrace";
+  private static final String JAVA = "java";
+  private static final String HYPERTRACE_MODULE_NAME = "hypertrace.module.name";
+  private static final String HYPERTRACE_MODULE_VERSION = "hypertrace.module.version";
+
   private final CgroupsReader cgroupsReader = new CgroupsReader();
   private final AgentConfig agentConfig = HypertraceConfig.get();
 
@@ -40,6 +46,18 @@ public class HypertraceResourceProvider implements ResourceProvider {
       builder.put(ResourceAttributes.CONTAINER_ID, containerId);
     }
     builder.put(ResourceAttributes.SERVICE_NAME, agentConfig.getServiceName().getValue());
+    builder.put(ResourceAttributes.TELEMETRY_SDK_NAME, HYPERTRACE);
+    builder.put(ResourceAttributes.TELEMETRY_SDK_LANGUAGE, JAVA);
+    builder.put(
+        ResourceAttributes.TELEMETRY_SDK_VERSION,
+        HypertraceResourceProvider.class.getPackage().getImplementationVersion());
+    builder.put(
+        ResourceAttributes.TELEMETRY_AUTO_VERSION,
+        HypertraceResourceProvider.class.getPackage().getImplementationVersion());
+    builder.put(AttributeKey.stringKey(HYPERTRACE_MODULE_NAME), JAVA);
+    builder.put(
+        AttributeKey.stringKey(HYPERTRACE_MODULE_VERSION),
+        HypertraceResourceProvider.class.getPackage().getImplementationVersion());
     return Resource.create(builder.build());
   }
 }
