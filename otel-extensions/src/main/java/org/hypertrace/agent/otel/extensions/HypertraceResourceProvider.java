@@ -26,9 +26,14 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.core.config.HypertraceConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @AutoService(ResourceProvider.class)
 public class HypertraceResourceProvider implements ResourceProvider {
+
+  private static final Logger log =
+      LoggerFactory.getLogger(HypertraceResourceProvider.class.getName());
 
   private static final String HYPERTRACE = "hypertrace";
   private static final String JAVA = "java";
@@ -48,16 +53,18 @@ public class HypertraceResourceProvider implements ResourceProvider {
     builder.put(ResourceAttributes.SERVICE_NAME, agentConfig.getServiceName().getValue());
     builder.put(ResourceAttributes.TELEMETRY_SDK_NAME, HYPERTRACE);
     builder.put(ResourceAttributes.TELEMETRY_SDK_LANGUAGE, JAVA);
-    builder.put(
-        ResourceAttributes.TELEMETRY_SDK_VERSION,
-        HypertraceResourceProvider.class.getPackage().getImplementationVersion());
-    builder.put(
-        ResourceAttributes.TELEMETRY_AUTO_VERSION,
-        HypertraceResourceProvider.class.getPackage().getImplementationVersion());
+    String agentVersion = "";
+    try {
+      Class<?> hypertraceAgentClass =
+          Class.forName("org.hypertrace.agent.instrument.HypertraceAgent", true, null);
+      agentVersion = hypertraceAgentClass.getPackage().getImplementationVersion();
+    } catch (ClassNotFoundException e) {
+      log.warn("Could not load HypertraceAgent class");
+    }
+    builder.put(ResourceAttributes.TELEMETRY_SDK_VERSION, agentVersion);
+    builder.put(ResourceAttributes.TELEMETRY_AUTO_VERSION, agentVersion);
     builder.put(AttributeKey.stringKey(HYPERTRACE_MODULE_NAME), JAVA);
-    builder.put(
-        AttributeKey.stringKey(HYPERTRACE_MODULE_VERSION),
-        HypertraceResourceProvider.class.getPackage().getImplementationVersion());
+    builder.put(AttributeKey.stringKey(HYPERTRACE_MODULE_VERSION), agentVersion);
     return Resource.create(builder.build());
   }
 }
