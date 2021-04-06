@@ -63,7 +63,7 @@ public class HypertraceResourceProvider implements ResourceProvider {
     String agentVersion = "";
     try {
       Class<?> hypertraceAgentClass =
-              Class.forName("org.hypertrace.agent.instrument.HypertraceAgent", true, null);
+          Class.forName("org.hypertrace.agent.instrument.HypertraceAgent", true, null);
       agentVersion = hypertraceAgentClass.getPackage().getImplementationVersion();
     } catch (ClassNotFoundException e) {
       log.warn("Could not load HypertraceAgent class");
