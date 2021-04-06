@@ -40,7 +40,7 @@ public class HypertraceConfigTest {
     Assertions.assertTrue(agentConfig.getEnabled().getValue());
     Assertions.assertEquals("unknown", agentConfig.getServiceName().getValue());
     Assertions.assertEquals(
-        TraceReporterType.ZIPKIN, agentConfig.getReporting().getTraceReporterType());
+        TraceReporterType.OTLP, agentConfig.getReporting().getTraceReporterType());
     Assertions.assertEquals(
         HypertraceConfig.DEFAULT_REPORTING_ENDPOINT,
         agentConfig.getReporting().getEndpoint().getValue());
@@ -104,7 +104,7 @@ public class HypertraceConfigTest {
     Assertions.assertEquals(
         Arrays.asList(PropagationFormat.B3), agentConfig.getPropagationFormatsList());
     Assertions.assertEquals(
-        TraceReporterType.OTLP, agentConfig.getReporting().getTraceReporterType());
+        TraceReporterType.ZIPKIN, agentConfig.getReporting().getTraceReporterType());
     Assertions.assertEquals(
         "http://localhost:9411", agentConfig.getReporting().getEndpoint().getValue());
     Assertions.assertEquals(true, agentConfig.getReporting().getSecure().getValue());
