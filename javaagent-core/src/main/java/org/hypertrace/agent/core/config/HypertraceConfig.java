@@ -188,9 +188,7 @@ public class HypertraceConfig {
     if (!builder.hasEndpoint()) {
       builder.setEndpoint(StringValue.newBuilder().setValue(DEFAULT_REPORTING_ENDPOINT).build());
     }
-    if (builder
-        .getTraceReporterType()
-        .equals(Config.TraceReporterType.TRACE_REPORTER_TYPE_UNSPECIFIED)) {
+    if (builder.getTraceReporterType().equals(Config.TraceReporterType.UNSPECIFIED)) {
       builder.setTraceReporterType(Config.TraceReporterType.OTLP);
     }
     Builder opaBuilder = applyOpaDefaults(builder.getOpa().toBuilder());
