@@ -19,6 +19,7 @@ package org.hypertrace.agent.smoketest;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
+import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
 import io.opentelemetry.proto.trace.v1.Span;
 import java.io.IOException;
 import java.util.Collection;
@@ -147,10 +148,15 @@ public abstract class AbstractSmokeTest {
   }
 
   protected static Stream<Span> getSpanStream(Collection<ExportTraceServiceRequest> traceRequest) {
+    return getInstrumentationLibSpanStream(traceRequest)
+        .flatMap(librarySpans -> librarySpans.getSpansList().stream());
+  }
+
+  protected static Stream<InstrumentationLibrarySpans> getInstrumentationLibSpanStream(
+      Collection<ExportTraceServiceRequest> traceRequest) {
     return traceRequest.stream()
         .flatMap(request -> request.getResourceSpansList().stream())
-        .flatMap(resourceSpans -> resourceSpans.getInstrumentationLibrarySpansList().stream())
-        .flatMap(librarySpans -> librarySpans.getSpansList().stream());
+        .flatMap(resourceSpans -> resourceSpans.getInstrumentationLibrarySpansList().stream());
   }
 
   protected Collection<ExportTraceServiceRequest> waitForTraces() throws IOException {
