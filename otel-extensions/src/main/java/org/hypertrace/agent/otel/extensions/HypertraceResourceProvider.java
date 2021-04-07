@@ -35,9 +35,6 @@ public class HypertraceResourceProvider implements ResourceProvider {
   private static final Logger log =
       LoggerFactory.getLogger(HypertraceResourceProvider.class.getName());
 
-  private static final String HYPERTRACE_MODULE_NAME = "hypertrace.module.name";
-  private static final String HYPERTRACE_MODULE_VERSION = "hypertrace.module.version";
-
   private final CgroupsReader cgroupsReader = new CgroupsReader();
   private final AgentConfig agentConfig = HypertraceConfig.get();
 
@@ -54,8 +51,6 @@ public class HypertraceResourceProvider implements ResourceProvider {
     String agentVersion = getAgentVersion();
     builder.put(ResourceAttributes.TELEMETRY_SDK_VERSION, agentVersion);
     builder.put(ResourceAttributes.TELEMETRY_AUTO_VERSION, agentVersion);
-    builder.put(AttributeKey.stringKey(HYPERTRACE_MODULE_NAME), "java");
-    builder.put(AttributeKey.stringKey(HYPERTRACE_MODULE_VERSION), agentVersion);
     return Resource.create(builder.build());
   }
 
