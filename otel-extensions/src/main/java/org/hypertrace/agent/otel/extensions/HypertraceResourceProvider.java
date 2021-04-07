@@ -17,7 +17,6 @@
 package org.hypertrace.agent.otel.extensions;
 
 import com.google.auto.service.AutoService;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.autoconfigure.ConfigProperties;
