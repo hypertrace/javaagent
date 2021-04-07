@@ -38,7 +38,11 @@ public class OpenTelemetryCollector extends GenericContainer<OpenTelemetryCollec
   protected void init() {
     waitingFor(new BoundPortHttpWaitStrategy(HEALTH_CHECK_PORT));
     withExposedPorts(
-        HEALTH_CHECK_PORT, JAEGER_COLLECTOR_THRIFT_PORT, JAEGER_COLLECTOR_GRPC_PORT, ZIPKIN_PORT, OTLP_PORT);
+        HEALTH_CHECK_PORT,
+        JAEGER_COLLECTOR_THRIFT_PORT,
+        JAEGER_COLLECTOR_GRPC_PORT,
+        ZIPKIN_PORT,
+        OTLP_PORT);
   }
 
   public static class BoundPortHttpWaitStrategy extends HttpWaitStrategy {
