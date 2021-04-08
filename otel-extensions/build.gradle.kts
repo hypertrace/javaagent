@@ -6,6 +6,7 @@ val versions: Map<String, String> by extra
 
 dependencies {
     api(project(":filter-api"))
+    api(project(":javaagent-core"))
 
     compileOnly("io.opentelemetry:opentelemetry-sdk:${versions["opentelemetry"]}")
     compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${versions["opentelemetry"]}-alpha")

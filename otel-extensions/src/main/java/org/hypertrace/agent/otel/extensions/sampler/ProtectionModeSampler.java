@@ -32,12 +32,18 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+import org.hypertrace.agent.core.propagation.HypertraceTracestate;
+import org.hypertrace.agent.core.propagation.HypertraceTracestate.CaptureMode;
 
 public class ProtectionModeSampler implements Sampler {
 
-  static final String HYPERTRACE_TRACE_STATE_VENDOR = "hypertrace";
   private final SamplingResult onSamplingResult =
       SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE, Attributes.empty());
+
+  private static final HypertraceSamplingResult advancedSampling =
+      new HypertraceSamplingResult(CaptureMode.ALL);
+  private static final HypertraceSamplingResult coreSampling =
+      new HypertraceSamplingResult(CaptureMode.DEFAULT);
 
   private List<SampledEndpoint> sampledEndpoints;
 
@@ -61,27 +67,25 @@ public class ProtectionModeSampler implements Sampler {
     Span span = Span.fromContext(parentContext);
     SpanContext spanContext = span.getSpanContext();
 
-    String htTraceState = spanContext.getTraceState().get(HYPERTRACE_TRACE_STATE_VENDOR);
-    if ("isCore-true".equals(htTraceState)) {
+    CaptureMode captureMode = HypertraceTracestate.getProtectionMode(spanContext.getTraceState());
+    if (captureMode == CaptureMode.ALL) {
       // core mode already defer to the default sampler
       return onSamplingResult;
     }
 
-    // sampling didn't happen - need to sample
-    if (htTraceState == null) {
+    if (captureMode == CaptureMode.UNDEFINED) {
       String urlAttr = attributes.get(SemanticAttributes.HTTP_URL);
       if (urlAttr != null && !urlAttr.isEmpty()) {
-
-        String path = "";
+        String path;
         try {
           URL url = new URL(urlAttr);
           path = url.getPath();
         } catch (MalformedURLException e) {
-          return new HypertraceSamplingResult(SamplingDecision.RECORD_AND_SAMPLE, false);
+          return new HypertraceSamplingResult(CaptureMode.DEFAULT);
         }
 
         if (path == null || path.isEmpty()) {
-          return new HypertraceSamplingResult(SamplingDecision.RECORD_AND_SAMPLE, false);
+          return new HypertraceSamplingResult(CaptureMode.ALL);
         }
 
         for (SampledEndpoint sampledEndpoint : this.sampledEndpoints) {
@@ -91,17 +95,17 @@ public class ProtectionModeSampler implements Sampler {
                     parentContext, traceId, name, spanKind, attributes, parentLinks);
             if (samplingResult.getDecision() == SamplingDecision.RECORD_AND_SAMPLE) {
               // set the advanced mode - record all
-              return new HypertraceSamplingResult(SamplingDecision.RECORD_AND_SAMPLE, false);
+              return new HypertraceSamplingResult(CaptureMode.ALL);
             } else {
               // set the core mode
-              return new HypertraceSamplingResult(SamplingDecision.RECORD_AND_SAMPLE, true);
+              return new HypertraceSamplingResult(CaptureMode.DEFAULT);
             }
           }
         }
       }
     }
     // default use the advanced mode
-    return new HypertraceSamplingResult(SamplingDecision.RECORD_AND_SAMPLE, false);
+    return new HypertraceSamplingResult(CaptureMode.ALL);
   }
 
   @Override
@@ -111,17 +115,15 @@ public class ProtectionModeSampler implements Sampler {
 
   static class HypertraceSamplingResult implements SamplingResult {
 
-    final SamplingDecision samplingDecision;
-    final boolean isCoreMode;
+    final CaptureMode captureMode;
 
-    public HypertraceSamplingResult(SamplingDecision samplingDecision, boolean coreMode) {
-      this.samplingDecision = samplingDecision;
-      this.isCoreMode = coreMode;
+    public HypertraceSamplingResult(CaptureMode captureMode) {
+      this.captureMode = captureMode;
     }
 
     @Override
     public SamplingDecision getDecision() {
-      return samplingDecision;
+      return SamplingDecision.RECORD_AND_SAMPLE;
     }
 
     @Override
@@ -131,10 +133,7 @@ public class ProtectionModeSampler implements Sampler {
 
     @Override
     public TraceState getUpdatedTraceState(TraceState parentTraceState) {
-      return parentTraceState
-          .toBuilder()
-          .put(HYPERTRACE_TRACE_STATE_VENDOR, String.format("isCore-%s", isCoreMode))
-          .build();
+      return HypertraceTracestate.create(parentTraceState, captureMode);
     }
   }
 

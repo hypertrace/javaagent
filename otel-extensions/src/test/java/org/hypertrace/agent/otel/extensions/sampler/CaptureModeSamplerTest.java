@@ -27,24 +27,56 @@ import java.util.Collections;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class ProtectionModeSamplerTest {
+public class CaptureModeSamplerTest {
 
   @Test
-  public void traceStateIsNotCore() {
+  public void traceStateCore() {
     ProtectionModeSampler modeSampler = new ProtectionModeSampler(Arrays.asList("/foo/bar"));
 
     SamplingResult samplingResult =
         modeSampler.shouldSample(
             Context.root(),
-            "dsadasd",
+            "0000",
             "GET",
             SpanKind.SERVER,
             Attributes.of(SemanticAttributes.HTTP_URL, "http://unicorn.foo/foo/bar"),
             Collections.emptyList());
 
     TraceState traceState = samplingResult.getUpdatedTraceState(TraceState.getDefault());
-    String hypertraceTraceState =
-        traceState.get(ProtectionModeSampler.HYPERTRACE_TRACE_STATE_VENDOR);
-    Assertions.assertEquals("isCore-false", hypertraceTraceState);
+    String hypertraceTraceState = traceState.get("hypertrace");
+    // the first one is sampled as advanced
+    Assertions.assertEquals("cap:1", hypertraceTraceState);
+
+    samplingResult =
+        modeSampler.shouldSample(
+            Context.root(),
+            "0000",
+            "GET",
+            SpanKind.SERVER,
+            Attributes.of(SemanticAttributes.HTTP_URL, "http://unicorn.foo/foo/bar"),
+            Collections.emptyList());
+
+    traceState = samplingResult.getUpdatedTraceState(TraceState.getDefault());
+    hypertraceTraceState = traceState.get("hypertrace");
+    // the second one is sampled as core
+    Assertions.assertEquals("cap:0", hypertraceTraceState);
+  }
+
+  @Test
+  public void traceStateAdvanced() {
+    ProtectionModeSampler modeSampler = new ProtectionModeSampler(Arrays.asList("/foo/bar"));
+
+    SamplingResult samplingResult =
+        modeSampler.shouldSample(
+            Context.root(),
+            "00000",
+            "GET",
+            SpanKind.SERVER,
+            Attributes.of(SemanticAttributes.HTTP_URL, "http://unicorn.foo/foo/baz"),
+            Collections.emptyList());
+
+    TraceState traceState = samplingResult.getUpdatedTraceState(TraceState.getDefault());
+    String hypertraceTraceState = traceState.get("hypertrace");
+    Assertions.assertEquals("cap:1", hypertraceTraceState);
   }
 }
