@@ -35,19 +35,16 @@ import java.util.regex.Pattern;
 import org.hypertrace.agent.core.propagation.HypertraceTracestate;
 import org.hypertrace.agent.core.propagation.HypertraceTracestate.CaptureMode;
 
-public class ProtectionModeSampler implements Sampler {
+public class AdditionalCaptureSampler implements Sampler {
 
-  private final SamplingResult onSamplingResult =
-      SamplingResult.create(SamplingDecision.RECORD_AND_SAMPLE, Attributes.empty());
-
-  private static final HypertraceSamplingResult advancedSampling =
+  private static final HypertraceSamplingResult allSamplingResult =
       new HypertraceSamplingResult(CaptureMode.ALL);
-  private static final HypertraceSamplingResult coreSampling =
+  private static final HypertraceSamplingResult defaultSamplingResult =
       new HypertraceSamplingResult(CaptureMode.DEFAULT);
 
   private List<SampledEndpoint> sampledEndpoints;
 
-  public ProtectionModeSampler(List<String> urlPatterns) {
+  public AdditionalCaptureSampler(List<String> urlPatterns) {
     sampledEndpoints = new ArrayList<>(urlPatterns.size());
     for (String pattern : urlPatterns) {
       sampledEndpoints.add(
@@ -67,45 +64,45 @@ public class ProtectionModeSampler implements Sampler {
     Span span = Span.fromContext(parentContext);
     SpanContext spanContext = span.getSpanContext();
 
-    CaptureMode captureMode = HypertraceTracestate.getProtectionMode(spanContext.getTraceState());
+    CaptureMode captureMode = HypertraceTracestate.getCaptureMode(spanContext.getTraceState());
     if (captureMode == CaptureMode.ALL) {
       // core mode already defer to the default sampler
-      return onSamplingResult;
+      return allSamplingResult;
+    } else if (captureMode == CaptureMode.DEFAULT) {
+      return defaultSamplingResult;
     }
 
-    if (captureMode == CaptureMode.UNDEFINED) {
-      String urlAttr = attributes.get(SemanticAttributes.HTTP_URL);
-      if (urlAttr != null && !urlAttr.isEmpty()) {
-        String path;
-        try {
-          URL url = new URL(urlAttr);
-          path = url.getPath();
-        } catch (MalformedURLException e) {
-          return new HypertraceSamplingResult(CaptureMode.DEFAULT);
-        }
+    String urlAttr = attributes.get(SemanticAttributes.HTTP_URL);
+    if (urlAttr != null && !urlAttr.isEmpty()) {
+      String path;
+      try {
+        URL url = new URL(urlAttr);
+        path = url.getPath();
+      } catch (MalformedURLException e) {
+        return defaultSamplingResult;
+      }
 
-        if (path == null || path.isEmpty()) {
-          return new HypertraceSamplingResult(CaptureMode.ALL);
-        }
+      if (path == null || path.isEmpty()) {
+        return allSamplingResult;
+      }
 
-        for (SampledEndpoint sampledEndpoint : this.sampledEndpoints) {
-          if (sampledEndpoint.pattern.matcher(path).matches()) {
-            SamplingResult samplingResult =
-                sampledEndpoint.sampler.shouldSample(
-                    parentContext, traceId, name, spanKind, attributes, parentLinks);
-            if (samplingResult.getDecision() == SamplingDecision.RECORD_AND_SAMPLE) {
-              // set the advanced mode - record all
-              return new HypertraceSamplingResult(CaptureMode.ALL);
-            } else {
-              // set the core mode
-              return new HypertraceSamplingResult(CaptureMode.DEFAULT);
-            }
+      for (SampledEndpoint sampledEndpoint : this.sampledEndpoints) {
+        if (sampledEndpoint.pattern.matcher(path).matches()) {
+          SamplingResult samplingResult =
+              sampledEndpoint.sampler.shouldSample(
+                  parentContext, traceId, name, spanKind, attributes, parentLinks);
+          if (samplingResult.getDecision() == SamplingDecision.RECORD_AND_SAMPLE) {
+            // set the advanced mode - record all
+            return allSamplingResult;
+          } else {
+            // set the core mode
+            return defaultSamplingResult;
           }
         }
       }
     }
     // default use the advanced mode
-    return new HypertraceSamplingResult(CaptureMode.ALL);
+    return allSamplingResult;
   }
 
   @Override

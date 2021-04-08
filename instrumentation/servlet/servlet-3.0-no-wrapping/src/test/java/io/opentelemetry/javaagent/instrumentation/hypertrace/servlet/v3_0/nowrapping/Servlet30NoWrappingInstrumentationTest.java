@@ -301,4 +301,39 @@ public class Servlet30NoWrappingInstrumentationTest extends AbstractInstrumenter
         TestServlets.RESPONSE_BODY,
         spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
   }
+
+  @Test
+  public void getHelloTraceStateNoCapture() throws Exception {
+    Request request =
+        new Request.Builder()
+            .url(String.format("http://localhost:%d/echo_stream_single_byte", serverPort))
+            .post(RequestBody.create(REQUEST_BODY, MediaType.get("application/json")))
+            .header(REQUEST_HEADER, REQUEST_HEADER_VALUE)
+            .header("traceparent", "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b6-01")
+            .header("tracestate", "hypertrace=cap:0")
+            .build();
+    try (Response response = httpClient.newCall(request).execute()) {
+      Assertions.assertEquals(200, response.code());
+      Assertions.assertEquals(TestServlets.RESPONSE_BODY, response.body().string());
+    }
+
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+
+    Assertions.assertEquals(1, traces.size());
+    List<SpanData> spans = traces.get(0);
+    Assertions.assertEquals(1, spans.size());
+    SpanData spanData = spans.get(0);
+    Assertions.assertNull(
+        spanData
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER)));
+    Assertions.assertNull(
+        spanData
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpResponseHeader(TestServlets.RESPONSE_HEADER)));
+    Assertions.assertNull(
+        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+    Assertions.assertNull(
+        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+  }
 }

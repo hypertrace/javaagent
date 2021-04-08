@@ -31,7 +31,7 @@ public class CaptureModeSamplerTest {
 
   @Test
   public void traceStateCore() {
-    ProtectionModeSampler modeSampler = new ProtectionModeSampler(Arrays.asList("/foo/bar"));
+    AdditionalCaptureSampler modeSampler = new AdditionalCaptureSampler(Arrays.asList("/foo/bar"));
 
     SamplingResult samplingResult =
         modeSampler.shouldSample(
@@ -64,7 +64,7 @@ public class CaptureModeSamplerTest {
 
   @Test
   public void traceStateAdvanced() {
-    ProtectionModeSampler modeSampler = new ProtectionModeSampler(Arrays.asList("/foo/bar"));
+    AdditionalCaptureSampler modeSampler = new AdditionalCaptureSampler(Arrays.asList("/foo/bar"));
 
     SamplingResult samplingResult =
         modeSampler.shouldSample(

@@ -33,7 +33,7 @@ public class HypertraceTracestate {
     return traceState.toBuilder().put(KEY, String.format("cap:%d", captureMode.value)).build();
   }
 
-  public static CaptureMode getProtectionMode(TraceState traceState) {
+  public static CaptureMode getCaptureMode(TraceState traceState) {
     String htTraceState = traceState.get(KEY);
     if (htTraceState == null || htTraceState.isEmpty()) {
       return CaptureMode.UNDEFINED;

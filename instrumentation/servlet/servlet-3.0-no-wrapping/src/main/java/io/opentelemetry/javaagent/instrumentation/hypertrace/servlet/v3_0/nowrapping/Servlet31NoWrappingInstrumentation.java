@@ -56,6 +56,8 @@ import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
 import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
 import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
+import org.hypertrace.agent.core.propagation.HypertraceTracestate;
+import org.hypertrace.agent.core.propagation.HypertraceTracestate.CaptureMode;
 import org.hypertrace.agent.filter.FilterRegistry;
 
 public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
@@ -105,7 +107,9 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
       AgentConfig agentConfig = HypertraceConfig.get();
       String contentType = httpRequest.getContentType();
       if (agentConfig.getDataCapture().getHttpBody().getRequest().getValue()
-          && ContentTypeUtils.shouldCapture(contentType)) {
+          && ContentTypeUtils.shouldCapture(contentType)
+          && HypertraceTracestate.getCaptureMode(currentSpan.getSpanContext().getTraceState())
+              == CaptureMode.ALL) {
         // The HttpServletRequest instrumentation uses this to
         // enable the instrumentation
         InstrumentationContext.get(HttpServletRequest.class, SpanAndObjectPair.class)
@@ -123,7 +127,9 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
         AttributeKey<String> attributeKey =
             HypertraceSemanticAttributes.httpRequestHeader(headerName);
 
-        if (HypertraceConfig.get().getDataCapture().getHttpHeaders().getRequest().getValue()) {
+        if (HypertraceConfig.get().getDataCapture().getHttpHeaders().getRequest().getValue()
+            && HypertraceTracestate.getCaptureMode(currentSpan.getSpanContext().getTraceState())
+                == CaptureMode.ALL) {
           currentSpan.setAttribute(attributeKey, headerValue);
         }
         headers.put(attributeKey.getKey(), headerValue);
@@ -195,7 +201,9 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
       }
 
       if (!request.isAsyncStarted() && responseHandled.compareAndSet(false, true)) {
-        if (agentConfig.getDataCapture().getHttpHeaders().getResponse().getValue()) {
+        if (agentConfig.getDataCapture().getHttpHeaders().getResponse().getValue()
+            && HypertraceTracestate.getCaptureMode(currentSpan.getSpanContext().getTraceState())
+                == CaptureMode.ALL) {
           for (String headerName : httpResponse.getHeaderNames()) {
             String headerValue = httpResponse.getHeader(headerName);
             currentSpan.setAttribute(
@@ -216,7 +224,9 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
 
         // remove request body buffers from context stores, otherwise they might get reused
         if (agentConfig.getDataCapture().getHttpBody().getRequest().getValue()
-            && ContentTypeUtils.shouldCapture(httpRequest.getContentType())) {
+            && ContentTypeUtils.shouldCapture(httpRequest.getContentType())
+            && HypertraceTracestate.getCaptureMode(currentSpan.getSpanContext().getTraceState())
+                == CaptureMode.ALL) {
           Utils.resetRequestBodyBuffers(
               httpRequest, requestContextStore, inputStreamContextStore, readerContextStore);
         }

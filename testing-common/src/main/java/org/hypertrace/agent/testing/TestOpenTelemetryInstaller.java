@@ -22,6 +22,8 @@ import io.opentelemetry.javaagent.tooling.OpenTelemetryInstaller;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanProcessor;
+import java.util.Arrays;
+import org.hypertrace.agent.otel.extensions.sampler.AdditionalCaptureSampler;
 
 public class TestOpenTelemetryInstaller extends OpenTelemetryInstaller {
 
@@ -34,7 +36,11 @@ public class TestOpenTelemetryInstaller extends OpenTelemetryInstaller {
   @Override
   public void beforeByteBuddyAgent() {
     OpenTelemetrySdk.builder()
-        .setTracerProvider(SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build())
+        .setTracerProvider(
+            SdkTracerProvider.builder()
+                .addSpanProcessor(spanProcessor)
+                .setSampler(new AdditionalCaptureSampler(Arrays.asList("/hello")))
+                .build())
         .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
         .buildAndRegisterGlobal();
   }

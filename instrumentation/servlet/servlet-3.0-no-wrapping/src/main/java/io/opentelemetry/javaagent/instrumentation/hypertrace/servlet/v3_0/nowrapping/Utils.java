@@ -32,6 +32,8 @@ import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputSt
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
 import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
 import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
+import org.hypertrace.agent.core.propagation.HypertraceTracestate;
+import org.hypertrace.agent.core.propagation.HypertraceTracestate.CaptureMode;
 
 public class Utils {
 
@@ -65,9 +67,12 @@ public class Utils {
       BoundedByteArrayOutputStream buffer = streamContextStore.get(servletOutputStream);
       if (buffer != null) {
         try {
-          span.setAttribute(
-              HypertraceSemanticAttributes.HTTP_RESPONSE_BODY,
-              buffer.toStringWithSuppliedCharset());
+          if (HypertraceTracestate.getCaptureMode(span.getSpanContext().getTraceState())
+              == CaptureMode.ALL) {
+            span.setAttribute(
+                HypertraceSemanticAttributes.HTTP_RESPONSE_BODY,
+                buffer.toStringWithSuppliedCharset());
+          }
         } catch (UnsupportedEncodingException e) {
           // should not happen
         }
@@ -77,7 +82,10 @@ public class Utils {
       PrintWriter printWriter = (PrintWriter) responseStreamWriterHolder.getAssociatedObject();
       BoundedCharArrayWriter buffer = writerContextStore.get(printWriter);
       if (buffer != null) {
-        span.setAttribute(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, buffer.toString());
+        if (HypertraceTracestate.getCaptureMode(span.getSpanContext().getTraceState())
+            == CaptureMode.ALL) {
+          span.setAttribute(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, buffer.toString());
+        }
         writerContextStore.put(printWriter, null);
       }
     }

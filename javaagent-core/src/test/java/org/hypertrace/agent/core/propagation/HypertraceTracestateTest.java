@@ -39,7 +39,7 @@ public class HypertraceTracestateTest {
   public void parseProtectionMode_advanced() {
     TraceState traceState =
         TraceState.getDefault().toBuilder().put(HypertraceTracestate.KEY, "cap:1").build();
-    CaptureMode captureMode = HypertraceTracestate.getProtectionMode(traceState);
+    CaptureMode captureMode = HypertraceTracestate.getCaptureMode(traceState);
     Assertions.assertEquals(CaptureMode.ALL, captureMode);
   }
 
@@ -47,7 +47,7 @@ public class HypertraceTracestateTest {
   public void parseProtectionMode_core() {
     TraceState traceState =
         TraceState.getDefault().toBuilder().put(HypertraceTracestate.KEY, "cap:0").build();
-    CaptureMode captureMode = HypertraceTracestate.getProtectionMode(traceState);
+    CaptureMode captureMode = HypertraceTracestate.getCaptureMode(traceState);
     Assertions.assertEquals(CaptureMode.DEFAULT, captureMode);
   }
 
@@ -55,15 +55,15 @@ public class HypertraceTracestateTest {
   public void parseProtectionMode_unknown() {
     TraceState traceState =
         TraceState.getDefault().toBuilder().put(HypertraceTracestate.KEY, "cap:2").build();
-    CaptureMode captureMode = HypertraceTracestate.getProtectionMode(traceState);
+    CaptureMode captureMode = HypertraceTracestate.getCaptureMode(traceState);
     Assertions.assertEquals(CaptureMode.UNDEFINED, captureMode);
 
     traceState = TraceState.getDefault().toBuilder().put(HypertraceTracestate.KEY, "cap:2").build();
-    captureMode = HypertraceTracestate.getProtectionMode(traceState);
+    captureMode = HypertraceTracestate.getCaptureMode(traceState);
     Assertions.assertEquals(CaptureMode.UNDEFINED, captureMode);
 
     traceState = TraceState.getDefault().toBuilder().put(HypertraceTracestate.KEY, " ").build();
-    captureMode = HypertraceTracestate.getProtectionMode(traceState);
+    captureMode = HypertraceTracestate.getCaptureMode(traceState);
     Assertions.assertEquals(CaptureMode.UNDEFINED, captureMode);
   }
 }
