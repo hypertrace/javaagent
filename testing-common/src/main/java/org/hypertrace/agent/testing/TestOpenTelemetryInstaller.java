@@ -39,7 +39,7 @@ public class TestOpenTelemetryInstaller extends OpenTelemetryInstaller {
         .setTracerProvider(
             SdkTracerProvider.builder()
                 .addSpanProcessor(spanProcessor)
-                .setSampler(new AdditionalCaptureSampler(Arrays.asList("/hello")))
+                .setSampler(new AdditionalCaptureSampler(Arrays.asList("/default_capture")))
                 .build())
         .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
         .buildAndRegisterGlobal();
