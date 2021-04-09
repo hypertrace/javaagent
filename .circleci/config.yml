@@ -111,24 +111,24 @@ workflows:
           filters:
             tags:
               only: /.*/
-#      - release-maven-publish:
-#          context:
-#            - hypertrace-publishing
-#            - maven-central-publish
-#          requires:
-#            - build
-#            - muzzle
-#          filters:
-#            branches:
-#              ignore: /.*/
-#            tags:
-#              only: /^[0-9]+\.[0-9]+\.[0-9]+/
-#      - release-github-publish:
-#          context: hypertrace-publishing
-#          requires:
-#            - release-maven-publish
-#          filters:
-#            branches:
-#              ignore: /.*/
-#            tags:
-#              only: /^[0-9]+\.[0-9]+\.[0-9]+/
+      - release-maven-publish:
+          context:
+            - hypertrace-publishing
+            - maven-central-publish
+          requires:
+            - build
+            - muzzle
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^[0-9]+\.[0-9]+\.[0-9]+/
+      - release-github-publish:
+          context: hypertrace-publishing
+          requires:
+            - release-maven-publish
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^[0-9]+\.[0-9]+\.[0-9]+/
