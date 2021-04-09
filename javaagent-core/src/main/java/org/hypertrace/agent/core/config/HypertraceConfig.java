@@ -80,18 +80,25 @@ public class HypertraceConfig {
     return agentConfig;
   }
 
-  public static boolean isInstrumentationEnabled(String primaryName, String[] otherNames) {
+  public static boolean isInstrumentationEnabled(String primaryName, String[] otherNames, String path) {
     // the instNames is not used because the config does not support it at the moment.
 
     AgentConfig agentConfig = get();
-    // disabled if all is disabled
-    if (!agentConfig.getDataCapture().getHttpBody().getRequest().getValue()
-        && !agentConfig.getDataCapture().getHttpBody().getResponse().getValue()
-        && !agentConfig.getDataCapture().getHttpHeaders().getRequest().getValue()
-        && !agentConfig.getDataCapture().getHttpHeaders().getResponse().getValue()
-        && !agentConfig.getDataCapture().getRpcMetadata().getRequest().getValue()
-        && !agentConfig.getDataCapture().getRpcMetadata().getResponse().getValue()) {
-      return false;
+
+    for (DataCapture dataCapture : agentConfig.getDataCaptureList()) {
+      // If data capture does not have pathPattern, that means it is the default rule
+      if (!dataCapture.hasPathPattern() || path.matches(dataCapture.getPathPattern().getValue())) {
+        // disabled if all is disabled
+        if (!dataCapture.getHttpBody().getRequest().getValue()
+                && !dataCapture.getHttpBody().getResponse().getValue()
+                && !dataCapture.getHttpHeaders().getRequest().getValue()
+                && !dataCapture.getHttpHeaders().getResponse().getValue()
+                && !dataCapture.getRpcMetadata().getRequest().getValue()
+                && !dataCapture.getRpcMetadata().getResponse().getValue()) {
+          return false;
+        }
+        return true;
+      }
     }
     return true;
   }
@@ -174,9 +181,10 @@ public class HypertraceConfig {
         applyReportingDefaults(configBuilder.getReporting().toBuilder());
     configBuilder.setReporting(reportingBuilder);
 
-    DataCapture.Builder dataCaptureBuilder =
-        setDefaultsToDataCapture(configBuilder.getDataCapture().toBuilder());
-    configBuilder.setDataCapture(dataCaptureBuilder);
+    // If dataCapture list is empty or if the default dataCapture rule is not set as last entry in list add a default
+    if (configBuilder.getDataCaptureList().isEmpty() || configBuilder.getDataCapture(configBuilder.getDataCaptureCount()-1).hasPathPattern()) {
+      configBuilder.addDataCapture(setDefaultsToDataCapture(DataCapture.newBuilder()));
+    }
 
     if (configBuilder.getPropagationFormatsList().isEmpty()) {
       configBuilder.addPropagationFormats(PropagationFormat.TRACECONTEXT);
