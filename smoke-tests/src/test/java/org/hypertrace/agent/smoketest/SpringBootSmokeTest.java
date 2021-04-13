@@ -80,32 +80,32 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
             .get(Attributes.Name.IMPLEMENTATION_VERSION);
 
     Assertions.assertEquals(
-            ResourceAttributes.SERVICE_NAME.getKey(),
-            traces.get(0).getResourceSpans(0).getResource().getAttributes(0).getKey());
+        ResourceAttributes.SERVICE_NAME.getKey(),
+        traces.get(0).getResourceSpans(0).getResource().getAttributes(0).getKey());
     Assertions.assertEquals(
-            ResourceAttributes.CONTAINER_ID.getKey(),
-            traces.get(0).getResourceSpans(0).getResource().getAttributes(1).getKey());
+        ResourceAttributes.CONTAINER_ID.getKey(),
+        traces.get(0).getResourceSpans(0).getResource().getAttributes(1).getKey());
     // value is specified in resources/ht-config.yaml
     Assertions.assertEquals(
-            "app_under_test",
-            traces
-                    .get(0)
-                    .getResourceSpans(0)
-                    .getResource()
-                    .getAttributes(0)
-                    .getValue()
-                    .getStringValue());
+        "app_under_test",
+        traces
+            .get(0)
+            .getResourceSpans(0)
+            .getResource()
+            .getAttributes(0)
+            .getValue()
+            .getStringValue());
 
     Assertions.assertEquals(1, countSpansByName(traces, "/greeting"));
     Assertions.assertEquals(1, countSpansByName(traces, "webcontroller.greeting"));
     Assertions.assertTrue(
-            getSpanStream(traces)
-                    .flatMap(span -> span.getAttributesList().stream())
-                    .filter(attribute -> attribute.getKey().equals(OTEL_LIBRARY_VERSION_ATTRIBUTE))
-                    .map(attribute -> attribute.getValue().getStringValue())
-                    .filter(value -> value.equals(currentAgentVersion))
-                    .count()
-                    > 0);
+        getSpanStream(traces)
+                .flatMap(span -> span.getAttributesList().stream())
+                .filter(attribute -> attribute.getKey().equals(OTEL_LIBRARY_VERSION_ATTRIBUTE))
+                .map(attribute -> attribute.getValue().getStringValue())
+                .filter(value -> value.equals(currentAgentVersion))
+                .count()
+            > 0);
     Assertions.assertTrue(
         getSpanStream(traces)
                 .flatMap(span -> span.getAttributesList().stream())

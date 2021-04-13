@@ -81,13 +81,13 @@ public class SpringBootDisabledBodyCaptureSmokeTest extends AbstractSmokeTest {
     Assertions.assertEquals(1, countSpansByName(traces, "/greeting"));
     Assertions.assertEquals(1, countSpansByName(traces, "webcontroller.greeting"));
     Assertions.assertTrue(
-            getSpanStream(traces)
-                    .flatMap(span -> span.getAttributesList().stream())
-                    .filter(attribute -> attribute.getKey().equals(OTEL_LIBRARY_VERSION_ATTRIBUTE))
-                    .map(attribute -> attribute.getValue().getStringValue())
-                    .filter(value -> value.equals(currentAgentVersion))
-                    .count()
-                    > 0);
+        getSpanStream(traces)
+                .flatMap(span -> span.getAttributesList().stream())
+                .filter(attribute -> attribute.getKey().equals(OTEL_LIBRARY_VERSION_ATTRIBUTE))
+                .map(attribute -> attribute.getValue().getStringValue())
+                .filter(value -> value.equals(currentAgentVersion))
+                .count()
+            > 0);
     Assertions.assertEquals(
         0,
         getSpanStream(traces)
