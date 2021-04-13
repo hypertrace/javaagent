@@ -19,7 +19,6 @@ package org.hypertrace.agent.smoketest;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
-import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
 import io.opentelemetry.proto.trace.v1.Span;
 import java.io.IOException;
 import java.util.Collection;
@@ -56,7 +55,7 @@ public abstract class AbstractSmokeTest {
   private static final String NETWORK_ALIAS_OTEL_COLLECTOR = "collector";
   private static final String NETWORK_ALIAS_OTEL_MOCK_STORAGE = "backend";
   private static final String OTEL_EXPORTER_ENDPOINT =
-      String.format("http://%s:4317", NETWORK_ALIAS_OTEL_COLLECTOR);
+      String.format("http://%s:9411/api/v2/spans", NETWORK_ALIAS_OTEL_COLLECTOR);
 
   public static final String OTEL_LIBRARY_VERSION_ATTRIBUTE = "otel.library.version";
   public static final String agentPath = getPropertyOrEnv("smoketest.javaagent.path");
@@ -148,15 +147,10 @@ public abstract class AbstractSmokeTest {
   }
 
   protected static Stream<Span> getSpanStream(Collection<ExportTraceServiceRequest> traceRequest) {
-    return getInstrumentationLibSpanStream(traceRequest)
-        .flatMap(librarySpans -> librarySpans.getSpansList().stream());
-  }
-
-  protected static Stream<InstrumentationLibrarySpans> getInstrumentationLibSpanStream(
-      Collection<ExportTraceServiceRequest> traceRequest) {
     return traceRequest.stream()
         .flatMap(request -> request.getResourceSpansList().stream())
-        .flatMap(resourceSpans -> resourceSpans.getInstrumentationLibrarySpansList().stream());
+        .flatMap(resourceSpans -> resourceSpans.getInstrumentationLibrarySpansList().stream())
+        .flatMap(librarySpans -> librarySpans.getSpansList().stream());
   }
 
   protected Collection<ExportTraceServiceRequest> waitForTraces() throws IOException {
