@@ -56,7 +56,7 @@ public abstract class AbstractSmokeTest {
   private static final String NETWORK_ALIAS_OTEL_COLLECTOR = "collector";
   private static final String NETWORK_ALIAS_OTEL_MOCK_STORAGE = "backend";
   private static final String OTEL_EXPORTER_ENDPOINT =
-      String.format("http://%s:9411/api/v2/spans", NETWORK_ALIAS_OTEL_COLLECTOR);
+      String.format("http://%s:4317", NETWORK_ALIAS_OTEL_COLLECTOR);
 
   public static final String OTEL_LIBRARY_VERSION_ATTRIBUTE = "otel.library.version";
   public static final String agentPath = getPropertyOrEnv("smoketest.javaagent.path");

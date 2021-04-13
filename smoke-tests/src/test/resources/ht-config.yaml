@@ -1,3 +1,4 @@
 serviceName: app_under_test
 reporting:
-  endpoint: http://localhost:9411
+  endpoint: http://localhost:4317
+  trace_reporter_type: OTLP
