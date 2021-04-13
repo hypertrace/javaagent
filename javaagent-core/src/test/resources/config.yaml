@@ -6,7 +6,7 @@ propagationFormats:
 reporting:
   endpoint: http://localhost:9411
   secure: true
-  trace_reporter_type: ZIPKIN
+  trace_reporter_type: OTLP
   opa:
     endpoint: http://opa.localhost:8181/
     pollPeriodSeconds: 12
