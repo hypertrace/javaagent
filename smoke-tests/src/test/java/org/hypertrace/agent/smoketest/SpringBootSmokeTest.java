@@ -80,44 +80,32 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
             .get(Attributes.Name.IMPLEMENTATION_VERSION);
 
     Assertions.assertEquals(
-        ResourceAttributes.CONTAINER_ID.getKey(),
-        traces.get(0).getResourceSpans(0).getResource().getAttributes(0).getKey());
+            ResourceAttributes.SERVICE_NAME.getKey(),
+            traces.get(0).getResourceSpans(0).getResource().getAttributes(0).getKey());
     Assertions.assertEquals(
-        ResourceAttributes.SERVICE_NAME.getKey(),
-        traces.get(0).getResourceSpans(0).getResource().getAttributes(9).getKey());
-    Assertions.assertEquals(
-        ResourceAttributes.TELEMETRY_AUTO_VERSION.getKey(),
-        traces.get(0).getResourceSpans(0).getResource().getAttributes(10).getKey());
-    Assertions.assertEquals(
-        ResourceAttributes.TELEMETRY_SDK_LANGUAGE.getKey(),
-        traces.get(0).getResourceSpans(0).getResource().getAttributes(11).getKey());
-    Assertions.assertEquals(
-        ResourceAttributes.TELEMETRY_SDK_NAME.getKey(),
-        traces.get(0).getResourceSpans(0).getResource().getAttributes(12).getKey());
-    Assertions.assertEquals(
-        ResourceAttributes.TELEMETRY_SDK_VERSION.getKey(),
-        traces.get(0).getResourceSpans(0).getResource().getAttributes(13).getKey());
+            ResourceAttributes.CONTAINER_ID.getKey(),
+            traces.get(0).getResourceSpans(0).getResource().getAttributes(1).getKey());
     // value is specified in resources/ht-config.yaml
     Assertions.assertEquals(
-        "app_under_test",
-        traces
-            .get(0)
-            .getResourceSpans(0)
-            .getResource()
-            .getAttributes(9)
-            .getValue()
-            .getStringValue());
+            "app_under_test",
+            traces
+                    .get(0)
+                    .getResourceSpans(0)
+                    .getResource()
+                    .getAttributes(0)
+                    .getValue()
+                    .getStringValue());
 
     Assertions.assertEquals(1, countSpansByName(traces, "/greeting"));
-    Assertions.assertEquals(1, countSpansByName(traces, "WebController.greeting"));
+    Assertions.assertEquals(1, countSpansByName(traces, "webcontroller.greeting"));
     Assertions.assertTrue(
-        getInstrumentationLibSpanStream(traces)
-            .anyMatch(
-                instLibSpan ->
-                    instLibSpan
-                        .getInstrumentationLibrary()
-                        .getVersion()
-                        .equals(currentAgentVersion)));
+            getSpanStream(traces)
+                    .flatMap(span -> span.getAttributesList().stream())
+                    .filter(attribute -> attribute.getKey().equals(OTEL_LIBRARY_VERSION_ATTRIBUTE))
+                    .map(attribute -> attribute.getValue().getStringValue())
+                    .filter(value -> value.equals(currentAgentVersion))
+                    .count()
+                    > 0);
     Assertions.assertTrue(
         getSpanStream(traces)
                 .flatMap(span -> span.getAttributesList().stream())
