@@ -25,6 +25,11 @@ public class HypertraceGlobalIgnoreMatcher implements IgnoreMatcherProvider {
   @Override
   public Result type(net.bytebuddy.description.type.TypeDescription target) {
     String actualName = target.getActualName();
+
+    if (actualName.startsWith("com.yourkit")) {
+      return Result.IGNORE;
+    }
+
     if (actualName.startsWith("java.io")) {
       if (actualName.equals("java.io.InputStream")
           || actualName.equals("java.io.OutputStream")
@@ -47,7 +52,7 @@ public class HypertraceGlobalIgnoreMatcher implements IgnoreMatcherProvider {
     }
 
     String name = classLoader.getClass().getName();
-    if (name.startsWith("com.singularity.")) {
+    if (name.startsWith("com.singularity.") || name.startsWith("com.yourkit.")) {
       return Result.IGNORE;
     }
     return Result.DEFAULT;

@@ -35,7 +35,7 @@ The providers can be disabled at startup via `ht.filter.provider.<provider-class
 ## Build
 
 ```bash
-make build
+make init-submodules build
 ```
 
 The final artifact is in `javaagent/build/libs/hypertrace-agent-<version>-all.jar`
@@ -82,3 +82,7 @@ When running tests from IDE set `SMOKETEST_JAVAAGENT_PATH` env variable.
 ```bash
 make test
 ```
+
+### Further Reference
+
+Read more in our 'Introducing Hypertrace [Java Agent](https://blog.hypertrace.org/blog/introducing-hypertrace-java-agent/)' blog post. 

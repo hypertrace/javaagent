@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import org.hypertrace.agent.config.Config;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.config.Config.DataCapture;
 import org.hypertrace.agent.config.Config.Message;
@@ -51,7 +52,8 @@ public class HypertraceConfig {
   // so avoiding for perf reasons
   private static volatile boolean servletCausingException;
 
-  private static AgentConfig agentConfig;
+  // volatile field in order to properly handle lazy initialization with double-checked locking
+  private static volatile AgentConfig agentConfig;
 
   static final String DEFAULT_SERVICE_NAME = "unknown";
   static final String DEFAULT_REPORTING_ENDPOINT = "http://localhost:9411/api/v2/spans";
@@ -123,7 +125,9 @@ public class HypertraceConfig {
   /** Reset the config, use only in tests. */
   @VisibleForTesting
   public static void reset() {
-    agentConfig = null;
+    synchronized (HypertraceConfig.class) {
+      agentConfig = null;
+    }
   }
 
   private static AgentConfig load() throws IOException {
@@ -183,6 +187,9 @@ public class HypertraceConfig {
   private static Reporting.Builder applyReportingDefaults(Reporting.Builder builder) {
     if (!builder.hasEndpoint()) {
       builder.setEndpoint(StringValue.newBuilder().setValue(DEFAULT_REPORTING_ENDPOINT).build());
+    }
+    if (builder.getTraceReporterType().equals(Config.TraceReporterType.UNSPECIFIED)) {
+      builder.setTraceReporterType(Config.TraceReporterType.ZIPKIN);
     }
     Builder opaBuilder = applyOpaDefaults(builder.getOpa().toBuilder());
     builder.setOpa(opaBuilder);

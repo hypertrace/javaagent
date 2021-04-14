@@ -39,6 +39,7 @@ class EnvironmentConfigTest {
   @ClearSystemProperty(key = EnvironmentConfig.CAPTURE_BODY_MAX_SIZE_BYTES)
   @ClearSystemProperty(key = EnvironmentConfig.JAVAAGENT_FILTER_JAR_PATHS)
   @ClearSystemProperty(key = EnvironmentConfig.ENABLED)
+  @ClearSystemProperty(key = EnvironmentConfig.RESOURCE_ATTRIBUTES)
   public void systemProperties() {
     // when tests are run in parallel the env vars/sys props set it junit-pioneer are visible to
     // parallel tests
@@ -53,6 +54,7 @@ class EnvironmentConfigTest {
     System.setProperty(EnvironmentConfig.CAPTURE_BODY_MAX_SIZE_BYTES, "512");
     System.setProperty(EnvironmentConfig.JAVAAGENT_FILTER_JAR_PATHS, "/path1.jar,/path/2/jar.jar");
     System.setProperty(EnvironmentConfig.ENABLED, "false");
+    System.setProperty(EnvironmentConfig.RESOURCE_ATTRIBUTES, "key1=val1,key2=val2");
 
     AgentConfig.Builder configBuilder = AgentConfig.newBuilder();
     configBuilder.setServiceName(StringValue.newBuilder().setValue("foo"));
@@ -60,6 +62,9 @@ class EnvironmentConfigTest {
     AgentConfig agentConfig = EnvironmentConfig.applyPropertiesAndEnvVars(configBuilder).build();
     Assertions.assertEquals(false, agentConfig.getEnabled().getValue());
     Assertions.assertEquals("foo", agentConfig.getServiceName().getValue());
+    Assertions.assertEquals(2, agentConfig.getResourceAttributesCount());
+    Assertions.assertEquals("val1", agentConfig.getResourceAttributesMap().get("key1"));
+    Assertions.assertEquals("val2", agentConfig.getResourceAttributesMap().get("key2"));
     Assertions.assertEquals(
         Arrays.asList(PropagationFormat.B3, PropagationFormat.TRACECONTEXT),
         agentConfig.getPropagationFormatsList());

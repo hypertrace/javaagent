@@ -19,6 +19,7 @@ package org.hypertrace.agent.smoketest;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
+import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
 import io.opentelemetry.proto.trace.v1.Span;
 import java.io.IOException;
 import java.util.Collection;
@@ -40,6 +41,8 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.PullPolicy;
 import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 import org.testcontainers.utility.DockerImageName;
@@ -47,13 +50,13 @@ import org.testcontainers.utility.MountableFile;
 
 public abstract class AbstractSmokeTest {
   private static final Logger log = LoggerFactory.getLogger(OpenTelemetryStorage.class);
-  private static final String OTEL_COLLECTOR_IMAGE = "otel/opentelemetry-collector:latest";
+  private static final String OTEL_COLLECTOR_IMAGE = "otel/opentelemetry-collector:0.21.0";
   private static final String MOCK_BACKEND_IMAGE =
       "ghcr.io/open-telemetry/java-test-containers:smoke-fake-backend-20201128.1734635";
   private static final String NETWORK_ALIAS_OTEL_COLLECTOR = "collector";
-  private static final String NETWORK_ALIAS_OTEL_MOCK_STORAGE = "storage";
+  private static final String NETWORK_ALIAS_OTEL_MOCK_STORAGE = "backend";
   private static final String OTEL_EXPORTER_ENDPOINT =
-      String.format("http://%s:9411/api/v2/spans", NETWORK_ALIAS_OTEL_COLLECTOR);
+      String.format("http://%s:4317", NETWORK_ALIAS_OTEL_COLLECTOR);
 
   public static final String OTEL_LIBRARY_VERSION_ATTRIBUTE = "otel.library.version";
   public static final String agentPath = getPropertyOrEnv("smoketest.javaagent.path");
@@ -76,6 +79,9 @@ public abstract class AbstractSmokeTest {
   public static void beforeAll() {
     openTelemetryStorage =
         new OpenTelemetryStorage(MOCK_BACKEND_IMAGE)
+            .withImagePullPolicy(PullPolicy.alwaysPull())
+            .withExposedPorts(8080)
+            .waitingFor(Wait.forHttp("/health").forPort(8080))
             .withNetwork(network)
             .withNetworkAliases(NETWORK_ALIAS_OTEL_MOCK_STORAGE)
             .withLogConsumer(new Slf4jLogConsumer(log));
@@ -83,15 +89,14 @@ public abstract class AbstractSmokeTest {
 
     collector =
         new OpenTelemetryCollector(OTEL_COLLECTOR_IMAGE)
+            .withImagePullPolicy(PullPolicy.alwaysPull())
             .withNetwork(network)
             .withNetworkAliases(NETWORK_ALIAS_OTEL_COLLECTOR)
             .withLogConsumer(new Slf4jLogConsumer(log))
             .dependsOn(openTelemetryStorage)
             .withCopyFileToContainer(
-                MountableFile.forClasspathResource("/otelcol-config.yaml"),
-                "/etc/otelcol-config.yaml")
-            .withLogConsumer(new Slf4jLogConsumer(log))
-            .withCommand("--config /etc/otelcol-config.yaml");
+                MountableFile.forClasspathResource("/otel.yaml"), "/etc/otel.yaml")
+            .withCommand("--config /etc/otel.yaml");
     collector.start();
   }
 
@@ -143,10 +148,15 @@ public abstract class AbstractSmokeTest {
   }
 
   protected static Stream<Span> getSpanStream(Collection<ExportTraceServiceRequest> traceRequest) {
+    return getInstrumentationLibSpanStream(traceRequest)
+        .flatMap(librarySpans -> librarySpans.getSpansList().stream());
+  }
+
+  protected static Stream<InstrumentationLibrarySpans> getInstrumentationLibSpanStream(
+      Collection<ExportTraceServiceRequest> traceRequest) {
     return traceRequest.stream()
         .flatMap(request -> request.getResourceSpansList().stream())
-        .flatMap(resourceSpans -> resourceSpans.getInstrumentationLibrarySpansList().stream())
-        .flatMap(librarySpans -> librarySpans.getSpansList().stream());
+        .flatMap(resourceSpans -> resourceSpans.getInstrumentationLibrarySpansList().stream());
   }
 
   protected Collection<ExportTraceServiceRequest> waitForTraces() throws IOException {

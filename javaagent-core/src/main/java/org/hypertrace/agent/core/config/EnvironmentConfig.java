@@ -38,6 +38,7 @@ public class EnvironmentConfig {
   public static final String CONFIG_FILE_PROPERTY = HT_PREFIX + "config.file";
   static final String SERVICE_NAME = HT_PREFIX + "service.name";
   static final String ENABLED = HT_PREFIX + "enabled";
+  static final String RESOURCE_ATTRIBUTES = HT_PREFIX + ".resource.attributes";
 
   static final String PROPAGATION_FORMATS = HT_PREFIX + "propagation.formats";
 
@@ -69,6 +70,19 @@ public class EnvironmentConfig {
     String enabled = getProperty(ENABLED);
     if (enabled != null) {
       builder.setEnabled(BoolValue.newBuilder().setValue(Boolean.valueOf(enabled)).build());
+    }
+
+    String attributes = getProperty(RESOURCE_ATTRIBUTES);
+    if (attributes != null) {
+      String[] attrs = attributes.split(",");
+      for (String attr : attrs) {
+        String[] keyValArr = attr.split("=");
+        if (keyValArr.length == 2) {
+          String key = keyValArr[0];
+          String val = keyValArr[1];
+          builder.putResourceAttributes(key, val);
+        }
+      }
     }
 
     Reporting.Builder reportingBuilder = applyReporting(builder.getReporting().toBuilder());
