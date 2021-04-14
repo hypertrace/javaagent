@@ -21,15 +21,20 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.BoolValue;
 import com.google.protobuf.Int32Value;
+import com.google.protobuf.Int64Value;
 import com.google.protobuf.StringValue;
 import com.google.protobuf.util.JsonFormat;
 import com.google.protobuf.util.JsonFormat.Parser;
+import io.grpc.Channel;
+import io.grpc.ManagedChannelBuilder;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.hypertrace.agent.config.Config;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.config.Config.DataCapture;
@@ -38,6 +43,8 @@ import org.hypertrace.agent.config.Config.Opa;
 import org.hypertrace.agent.config.Config.Opa.Builder;
 import org.hypertrace.agent.config.Config.PropagationFormat;
 import org.hypertrace.agent.config.Config.Reporting;
+import org.hypertrace.agent.config.ConfigurationServiceGrpc;
+import org.hypertrace.agent.config.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,10 +71,18 @@ public class HypertraceConfig {
 
   public static AgentConfig get() {
     if (agentConfig == null) {
+      String dynamicConfigServiceUrl =
+          EnvironmentConfig.getProperty(EnvironmentConfig.DYNAMIC_CONFIG_SERVICE_URL);
+      DynamicConfigFetcher dynamicConfigFetcher = null;
+      if (dynamicConfigServiceUrl != null) {
+        dynamicConfigFetcher = new DynamicConfigFetcher(dynamicConfigServiceUrl);
+        Executors.newScheduledThreadPool(1)
+            .scheduleAtFixedRate(dynamicConfigFetcher, 60, 30, TimeUnit.SECONDS);
+      }
       synchronized (HypertraceConfig.class) {
         if (agentConfig == null) {
           try {
-            agentConfig = load();
+            agentConfig = load(dynamicConfigFetcher);
             log.info(
                 "Config loaded: {}",
                 JsonFormat.printer().omittingInsignificantWhitespace().print(agentConfig));
@@ -130,21 +145,28 @@ public class HypertraceConfig {
     }
   }
 
-  private static AgentConfig load() throws IOException {
+  private static AgentConfig load(DynamicConfigFetcher dynamicConfigFetcher) throws IOException {
     String configFile = EnvironmentConfig.getProperty(EnvironmentConfig.CONFIG_FILE_PROPERTY);
     if (configFile == null) {
-      return EnvironmentConfig.applyPropertiesAndEnvVars(applyDefaults(AgentConfig.newBuilder()))
-          .build();
+      AgentConfig.Builder configBuilder = AgentConfig.newBuilder();
+      if (dynamicConfigFetcher != null) {
+        configBuilder = dynamicConfigFetcher.initializeConfig().toBuilder();
+      }
+      return EnvironmentConfig.applyPropertiesAndEnvVars(applyDefaults(configBuilder)).build();
     }
-    return load(configFile);
+    return load(configFile, dynamicConfigFetcher);
   }
 
   @VisibleForTesting
-  static AgentConfig load(String filename) throws IOException {
+  static AgentConfig load(String filename, DynamicConfigFetcher dynamicConfigFetcher)
+      throws IOException {
     File configFile = new File(filename);
     if (!configFile.exists() || configFile.isDirectory() || !configFile.canRead()) {
       log.error("Config file {} does not exist", filename);
       AgentConfig.Builder configBuilder = AgentConfig.newBuilder();
+      if (dynamicConfigFetcher != null) {
+        configBuilder = dynamicConfigFetcher.initializeConfig().toBuilder();
+      }
       return EnvironmentConfig.applyPropertiesAndEnvVars(applyDefaults(configBuilder)).build();
     }
 
@@ -235,5 +257,41 @@ public class HypertraceConfig {
 
     ObjectMapper jsonWriter = new ObjectMapper();
     return jsonWriter.writeValueAsString(obj);
+  }
+
+  public static class DynamicConfigFetcher implements Runnable {
+
+    private final ConfigurationServiceGrpc.ConfigurationServiceBlockingStub blockingStub;
+
+    private static Int64Value configTimestamp;
+
+    private DynamicConfigFetcher(String dynamicConfigServiceUrl) {
+      Channel channel = ManagedChannelBuilder.forTarget(dynamicConfigServiceUrl).build();
+      blockingStub = ConfigurationServiceGrpc.newBlockingStub(channel);
+      configTimestamp = Int64Value.newBuilder().setValue(System.currentTimeMillis()).build();
+    }
+
+    @Override
+    public void run() {
+      Service.UpdateConfigurationResponse response =
+          blockingStub.updateConfiguration(
+              Service.UpdateConfigurationRequest.newBuilder()
+                  .setTimestamp(configTimestamp)
+                  .build());
+      configTimestamp = response.getTimestamp();
+      AgentConfig.Builder configBuilder = HypertraceConfig.get().toBuilder();
+      configBuilder.setEnabled(response.getEnabled());
+      configBuilder.setDataCapture(response.getDataCapture());
+      configBuilder.setJavaagent(response.getJavaAgent());
+      agentConfig = configBuilder.build();
+    }
+
+    private AgentConfig initializeConfig() {
+      Service.InitialConfigurationResponse response =
+          blockingStub.initialConfiguration(
+              Service.InitialConfigurationRequest.newBuilder().build());
+      configTimestamp = response.getTimestamp();
+      return response.getAgentConfig();
+    }
   }
 }

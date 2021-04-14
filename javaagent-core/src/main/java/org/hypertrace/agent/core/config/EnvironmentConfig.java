@@ -36,6 +36,7 @@ public class EnvironmentConfig {
   private static final String HT_PREFIX = "ht.";
 
   public static final String CONFIG_FILE_PROPERTY = HT_PREFIX + "config.file";
+  public static final String DYNAMIC_CONFIG_SERVICE_URL = HT_PREFIX + "dynamic.config.service.url";
   static final String SERVICE_NAME = HT_PREFIX + "service.name";
   static final String ENABLED = HT_PREFIX + "enabled";
   static final String RESOURCE_ATTRIBUTES = HT_PREFIX + ".resource.attributes";
