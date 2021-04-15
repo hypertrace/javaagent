@@ -44,6 +44,7 @@ dependencies {
     api("com.google.protobuf:protobuf-java-util:3.11.4")
     api("io.grpc:grpc-stub:1.37.0")
     api("io.grpc:grpc-protobuf:1.37.0")
+    api("io.grpc:grpc-netty:1.37.0")
     if (JavaVersion.current().isJava9Compatible) {
         // Workaround for @javax.annotation.Generated
         // see: https://github.com/grpc/grpc-java/issues/3633
@@ -53,6 +54,4 @@ dependencies {
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.11.3")
 
     api("com.blogspot.mydailyjava:weak-lock-free:0.17")
-
-    runtimeOnly("io.grpc:grpc-netty-shaded:1.37.0")
 }
