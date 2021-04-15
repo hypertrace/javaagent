@@ -48,7 +48,10 @@ import org.hypertrace.agent.config.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** {@link HypertraceConfig} loads a yaml config from file. */
+/**
+ * {@link HypertraceConfig} loads a yaml config from file and gets dynamic config if dynamic config
+ * service url is set in env vars or system properties.
+ */
 public class HypertraceConfig {
 
   private HypertraceConfig() {}
@@ -76,7 +79,14 @@ public class HypertraceConfig {
       DynamicConfigFetcher dynamicConfigFetcher = null;
       if (dynamicConfigServiceUrl != null) {
         dynamicConfigFetcher = new DynamicConfigFetcher(dynamicConfigServiceUrl);
-        Executors.newScheduledThreadPool(1)
+        Executors.newScheduledThreadPool(
+                1,
+                runnable -> {
+                  Thread thread = new Thread(runnable, "dynamic_agent_config_fetcher");
+                  thread.setDaemon(true);
+                  //                  thread.setContextClassLoader(null);
+                  return thread;
+                })
             .scheduleAtFixedRate(dynamicConfigFetcher, 60, 30, TimeUnit.SECONDS);
       }
       synchronized (HypertraceConfig.class) {
@@ -145,7 +155,8 @@ public class HypertraceConfig {
     }
   }
 
-  private static AgentConfig load(DynamicConfigFetcher dynamicConfigFetcher) throws IOException {
+  @VisibleForTesting
+  static AgentConfig load(DynamicConfigFetcher dynamicConfigFetcher) throws IOException {
     String configFile = EnvironmentConfig.getProperty(EnvironmentConfig.CONFIG_FILE_PROPERTY);
     if (configFile == null) {
       AgentConfig.Builder configBuilder = AgentConfig.newBuilder();
@@ -263,12 +274,13 @@ public class HypertraceConfig {
 
     private final ConfigurationServiceGrpc.ConfigurationServiceBlockingStub blockingStub;
 
-    private static Int64Value configTimestamp;
+    private static Int64Value configUpdatedTimestamp;
 
     private DynamicConfigFetcher(String dynamicConfigServiceUrl) {
-      Channel channel = ManagedChannelBuilder.forTarget(dynamicConfigServiceUrl).build();
+      Channel channel =
+          ManagedChannelBuilder.forTarget(dynamicConfigServiceUrl).usePlaintext().build();
       blockingStub = ConfigurationServiceGrpc.newBlockingStub(channel);
-      configTimestamp = Int64Value.newBuilder().setValue(System.currentTimeMillis()).build();
+      configUpdatedTimestamp = Int64Value.newBuilder().setValue(System.currentTimeMillis()).build();
     }
 
     @Override
@@ -276,9 +288,9 @@ public class HypertraceConfig {
       Service.UpdateConfigurationResponse response =
           blockingStub.updateConfiguration(
               Service.UpdateConfigurationRequest.newBuilder()
-                  .setTimestamp(configTimestamp)
+                  .setTimestamp(configUpdatedTimestamp)
                   .build());
-      configTimestamp = response.getTimestamp();
+      configUpdatedTimestamp = response.getTimestamp();
       AgentConfig.Builder configBuilder = HypertraceConfig.get().toBuilder();
       configBuilder.setEnabled(response.getEnabled());
       configBuilder.setDataCapture(response.getDataCapture());
@@ -290,7 +302,7 @@ public class HypertraceConfig {
       Service.InitialConfigurationResponse response =
           blockingStub.initialConfiguration(
               Service.InitialConfigurationRequest.newBuilder().build());
-      configTimestamp = response.getTimestamp();
+      configUpdatedTimestamp = response.getTimestamp();
       return response.getAgentConfig();
     }
   }
