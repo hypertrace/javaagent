@@ -32,6 +32,30 @@ tasks.test {
     }
 
     maxParallelForks = 2
+
+    var suites : HashMap<String, String>
+            = HashMap()
+    suites.put("glassfish", "**/GlassFishSmokeTest.*")
+    suites.put("jetty", "**/JettySmokeTest.*")
+    suites.put("liberty", "**/LibertySmokeTest.*")
+    suites.put("tomcat", "**/TomcatSmokeTest.*")
+    suites.put("tomee" , "**/TomeeSmokeTest.*")
+    suites.put("wildfly", "**/WildflySmokeTest.*")
+
+    val suite = findProperty("smokeTestSuite")
+
+    if (suite != null) {
+        if ("other" == suite) {
+            for ((key, value) in suites) {
+                exclude(value)
+            }
+        } else if (suites.containsKey(suite)) {
+            include(suites.get(suite))
+        } else {
+            throw GradleException("Unknown smoke test suite: " + suite)
+        }
+    }
+
     val shadowTask : Jar = project(":javaagent").tasks.named<Jar>("shadowJar").get()
     inputs.files(layout.files(shadowTask))
 

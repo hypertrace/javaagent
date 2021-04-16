@@ -1,5 +1,6 @@
 DOCKER_IMAGE ?= hypertrace/javaagent
 DOCKER_TAG ?= latest
+SMOKE_TEST_SUITE ?= other 
 
 .PHONY: assemble
 assemble:
@@ -11,7 +12,7 @@ build:
 
 .PHONY: smoke-test
 smoke-test:
-	./gradlew :smoke-tests:test --stacktrace
+	./gradlew :smoke-tests:test -PsmokeTestSuite=${SMOKE_TEST_SUITE} --stacktrace
 
 .PHONY: muzzle
 muzzle:
