@@ -64,7 +64,7 @@ public class OutputStreamInstrumentationModule extends InstrumentationModule {
   static class OutputStreamInstrumentation implements TypeInstrumentation {
 
     @Override
-    public ElementMatcher<? super TypeDescription> typeMatcher() {
+    public ElementMatcher<TypeDescription> typeMatcher() {
       return extendsClass(named(OutputStream.class.getName()));
     }
 

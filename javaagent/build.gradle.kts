@@ -25,9 +25,12 @@ tasks {
             into("inst")
             rename("(^.*)\\.class$", "$1.classdata")
         }
+        exclude("**/META-INF/LICENSE")
         dependsOn(customizationShadowTask)
     }
 
+
+    // TODO relocate weak map
 
     shadowJar {
         // config in javaagent-core uses protobuf and jackson

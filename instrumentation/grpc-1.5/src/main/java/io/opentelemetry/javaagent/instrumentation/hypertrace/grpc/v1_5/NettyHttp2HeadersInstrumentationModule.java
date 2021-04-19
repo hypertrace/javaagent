@@ -69,7 +69,7 @@ public class NettyHttp2HeadersInstrumentationModule extends InstrumentationModul
    */
   class NettyUtilsInstrumentation implements TypeInstrumentation {
     @Override
-    public ElementMatcher<? super TypeDescription> typeMatcher() {
+    public ElementMatcher<TypeDescription> typeMatcher() {
       return failSafe(named("io.grpc.netty.Utils"));
     }
 

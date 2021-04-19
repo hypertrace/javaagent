@@ -44,7 +44,7 @@ import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
 public class ServletRequestInstrumentation implements TypeInstrumentation {
 
   @Override
-  public ElementMatcher<? super TypeDescription> typeMatcher() {
+  public ElementMatcher<TypeDescription> typeMatcher() {
     return safeHasSuperType(named("javax.servlet.ServletRequest"));
   }
 

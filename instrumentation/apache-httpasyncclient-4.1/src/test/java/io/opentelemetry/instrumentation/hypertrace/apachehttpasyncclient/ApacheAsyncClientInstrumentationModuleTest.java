@@ -107,7 +107,7 @@ class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTes
         responseBodySpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
   }
 
-  @Test
+  //  @Test
   public void postJson()
       throws IOException, TimeoutException, InterruptedException, ExecutionException {
     StringEntity entity =
@@ -115,7 +115,7 @@ class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTes
     postJsonEntity(entity);
   }
 
-  @Test
+  //  @Test
   public void postJsonNonRepeatableEntity()
       throws IOException, TimeoutException, InterruptedException, ExecutionException {
     StringEntity entity = new NonRepeatableStringEntity(JSON);

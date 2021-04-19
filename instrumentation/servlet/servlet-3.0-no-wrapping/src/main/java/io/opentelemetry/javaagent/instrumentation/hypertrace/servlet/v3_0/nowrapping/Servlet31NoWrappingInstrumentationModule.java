@@ -56,7 +56,7 @@ public class Servlet31NoWrappingInstrumentationModule extends InstrumentationMod
   }
 
   @Override
-  protected Map<String, String> contextStore() {
+  protected Map<String, String> getMuzzleContextStoreClasses() {
     Map<String, String> context = new HashMap<>();
     // capture request body
     context.put("javax.servlet.http.HttpServletRequest", SpanAndObjectPair.class.getName());

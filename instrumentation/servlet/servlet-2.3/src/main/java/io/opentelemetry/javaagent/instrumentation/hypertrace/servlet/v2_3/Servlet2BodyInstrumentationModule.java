@@ -76,7 +76,7 @@ public class Servlet2BodyInstrumentationModule extends InstrumentationModule {
   }
 
   @Override
-  public Map<String, String> contextStore() {
+  public Map<String, String> getMuzzleContextStoreClasses() {
     return singletonMap("javax.servlet.ServletResponse", Integer.class.getName());
   }
 

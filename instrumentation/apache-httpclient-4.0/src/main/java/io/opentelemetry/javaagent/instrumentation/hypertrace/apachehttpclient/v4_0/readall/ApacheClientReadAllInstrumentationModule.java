@@ -221,7 +221,7 @@ public class ApacheClientReadAllInstrumentationModule extends InstrumentationMod
 
   static class HttpEntityInstrumentation implements TypeInstrumentation {
     @Override
-    public ElementMatcher<? super TypeDescription> typeMatcher() {
+    public ElementMatcher<TypeDescription> typeMatcher() {
       return implementsInterface(named("org.apache.http.HttpEntity"));
     }
 

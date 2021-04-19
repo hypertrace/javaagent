@@ -32,7 +32,7 @@ public class PrintWriterInstrumentationModule extends InstrumentationModule {
   }
 
   @Override
-  protected Map<String, String> contextStore() {
+  protected Map<String, String> getMuzzleContextStoreClasses() {
     return Collections.singletonMap("java.io.PrintWriter", BoundedCharArrayWriter.class.getName());
   }
 

@@ -18,7 +18,7 @@ package org.hypertrace.agent.core.instrumentation;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.javaagent.instrumentation.api.WeakMap;
+import io.opentelemetry.instrumentation.api.caching.Cache;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,17 +28,16 @@ import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputSt
 public class GlobalObjectRegistry {
 
   // original input stream to span and byte buffer
-  public static final WeakMap<InputStream, SpanAndBuffer> inputStreamToSpanAndBufferMap =
-      WeakMap.Provider.newWeakMap();
+  public static final Cache<InputStream, SpanAndBuffer> inputStreamToSpanAndBufferMap =
+      Cache.newBuilder().setWeakKeys().build();
 
   // original output stream to byte buffer
-  public static final WeakMap<OutputStream, BoundedByteArrayOutputStream> outputStreamToBufferMap =
-      WeakMap.Provider.newWeakMap();
+  public static final Cache<OutputStream, BoundedByteArrayOutputStream> outputStreamToBufferMap =
+      Cache.newBuilder().setWeakKeys().build();
 
   // original input stream to buffered one
-  public static final WeakMap<InputStream, InputStream> inputStreamMap =
-      WeakMap.Provider.newWeakMap();
-  public static final WeakMap<Object, Object> objectMap = WeakMap.Provider.newWeakMap();
+  public static final Cache<InputStream, InputStream> inputStreamMap = Cache.newBuilder().build();
+  public static final Cache<Object, Object> objectMap = Cache.newBuilder().setWeakKeys().build();
 
   public static class SpanAndBuffer {
     public final Span span;

@@ -70,7 +70,7 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
   static class InputStreamInstrumentation implements TypeInstrumentation {
 
     @Override
-    public ElementMatcher<? super TypeDescription> typeMatcher() {
+    public ElementMatcher<TypeDescription> typeMatcher() {
       return extendsClass(named(InputStream.class.getName()))
           .and(not(safeHasSuperType(named("javax.servlet.ServletInputStream"))));
     }

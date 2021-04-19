@@ -18,6 +18,7 @@ package org.hypertrace.agent.testing;
 
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.javaagent.tooling.OpenTelemetryInstaller;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -32,7 +33,7 @@ public class TestOpenTelemetryInstaller extends OpenTelemetryInstaller {
   }
 
   @Override
-  public void beforeByteBuddyAgent() {
+  public void beforeByteBuddyAgent(Config config) {
     OpenTelemetrySdk.builder()
         .setTracerProvider(SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build())
         .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
@@ -40,5 +41,5 @@ public class TestOpenTelemetryInstaller extends OpenTelemetryInstaller {
   }
 
   @Override
-  public void afterByteBuddyAgent() {}
+  public void afterByteBuddyAgent(Config config) {}
 }

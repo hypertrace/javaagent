@@ -27,6 +27,8 @@ val versions: Map<String, String> by extra
 dependencies {
     api("io.opentelemetry:opentelemetry-api:${versions["opentelemetry"]}")
     api("io.opentelemetry.javaagent:opentelemetry-javaagent-api:${versions["opentelemetry_java_agent"]}")
+//    api("io.opentelemetry.javaagent:opentelemetry-javaagent-instrumentation-api-caching:${versions["opentelemetry_java_agent"]}")
+    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-caching:${versions["opentelemetry_java_agent"]}")
     implementation("org.slf4j:slf4j-api:${versions["slf4j"]}")
 
     api("com.google.protobuf:protobuf-java:3.11.4")
@@ -34,5 +36,4 @@ dependencies {
     // convert yaml to json, since java protobuf impl supports only json
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.11.3")
 
-    api("com.blogspot.mydailyjava:weak-lock-free:0.17")
 }

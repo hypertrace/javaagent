@@ -41,7 +41,7 @@ public class BufferedReaderContextAccessInstrumentationModule extends Instrument
   }
 
   @Override
-  protected Map<String, String> contextStore() {
+  protected Map<String, String> getMuzzleContextStoreClasses() {
     return Collections.singletonMap("java.io.BufferedReader", CharBufferSpanPair.class.getName());
   }
 
@@ -53,7 +53,7 @@ public class BufferedReaderContextAccessInstrumentationModule extends Instrument
   class BufferedReaderTriggerInstrumentation implements TypeInstrumentation {
 
     @Override
-    public ElementMatcher<? super TypeDescription> typeMatcher() {
+    public ElementMatcher<TypeDescription> typeMatcher() {
       return named("org.BufferedReaderPrintWriterContextAccess");
     }
 
