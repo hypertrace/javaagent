@@ -60,11 +60,6 @@ import org.hypertrace.agent.filter.FilterRegistry;
 
 public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
 
-
-  public Servlet31NoWrappingInstrumentation() {
-    System.out.println("Constructor");
-  }
-
   @Override
   public ElementMatcher<ClassLoader> classLoaderOptimization() {
     return hasClassesNamed("javax.servlet.Filter");
@@ -94,7 +89,6 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
         @Advice.Argument(value = 1) ServletResponse response,
         @Advice.Local("currentSpan") Span currentSpan) {
 
-      System.out.println("---> \n\n\nAAAA");
       int callDepth =
           CallDepthThreadLocalMap.incrementCallDepth(Servlet31InstrumentationName.class);
       if (callDepth > 0) {
@@ -103,8 +97,6 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
       if (!(request instanceof HttpServletRequest) || !(response instanceof HttpServletResponse)) {
         return false;
       }
-
-      System.out.println("---> \n\n\nAAAA");
 
       HttpServletRequest httpRequest = (HttpServletRequest) request;
       HttpServletResponse httpResponse = (HttpServletResponse) response;

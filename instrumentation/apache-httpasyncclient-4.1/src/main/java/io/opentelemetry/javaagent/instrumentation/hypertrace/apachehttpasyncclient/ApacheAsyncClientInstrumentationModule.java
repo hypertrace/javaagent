@@ -123,8 +123,6 @@ public class ApacheAsyncClientInstrumentationModule extends InstrumentationModul
     @Override
     public HttpRequest generateRequest() throws IOException, HttpException {
       HttpRequest request = super.generateRequest();
-      System.out.println("AAAA ->>>");
-      System.out.println(Span.fromContext(context));
       ApacheHttpClientUtils.traceRequest(Span.fromContext(context), request);
       return request;
     }
