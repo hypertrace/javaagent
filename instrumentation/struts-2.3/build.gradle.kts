@@ -1,15 +1,6 @@
 plugins {
     `java-library`
     id("io.opentelemetry.instrumentation.auto-instrumentation")
-    muzzle
-}
-
-muzzle {
-    pass {
-        group = "org.apache.struts"
-        module = "struts2-core"
-        versions = "[2.3.1,)"
-    }
 }
 
 val versions: Map<String, String> by extra

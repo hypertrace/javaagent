@@ -2,15 +2,6 @@ plugins {
     `java-library`
     id("net.bytebuddy.byte-buddy")
     id("io.opentelemetry.instrumentation.auto-instrumentation")
-    muzzle
-}
-
-muzzle {
-    pass {
-        group = "io.vertx"
-        module = "vertx-web"
-        versions = "[3.0.0,)"
-    }
 }
 
 afterEvaluate{
