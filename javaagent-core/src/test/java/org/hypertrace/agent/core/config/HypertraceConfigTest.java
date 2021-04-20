@@ -16,6 +16,9 @@
 
 package org.hypertrace.agent.core.config;
 
+import com.google.protobuf.BoolValue;
+import com.google.protobuf.Int32Value;
+import com.google.protobuf.Int64Value;
 import com.google.protobuf.StringValue;
 import com.google.protobuf.util.JsonFormat;
 import java.io.File;
@@ -23,20 +26,51 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
+import org.hypertrace.agent.config.Config;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.config.Config.PropagationFormat;
 import org.hypertrace.agent.config.Config.TraceReporterType;
+import org.hypertrace.agent.config.Service;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junitpioneer.jupiter.ClearSystemProperty;
 
 public class HypertraceConfigTest {
 
+  private static DynamicConfigServer server;
+
+  @BeforeAll
+  public static void setup() throws Exception {
+    server = new DynamicConfigServer(1234);
+    Thread thread =
+        new Thread(
+            () -> {
+              try {
+                server.start();
+              } catch (IOException e) {
+                e.printStackTrace();
+              }
+              try {
+                server.blockUntilShutdown();
+              } catch (InterruptedException e) {
+                e.printStackTrace();
+              }
+            });
+    thread.start();
+  }
+
+  @AfterAll
+  public static void cleanup() throws InterruptedException {
+    server.stop();
+  }
+
   @Test
   public void defaultValues() throws IOException {
     URL resource = getClass().getClassLoader().getResource("emptyconfig.yaml");
-    AgentConfig agentConfig = HypertraceConfig.load(resource.getPath());
+    AgentConfig agentConfig = HypertraceConfig.load(resource.getPath(), null);
     Assertions.assertTrue(agentConfig.getEnabled().getValue());
     Assertions.assertEquals("unknown", agentConfig.getServiceName().getValue());
     Assertions.assertEquals(
@@ -79,14 +113,14 @@ public class HypertraceConfigTest {
   @Test
   public void config() throws IOException {
     URL resource = getClass().getClassLoader().getResource("config.yaml");
-    AgentConfig agentConfig = HypertraceConfig.load(resource.getPath());
+    AgentConfig agentConfig = HypertraceConfig.load(resource.getPath(), null);
     assertConfig(agentConfig);
   }
 
   @Test
   public void jsonConfig(@TempDir File tempFolder) throws IOException {
     URL resource = getClass().getClassLoader().getResource("config.yaml");
-    AgentConfig agentConfig = HypertraceConfig.load(resource.getPath());
+    AgentConfig agentConfig = HypertraceConfig.load(resource.getPath(), null);
 
     String jsonConfig = JsonFormat.printer().print(agentConfig);
     Assertions.assertTrue(!jsonConfig.contains("value"));
@@ -94,7 +128,27 @@ public class HypertraceConfigTest {
     FileOutputStream fileOutputStream = new FileOutputStream(jsonFile);
     fileOutputStream.write(jsonConfig.getBytes());
 
-    agentConfig = HypertraceConfig.load(jsonFile.getAbsolutePath());
+    agentConfig = HypertraceConfig.load(jsonFile.getAbsolutePath(), null);
+    assertConfig(agentConfig);
+  }
+
+  @Test
+  @ClearSystemProperty(key = EnvironmentConfig.DYNAMIC_CONFIG_SERVICE_URL)
+  @ClearSystemProperty(key = EnvironmentConfig.CONFIG_FILE_PROPERTY)
+  public void dynamicInitialConfig() throws IOException {
+    URL resource = getClass().getClassLoader().getResource("config.yaml");
+    AgentConfig agentConfig = HypertraceConfig.load(resource.getPath(), null);
+    Service.InitialConfigurationResponse initialConfigurationResponse =
+        Service.InitialConfigurationResponse.newBuilder()
+            .setTimestamp(Int64Value.newBuilder().setValue(System.currentTimeMillis()).build())
+            .setAgentConfig(agentConfig)
+            .build();
+
+    server.setInitialConfigurationResponse(initialConfigurationResponse);
+    server.setUpdateConfigurationResponse(getUpdateConfigurationResponse());
+
+    System.setProperty(EnvironmentConfig.DYNAMIC_CONFIG_SERVICE_URL, "localhost:1234");
+    agentConfig = HypertraceConfig.get();
     assertConfig(agentConfig);
   }
 
@@ -136,9 +190,29 @@ public class HypertraceConfigTest {
     System.setProperty(EnvironmentConfig.REPORTING_ENDPOINT, "http://nowhere.here");
 
     URL resource = getClass().getClassLoader().getResource("config.yaml");
-    AgentConfig agentConfig = HypertraceConfig.load(resource.getPath());
+    AgentConfig agentConfig = HypertraceConfig.load(resource.getPath(), null);
     Assertions.assertEquals(
         "http://nowhere.here", agentConfig.getReporting().getEndpoint().getValue());
     Assertions.assertEquals("service", agentConfig.getServiceName().getValue());
+  }
+
+  private Service.UpdateConfigurationResponse getUpdateConfigurationResponse() {
+    Config.DataCapture dataCapture =
+        Config.DataCapture.newBuilder()
+            .setBodyMaxSizeBytes(Int32Value.newBuilder().setValue(12).build())
+            .setHttpHeaders(
+                Config.Message.newBuilder()
+                    .setResponse(BoolValue.newBuilder().setValue(false).build())
+                    .build())
+            .build();
+    return Service.UpdateConfigurationResponse.newBuilder()
+        .setDataCapture(dataCapture)
+        .setEnabled(BoolValue.newBuilder().setValue(false).build())
+        .setTimestamp(Int64Value.newBuilder().setValue(System.currentTimeMillis()).build())
+        .setJavaAgent(
+            Config.JavaAgent.newBuilder()
+                .addFilterJarPaths(StringValue.newBuilder().setValue("random").build())
+                .build())
+        .build();
   }
 }
