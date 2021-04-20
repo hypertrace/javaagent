@@ -17,6 +17,7 @@
 package org.hypertrace.agent.otel.extensions;
 
 import com.google.auto.service.AutoService;
+import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.javaagent.spi.ComponentInstaller;
 import org.hypertrace.agent.filter.FilterRegistry;
 
@@ -24,11 +25,11 @@ import org.hypertrace.agent.filter.FilterRegistry;
 public class FilterComponentInstaller implements ComponentInstaller {
 
   @Override
-  public void beforeByteBuddyAgent() {
+  public void beforeByteBuddyAgent(Config config) {
     // resolves filter via service loader resolution
     FilterRegistry.getFilter();
   }
 
   @Override
-  public void afterByteBuddyAgent() {}
+  public void afterByteBuddyAgent(Config config) {}
 }

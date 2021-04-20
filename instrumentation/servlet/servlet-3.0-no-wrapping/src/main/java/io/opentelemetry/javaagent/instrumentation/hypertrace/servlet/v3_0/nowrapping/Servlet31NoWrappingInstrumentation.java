@@ -66,7 +66,7 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
   }
 
   @Override
-  public ElementMatcher<? super TypeDescription> typeMatcher() {
+  public ElementMatcher<TypeDescription> typeMatcher() {
     return safeHasSuperType(namedOneOf("javax.servlet.Filter", "javax.servlet.Servlet"));
   }
 

@@ -41,7 +41,7 @@ import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
 public class ServletInputStreamInstrumentation implements TypeInstrumentation {
 
   @Override
-  public ElementMatcher<? super TypeDescription> typeMatcher() {
+  public ElementMatcher<TypeDescription> typeMatcher() {
     return safeHasSuperType(named("javax.servlet.ServletInputStream"));
   }
 

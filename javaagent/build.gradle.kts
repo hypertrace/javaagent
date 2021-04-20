@@ -25,9 +25,9 @@ tasks {
             into("inst")
             rename("(^.*)\\.class$", "$1.classdata")
         }
+        exclude("**/META-INF/LICENSE")
         dependsOn(customizationShadowTask)
     }
-
 
     shadowJar {
         // config in javaagent-core uses protobuf and jackson
@@ -41,7 +41,7 @@ tasks {
         relocate("org.checkerframework", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.com.checkerframework")
         relocate("org.yaml", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.org.yaml")
 
-        relocate("com.blogspot.mydailyjava", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.com.blogspot.mydailyjava")
+        relocate("com.blogspot.mydailyjava.weaklockfree", "io.opentelemetry.instrumentation.api.internal.shaded.weaklockfree")
 
         dependencies {
             exclude(dependency("org.codehaus.mojo:animal-sniffer-annotations"))

@@ -11,6 +11,7 @@ dependencies {
     compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${versions["opentelemetry"]}-alpha")
     implementation("io.opentelemetry:opentelemetry-semconv:${versions["opentelemetry"]}-alpha")
     implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-spi:${versions["opentelemetry_java_agent"]}")
+    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:${versions["opentelemetry_java_agent"]}")
 
     implementation("org.slf4j:slf4j-api:${versions["slf4j"]}")
     implementation("com.google.auto.service:auto-service:1.0-rc7")

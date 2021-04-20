@@ -44,7 +44,7 @@ public class ServletInputStreamContextAccessInstrumentationModule extends Instru
   }
 
   @Override
-  protected Map<String, String> contextStore() {
+  protected Map<String, String> getMuzzleContextStoreClasses() {
     Map<String, String> context = new HashMap<>();
     context.put("javax.servlet.ServletInputStream", ByteBufferSpanPair.class.getName());
     return context;
@@ -58,7 +58,7 @@ public class ServletInputStreamContextAccessInstrumentationModule extends Instru
   class InputStreamTriggerInstrumentation implements TypeInstrumentation {
 
     @Override
-    public ElementMatcher<? super TypeDescription> typeMatcher() {
+    public ElementMatcher<TypeDescription> typeMatcher() {
       return named("org.ServletStreamContextAccess");
     }
 

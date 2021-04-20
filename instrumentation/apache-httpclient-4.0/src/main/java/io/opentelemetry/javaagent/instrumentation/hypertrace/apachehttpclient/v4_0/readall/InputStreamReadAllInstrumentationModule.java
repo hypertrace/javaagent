@@ -68,7 +68,7 @@ public class InputStreamReadAllInstrumentationModule extends InstrumentationModu
   static class InputStreamInstrumentation implements TypeInstrumentation {
 
     @Override
-    public ElementMatcher<? super TypeDescription> typeMatcher() {
+    public ElementMatcher<TypeDescription> typeMatcher() {
       return safeHasSuperType(namedOneOf("java.io.InputStream"));
     }
 

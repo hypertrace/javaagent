@@ -68,10 +68,6 @@ public class HypertraceAgentConfiguration implements PropertySource {
     // metrics are not reported
     configProperties.put(OTEL_METRICS_EXPORTER, "none");
 
-    // disable undertow because it is finishing span before payloads are captured in our filter
-    // TODO remove once fixed
-    // https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/2499
-    configProperties.put("otel.instrumentation.undertow.enabled", "false");
     return configProperties;
   }
 

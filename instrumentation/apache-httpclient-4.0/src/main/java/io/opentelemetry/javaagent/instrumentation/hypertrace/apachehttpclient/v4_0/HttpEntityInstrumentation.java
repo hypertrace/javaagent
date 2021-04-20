@@ -48,7 +48,7 @@ import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 public class HttpEntityInstrumentation implements TypeInstrumentation {
 
   @Override
-  public ElementMatcher<? super TypeDescription> typeMatcher() {
+  public ElementMatcher<TypeDescription> typeMatcher() {
     return implementsInterface(named("org.apache.http.HttpEntity"));
   }
 
@@ -138,13 +138,15 @@ public class HttpEntityInstrumentation implements TypeInstrumentation {
     public static void exit(
         @Advice.This HttpEntity thizz, @Advice.Argument(0) OutputStream outputStream) {
       SpanAndAttributeKey spanAndAttributeKey =
-          ApacheHttpClientObjectRegistry.entityToSpan.remove(thizz);
+          ApacheHttpClientObjectRegistry.entityToSpan.get(thizz);
+      ApacheHttpClientObjectRegistry.entityToSpan.remove(thizz);
       if (spanAndAttributeKey == null) {
         return;
       }
 
       BoundedByteArrayOutputStream bufferedOutStream =
-          GlobalObjectRegistry.outputStreamToBufferMap.remove(outputStream);
+          GlobalObjectRegistry.outputStreamToBufferMap.get(outputStream);
+      GlobalObjectRegistry.outputStreamToBufferMap.remove(outputStream);
       try {
         String requestBody = bufferedOutStream.toStringWithSuppliedCharset();
         spanAndAttributeKey.span.setAttribute(spanAndAttributeKey.attributeKey, requestBody);

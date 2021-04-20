@@ -24,14 +24,7 @@ import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrap
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import org.hypertrace.agent.core.instrumentation.SpanAndObjectPair;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
-import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
-import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
 
 @AutoService(InstrumentationModule.class)
 public class Servlet31NoWrappingInstrumentationModule extends InstrumentationModule {
@@ -53,20 +46,5 @@ public class Servlet31NoWrappingInstrumentationModule extends InstrumentationMod
         new ServletInputStreamInstrumentation(),
         new ServletResponseInstrumentation(),
         new ServletOutputStreamInstrumentation());
-  }
-
-  @Override
-  protected Map<String, String> contextStore() {
-    Map<String, String> context = new HashMap<>();
-    // capture request body
-    context.put("javax.servlet.http.HttpServletRequest", SpanAndObjectPair.class.getName());
-    context.put("javax.servlet.ServletInputStream", ByteBufferSpanPair.class.getName());
-    context.put("java.io.BufferedReader", CharBufferSpanPair.class.getName());
-
-    // capture response body
-    context.put("javax.servlet.http.HttpServletResponse", SpanAndObjectPair.class.getName());
-    context.put("javax.servlet.ServletOutputStream", BoundedByteArrayOutputStream.class.getName());
-    context.put("java.io.PrintWriter", BoundedCharArrayWriter.class.getName());
-    return context;
   }
 }

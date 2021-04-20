@@ -41,7 +41,7 @@ import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
 public class BufferedReaderInstrumentation implements TypeInstrumentation {
 
   @Override
-  public ElementMatcher<? super TypeDescription> typeMatcher() {
+  public ElementMatcher<TypeDescription> typeMatcher() {
     return safeHasSuperType(named("java.io.BufferedReader")).or(named("java.io.BufferedReader"));
   }
 

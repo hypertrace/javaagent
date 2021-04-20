@@ -40,7 +40,7 @@ import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
 public class PrintWriterInstrumentation implements TypeInstrumentation {
 
   @Override
-  public ElementMatcher<? super TypeDescription> typeMatcher() {
+  public ElementMatcher<TypeDescription> typeMatcher() {
     return safeHasSuperType(named("java.io.PrintWriter")).or(named("java.io.PrintWriter"));
   }
 
