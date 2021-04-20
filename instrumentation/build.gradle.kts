@@ -63,7 +63,7 @@ tasks {
         relocate("org.checkerframework", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.com.checkerframework")
         relocate("org.yaml", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.org.yaml")
 
-        relocate("com.blogspot.mydailyjava", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.com.blogspot.mydailyjava")
+        relocate("com.blogspot.mydailyjava.weaklockfree", "io.opentelemetry.instrumentation.api.internal.shaded.weaklockfree")
 
         exclude("**/module-info.class")
 

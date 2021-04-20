@@ -35,5 +35,5 @@ dependencies {
     // convert yaml to json, since java protobuf impl supports only json
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.11.3")
 
-    api("com.blogspot.mydailyjava:weak-lock-free:0.17")
+    implementation("com.blogspot.mydailyjava:weak-lock-free:0.17")
 }
