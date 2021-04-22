@@ -39,12 +39,17 @@ afterEvaluate{
     ).configure()
 }
 
+val library by configurations.creating {
+    isCanBeResolved = false
+    isCanBeConsumed = false
+}
+
 val versions: Map<String, String> by extra
 
 dependencies {
     implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.1:${versions["opentelemetry_java_agent"]}")
 
-    implementation("io.netty:netty-codec-http:4.1.0.Final")
+    library("io.netty:netty-codec-http:4.1.0.Final")
 
     testImplementation(project(":testing-common"))
     testImplementation("io.netty:netty-handler:4.1.0.Final")
