@@ -65,8 +65,6 @@ public class HttpRequestHandleInstrumentation implements TypeInstrumentation {
     public static void handleResponseEnter(
         @Advice.This HttpClientRequest request, @Advice.Argument(0) HttpClientResponse response) {
 
-      System.out.println("Request.handleResponse()");
-
       Contexts contexts =
           InstrumentationContext.get(HttpClientRequest.class, Contexts.class).get(request);
       if (contexts == null) {
@@ -74,19 +72,15 @@ public class HttpRequestHandleInstrumentation implements TypeInstrumentation {
       }
       Span span = Span.fromContext(contexts.context);
 
-      System.out.println("request headers");
       if (HypertraceConfig.get().getDataCapture().getHttpHeaders().getRequest().getValue()) {
         for (Map.Entry<String, String> entry : request.headers()) {
-          System.out.println(entry.getKey());
           span.setAttribute(
               HypertraceSemanticAttributes.httpRequestHeader(entry.getKey()), entry.getValue());
         }
       }
 
-      System.out.println("response headers");
       if (HypertraceConfig.get().getDataCapture().getHttpHeaders().getResponse().getValue()) {
         for (Map.Entry<String, String> entry : response.headers()) {
-          System.out.println(entry.getKey());
           span.setAttribute(
               HypertraceSemanticAttributes.httpResponseHeader(entry.getKey()), entry.getValue());
         }

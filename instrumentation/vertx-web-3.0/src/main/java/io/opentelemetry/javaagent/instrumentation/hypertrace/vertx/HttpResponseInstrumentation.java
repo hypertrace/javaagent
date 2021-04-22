@@ -70,7 +70,6 @@ public class HttpResponseInstrumentation implements TypeInstrumentation {
       }
 
       handler = new ResponseBodyWrappingHandler(handler, span);
-      System.out.println("Response.bodyHandler()");
     }
   }
 }

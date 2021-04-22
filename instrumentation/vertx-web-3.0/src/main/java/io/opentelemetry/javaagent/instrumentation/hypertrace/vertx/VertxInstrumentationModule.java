@@ -23,9 +23,9 @@ import java.util.Arrays;
 import java.util.List;
 
 @AutoService(InstrumentationModule.class)
-public class VertxCaptureInstrumentationModule extends InstrumentationModule {
+public class VertxInstrumentationModule extends InstrumentationModule {
 
-  public VertxCaptureInstrumentationModule() {
+  public VertxInstrumentationModule() {
     super("vertx-client", "vertx", "ht", "vertx-ht", "vertx-client-ht");
   }
 

@@ -125,8 +125,6 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
         return;
       }
 
-      System.out.println("end(chunk)");
-
       Contexts contexts =
           InstrumentationContext.get(HttpClientRequest.class, Contexts.class).get(request);
       if (contexts == null) {
@@ -142,11 +140,9 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
                 .get(request.headers());
         if (buffer == null) {
           span.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, chunk);
-          System.out.println("Capturing request body");
         } else {
           buffer.write(chunk);
           span.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, buffer.toString());
-          System.out.println("Capturing request body from buffer");
         }
       }
     }
@@ -163,14 +159,10 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
         @Advice.This HttpClientRequest request, @Advice.Argument(0) Buffer chunk)
         throws IOException {
 
-      System.out.println("end(buffer)");
-
       int callDepth = CallDepthThreadLocalMap.incrementCallDepth(HttpClientRequest.class);
       if (callDepth > 0) {
         return;
       }
-
-      System.out.println("end(chunk)");
 
       Contexts contexts =
           InstrumentationContext.get(HttpClientRequest.class, Contexts.class).get(request);
@@ -190,11 +182,9 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
           span.setAttribute(
               HypertraceSemanticAttributes.HTTP_REQUEST_BODY,
               chunk.toString(StandardCharsets.UTF_8.name()));
-          System.out.println("Capturing request body");
         } else {
           buffer.write(chunk.toString(StandardCharsets.UTF_8.name()));
           span.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, buffer.toString());
-          System.out.println("Capturing request body from buffer");
         }
       }
     }

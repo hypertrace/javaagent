@@ -16,8 +16,6 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.vertx;
 
-import static io.opentelemetry.javaagent.instrumentation.vertx.client.VertxClientTracer.tracer;
-
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
@@ -53,8 +51,6 @@ public class ResponseBodyWrappingHandler implements Handler<Buffer> {
           .end();
     }
 
-    System.out.println("response body");
-    System.out.println(responseBody);
     wrapped.handle(event);
   }
 }
