@@ -26,6 +26,6 @@ dependencies {
     implementation("org.slf4j:jul-to-slf4j:${versions["slf4j"]}")
     implementation("net.bytebuddy:byte-buddy:${versions["byte_buddy"]}")
     implementation("net.bytebuddy:byte-buddy-agent:${versions["byte_buddy"]}")
-    implementation("com.google.auto.service:auto-service:1.0-rc7")
+    compileOnly("com.google.auto.service:auto-service-annotations:1.0")
     implementation("org.eclipse.jetty:jetty-server:8.0.0.v20110901")
 }
