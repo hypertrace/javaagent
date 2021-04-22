@@ -31,7 +31,7 @@ dependencies {
     implementation("org.slf4j:slf4j-api:${versions["slf4j"]}")
 
     api("com.google.protobuf:protobuf-java:3.11.4")
-    api("com.google.protobuf:protobuf-java-util:3.11.4")
+    api("com.google.protobuf:protobuf-java-util:3.15.8")
     // convert yaml to json, since java protobuf impl supports only json
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.11.3")
 
