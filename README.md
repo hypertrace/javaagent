@@ -24,7 +24,7 @@ List of supported frameworks with additional capabilities:
 | [Servlet](https://javaee.github.io/javaee-spec/javadocs/javax/servlet/package-summary.html)            | 2.3+            |
 | [Spark Web Framework](https://github.com/perwendel/spark)                                              | 2.3+            |
 | [Spring Webflux](https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/web/reactive/package-summary.html)       | 5.0+            |
-| [Vert.x](https://vertx.io)                                                                             | 3.0+            |
+| [Vert.x](https://vertx.io)                                                                             | 3.0+ (4 not supported yet) |
 | [Struts](https://struts.apache.org/)                                                                   | 2.3+            |
 
 ### Adding custom filter implementation
