@@ -26,14 +26,24 @@ afterEvaluate{
 
 val versions: Map<String, String> by extra
 
+val library by configurations.creating {
+    isCanBeResolved = false
+    isCanBeConsumed = false
+}
+
+library.dependencies.whenObjectAdded {
+    val dep = this.copy()
+    configurations.testImplementation.get().dependencies.add(dep)
+}
+configurations.compileOnly.get().extendsFrom(library)
+
 dependencies {
     api(project(":instrumentation:java-streams"))
     api(project(":instrumentation:apache-httpclient-4.0"))
 
     api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-apache-httpasyncclient-4.1:${versions["opentelemetry_java_agent"]}")
 
-    implementation("org.apache.httpcomponents:httpasyncclient:4.1")
-
+    library("org.apache.httpcomponents:httpasyncclient:4.1")
     testImplementation(project(":testing-common"))
 }
 
