@@ -2,6 +2,7 @@ plugins {
     `java-library`
     id("net.bytebuddy.byte-buddy")
     id("io.opentelemetry.instrumentation.auto-instrumentation")
+    muzzle
 }
 
 afterEvaluate{
@@ -12,17 +13,25 @@ afterEvaluate{
     ).configure()
 }
 
+muzzle {
+    pass {
+        group = "io.vertx"
+        module = "vertx-web"
+        versions = "[3.0.0,4.0.0)"
+    }
+}
+
 val versions: Map<String, String> by extra
 // version used by io.vertx:vertx-web:3.0.0
 val nettyVersion = "4.0.28.Final"
 
 dependencies {
+    implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-vertx-web-3.0:${versions["opentelemetry_java_agent"]}")
+    implementation("io.vertx:vertx-web:3.0.0")
+
     testImplementation(project(":testing-common"))
     testImplementation(project(":instrumentation:netty:netty-4.0"))
     testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.0:${versions["opentelemetry_java_agent"]}")
-    testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-vertx-web-3.0:${versions["opentelemetry_java_agent"]}")
-    testImplementation("io.vertx:vertx-web:3.0.0")
-
 
     testImplementation("io.netty:netty-codec-http:${nettyVersion}") {
         version {

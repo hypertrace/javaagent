@@ -16,6 +16,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.vertx;
 
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -25,20 +26,23 @@ import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.HttpMethod;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeoutException;
+import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractHttpClientTest;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-@Disabled("Vertex instrumentation is broken, body and header capture")
 public class VertxClientInstrumentationTest extends AbstractHttpClientTest {
 
-  private static final Vertx vertx = Vertx.vertx(new VertxOptions());
+  private final Vertx vertx = Vertx.vertx(new VertxOptions());
   private final HttpClientOptions clientOptions = new HttpClientOptions();
   private final HttpClient httpClient = vertx.createHttpClient(clientOptions);
 
   public VertxClientInstrumentationTest() {
-    super(false);
+    super(true);
   }
 
   @Override
@@ -115,5 +119,89 @@ public class VertxClientInstrumentationTest extends AbstractHttpClientTest {
       responseBody = responseBodyBuffer.getString(0, responseBodyBuffer.length());
       countDownLatch.countDown();
     }
+  }
+
+  @Test
+  public void postJson_write_end() throws TimeoutException, InterruptedException {
+    String uri = String.format("http://localhost:%d/echo", testHttpServer.port());
+
+    CountDownLatch countDownLatch = new CountDownLatch(1);
+    HttpClientRequest request = httpClient.requestAbs(HttpMethod.POST, uri);
+    request = request.putHeader("Content-Type", "application/json");
+    request.setChunked(true);
+    BufferHandler bufferHandler = new BufferHandler(countDownLatch);
+    ResponseHandler responseHandler = new ResponseHandler(bufferHandler);
+
+    request
+        .handler(responseHandler)
+        .write("write")
+        .write(Buffer.buffer().appendString(" buffer"))
+        .write(" str_encoding ", "utf-8")
+        .end();
+    countDownLatch.await();
+
+    TEST_WRITER.waitForTraces(1);
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    Assertions.assertEquals(1, traces.size());
+    SpanData clientSpan = traces.get(0).get(0);
+    Assertions.assertEquals(
+        "write buffer str_encoding ",
+        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+  }
+
+  @Test
+  public void postJson_write_end_string() throws TimeoutException, InterruptedException {
+    String uri = String.format("http://localhost:%d/echo", testHttpServer.port());
+
+    CountDownLatch countDownLatch = new CountDownLatch(1);
+    HttpClientRequest request = httpClient.requestAbs(HttpMethod.POST, uri);
+    request = request.putHeader("Content-Type", "application/json");
+    request.setChunked(true);
+    BufferHandler bufferHandler = new BufferHandler(countDownLatch);
+    ResponseHandler responseHandler = new ResponseHandler(bufferHandler);
+
+    request
+        .handler(responseHandler)
+        .write("write")
+        .write(Buffer.buffer().appendString(" buffer"))
+        .write(" str_encoding ", "utf-8")
+        .end("end");
+    countDownLatch.await();
+
+    TEST_WRITER.waitForTraces(1);
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    Assertions.assertEquals(1, traces.size(), String.format("was: %d", traces.size()));
+    SpanData clientSpan = traces.get(0).get(0);
+    Assertions.assertEquals(
+        "write buffer str_encoding end",
+        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+  }
+
+  @Test
+  public void postJson_write_end_buffer() throws TimeoutException, InterruptedException {
+    String uri = String.format("http://localhost:%d/echo", testHttpServer.port());
+
+    CountDownLatch countDownLatch = new CountDownLatch(1);
+    HttpClientRequest request = httpClient.requestAbs(HttpMethod.POST, uri);
+    request = request.putHeader("Content-Type", "application/json");
+    request.setChunked(true);
+    BufferHandler bufferHandler = new BufferHandler(countDownLatch);
+    ResponseHandler responseHandler = new ResponseHandler(bufferHandler);
+
+    request
+        .handler(responseHandler)
+        .write("write")
+        .write(Buffer.buffer().appendString(" buffer"))
+        .write(" str_encoding ", "utf-8")
+        .end(Buffer.buffer("end"));
+    countDownLatch.await();
+
+    TEST_WRITER.waitForTraces(1);
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    Assertions.assertEquals(1, traces.size(), String.format("was: %d", traces.size()));
+    SpanData clientSpan = traces.get(0).get(0);
+    Assertions.assertEquals(
+        "write buffer str_encoding end",
+        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
   }
 }
