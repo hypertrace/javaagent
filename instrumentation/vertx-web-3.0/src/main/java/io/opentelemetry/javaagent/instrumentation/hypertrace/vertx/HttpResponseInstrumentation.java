@@ -68,6 +68,7 @@ public class HttpResponseInstrumentation implements TypeInstrumentation {
         // request not traced - e.g. wrong content type
         return;
       }
+      InstrumentationContext.get(HttpClientResponse.class, Span.class).put(response, null);
 
       handler = new ResponseBodyWrappingHandler(handler, span);
     }
