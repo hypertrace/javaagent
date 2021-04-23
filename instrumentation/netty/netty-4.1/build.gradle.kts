@@ -44,6 +44,13 @@ val library by configurations.creating {
     isCanBeConsumed = false
 }
 
+library.dependencies.whenObjectAdded {
+    val dep = this.copy()
+    configurations.testImplementation.get().dependencies.add(dep)
+}
+configurations.compileOnly.get().extendsFrom(library)
+
+
 val versions: Map<String, String> by extra
 
 dependencies {
