@@ -1,8 +1,30 @@
-
 # Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
-version: v1.14.1
+version: v1.19.0
 # ignores vulnerabilities until expiry date; change duration by modifying expiry date
 ignore:
-
+  SNYK-JAVA-ORGECLIPSEJETTY-32151:
+    - 'org.eclipse.jetty:jetty-server@8.0.4.v20111024':
+        reason: Testing project
+        expires: 2031-05-23T12:57:20.692Z
+        created: 2021-04-23T12:57:20.693Z
+  SNYK-JAVA-ORGECLIPSEJETTY-1090340:
+    - '*':
+        reason: Testing project
+        expires: 2031-05-23T12:57:59.384Z
+        created: 2021-04-23T12:57:59.385Z
+  SNYK-JAVA-ORGECLIPSEJETTY-460763:
+    - '*':
+        reason: Testing project
+        expires: 2031-05-23T12:58:25.981Z
+        created: 2021-04-23T12:58:25.983Z
+  SNYK-JAVA-ORGECLIPSEJETTY-173763:
+    - '*':
+        reason: Testing project
+        expires: 2031-05-23T12:58:43.415Z
+        created: 2021-04-23T12:58:43.417Z
+  SNYK-JAVA-ORGECLIPSEJETTY-174560:
+    - '*':
+        reason: Testing project
+        expires: 2031-05-23T12:59:50.103Z
+        created: 2021-04-23T12:59:50.105Z
 patch: {}
-
