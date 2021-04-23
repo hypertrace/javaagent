@@ -170,7 +170,7 @@ public class VertxClientInstrumentationTest extends AbstractHttpClientTest {
 
     TEST_WRITER.waitForTraces(1);
     List<List<SpanData>> traces = TEST_WRITER.getTraces();
-    Assertions.assertEquals(1, traces.size(), String.format("was: %s", traces.size()));
+    Assertions.assertEquals(1, traces.size(), String.format("was: %d", traces.size()));
     SpanData clientSpan = traces.get(0).get(0);
     Assertions.assertEquals(
         "write buffer str_encoding end",
@@ -198,7 +198,7 @@ public class VertxClientInstrumentationTest extends AbstractHttpClientTest {
 
     TEST_WRITER.waitForTraces(1);
     List<List<SpanData>> traces = TEST_WRITER.getTraces();
-    Assertions.assertEquals(1, traces.size(), String.format("was: %s", traces.size()));
+    Assertions.assertEquals(1, traces.size(), String.format("was: %d", traces.size()));
     SpanData clientSpan = traces.get(0).get(0);
     Assertions.assertEquals(
         "write buffer str_encoding end",
