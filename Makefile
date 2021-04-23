@@ -8,7 +8,7 @@ assemble:
 
 .PHONY: build
 build:
-	./gradlew build -x :smoke-tests:test --stacktrace --info
+	./gradlew build -x :smoke-tests:test --stacktrace --info -Djunit.jupiter.execution.parallel.enabled=false
 
 .PHONY: smoke-test
 smoke-test:
