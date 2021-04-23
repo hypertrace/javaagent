@@ -8,7 +8,7 @@ assemble:
 
 .PHONY: build
 build:
-	./gradlew build -x :smoke-tests:test --stacktrace
+	./gradlew build -x :smoke-tests:test --stacktrace --info
 
 .PHONY: smoke-test
 smoke-test:
