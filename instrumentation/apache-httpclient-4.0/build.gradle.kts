@@ -43,6 +43,12 @@ val library by configurations.creating {
     isCanBeConsumed = false
 }
 
+library.dependencies.whenObjectAdded {
+    val dep = this.copy()
+    configurations.testImplementation.get().dependencies.add(dep)
+}
+configurations.compileOnly.get().extendsFrom(library)
+
 dependencies {
     api(project(":instrumentation:java-streams"))
     api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-apache-httpclient-4.0:${versions["opentelemetry_java_agent"]}")
