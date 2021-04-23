@@ -37,7 +37,7 @@ import org.junit.jupiter.api.Test;
 
 public class VertxClientInstrumentationTest extends AbstractHttpClientTest {
 
-  private static final Vertx vertx = Vertx.vertx(new VertxOptions());
+  private final Vertx vertx = Vertx.vertx(new VertxOptions());
   private final HttpClientOptions clientOptions = new HttpClientOptions();
   private final HttpClient httpClient = vertx.createHttpClient(clientOptions);
 
