@@ -9,6 +9,8 @@ import java.io.File;
 import java.util.Arrays;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.plugins.JavaLibraryPlugin;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.testing.Test;
@@ -24,6 +26,18 @@ public class AutoInstrumentationPlugin implements Plugin<Project> {
   @Override
   public void apply(Project project) {
     project.getPlugins().apply(JavaLibraryPlugin.class);
+    final Configuration libraryConfiguration = project.getConfigurations()
+        .create("library", files -> {
+          files.setCanBeConsumed(false);
+          files.setCanBeResolved(false);
+        });
+    libraryConfiguration.getDependencies().whenObjectAdded(
+        dependency -> {
+          final Dependency copy = dependency.copy();
+          project.getConfigurations().named("testImplementation").get().getDependencies().add(copy);
+        }
+    );
+    project.getConfigurations().named("compileOnly").get().extendsFrom(libraryConfiguration);
     project
         .getTasks()
         .withType(
@@ -41,6 +55,7 @@ public class AutoInstrumentationPlugin implements Plugin<Project> {
   }
 
   private static class InstrumentationTestArgs implements CommandLineArgumentProvider {
+
     private final File bootstrapJar;
 
     @Internal

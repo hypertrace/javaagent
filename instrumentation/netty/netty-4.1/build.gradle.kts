@@ -39,18 +39,6 @@ afterEvaluate{
     ).configure()
 }
 
-val library by configurations.creating {
-    isCanBeResolved = false
-    isCanBeConsumed = false
-}
-
-library.dependencies.whenObjectAdded {
-    val dep = this.copy()
-    configurations.testImplementation.get().dependencies.add(dep)
-}
-configurations.compileOnly.get().extendsFrom(library)
-
-
 val versions: Map<String, String> by extra
 
 dependencies {
