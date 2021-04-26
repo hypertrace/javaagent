@@ -68,7 +68,10 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
         HttpRequestInstrumentation.class.getName() + "$WriteRequestAdvice_string");
     transformers.put(
         isMethod()
-            .and(named("write").and(takesArguments(1)).and(takesArgument(0, is(Buffer.class)))),
+            .and(
+                named("write")
+                    .and(takesArguments(1))
+                    .and(takesArgument(0, named("io.vertx.core.buffer.Buffer")))),
         HttpRequestInstrumentation.class.getName() + "$WriteRequestAdvice_buffer");
 
     transformers.put(
@@ -78,7 +81,11 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
         isMethod().and(named("end").and(takesArgument(0, is(String.class)))),
         HttpRequestInstrumentation.class.getName() + "$EndRequestAdvice_string");
     transformers.put(
-        isMethod().and(named("end").and(takesArguments(1)).and(takesArgument(0, is(Buffer.class)))),
+        isMethod()
+            .and(
+                named("end")
+                    .and(takesArguments(1))
+                    .and(takesArgument(0, named("io.vertx.core.buffer.Buffer")))),
         HttpRequestInstrumentation.class.getName() + "$EndRequestAdvice_buffer");
 
     return transformers;
