@@ -25,9 +25,20 @@ val versions: Map<String, String> by extra
 // version used by io.vertx:vertx-web:3.0.0
 val nettyVersion = "4.0.28.Final"
 
+val library by configurations.creating {
+    isCanBeResolved = false
+    isCanBeConsumed = false
+}
+
+library.dependencies.whenObjectAdded {
+    val dep = this.copy()
+    configurations.testImplementation.get().dependencies.add(dep)
+}
+configurations.compileOnly.get().extendsFrom(library)
+
 dependencies {
     implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-vertx-web-3.0:${versions["opentelemetry_java_agent"]}")
-    implementation("io.vertx:vertx-web:3.0.0")
+    library("io.vertx:vertx-web:3.0.0")
 
     testImplementation(project(":testing-common"))
     testImplementation(project(":instrumentation:netty:netty-4.0"))
