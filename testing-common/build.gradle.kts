@@ -13,6 +13,9 @@ val versions: Map<String, String> by extra
 dependencies {
     testFixturesApi(project(":otel-extensions"))
 
+    testFixturesCompileOnly("org.junit.jupiter:junit-jupiter-api:5.7.0")
+    testFixturesRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.0")
+    testFixturesImplementation("org.junit-pioneer:junit-pioneer:1.0.0")
     testFixturesApi("io.opentelemetry:opentelemetry-api:${versions["opentelemetry"]}")
     testFixturesApi("io.opentelemetry:opentelemetry-sdk:${versions["opentelemetry"]}")
     testFixturesCompileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${versions["opentelemetry"]}-alpha")

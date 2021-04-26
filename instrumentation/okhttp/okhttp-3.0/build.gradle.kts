@@ -29,5 +29,5 @@ dependencies {
 
     compileOnly("com.squareup.okhttp3:okhttp:3.0.0")
 
-    testImplementation(project(":testing-common"))
+     testImplementation(testFixtures(project(":testing-common")))
 }

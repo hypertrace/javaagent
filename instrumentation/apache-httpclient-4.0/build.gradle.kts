@@ -44,5 +44,5 @@ dependencies {
 
     library("org.apache.httpcomponents:httpclient:4.0")
 
-    testImplementation(project(":testing-common"))
+     testImplementation(testFixtures(project(":testing-common")))
 }
