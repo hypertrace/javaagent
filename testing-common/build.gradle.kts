@@ -27,5 +27,5 @@ dependencies {
     implementation("net.bytebuddy:byte-buddy:${versions["byte_buddy"]}")
     implementation("net.bytebuddy:byte-buddy-agent:${versions["byte_buddy"]}")
     compileOnly("com.google.auto.service:auto-service-annotations:1.0")
-    implementation("org.eclipse.jetty:jetty-server:8.0.4.v20111024")
+    implementation("org.eclipse.jetty:jetty-server:8.0.0.v20110901")
 }
