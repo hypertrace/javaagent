@@ -17,7 +17,7 @@ dependencies{
     testImplementation("org.awaitility:awaitility:4.0.3")
     testImplementation("io.opentelemetry:opentelemetry-proto:${versions["opentelemetry"]}-alpha")
     testImplementation("io.opentelemetry:opentelemetry-sdk:${versions["opentelemetry"]}")
-    testImplementation("com.google.protobuf:protobuf-java-util:3.13.0")
+    testImplementation("com.google.protobuf:protobuf-java-util:3.15.8")
     testImplementation("org.spockframework:spock-core:1.3-groovy-2.5")
     testImplementation("info.solidsoft.spock:spock-global-unroll:0.5.1")
     testImplementation("com.fasterxml.jackson.core:jackson-databind:2.11.2")
