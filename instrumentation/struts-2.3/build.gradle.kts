@@ -1,3 +1,5 @@
+import org.gradle.internal.Cast.uncheckedCast
+
 plugins {
     `java-library`
     id("io.opentelemetry.instrumentation.auto-instrumentation")
@@ -8,12 +10,8 @@ val versions: Map<String, String> by extra
 dependencies {
     testImplementation(project(":instrumentation:servlet:servlet-rw"))
     testImplementation(project(":instrumentation:servlet:servlet-3.0-no-wrapping"))
-     testImplementation(testFixtures(project(":testing-common"))) {
-         if (this is ProjectDependency) {
-             exclude(group ="org.eclipse.jetty", module= "jetty-server")
-         } else {
-             throw kotlin.IllegalStateException("could not exclude jetty server dependency")
-         }
+    testImplementation(testFixtures(project(":testing-common")) as ProjectDependency) {
+        exclude(group = "org.eclipse.jetty", module = "jetty-server")
     }
     testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0:${versions["opentelemetry_java_agent"]}")
     testImplementation("org.apache.struts:struts2-core:2.3.1")

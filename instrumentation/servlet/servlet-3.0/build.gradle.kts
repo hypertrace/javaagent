@@ -35,12 +35,8 @@ dependencies {
 
     compileOnly("javax.servlet:javax.servlet-api:3.0.1")
 
-     testImplementation(testFixtures(project(":testing-common"))) {
-         if (this is ProjectDependency) {
-             exclude(group ="org.eclipse.jetty", module= "jetty-server")
-         } else {
-             throw kotlin.IllegalStateException("could not exclude jetty server dependency")
-         }
+    testImplementation(testFixtures(project(":testing-common")) as ProjectDependency) {
+        exclude(group = "org.eclipse.jetty", module = "jetty-server")
     }
     testImplementation("org.eclipse.jetty:jetty-server:8.1.22.v20160922")
     testImplementation("org.eclipse.jetty:jetty-servlet:8.1.22.v20160922")
