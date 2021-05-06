@@ -35,8 +35,8 @@ dependencies {
     compileOnly("javax.servlet:javax.servlet-api:3.1.0")
 
     testImplementation(project(":instrumentation:servlet:servlet-rw"))
-    testImplementation(project(":testing-common")) {
-        exclude(group ="org.eclipse.jetty", module= "jetty-server")
+    testImplementation(testFixtures(project(":testing-common")) as ProjectDependency) {
+        exclude(group = "org.eclipse.jetty", module = "jetty-server")
     }
     testImplementation("org.eclipse.jetty:jetty-server:8.1.22.v20160922")
     testImplementation("org.eclipse.jetty:jetty-servlet:8.1.22.v20160922")

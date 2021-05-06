@@ -8,8 +8,8 @@ val versions: Map<String, String> by extra
 subprojects {
     dependencies {
         implementation("org.slf4j:slf4j-api:1.7.30")
-        implementation("com.google.auto.service:auto-service:1.0-rc7")
-        annotationProcessor("com.google.auto.service:auto-service:1.0-rc7")
+        compileOnly("com.google.auto.service:auto-service-annotations:1.0")
+        annotationProcessor("com.google.auto.service:auto-service:1.0")
         implementation("net.bytebuddy:byte-buddy:${versions["byte_buddy"]}")
 
         implementation("io.opentelemetry:opentelemetry-api:${versions["opentelemetry"]}")

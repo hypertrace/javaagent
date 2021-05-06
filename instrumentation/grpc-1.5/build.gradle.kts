@@ -68,7 +68,7 @@ dependencies {
 
     implementation("javax.annotation:javax.annotation-api:1.3.2")
 
-    testImplementation(project(":testing-common"))
+     testImplementation(testFixtures(project(":testing-common")))
     testImplementation("io.grpc:grpc-core:${grpcVersion}") {
         version {
             strictly(grpcVersion)

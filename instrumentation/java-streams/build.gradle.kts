@@ -20,5 +20,5 @@ afterEvaluate{
 }
 
 dependencies {
-    testImplementation(project(":testing-common"))
+     testImplementation(testFixtures(project(":testing-common")))
 }

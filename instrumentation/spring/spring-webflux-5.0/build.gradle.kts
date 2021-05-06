@@ -5,7 +5,7 @@ plugins {
 val versions: Map<String, String> by extra
 
 dependencies {
-    testImplementation(project(":testing-common"))
+     testImplementation(testFixtures(project(":testing-common")))
     testImplementation(project(":instrumentation:netty:netty-4.1"))
 
     testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.1:${versions["opentelemetry_java_agent"]}")

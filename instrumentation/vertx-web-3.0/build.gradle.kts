@@ -27,9 +27,9 @@ val nettyVersion = "4.0.28.Final"
 
 dependencies {
     implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-vertx-web-3.0:${versions["opentelemetry_java_agent"]}")
-    implementation("io.vertx:vertx-web:3.0.0")
+    library("io.vertx:vertx-web:3.0.0")
 
-    testImplementation(project(":testing-common"))
+     testImplementation(testFixtures(project(":testing-common")))
     testImplementation(project(":instrumentation:netty:netty-4.0"))
     testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.0:${versions["opentelemetry_java_agent"]}")
 
