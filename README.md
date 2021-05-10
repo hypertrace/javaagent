@@ -21,7 +21,7 @@ List of supported frameworks with additional capabilities:
 | [Micronaut](https://micronaut.io/)  (basic support via Netty)                                          | 1.0+            |
 | [Netty](https://github.com/netty/netty)                                                                | 4.0+            |
 | [OkHttp](https://github.com/square/okhttp/)                                                            | 3.0+            |
-| [Servlet](https://javaee.github.io/javaee-spec/javadocs/javax/servlet/package-summary.html)            | 2.3+            |
+| [Servlet](https://javaee.github.io/javaee-spec/javadocs/javax/servlet/package-summary.html)            | 3.0+            |
 | [Spark Web Framework](https://github.com/perwendel/spark)                                              | 2.3+            |
 | [Spring Webflux](https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/web/reactive/package-summary.html)       | 5.0+            |
 | [Vert.x](https://vertx.io)                                                                             | 3.0+ (4 not supported yet) |

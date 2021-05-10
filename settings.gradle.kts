@@ -14,14 +14,6 @@ plugins {
 
 include(":javaagent")
 include("instrumentation")
-include("instrumentation:servlet:servlet-common")
-findProject(":instrumentation:servlet:servlet-common")?.name = "servlet-common"
-include("instrumentation:servlet:servlet-2.3")
-findProject(":instrumentation:servlet:servlet-2.3")?.name = "servlet-2.3"
-include("instrumentation:servlet:servlet-3.0")
-findProject(":instrumentation:servlet:servlet-3.0")?.name = "servlet-3.0"
-include("instrumentation:servlet:servlet-3.1")
-findProject(":instrumentation:servlet:servlet-3.1")?.name = "servlet-3.1"
 include("instrumentation:spark-2.3")
 findProject(":instrumentation:spark-2.3")?.name = "spark-2.3"
 include("instrumentation:apache-httpclient-4.0")
