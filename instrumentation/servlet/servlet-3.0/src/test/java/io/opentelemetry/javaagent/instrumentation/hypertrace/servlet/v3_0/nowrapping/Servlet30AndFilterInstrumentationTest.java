@@ -45,7 +45,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class Servlet30NoWrappingInstrumentationTest extends AbstractInstrumenterTest {
+public class Servlet30AndFilterInstrumentationTest extends AbstractInstrumenterTest {
   private static final String REQUEST_BODY = "hello";
   private static final String REQUEST_HEADER = "requestheader";
   private static final String REQUEST_HEADER_VALUE = "requestvalue";

@@ -58,7 +58,7 @@ import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 import org.hypertrace.agent.filter.FilterRegistry;
 
-public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
+public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
 
   @Override
   public ElementMatcher<ClassLoader> classLoaderOptimization() {
@@ -78,7 +78,7 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
             .and(takesArgument(0, named("javax.servlet.ServletRequest")))
             .and(takesArgument(1, named("javax.servlet.ServletResponse")))
             .and(isPublic()),
-        Servlet31NoWrappingInstrumentation.class.getName() + "$ServletAdvice");
+        Servlet30AndFilterInstrumentation.class.getName() + "$ServletAdvice");
     return matchers;
   }
 
@@ -90,7 +90,7 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
         @Advice.Local("currentSpan") Span currentSpan) {
 
       int callDepth =
-          CallDepthThreadLocalMap.incrementCallDepth(Servlet31InstrumentationName.class);
+          CallDepthThreadLocalMap.incrementCallDepth(Servlet30InstrumentationName.class);
       if (callDepth > 0) {
         return false;
       }
@@ -143,7 +143,7 @@ public class Servlet31NoWrappingInstrumentation implements TypeInstrumentation {
         @Advice.Argument(1) ServletResponse response,
         @Advice.Local("currentSpan") Span currentSpan) {
       int callDepth =
-          CallDepthThreadLocalMap.decrementCallDepth(Servlet31InstrumentationName.class);
+          CallDepthThreadLocalMap.decrementCallDepth(Servlet30InstrumentationName.class);
       if (callDepth > 0) {
         return;
       }
