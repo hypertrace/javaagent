@@ -23,6 +23,8 @@ import static net.bytebuddy.matcher.ElementMatchers.returns;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
+import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
+import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v4_0.ApacheHttpClientObjectRegistry.SpanAndAttributeKey;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.io.InputStream;
@@ -37,8 +39,7 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.hypertrace.agent.core.instrumentation.GlobalObjectRegistry;
-import org.hypertrace.agent.core.instrumentation.GlobalObjectRegistry.SpanAndBuffer;
+import org.hypertrace.agent.core.instrumentation.SpanAndBuffer;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 import org.hypertrace.agent.core.instrumentation.utils.ContentLengthUtils;
@@ -103,7 +104,8 @@ public class HttpEntityInstrumentation implements TypeInstrumentation {
               BoundedBuffersFactory.createStream((int) contentSize, charset),
               clientSpan.attributeKey,
               charset);
-      GlobalObjectRegistry.inputStreamToSpanAndBufferMap.put(inputStream, spanAndBuffer);
+      InstrumentationContext.get(InputStream.class, SpanAndBuffer.class)
+          .put(inputStream, spanAndBuffer);
     }
   }
 
@@ -131,7 +133,8 @@ public class HttpEntityInstrumentation implements TypeInstrumentation {
       BoundedByteArrayOutputStream byteArrayOutputStream =
           BoundedBuffersFactory.createStream((int) contentSize, charset);
 
-      GlobalObjectRegistry.outputStreamToBufferMap.put(outputStream, byteArrayOutputStream);
+      InstrumentationContext.get(OutputStream.class, BoundedByteArrayOutputStream.class)
+          .put(outputStream, byteArrayOutputStream);
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
@@ -144,9 +147,10 @@ public class HttpEntityInstrumentation implements TypeInstrumentation {
         return;
       }
 
-      BoundedByteArrayOutputStream bufferedOutStream =
-          GlobalObjectRegistry.outputStreamToBufferMap.get(outputStream);
-      GlobalObjectRegistry.outputStreamToBufferMap.remove(outputStream);
+      ContextStore<OutputStream, BoundedByteArrayOutputStream> contextStore =
+          InstrumentationContext.get(OutputStream.class, BoundedByteArrayOutputStream.class);
+      BoundedByteArrayOutputStream bufferedOutStream = contextStore.get(outputStream);
+      contextStore.put(outputStream, null);
       try {
         String requestBody = bufferedOutStream.toStringWithSuppliedCharset();
         spanAndAttributeKey.span.setAttribute(spanAndAttributeKey.attributeKey, requestBody);

@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import org.hypertrace.agent.core.instrumentation.GlobalObjectRegistry;
+import org.ContextAccessor;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
@@ -88,7 +88,7 @@ class OutputStreamInstrumentationModuleTest extends AbstractInstrumenterTest {
   private void write(OutputStream outputStream, Runnable read, String expected) {
     BoundedByteArrayOutputStream buffer =
         BoundedBuffersFactory.createStream(MAX_SIZE, DEFAULT_CHARSET);
-    GlobalObjectRegistry.outputStreamToBufferMap.put(outputStream, buffer);
+    ContextAccessor.addToOutputStreamContext(outputStream, buffer);
     read.run();
     Assertions.assertEquals(expected, buffer.toString());
   }

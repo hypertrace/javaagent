@@ -25,6 +25,7 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
+import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.io.IOException;
@@ -37,17 +38,16 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import org.hypertrace.agent.core.instrumentation.GlobalObjectRegistry;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 
 /**
  * {@link OutputStream} instrumentation. The type matcher applies to all implementations. However
- * only streams that are in the {@link GlobalObjectRegistry#outputStreamToBufferMap} are
- * instrumented, otherwise the instrumentation is noop.
+ * only streams that are in the {@link io.opentelemetry.javaagent.instrumentation.api.ContextStore}
+ * are instrumented, otherwise the instrumentation is noop.
  *
- * <p>If the stream is in the {@link GlobalObjectRegistry#outputStreamToBufferMap} then arguments to
- * write methods are also passed to the buffered stream (value) from the map. The buffered stream is
- * then used by other instrumentations to capture body.
+ * <p>If the stream is in the {@link io.opentelemetry.javaagent.instrumentation.api.ContextStore}
+ * then arguments to write methods are also passed to the buffered stream (value) from the map. The
+ * buffered stream is then used by other instrumentations to capture body.
  */
 @AutoService(InstrumentationModule.class)
 public class OutputStreamInstrumentationModule extends InstrumentationModule {
@@ -100,7 +100,9 @@ public class OutputStreamInstrumentationModule extends InstrumentationModule {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static BoundedByteArrayOutputStream enter(
         @Advice.This OutputStream thizz, @Advice.Argument(0) int b) {
-      BoundedByteArrayOutputStream buffer = GlobalObjectRegistry.outputStreamToBufferMap.get(thizz);
+      BoundedByteArrayOutputStream buffer =
+          InstrumentationContext.get(OutputStream.class, BoundedByteArrayOutputStream.class)
+              .get(thizz);
       if (buffer == null) {
         return null;
       }
@@ -125,7 +127,9 @@ public class OutputStreamInstrumentationModule extends InstrumentationModule {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static BoundedByteArrayOutputStream enter(
         @Advice.This OutputStream thizz, @Advice.Argument(0) byte b[]) throws IOException {
-      BoundedByteArrayOutputStream buffer = GlobalObjectRegistry.outputStreamToBufferMap.get(thizz);
+      BoundedByteArrayOutputStream buffer =
+          InstrumentationContext.get(OutputStream.class, BoundedByteArrayOutputStream.class)
+              .get(thizz);
       if (buffer == null) {
         return null;
       }
@@ -153,7 +157,9 @@ public class OutputStreamInstrumentationModule extends InstrumentationModule {
         @Advice.Argument(0) byte b[],
         @Advice.Argument(1) int off,
         @Advice.Argument(2) int len) {
-      BoundedByteArrayOutputStream buffer = GlobalObjectRegistry.outputStreamToBufferMap.get(thizz);
+      BoundedByteArrayOutputStream buffer =
+          InstrumentationContext.get(OutputStream.class, BoundedByteArrayOutputStream.class)
+              .get(thizz);
       if (buffer == null) {
         return null;
       }

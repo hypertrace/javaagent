@@ -24,8 +24,11 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.returns;
 
 import com.google.auto.service.AutoService;
+import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +38,8 @@ import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.implementation.bytecode.assign.Assigner;
 import net.bytebuddy.matcher.ElementMatcher;
+import org.hypertrace.agent.core.instrumentation.SpanAndBuffer;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 
 @AutoService(InstrumentationModule.class)
 public class JaxrsClientBodyInstrumentationModule extends InstrumentationModule {
@@ -77,7 +82,10 @@ public class JaxrsClientBodyInstrumentationModule extends InstrumentationModule 
       // A client is only created once
       // Use lowest priority to run after OTEL filter that controls lifecycle of span
       client.register(JaxrsClientBodyCaptureFilter.class, Integer.MIN_VALUE);
-      client.register(JaxrsClientEntityInterceptor.class);
+      client.register(
+          new JaxrsClientEntityInterceptor(
+              InstrumentationContext.get(InputStream.class, SpanAndBuffer.class),
+              InstrumentationContext.get(OutputStream.class, BoundedByteArrayOutputStream.class)));
     }
   }
 }

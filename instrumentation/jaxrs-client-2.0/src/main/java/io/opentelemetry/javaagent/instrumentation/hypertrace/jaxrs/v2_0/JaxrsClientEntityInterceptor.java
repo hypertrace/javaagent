@@ -18,6 +18,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.jaxrs.v2_0;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.jaxrsclient.v2_0.ClientTracingFilter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,9 +33,8 @@ import javax.ws.rs.ext.WriterInterceptor;
 import javax.ws.rs.ext.WriterInterceptorContext;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.core.config.HypertraceConfig;
-import org.hypertrace.agent.core.instrumentation.GlobalObjectRegistry;
-import org.hypertrace.agent.core.instrumentation.GlobalObjectRegistry.SpanAndBuffer;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.instrumentation.SpanAndBuffer;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 import org.hypertrace.agent.core.instrumentation.utils.ContentLengthUtils;
@@ -46,6 +46,16 @@ import org.slf4j.LoggerFactory;
 public class JaxrsClientEntityInterceptor implements ReaderInterceptor, WriterInterceptor {
 
   private static final Logger log = LoggerFactory.getLogger(JaxrsClientEntityInterceptor.class);
+
+  private final ContextStore<InputStream, SpanAndBuffer> inputStreamContextStore;
+  private final ContextStore<OutputStream, BoundedByteArrayOutputStream> outputStreamContextStore;
+
+  public JaxrsClientEntityInterceptor(
+      ContextStore<InputStream, SpanAndBuffer> inputStreamContextStore,
+      ContextStore<OutputStream, BoundedByteArrayOutputStream> outputStreamContextStore) {
+    this.inputStreamContextStore = inputStreamContextStore;
+    this.outputStreamContextStore = outputStreamContextStore;
+  }
 
   /** Writing response body to input stream */
   @Override
@@ -87,10 +97,12 @@ public class JaxrsClientEntityInterceptor implements ReaderInterceptor, WriterIn
 
       BoundedByteArrayOutputStream buffer =
           BoundedBuffersFactory.createStream(contentLength, charset);
-      GlobalObjectRegistry.inputStreamToSpanAndBufferMap.put(
+
+      inputStreamContextStore.put(
           entityStream,
           new SpanAndBuffer(
               currentSpan, buffer, HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, charset));
+
       entity = responseContext.proceed();
     } catch (Exception ex) {
       log.error("Exception while capturing response body", ex);
@@ -133,12 +145,12 @@ public class JaxrsClientEntityInterceptor implements ReaderInterceptor, WriterIn
     BoundedByteArrayOutputStream buffer = BoundedBuffersFactory.createStream(charset);
     OutputStream entityStream = requestContext.getOutputStream();
     try {
-      GlobalObjectRegistry.outputStreamToBufferMap.put(entityStream, buffer);
+      outputStreamContextStore.put(entityStream, buffer);
       requestContext.proceed();
     } catch (Exception ex) {
       log.error("Failed to capture request body", ex);
     } finally {
-      GlobalObjectRegistry.outputStreamToBufferMap.remove(entityStream);
+      outputStreamContextStore.put(entityStream, null);
       currentSpan.setAttribute(
           HypertraceSemanticAttributes.HTTP_REQUEST_BODY, buffer.toStringWithSuppliedCharset());
     }
