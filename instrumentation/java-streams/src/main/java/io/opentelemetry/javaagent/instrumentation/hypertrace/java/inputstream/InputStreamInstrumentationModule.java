@@ -27,6 +27,8 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
+import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
+import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.tooling.InstrumentationModule;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.io.IOException;
@@ -39,18 +41,17 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import org.hypertrace.agent.core.instrumentation.GlobalObjectRegistry;
-import org.hypertrace.agent.core.instrumentation.GlobalObjectRegistry.SpanAndBuffer;
+import org.hypertrace.agent.core.instrumentation.SpanAndBuffer;
 
 /**
  * {@link InputStream} instrumentation. The type matcher applies to all implementations. However
- * only streams that are in the {@link GlobalObjectRegistry#inputStreamToSpanAndBufferMap} are
- * instrumented, otherwise the instrumentation is noop.
+ * only streams that are in the {@link ContextStore} are instrumented, otherwise the instrumentation
+ * is noop.
  *
- * <p>If the stream is in the {@link GlobalObjectRegistry#inputStreamToSpanAndBufferMap} then result
- * of read methods is also passed to the buffered stream (value) from the map. The instrumentation
- * adds buffer to span from the map when read is finished (return -1), creates new span with buffer
- * when the original span is not recording.
+ * <p>If the stream is in the {@link ContextStore} then result of read methods is also passed to the
+ * buffered stream (value) from the map. The instrumentation adds buffer to span from the map when
+ * read is finished (return -1), creates new span with buffer when the original span is not
+ * recording.
  *
  * <p>Maybe we could add optimization to instrument the input streams only when certain classes are
  * present in classloader e.g. classes from frameworks that we instrument.
@@ -117,7 +118,8 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
   public static class InputStream_ReadNoArgsAdvice {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static SpanAndBuffer enter(@Advice.This InputStream thizz) {
-      return InputStreamUtils.check(thizz);
+      return InputStreamUtils.check(
+          thizz, InstrumentationContext.get(InputStream.class, SpanAndBuffer.class));
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
@@ -133,14 +135,19 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
         return;
       }
 
-      InputStreamUtils.read(thizz, spanAndBuffer, read);
+      InputStreamUtils.read(
+          thizz,
+          spanAndBuffer,
+          InstrumentationContext.get(InputStream.class, SpanAndBuffer.class),
+          read);
     }
   }
 
   public static class InputStream_ReadByteArrayAdvice {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static SpanAndBuffer enter(@Advice.This InputStream thizz) {
-      return InputStreamUtils.check(thizz);
+      return InputStreamUtils.check(
+          thizz, InstrumentationContext.get(InputStream.class, SpanAndBuffer.class));
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
@@ -164,7 +171,8 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
   public static class InputStream_ReadByteArrayOffsetAdvice {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static SpanAndBuffer enter(@Advice.This InputStream thizz) {
-      return InputStreamUtils.check(thizz);
+      return InputStreamUtils.check(
+          thizz, InstrumentationContext.get(InputStream.class, SpanAndBuffer.class));
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
@@ -183,14 +191,22 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
         return;
       }
 
-      InputStreamUtils.read(thizz, spanAndBuffer, read, b, off, len);
+      InputStreamUtils.read(
+          thizz,
+          spanAndBuffer,
+          InstrumentationContext.get(InputStream.class, SpanAndBuffer.class),
+          read,
+          b,
+          off,
+          len);
     }
   }
 
   public static class InputStream_ReadAllBytes {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static SpanAndBuffer enter(@Advice.This InputStream thizz) {
-      return InputStreamUtils.check(thizz);
+      return InputStreamUtils.check(
+          thizz, InstrumentationContext.get(InputStream.class, SpanAndBuffer.class));
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
@@ -207,14 +223,19 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
         return;
       }
 
-      InputStreamUtils.readAll(thizz, spanAndBuffer, b);
+      InputStreamUtils.readAll(
+          thizz,
+          spanAndBuffer,
+          InstrumentationContext.get(InputStream.class, SpanAndBuffer.class),
+          b);
     }
   }
 
   public static class InputStream_ReadNBytes {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static SpanAndBuffer enter(@Advice.This InputStream thizz) {
-      return InputStreamUtils.check(thizz);
+      return InputStreamUtils.check(
+          thizz, InstrumentationContext.get(InputStream.class, SpanAndBuffer.class));
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
@@ -232,14 +253,35 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
       if (callDepth > 0) {
         return;
       }
-      InputStreamUtils.readNBytes(thizz, spanAndBuffer, read, b, off, len);
+      InputStreamUtils.readNBytes(
+          thizz,
+          spanAndBuffer,
+          InstrumentationContext.get(InputStream.class, SpanAndBuffer.class),
+          read,
+          b,
+          off,
+          len);
     }
   }
 
   public static class InputStream_Available {
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void exit(@Advice.This InputStream thizz, @Advice.Return int available) {
-      InputStreamUtils.available(thizz, available);
+      if (available != 0) {
+        return;
+      }
+      ContextStore<InputStream, SpanAndBuffer> contextStore =
+          InstrumentationContext.get(InputStream.class, SpanAndBuffer.class);
+
+      SpanAndBuffer spanAndBuffer = contextStore.get(thizz);
+      if (spanAndBuffer != null) {
+        InputStreamUtils.addBody(
+            spanAndBuffer.span,
+            spanAndBuffer.attributeKey,
+            spanAndBuffer.byteArrayBuffer,
+            spanAndBuffer.charset);
+        contextStore.put(thizz, null);
+      }
     }
   }
 }

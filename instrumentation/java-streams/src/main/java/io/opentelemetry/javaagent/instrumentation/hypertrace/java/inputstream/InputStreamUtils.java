@@ -22,14 +22,15 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
+import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
+import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
-import org.hypertrace.agent.core.instrumentation.GlobalObjectRegistry;
-import org.hypertrace.agent.core.instrumentation.GlobalObjectRegistry.SpanAndBuffer;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.instrumentation.SpanAndBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,9 +70,9 @@ public class InputStreamUtils {
     }
   }
 
-  public static SpanAndBuffer check(InputStream inputStream) {
-    SpanAndBuffer spanAndBuffer =
-        GlobalObjectRegistry.inputStreamToSpanAndBufferMap.get(inputStream);
+  public static SpanAndBuffer check(
+      InputStream inputStream, ContextStore<InputStream, SpanAndBuffer> contextStore) {
+    SpanAndBuffer spanAndBuffer = contextStore.get(inputStream);
     if (spanAndBuffer == null) {
       return null;
     }
@@ -80,7 +81,11 @@ public class InputStreamUtils {
     return spanAndBuffer;
   }
 
-  public static void read(InputStream inputStream, SpanAndBuffer spanAndBuffer, int read) {
+  public static void read(
+      InputStream inputStream,
+      SpanAndBuffer spanAndBuffer,
+      ContextStore<InputStream, SpanAndBuffer> contextStore,
+      int read) {
     if (read != -1) {
       spanAndBuffer.byteArrayBuffer.write((byte) read);
     } else if (read == -1) {
@@ -89,7 +94,7 @@ public class InputStreamUtils {
           spanAndBuffer.attributeKey,
           spanAndBuffer.byteArrayBuffer,
           spanAndBuffer.charset);
-      GlobalObjectRegistry.inputStreamToSpanAndBufferMap.remove(inputStream);
+      contextStore.put(inputStream, null);
     }
   }
 
@@ -103,12 +108,18 @@ public class InputStreamUtils {
           spanAndBuffer.attributeKey,
           spanAndBuffer.byteArrayBuffer,
           spanAndBuffer.charset);
-      GlobalObjectRegistry.inputStreamToSpanAndBufferMap.remove(inputStream);
+      InstrumentationContext.get(InputStream.class, SpanAndBuffer.class).put(inputStream, null);
     }
   }
 
   public static void read(
-      InputStream inputStream, SpanAndBuffer spanAndBuffer, int read, byte[] b, int off, int len) {
+      InputStream inputStream,
+      SpanAndBuffer spanAndBuffer,
+      ContextStore<InputStream, SpanAndBuffer> contextStore,
+      int read,
+      byte[] b,
+      int off,
+      int len) {
     if (read > 0) {
       spanAndBuffer.byteArrayBuffer.write(b, off, read);
     } else if (read == -1) {
@@ -117,43 +128,37 @@ public class InputStreamUtils {
           spanAndBuffer.attributeKey,
           spanAndBuffer.byteArrayBuffer,
           spanAndBuffer.charset);
-      GlobalObjectRegistry.inputStreamToSpanAndBufferMap.remove(inputStream);
+      contextStore.put(inputStream, null);
     }
   }
 
-  public static void readAll(InputStream inputStream, SpanAndBuffer spanAndBuffer, byte[] b)
+  public static void readAll(
+      InputStream inputStream,
+      SpanAndBuffer spanAndBuffer,
+      ContextStore<InputStream, SpanAndBuffer> contextStore,
+      byte[] b)
       throws IOException {
     spanAndBuffer.byteArrayBuffer.write(b);
-    GlobalObjectRegistry.inputStreamToSpanAndBufferMap.remove(inputStream);
+    contextStore.put(inputStream, null);
   }
 
   public static void readNBytes(
-      InputStream inputStream, SpanAndBuffer spanAndBuffer, int read, byte[] b, int off, int len) {
+      InputStream inputStream,
+      SpanAndBuffer spanAndBuffer,
+      ContextStore<InputStream, SpanAndBuffer> contextStore,
+      int read,
+      byte[] b,
+      int off,
+      int len) {
     if (read == 0) {
       InputStreamUtils.addBody(
           spanAndBuffer.span,
           spanAndBuffer.attributeKey,
           spanAndBuffer.byteArrayBuffer,
           spanAndBuffer.charset);
-      GlobalObjectRegistry.inputStreamToSpanAndBufferMap.remove(inputStream);
+      contextStore.put(inputStream, null);
     } else {
       spanAndBuffer.byteArrayBuffer.write(b, off, read);
-    }
-  }
-
-  public static void available(InputStream inputStream, int available) {
-    if (available != 0) {
-      return;
-    }
-    SpanAndBuffer spanAndBuffer =
-        GlobalObjectRegistry.inputStreamToSpanAndBufferMap.get(inputStream);
-    if (spanAndBuffer != null) {
-      InputStreamUtils.addBody(
-          spanAndBuffer.span,
-          spanAndBuffer.attributeKey,
-          spanAndBuffer.byteArrayBuffer,
-          spanAndBuffer.charset);
-      GlobalObjectRegistry.inputStreamToSpanAndBufferMap.remove(inputStream);
     }
   }
 }
