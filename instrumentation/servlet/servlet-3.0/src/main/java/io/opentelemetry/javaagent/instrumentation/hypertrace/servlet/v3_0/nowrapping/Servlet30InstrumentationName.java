@@ -16,7 +16,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping;
 
-public class Servlet31InstrumentationName {
+public class Servlet30InstrumentationName {
   public static final String PRIMARY = "servlet";
   public static final String[] OTHER = {
     "servlet-3",

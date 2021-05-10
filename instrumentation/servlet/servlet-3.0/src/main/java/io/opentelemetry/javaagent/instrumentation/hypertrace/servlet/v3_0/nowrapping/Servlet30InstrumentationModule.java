@@ -27,10 +27,10 @@ import java.util.Arrays;
 import java.util.List;
 
 @AutoService(InstrumentationModule.class)
-public class Servlet31NoWrappingInstrumentationModule extends InstrumentationModule {
+public class Servlet30InstrumentationModule extends InstrumentationModule {
 
-  public Servlet31NoWrappingInstrumentationModule() {
-    super(Servlet31InstrumentationName.PRIMARY, Servlet31InstrumentationName.OTHER);
+  public Servlet30InstrumentationModule() {
+    super(Servlet30InstrumentationName.PRIMARY, Servlet30InstrumentationName.OTHER);
   }
 
   @Override
@@ -41,7 +41,7 @@ public class Servlet31NoWrappingInstrumentationModule extends InstrumentationMod
   @Override
   public List<TypeInstrumentation> typeInstrumentations() {
     return Arrays.asList(
-        new Servlet31NoWrappingInstrumentation(),
+        new Servlet30AndFilterInstrumentation(),
         new ServletRequestInstrumentation(),
         new ServletInputStreamInstrumentation(),
         new ServletResponseInstrumentation(),
