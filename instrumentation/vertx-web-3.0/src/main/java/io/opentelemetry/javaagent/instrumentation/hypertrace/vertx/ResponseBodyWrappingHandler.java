@@ -22,7 +22,7 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
-import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.bootstrap.instrumentation.HypertraceSemanticAttributes;
 
 public class ResponseBodyWrappingHandler implements Handler<Buffer> {
 

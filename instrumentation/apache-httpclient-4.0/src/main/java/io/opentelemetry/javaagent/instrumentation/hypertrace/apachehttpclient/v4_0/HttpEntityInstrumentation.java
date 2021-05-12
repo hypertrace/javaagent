@@ -39,12 +39,12 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.hypertrace.agent.core.instrumentation.SpanAndBuffer;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
-import org.hypertrace.agent.core.instrumentation.utils.ContentLengthUtils;
-import org.hypertrace.agent.core.instrumentation.utils.ContentTypeCharsetUtils;
-import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
+import org.hypertrace.agent.core.bootstrap.instrumentation.SpanAndBuffer;
+import org.hypertrace.agent.core.bootstrap.instrumentation.buffer.BoundedBuffersFactory;
+import org.hypertrace.agent.core.bootstrap.instrumentation.buffer.BoundedByteArrayOutputStream;
+import org.hypertrace.agent.core.bootstrap.instrumentation.utils.ContentLengthUtils;
+import org.hypertrace.agent.core.bootstrap.instrumentation.utils.ContentTypeCharsetUtils;
+import org.hypertrace.agent.core.bootstrap.instrumentation.utils.ContentTypeUtils;
 
 public class HttpEntityInstrumentation implements TypeInstrumentation {
 

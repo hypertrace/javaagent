@@ -41,7 +41,7 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import org.hypertrace.agent.core.instrumentation.SpanAndBuffer;
+import org.hypertrace.agent.core.bootstrap.instrumentation.SpanAndBuffer;
 
 /**
  * {@link InputStream} instrumentation. The type matcher applies to all implementations. However

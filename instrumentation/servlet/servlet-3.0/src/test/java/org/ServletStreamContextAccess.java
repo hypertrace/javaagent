@@ -18,8 +18,8 @@ package org;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
-import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
+import org.hypertrace.agent.core.bootstrap.instrumentation.buffer.BoundedByteArrayOutputStream;
+import org.hypertrace.agent.core.bootstrap.instrumentation.buffer.ByteBufferSpanPair;
 
 public class ServletStreamContextAccess {
 

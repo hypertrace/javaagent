@@ -45,7 +45,7 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import org.hypertrace.agent.core.instrumentation.HypertraceCallDepthThreadLocalMap;
+import org.hypertrace.agent.core.bootstrap.instrumentation.HypertraceCallDepthThreadLocalMap;
 
 public class NettyChannelPipelineInstrumentation implements TypeInstrumentation {
 

@@ -30,12 +30,12 @@ import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpMessage;
 import org.apache.http.HttpResponse;
 import org.hypertrace.agent.config.Config.AgentConfig;
-import org.hypertrace.agent.core.config.HypertraceConfig;
-import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
-import org.hypertrace.agent.core.instrumentation.utils.ContentTypeCharsetUtils;
-import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
+import org.hypertrace.agent.core.bootstrap.config.HypertraceConfig;
+import org.hypertrace.agent.core.bootstrap.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.bootstrap.instrumentation.buffer.BoundedBuffersFactory;
+import org.hypertrace.agent.core.bootstrap.instrumentation.buffer.BoundedByteArrayOutputStream;
+import org.hypertrace.agent.core.bootstrap.instrumentation.utils.ContentTypeCharsetUtils;
+import org.hypertrace.agent.core.bootstrap.instrumentation.utils.ContentTypeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

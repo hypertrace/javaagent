@@ -52,3 +52,4 @@ include("instrumentation:servlet:servlet-rw")
 findProject(":instrumentation:servlet:servlet-rw")?.name = "servlet-rw"
 include("instrumentation:struts-2.3")
 findProject(":instrumentation:struts-2.3")?.name = "struts-2.3"
+include("javaagent-api")

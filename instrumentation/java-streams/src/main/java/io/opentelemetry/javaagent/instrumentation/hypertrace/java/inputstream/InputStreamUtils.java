@@ -29,8 +29,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
-import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
-import org.hypertrace.agent.core.instrumentation.SpanAndBuffer;
+import org.hypertrace.agent.core.bootstrap.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.bootstrap.instrumentation.SpanAndBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

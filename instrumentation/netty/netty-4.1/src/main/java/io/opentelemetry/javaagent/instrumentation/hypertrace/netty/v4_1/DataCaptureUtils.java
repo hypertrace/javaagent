@@ -27,7 +27,7 @@ import io.netty.util.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
+import org.hypertrace.agent.core.bootstrap.instrumentation.buffer.BoundedByteArrayOutputStream;
 
 public class DataCaptureUtils {
 

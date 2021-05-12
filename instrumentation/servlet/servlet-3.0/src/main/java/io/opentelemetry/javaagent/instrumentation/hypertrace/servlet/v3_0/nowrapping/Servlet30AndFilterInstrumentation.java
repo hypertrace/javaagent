@@ -48,14 +48,14 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import net.bytebuddy.matcher.ElementMatcher.Junction;
 import org.hypertrace.agent.config.Config.AgentConfig;
-import org.hypertrace.agent.core.config.HypertraceConfig;
-import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
-import org.hypertrace.agent.core.instrumentation.SpanAndObjectPair;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
-import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
-import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
-import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
+import org.hypertrace.agent.core.bootstrap.config.HypertraceConfig;
+import org.hypertrace.agent.core.bootstrap.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.bootstrap.instrumentation.SpanAndObjectPair;
+import org.hypertrace.agent.core.bootstrap.instrumentation.buffer.BoundedByteArrayOutputStream;
+import org.hypertrace.agent.core.bootstrap.instrumentation.buffer.BoundedCharArrayWriter;
+import org.hypertrace.agent.core.bootstrap.instrumentation.buffer.ByteBufferSpanPair;
+import org.hypertrace.agent.core.bootstrap.instrumentation.buffer.CharBufferSpanPair;
+import org.hypertrace.agent.core.bootstrap.instrumentation.utils.ContentTypeUtils;
 import org.hypertrace.agent.filter.FilterRegistry;
 
 public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {

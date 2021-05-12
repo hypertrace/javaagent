@@ -26,12 +26,12 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
-import org.hypertrace.agent.core.instrumentation.SpanAndObjectPair;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
-import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
-import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
+import org.hypertrace.agent.core.bootstrap.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.bootstrap.instrumentation.SpanAndObjectPair;
+import org.hypertrace.agent.core.bootstrap.instrumentation.buffer.BoundedByteArrayOutputStream;
+import org.hypertrace.agent.core.bootstrap.instrumentation.buffer.BoundedCharArrayWriter;
+import org.hypertrace.agent.core.bootstrap.instrumentation.buffer.ByteBufferSpanPair;
+import org.hypertrace.agent.core.bootstrap.instrumentation.buffer.CharBufferSpanPair;
 
 public class Utils {
 

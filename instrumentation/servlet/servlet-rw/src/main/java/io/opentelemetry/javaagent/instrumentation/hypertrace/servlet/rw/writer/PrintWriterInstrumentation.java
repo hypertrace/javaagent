@@ -35,7 +35,7 @@ import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import net.bytebuddy.matcher.ElementMatcher.Junction;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
+import org.hypertrace.agent.core.bootstrap.instrumentation.buffer.BoundedCharArrayWriter;
 
 public class PrintWriterInstrumentation implements TypeInstrumentation {
 

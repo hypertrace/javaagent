@@ -1,0 +1,8 @@
+# development environment
+.DS_Store
+.vscode
+.idea
+*~
+
+# Generated code
+**/*.pb.go

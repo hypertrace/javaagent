@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeoutException;
-import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.bootstrap.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractHttpClientTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

@@ -28,8 +28,8 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.v1_5.GrpcInstrumentationName;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.v1_5.GrpcSpanDecorator;
 import java.util.Map;
-import org.hypertrace.agent.core.config.HypertraceConfig;
-import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.bootstrap.config.HypertraceConfig;
+import org.hypertrace.agent.core.bootstrap.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.filter.FilterRegistry;
 
 public class GrpcServerInterceptor implements ServerInterceptor {

@@ -1,0 +1,20 @@
+lint:
+  rules:
+    all_default: true
+    remove:
+      - ENUM_FIELD_NAMES_ZERO_VALUE_END_WITH
+
+  rules_option:
+    # MAX_LINE_LENGTH rule option.
+    max_line_length:
+      # Enforces a maximum line length
+      max_chars: 120
+      # Specifies the character count for tab characters
+      tab_chars: 2
+
+    # INDENT rule option.
+    indent:
+      # Available styles are 4(4-spaces), 2(2-spaces) or tab.
+      style: 4
+      # Available newlines are "\n", "\r", or "\r\n".
+      newline: "\n"

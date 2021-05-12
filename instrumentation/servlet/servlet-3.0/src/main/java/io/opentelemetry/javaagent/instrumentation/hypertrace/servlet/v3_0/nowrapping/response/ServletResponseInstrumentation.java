@@ -40,13 +40,13 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import net.bytebuddy.matcher.ElementMatcher.Junction;
 import org.hypertrace.agent.config.Config.AgentConfig;
-import org.hypertrace.agent.core.config.HypertraceConfig;
-import org.hypertrace.agent.core.instrumentation.SpanAndObjectPair;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
-import org.hypertrace.agent.core.instrumentation.utils.ContentTypeCharsetUtils;
-import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
+import org.hypertrace.agent.core.bootstrap.config.HypertraceConfig;
+import org.hypertrace.agent.core.bootstrap.instrumentation.SpanAndObjectPair;
+import org.hypertrace.agent.core.bootstrap.instrumentation.buffer.BoundedBuffersFactory;
+import org.hypertrace.agent.core.bootstrap.instrumentation.buffer.BoundedByteArrayOutputStream;
+import org.hypertrace.agent.core.bootstrap.instrumentation.buffer.BoundedCharArrayWriter;
+import org.hypertrace.agent.core.bootstrap.instrumentation.utils.ContentTypeCharsetUtils;
+import org.hypertrace.agent.core.bootstrap.instrumentation.utils.ContentTypeUtils;
 
 public class ServletResponseInstrumentation implements TypeInstrumentation {
 

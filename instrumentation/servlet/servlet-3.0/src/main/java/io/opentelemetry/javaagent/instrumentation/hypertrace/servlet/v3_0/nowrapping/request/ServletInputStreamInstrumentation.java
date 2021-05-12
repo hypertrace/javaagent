@@ -35,8 +35,8 @@ import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import net.bytebuddy.matcher.ElementMatcher.Junction;
-import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
-import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
+import org.hypertrace.agent.core.bootstrap.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.bootstrap.instrumentation.buffer.ByteBufferSpanPair;
 
 public class ServletInputStreamInstrumentation implements TypeInstrumentation {
 

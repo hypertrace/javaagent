@@ -26,9 +26,9 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
-import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
+import org.hypertrace.agent.core.bootstrap.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.bootstrap.instrumentation.buffer.BoundedBuffersFactory;
+import org.hypertrace.agent.core.bootstrap.instrumentation.buffer.BoundedCharArrayWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

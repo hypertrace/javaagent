@@ -18,8 +18,8 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0;
 
 import io.netty.util.AttributeKey;
 import java.util.Map;
-import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
+import org.hypertrace.agent.core.bootstrap.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.bootstrap.instrumentation.buffer.BoundedByteArrayOutputStream;
 
 public class AttributeKeys {
   public static final AttributeKey<BoundedByteArrayOutputStream> RESPONSE_BODY_BUFFER =

@@ -1,0 +1,129 @@
+syntax = "proto3";
+
+package org.hypertrace.agent.config;
+
+import "google/protobuf/wrappers.proto";
+
+option go_package = "github.com/hypertrace/goagent/config";
+option java_package = "org.hypertrace.agent.config";
+
+// AgentConfig covers the config for agents.
+// The config uses wrappers for primitive types to allow nullable values.
+// The nullable values are used for instance to explicitly disable data capture or secure connection.
+// Since the wrappers change structure of the objects the marshalling and unmarshalling
+// have to be done via protobuf marshallers.
+message AgentConfig {
+    // service_name identifies the service/process running e.g. "my service"
+    google.protobuf.StringValue service_name = 1;
+
+    // reporting holds the reporting settings for the agent
+    Reporting reporting = 2;
+
+    // data_capture describes the data being captured by instrumentation
+    DataCapture data_capture = 3;
+
+    // propagation_formats list the supported propagation formats
+    repeated PropagationFormat propagation_formats = 4;
+
+    // when `false`, disables the agent
+    google.protobuf.BoolValue enabled = 5;
+
+    // javaagent has the configs specific to javaagent
+    JavaAgent javaagent = 6;
+
+    // resource_attributes map define the static list of resources which is configured on the tracer
+    map<string, string> resource_attributes = 7;
+}
+
+// Reporting covers the options related to the mechanics for sending data to the
+// tracing server o collector.
+message Reporting {
+    // endpoint represents the endpoint for reporting the traces
+    // For ZIPKIN reporter type use http://api.traceable.ai:9411/api/v2/spans
+    // For OTLP reporter type use http://api.traceable.ai:4317
+    google.protobuf.StringValue endpoint = 1;
+
+    // when `true`, connects to endpoints over TLS.
+    google.protobuf.BoolValue secure = 2;
+
+    // user specific token to access Traceable API
+    google.protobuf.StringValue token = 3;
+
+    // opa describes the setting related to the Open Policy Agent
+    Opa opa = 4;
+
+    // reporter type for traces.
+    TraceReporterType trace_reporter_type = 5;
+}
+
+// Opa covers the options related to the mechanics for getting Open Policy Agent configuration file.
+// The client should use secure and token option from reporting settings.
+message Opa {
+    // endpoint represents the endpoint for polling OPA config file e.g. http://opa.traceableai:8181/
+    google.protobuf.StringValue endpoint = 1;
+
+    // poll period in seconds to query OPA service
+    google.protobuf.Int32Value poll_period_seconds  = 2;
+
+    // when `true` Open Policy Agent evaluation is enabled to block request
+    google.protobuf.BoolValue enabled = 3;
+}
+
+// Message describes what message should be considered for certain DataCapture option
+message Message {
+    // when `false` it disables the capture for the request in a client/request operation
+    google.protobuf.BoolValue request = 1;
+
+    // when `false` it disables the capture for the response in a client/request operation
+    google.protobuf.BoolValue response = 2;
+}
+
+// DataCapture describes the elements to be captured by the agent instrumentation
+message DataCapture {
+    // http_headers enables/disables the capture of the request/response headers in HTTP
+    Message http_headers = 1;
+
+    // http_body enables/disables the capture of the request/response body in HTTP
+    Message http_body = 2;
+
+    // rpc_metadata enables/disables the capture of the request/response metadata in RPC
+    Message rpc_metadata = 3;
+
+    // rpc_body enables/disables the capture of the request/response body in RPC
+    Message rpc_body = 4;
+
+    // maximum size of captured body in bytes. Default should be 131_072 (128 KiB).
+    google.protobuf.Int32Value body_max_size_bytes = 5;
+}
+
+// PropagationFormat represents the propagation formats supported by agents
+enum PropagationFormat {
+    // B3 propagation format, agents should support both multi and single value formats
+    // see https://github.com/openzipkin/b3-propagation
+    B3 = 0;
+
+    // W3C Propagation format
+    // see https://www.w3.org/TR/trace-context/
+    TRACECONTEXT = 1;
+}
+
+// TraceReporterType represents the reporting format for trace data.
+enum TraceReporterType {
+
+    // Default to none. Agent will use it's default reporting type
+    UNSPECIFIED = 0;
+
+    // Zipkin protobuf reporting format.
+    // see https://github.com/openzipkin/zipkin-api
+    ZIPKIN = 1;
+
+    // OpenTelemetry protobuf reporting format.
+    // see https://github.com/open-telemetry/opentelemetry-proto
+    OTLP = 2;
+}
+
+// JavaAgent has the configs specific to javaagent
+message JavaAgent {
+    // filter_jar_paths is the list of path to filter jars, separated by `,`
+    repeated google.protobuf.StringValue filter_jar_paths = 1;
+}

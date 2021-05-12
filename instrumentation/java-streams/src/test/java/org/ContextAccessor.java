@@ -18,8 +18,8 @@ package org;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import org.hypertrace.agent.core.instrumentation.SpanAndBuffer;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
+import org.hypertrace.agent.core.bootstrap.instrumentation.SpanAndBuffer;
+import org.hypertrace.agent.core.bootstrap.instrumentation.buffer.BoundedByteArrayOutputStream;
 
 public class ContextAccessor {
 

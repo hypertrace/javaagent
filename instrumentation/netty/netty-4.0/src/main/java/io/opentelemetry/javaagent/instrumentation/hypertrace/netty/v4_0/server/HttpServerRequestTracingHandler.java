@@ -34,13 +34,13 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import org.hypertrace.agent.config.Config.AgentConfig;
-import org.hypertrace.agent.core.config.HypertraceConfig;
-import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
-import org.hypertrace.agent.core.instrumentation.utils.ContentLengthUtils;
-import org.hypertrace.agent.core.instrumentation.utils.ContentTypeCharsetUtils;
-import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
+import org.hypertrace.agent.core.bootstrap.config.HypertraceConfig;
+import org.hypertrace.agent.core.bootstrap.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.bootstrap.instrumentation.buffer.BoundedBuffersFactory;
+import org.hypertrace.agent.core.bootstrap.instrumentation.buffer.BoundedByteArrayOutputStream;
+import org.hypertrace.agent.core.bootstrap.instrumentation.utils.ContentLengthUtils;
+import org.hypertrace.agent.core.bootstrap.instrumentation.utils.ContentTypeCharsetUtils;
+import org.hypertrace.agent.core.bootstrap.instrumentation.utils.ContentTypeUtils;
 
 public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapter {
 

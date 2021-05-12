@@ -31,7 +31,7 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
+import org.hypertrace.agent.core.bootstrap.instrumentation.buffer.CharBufferSpanPair;
 
 // SPI explicitly added in META-INF/services/...
 public class BufferedReaderContextAccessInstrumentationModule extends InstrumentationModule {

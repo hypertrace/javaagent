@@ -18,8 +18,8 @@ package org;
 
 import java.io.BufferedReader;
 import java.io.PrintWriter;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
-import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
+import org.hypertrace.agent.core.bootstrap.instrumentation.buffer.BoundedCharArrayWriter;
+import org.hypertrace.agent.core.bootstrap.instrumentation.buffer.CharBufferSpanPair;
 
 public class BufferedReaderPrintWriterContextAccess {
 

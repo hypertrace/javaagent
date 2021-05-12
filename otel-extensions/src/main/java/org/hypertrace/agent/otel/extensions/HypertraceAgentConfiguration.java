@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.config.Config.PropagationFormat;
 import org.hypertrace.agent.config.Config.TraceReporterType;
-import org.hypertrace.agent.core.config.HypertraceConfig;
+import org.hypertrace.agent.core.bootstrap.config.HypertraceConfig;
 
 @AutoService(PropertySource.class)
 public class HypertraceAgentConfiguration implements PropertySource {
