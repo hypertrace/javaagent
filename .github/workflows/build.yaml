@@ -39,6 +39,12 @@ jobs:
         env:
           JVM_OPTS: -Xmx1g
           TERM: dumb
+
+      - name: Upload javaagent JAR
+        uses: actions/upload-artifact@v2
+        with:
+          name: javaagent
+          path: javaagent/build/libs/*all.jar
   muzzle:
     runs-on: ubuntu-20.04
     steps:

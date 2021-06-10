@@ -52,3 +52,5 @@ include("instrumentation:servlet:servlet-rw")
 findProject(":instrumentation:servlet:servlet-rw")?.name = "servlet-rw"
 include("instrumentation:struts-2.3")
 findProject(":instrumentation:struts-2.3")?.name = "struts-2.3"
+include("instrumentation:undertow-1.4")
+findProject(":instrumentation:undertow-1.4")?.name = "undertow-1.4"
