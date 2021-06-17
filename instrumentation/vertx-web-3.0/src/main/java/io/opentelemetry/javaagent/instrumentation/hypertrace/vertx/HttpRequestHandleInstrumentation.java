@@ -33,7 +33,7 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import org.hypertrace.agent.core.config.HypertraceConfig;
+import org.hypertrace.agent.core.config.InstrumentationConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 
@@ -72,14 +72,15 @@ public class HttpRequestHandleInstrumentation implements TypeInstrumentation {
       }
       Span span = Span.fromContext(contexts.context);
 
-      if (HypertraceConfig.get().getDataCapture().getHttpHeaders().getRequest().getValue()) {
+      InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
+      if (instrumentationConfig.httpHeaders().request()) {
         for (Map.Entry<String, String> entry : request.headers()) {
           span.setAttribute(
               HypertraceSemanticAttributes.httpRequestHeader(entry.getKey()), entry.getValue());
         }
       }
 
-      if (HypertraceConfig.get().getDataCapture().getHttpHeaders().getResponse().getValue()) {
+      if (instrumentationConfig.httpHeaders().response()) {
         for (Map.Entry<String, String> entry : response.headers()) {
           span.setAttribute(
               HypertraceSemanticAttributes.httpResponseHeader(entry.getKey()), entry.getValue());
@@ -87,7 +88,7 @@ public class HttpRequestHandleInstrumentation implements TypeInstrumentation {
       }
 
       String contentType = response.getHeader("Content-Type");
-      if (HypertraceConfig.get().getDataCapture().getHttpBody().getResponse().getValue()
+      if (instrumentationConfig.httpBody().response()
           && ContentTypeUtils.shouldCapture(contentType)) {
         InstrumentationContext.get(HttpClientResponse.class, Span.class).put(response, span);
       }

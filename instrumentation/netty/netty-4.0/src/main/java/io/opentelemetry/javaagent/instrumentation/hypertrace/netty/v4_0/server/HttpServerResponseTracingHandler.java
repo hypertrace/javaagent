@@ -38,8 +38,7 @@ import io.opentelemetry.javaagent.instrumentation.netty.v4_0.server.NettyHttpSer
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.nio.charset.Charset;
 import java.util.Map;
-import org.hypertrace.agent.config.Config.AgentConfig;
-import org.hypertrace.agent.core.config.HypertraceConfig;
+import org.hypertrace.agent.core.config.InstrumentationConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
@@ -49,7 +48,8 @@ import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 
 public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdapter {
 
-  private final AgentConfig agentConfig = HypertraceConfig.get();
+  private static final InstrumentationConfig instrumentationConfig =
+      InstrumentationConfig.ConfigProvider.get();
 
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise prm) {
@@ -62,12 +62,12 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
 
     if (msg instanceof HttpResponse) {
       HttpResponse httpResponse = (HttpResponse) msg;
-      if (agentConfig.getDataCapture().getHttpHeaders().getResponse().getValue()) {
+      if (instrumentationConfig.httpHeaders().response()) {
         captureHeaders(span, httpResponse);
       }
 
       CharSequence contentType = DataCaptureUtils.getContentType(httpResponse);
-      if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()
+      if (instrumentationConfig.httpBody().response()
           && contentType != null
           && ContentTypeUtils.shouldCapture(contentType.toString())) {
 
@@ -86,7 +86,7 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
     }
 
     if ((msg instanceof HttpContent || msg instanceof ByteBuf)
-        && agentConfig.getDataCapture().getHttpBody().getResponse().getValue()) {
+        && instrumentationConfig.httpBody().response()) {
       DataCaptureUtils.captureBody(span, ctx.channel(), AttributeKeys.RESPONSE_BODY_BUFFER, msg);
     }
 

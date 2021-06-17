@@ -29,8 +29,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.hypertrace.agent.config.Config.AgentConfig;
-import org.hypertrace.agent.core.config.HypertraceConfig;
+import org.hypertrace.agent.core.config.InstrumentationConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.SpanAndObjectPair;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
@@ -40,6 +39,9 @@ import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 
 public class BodyCaptureAsyncListener implements AsyncListener {
+
+  private static final InstrumentationConfig instrumentationConfig =
+      InstrumentationConfig.ConfigProvider.get();
 
   private final AtomicBoolean responseHandled;
   private final Span span;
@@ -51,8 +53,6 @@ public class BodyCaptureAsyncListener implements AsyncListener {
   private final ContextStore<HttpServletRequest, SpanAndObjectPair> requestContextStore;
   private final ContextStore<ServletInputStream, ByteBufferSpanPair> inputStreamContextStore;
   private final ContextStore<BufferedReader, CharBufferSpanPair> readerContextStore;
-
-  private final AgentConfig agentConfig = HypertraceConfig.get();
 
   public BodyCaptureAsyncListener(
       AtomicBoolean responseHandled,
@@ -100,13 +100,13 @@ public class BodyCaptureAsyncListener implements AsyncListener {
     if (servletResponse instanceof HttpServletResponse) {
       HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
 
-      if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()
+      if (instrumentationConfig.httpBody().response()
           && ContentTypeUtils.shouldCapture(httpResponse.getContentType())) {
         Utils.captureResponseBody(
             span, httpResponse, responseContextStore, streamContextStore, writerContextStore);
       }
 
-      if (agentConfig.getDataCapture().getHttpHeaders().getResponse().getValue()) {
+      if (instrumentationConfig.httpHeaders().response()) {
         for (String headerName : httpResponse.getHeaderNames()) {
           String headerValue = httpResponse.getHeader(headerName);
           span.setAttribute(
@@ -118,7 +118,7 @@ public class BodyCaptureAsyncListener implements AsyncListener {
       HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
 
       // remove request body buffers from context stores, otherwise they might get reused
-      if (agentConfig.getDataCapture().getHttpBody().getRequest().getValue()
+      if (instrumentationConfig.httpBody().request()
           && ContentTypeUtils.shouldCapture(httpRequest.getContentType())) {
         Utils.resetRequestBodyBuffers(
             httpRequest, requestContextStore, inputStreamContextStore, readerContextStore);

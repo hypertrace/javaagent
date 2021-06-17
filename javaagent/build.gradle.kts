@@ -30,17 +30,6 @@ tasks {
     }
 
     shadowJar {
-        // config in javaagent-core uses protobuf and jackson
-        // shade to the same location as OTEL, because the package prefix is used in classloader instrumentation
-        // https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/master/javaagent-tooling/src/main/java/io/opentelemetry/javaagent/tooling/Constants.java#L25
-        // Consider changing the prefix once https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/1594 is fixed.
-        relocate("com.fasterxml.jackson", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.com.fasterxml.jackson")
-        relocate("com.google", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.com.google")
-        relocate("google.protobuf", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.google.protobuf")
-        relocate("javax", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.javax")
-        relocate("org.checkerframework", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.com.checkerframework")
-        relocate("org.yaml", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.org.yaml")
-
         relocate("com.blogspot.mydailyjava.weaklockfree", "io.opentelemetry.instrumentation.api.internal.shaded.weaklockfree")
 
         dependencies {

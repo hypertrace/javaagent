@@ -39,8 +39,7 @@ import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import net.bytebuddy.matcher.ElementMatcher.Junction;
-import org.hypertrace.agent.config.Config.AgentConfig;
-import org.hypertrace.agent.core.config.HypertraceConfig;
+import org.hypertrace.agent.core.config.InstrumentationConfig;
 import org.hypertrace.agent.core.instrumentation.SpanAndObjectPair;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
@@ -116,9 +115,9 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
       }
 
       // do not capture if data capture is disabled or not supported content type
-      AgentConfig agentConfig = HypertraceConfig.get();
+      InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
       String contentType = httpServletResponse.getContentType();
-      if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()
+      if (instrumentationConfig.httpBody().response()
           && ContentTypeUtils.shouldCapture(contentType)) {
 
         String charsetStr = httpServletResponse.getCharacterEncoding();
@@ -175,9 +174,9 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
       }
 
       // do not capture if data capture is disabled or not supported content type
-      AgentConfig agentConfig = HypertraceConfig.get();
+      InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
       String contentType = httpServletResponse.getContentType();
-      if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()
+      if (instrumentationConfig.httpBody().response()
           && ContentTypeUtils.shouldCapture(contentType)) {
 
         BoundedCharArrayWriter writer = BoundedBuffersFactory.createWriter();

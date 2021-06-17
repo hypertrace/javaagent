@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.otel.extensions;
+package org.hypertrace.agent.otel.extensions.config;
 
 import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.config.Config.PropagationFormat;
 import org.hypertrace.agent.config.Config.TraceReporterType;
-import org.hypertrace.agent.core.config.HypertraceConfig;
 
 @AutoService(PropertySource.class)
 public class HypertraceAgentConfiguration implements PropertySource {
@@ -72,7 +71,7 @@ public class HypertraceAgentConfiguration implements PropertySource {
   }
 
   @VisibleForTesting
-  static String toOtelPropagators(List<PropagationFormat> propagationFormats) {
+  public static String toOtelPropagators(List<PropagationFormat> propagationFormats) {
     return propagationFormats.stream()
         .map(v -> v.name().toLowerCase())
         .collect(Collectors.joining(","));

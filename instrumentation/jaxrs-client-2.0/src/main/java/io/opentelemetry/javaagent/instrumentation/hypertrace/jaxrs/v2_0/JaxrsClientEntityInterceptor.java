@@ -31,8 +31,7 @@ import javax.ws.rs.ext.ReaderInterceptor;
 import javax.ws.rs.ext.ReaderInterceptorContext;
 import javax.ws.rs.ext.WriterInterceptor;
 import javax.ws.rs.ext.WriterInterceptorContext;
-import org.hypertrace.agent.config.Config.AgentConfig;
-import org.hypertrace.agent.core.config.HypertraceConfig;
+import org.hypertrace.agent.core.config.InstrumentationConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.SpanAndBuffer;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
@@ -46,6 +45,8 @@ import org.slf4j.LoggerFactory;
 public class JaxrsClientEntityInterceptor implements ReaderInterceptor, WriterInterceptor {
 
   private static final Logger log = LoggerFactory.getLogger(JaxrsClientEntityInterceptor.class);
+  private static final InstrumentationConfig instrumentationConfig =
+      InstrumentationConfig.ConfigProvider.get();
 
   private final ContextStore<InputStream, SpanAndBuffer> inputStreamContextStore;
   private final ContextStore<OutputStream, BoundedByteArrayOutputStream> outputStreamContextStore;
@@ -63,10 +64,9 @@ public class JaxrsClientEntityInterceptor implements ReaderInterceptor, WriterIn
       throws IOException, WebApplicationException {
 
     MediaType mediaType = responseContext.getMediaType();
-    AgentConfig agentConfig = HypertraceConfig.get();
     if (mediaType == null
         || !ContentTypeUtils.shouldCapture(mediaType.toString())
-        || !agentConfig.getDataCapture().getHttpBody().getResponse().getValue()) {
+        || !instrumentationConfig.httpBody().response()) {
       return responseContext.proceed();
     }
 
@@ -125,8 +125,7 @@ public class JaxrsClientEntityInterceptor implements ReaderInterceptor, WriterIn
     Context context = (Context) contextObj;
     Span currentSpan = Span.fromContext(context);
 
-    AgentConfig agentConfig = HypertraceConfig.get();
-    if (agentConfig.getDataCapture().getHttpBody().getRequest().getValue()) {
+    if (instrumentationConfig.httpBody().request()) {
       MediaType mediaType = requestContext.getMediaType();
       if (mediaType == null || !ContentTypeUtils.shouldCapture(mediaType.toString())) {
         requestContext.proceed();

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.core.config;
+package org.hypertrace.agent.otel.extensions.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -48,10 +48,6 @@ public class HypertraceConfig {
 
   private static final Logger log = LoggerFactory.getLogger(HypertraceConfig.class);
 
-  // we could use a Set<Framework> but that would need to be synchronized
-  // so avoiding for perf reasons
-  private static volatile boolean servletCausingException;
-
   // volatile field in order to properly handle lazy initialization with double-checked locking
   private static volatile AgentConfig agentConfig;
 
@@ -78,48 +74,6 @@ public class HypertraceConfig {
       }
     }
     return agentConfig;
-  }
-
-  public static boolean isInstrumentationEnabled(String primaryName, String[] otherNames) {
-    // the instNames is not used because the config does not support it at the moment.
-
-    AgentConfig agentConfig = get();
-    // disabled if all is disabled
-    if (!agentConfig.getDataCapture().getHttpBody().getRequest().getValue()
-        && !agentConfig.getDataCapture().getHttpBody().getResponse().getValue()
-        && !agentConfig.getDataCapture().getHttpHeaders().getRequest().getValue()
-        && !agentConfig.getDataCapture().getHttpHeaders().getResponse().getValue()
-        && !agentConfig.getDataCapture().getRpcMetadata().getRequest().getValue()
-        && !agentConfig.getDataCapture().getRpcMetadata().getResponse().getValue()) {
-      return false;
-    }
-    return true;
-  }
-
-  public static boolean disableServletWrapperTypes() {
-    return servletCausingException;
-  }
-
-  /** Record any exception. This can result in disabling instrumentations. */
-  public static void recordException(Throwable throwable) {
-    if (!(throwable instanceof ClassCastException)) {
-      return;
-    }
-    String message = throwable.getMessage();
-    if (message == null || message.isEmpty() || !isHypertraceType(message)) {
-      return;
-    }
-    message = message.toLowerCase();
-    if (message.contains("servlet")) {
-      log.error(
-          "Hypertrace servlet type caused class cast exception. Disabling wrapping of servlet types",
-          throwable);
-      servletCausingException = true;
-    }
-  }
-
-  private static boolean isHypertraceType(String message) {
-    return message.contains("hypertrace");
   }
 
   /** Reset the config, use only in tests. */

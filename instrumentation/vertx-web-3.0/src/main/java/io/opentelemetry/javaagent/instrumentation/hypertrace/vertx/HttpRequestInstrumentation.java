@@ -41,7 +41,7 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import org.hypertrace.agent.core.config.HypertraceConfig;
+import org.hypertrace.agent.core.config.InstrumentationConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
@@ -140,7 +140,8 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
       Span span = Span.fromContext(contexts.context);
 
       String contentType = request.headers().get("Content-Type");
-      if (HypertraceConfig.get().getDataCapture().getHttpBody().getRequest().getValue()
+      InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
+      if (instrumentationConfig.httpBody().request()
           && ContentTypeUtils.shouldCapture(contentType)) {
         BoundedCharArrayWriter buffer =
             InstrumentationContext.get(MultiMap.class, BoundedCharArrayWriter.class)
@@ -179,7 +180,8 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
       Span span = Span.fromContext(contexts.context);
 
       String contentType = request.headers().get("Content-Type");
-      if (HypertraceConfig.get().getDataCapture().getHttpBody().getRequest().getValue()
+      InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
+      if (instrumentationConfig.httpBody().request()
           && ContentTypeUtils.shouldCapture(contentType)) {
 
         BoundedCharArrayWriter buffer =
@@ -214,7 +216,8 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
       }
 
       String contentType = request.headers().get("Content-Type");
-      if (HypertraceConfig.get().getDataCapture().getHttpBody().getRequest().getValue()
+      InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
+      if (instrumentationConfig.httpBody().request()
           && ContentTypeUtils.shouldCapture(contentType)) {
 
         ContextStore<MultiMap, BoundedCharArrayWriter> contextStore =
@@ -246,7 +249,8 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
       }
 
       String contentType = request.headers().get("Content-Type");
-      if (HypertraceConfig.get().getDataCapture().getHttpBody().getRequest().getValue()
+      InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
+      if (instrumentationConfig.httpBody().request()
           && ContentTypeUtils.shouldCapture(contentType)) {
 
         ContextStore<MultiMap, BoundedCharArrayWriter> contextStore =

@@ -1,3 +1,3 @@
 [submodule "javaagent-core/src/main/proto"]
-	path = javaagent-core/src/main/proto
+	path = otel-extensions/src/main/proto
 	url = https://github.com/hypertrace/agent-config.git

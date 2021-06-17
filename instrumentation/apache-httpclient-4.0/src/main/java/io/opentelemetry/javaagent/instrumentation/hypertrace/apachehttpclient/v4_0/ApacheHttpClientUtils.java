@@ -29,8 +29,8 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpMessage;
 import org.apache.http.HttpResponse;
-import org.hypertrace.agent.config.Config.AgentConfig;
-import org.hypertrace.agent.core.config.HypertraceConfig;
+import org.hypertrace.agent.core.config.InstrumentationConfig;
+import org.hypertrace.agent.core.config.InstrumentationConfig.ConfigProvider;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
@@ -41,6 +41,8 @@ import org.slf4j.LoggerFactory;
 
 public class ApacheHttpClientUtils {
   private ApacheHttpClientUtils() {}
+
+  private static InstrumentationConfig instrumentationConfig = ConfigProvider.get();
 
   private static final Logger log = LoggerFactory.getLogger(ApacheHttpClientUtils.class);
 
@@ -63,12 +65,11 @@ public class ApacheHttpClientUtils {
   }
 
   public static void traceRequest(Span span, HttpMessage request) {
-    AgentConfig agentConfig = HypertraceConfig.get();
-    if (agentConfig.getDataCapture().getHttpHeaders().getRequest().getValue()) {
+    if (instrumentationConfig.httpHeaders().request()) {
       ApacheHttpClientUtils.addRequestHeaders(span, request.headerIterator());
     }
 
-    if (agentConfig.getDataCapture().getHttpBody().getRequest().getValue()
+    if (instrumentationConfig.httpBody().request()
         && request instanceof HttpEntityEnclosingRequest) {
       HttpEntityEnclosingRequest entityRequest = (HttpEntityEnclosingRequest) request;
       HttpEntity entity = entityRequest.getEntity();
@@ -78,12 +79,11 @@ public class ApacheHttpClientUtils {
   }
 
   public static void traceResponse(Span span, HttpResponse response) {
-    AgentConfig agentConfig = HypertraceConfig.get();
-    if (agentConfig.getDataCapture().getHttpHeaders().getResponse().getValue()) {
+    if (instrumentationConfig.httpHeaders().response()) {
       ApacheHttpClientUtils.addResponseHeaders(span, response.headerIterator());
     }
 
-    if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()) {
+    if (instrumentationConfig.httpBody().response()) {
       HttpEntity entity = response.getEntity();
       ApacheHttpClientUtils.traceEntity(
           span, HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, entity);

@@ -28,7 +28,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okio.Buffer;
-import org.hypertrace.agent.core.config.HypertraceConfig;
+import org.hypertrace.agent.core.config.InstrumentationConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 import org.slf4j.Logger;
@@ -36,10 +36,12 @@ import org.slf4j.LoggerFactory;
 
 public class OkHttpTracingInterceptor implements Interceptor {
   private static final Logger log = LoggerFactory.getLogger(OkHttpTracingInterceptor.class);
+  private static final InstrumentationConfig instrumentationConfig =
+      InstrumentationConfig.ConfigProvider.get();
 
   @Override
   public Response intercept(Chain chain) throws IOException {
-    if (!HypertraceConfig.isInstrumentationEnabled(
+    if (!instrumentationConfig.isInstrumentationEnabled(
         Okhttp3InstrumentationName.PRIMARY, Okhttp3InstrumentationName.OTHER)) {
       return chain.proceed(chain.request());
     }
@@ -47,20 +49,20 @@ public class OkHttpTracingInterceptor implements Interceptor {
     Span span = Span.current();
 
     Request request = chain.request();
-    if (HypertraceConfig.get().getDataCapture().getHttpHeaders().getRequest().getValue()) {
+    if (instrumentationConfig.httpHeaders().request()) {
       captureHeaders(span, request.headers(), HypertraceSemanticAttributes::httpRequestHeader);
     }
     captureRequestBody(span, request.body());
 
     Response response = chain.proceed(request);
-    if (HypertraceConfig.get().getDataCapture().getHttpHeaders().getResponse().getValue()) {
+    if (instrumentationConfig.httpHeaders().response()) {
       captureHeaders(span, response.headers(), HypertraceSemanticAttributes::httpResponseHeader);
     }
     return captureResponseBody(span, response);
   }
 
   private static void captureRequestBody(Span span, RequestBody requestBody) {
-    if (!HypertraceConfig.get().getDataCapture().getHttpBody().getRequest().getValue()) {
+    if (!instrumentationConfig.httpBody().request()) {
       return;
     }
     if (requestBody == null) {
@@ -80,7 +82,7 @@ public class OkHttpTracingInterceptor implements Interceptor {
   }
 
   private static Response captureResponseBody(Span span, final Response response) {
-    if (!HypertraceConfig.get().getDataCapture().getHttpBody().getResponse().getValue()) {
+    if (!instrumentationConfig.httpBody().response()) {
       return response;
     }
     if (response.body() == null) {

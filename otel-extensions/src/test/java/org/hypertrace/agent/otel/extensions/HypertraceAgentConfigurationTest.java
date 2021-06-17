@@ -19,6 +19,7 @@ package org.hypertrace.agent.otel.extensions;
 import java.util.Arrays;
 import java.util.List;
 import org.hypertrace.agent.config.Config.PropagationFormat;
+import org.hypertrace.agent.otel.extensions.config.HypertraceAgentConfiguration;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
