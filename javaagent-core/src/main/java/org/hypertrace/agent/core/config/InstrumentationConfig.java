@@ -59,6 +59,13 @@ public interface InstrumentationConfig {
   class ConfigProvider {
     private static volatile InstrumentationConfig instrumentationConfig;
 
+    /** Reset the config, use only in tests. */
+    public static void reset() {
+      synchronized (ConfigProvider.class) {
+        instrumentationConfig = null;
+      }
+    }
+
     static InstrumentationConfig load() {
       ServiceLoader<InstrumentationConfig> configs =
           ServiceLoader.load(InstrumentationConfig.class);

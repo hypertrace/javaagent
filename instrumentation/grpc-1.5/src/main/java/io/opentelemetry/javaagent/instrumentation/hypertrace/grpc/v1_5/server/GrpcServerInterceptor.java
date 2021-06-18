@@ -34,12 +34,11 @@ import org.hypertrace.agent.filter.FilterRegistry;
 
 public class GrpcServerInterceptor implements ServerInterceptor {
 
-  private static final InstrumentationConfig instrumentationConfig =
-      InstrumentationConfig.ConfigProvider.get();
-
   @Override
   public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
       ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
+
+    InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
     if (!instrumentationConfig.isInstrumentationEnabled(
         GrpcInstrumentationName.PRIMARY, GrpcInstrumentationName.OTHER)) {
       return next.startCall(call, headers);
@@ -78,6 +77,8 @@ public class GrpcServerInterceptor implements ServerInterceptor {
     @Override
     public void sendMessage(RespT message) {
       super.sendMessage(message);
+
+      InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
       if (instrumentationConfig.rpcBody().response()) {
         GrpcSpanDecorator.addMessageAttribute(
             message, span, HypertraceSemanticAttributes.RPC_RESPONSE_BODY);
@@ -87,6 +88,8 @@ public class GrpcServerInterceptor implements ServerInterceptor {
     @Override
     public void sendHeaders(Metadata headers) {
       super.sendHeaders(headers);
+
+      InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
       if (instrumentationConfig.rpcMetadata().response()) {
         GrpcSpanDecorator.addMetadataAttributes(
             headers, span, HypertraceSemanticAttributes::rpcResponseMetadata);
@@ -107,6 +110,8 @@ public class GrpcServerInterceptor implements ServerInterceptor {
     @Override
     public void onMessage(ReqT message) {
       delegate().onMessage(message);
+
+      InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
       if (instrumentationConfig.rpcBody().request()) {
         GrpcSpanDecorator.addMessageAttribute(
             message, span, HypertraceSemanticAttributes.RPC_REQUEST_BODY);
