@@ -17,8 +17,6 @@
 package org.hypertrace.agent.otel.extensions.config;
 
 import com.google.auto.service.AutoService;
-import java.util.List;
-import java.util.stream.Collectors;
 import org.hypertrace.agent.config.Config;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.config.Config.DataCapture;
@@ -45,13 +43,6 @@ public class InstrumentationConfigImpl implements InstrumentationConfig {
   @Override
   public int maxBodySizeBytes() {
     return agentConfig.getDataCapture().getBodyMaxSizeBytes().getValue();
-  }
-
-  @Override
-  public List<String> jarPaths() {
-    return agentConfig.getJavaagent().getFilterJarPathsList().stream()
-        .map(r -> r.getValue())
-        .collect(Collectors.toList());
   }
 
   @Override

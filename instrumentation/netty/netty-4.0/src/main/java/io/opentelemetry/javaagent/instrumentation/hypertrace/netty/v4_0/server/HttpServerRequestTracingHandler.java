@@ -86,7 +86,7 @@ public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapte
     }
 
     if ((msg instanceof HttpContent || msg instanceof ByteBuf)
-        && instrumentationConfig.rpcBody().request()) {
+        && instrumentationConfig.httpBody().request()) {
       DataCaptureUtils.captureBody(span, channel, AttributeKeys.REQUEST_BODY_BUFFER, msg);
     }
 

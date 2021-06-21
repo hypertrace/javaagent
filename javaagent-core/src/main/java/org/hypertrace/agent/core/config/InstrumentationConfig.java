@@ -17,24 +17,29 @@
 package org.hypertrace.agent.core.config;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.ServiceLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Instrumentation config holds configuration for the instrumentation. */
 public interface InstrumentationConfig {
 
+  /** Maximum capture body size in bytes. */
   int maxBodySizeBytes();
 
-  List<String> jarPaths();
-
+  /** Data capture for HTTP headers. */
   Message httpHeaders();
 
+  /** Data capture for HTTP body. */
   Message httpBody();
 
+  /** Data capture for RPC metadata. */
   Message rpcMetadata();
 
+  /** Data capture for RPC body */
   Message rpcBody();
 
+  /** Message holds data capture configuration for various entities. */
   interface Message {
     boolean request();
 
@@ -49,6 +54,8 @@ public interface InstrumentationConfig {
         && !httpBody().response()
         && !httpHeaders().request()
         && !httpHeaders().response()
+        && !rpcBody().request()
+        && !rpcBody().response()
         && !rpcMetadata().request()
         && !rpcMetadata().response()) {
       return false;
@@ -57,6 +64,8 @@ public interface InstrumentationConfig {
   }
 
   class ConfigProvider {
+    private static final Logger logger = LoggerFactory.getLogger(ConfigProvider.class);
+
     private static volatile InstrumentationConfig instrumentationConfig;
 
     /** Reset the config, use only in tests. */
@@ -66,14 +75,14 @@ public interface InstrumentationConfig {
       }
     }
 
-    static InstrumentationConfig load() {
+    private static InstrumentationConfig load() {
       ServiceLoader<InstrumentationConfig> configs =
           ServiceLoader.load(InstrumentationConfig.class);
       Iterator<InstrumentationConfig> iterator = configs.iterator();
       if (!iterator.hasNext()) {
+        logger.error("Failed to load instrumentation config");
         return null;
       }
-      // TODO consider returning noop
       return iterator.next();
     }
 

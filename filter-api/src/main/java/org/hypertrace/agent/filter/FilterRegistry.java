@@ -20,9 +20,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.ServiceLoader;
-import org.hypertrace.agent.core.config.InstrumentationConfig;
 import org.hypertrace.agent.filter.api.Filter;
 import org.hypertrace.agent.filter.spi.FilterProvider;
 import org.slf4j.Logger;
@@ -53,7 +53,7 @@ public class FilterRegistry {
       synchronized (FilterRegistry.class) {
         if (filter == null) {
           try {
-            filter = load();
+            filter = load(Collections.emptyList());
           } catch (Throwable t) {
             logger.error("Throwable thrown while loading filter jars", t);
           }
@@ -63,8 +63,22 @@ public class FilterRegistry {
     return filter;
   }
 
-  private static Filter load() {
-    ClassLoader cl = loadJars();
+  /**
+   * Initializes the registry by loading the filters. This method should be called only once at
+   * javaagent startup.
+   *
+   * @param jarPaths paths to filter jar files.
+   */
+  public static void initialize(List<String> jarPaths) {
+    try {
+      filter = load(jarPaths);
+    } catch (Throwable t) {
+      logger.error("Throwable thrown while loading filter jars", t);
+    }
+  }
+
+  private static Filter load(List<String> jarPaths) {
+    ClassLoader cl = loadJars(jarPaths);
     ServiceLoader<FilterProvider> providers = ServiceLoader.load(FilterProvider.class, cl);
     List<Filter> filters = new ArrayList<>();
     for (FilterProvider provider : providers) {
@@ -78,8 +92,7 @@ public class FilterRegistry {
     return new MultiFilter(filters);
   }
 
-  private static ClassLoader loadJars() {
-    List<String> jarPaths = InstrumentationConfig.ConfigProvider.get().jarPaths();
+  private static ClassLoader loadJars(List<String> jarPaths) {
     URL[] urls = new URL[jarPaths.size()];
     int i = 0;
     for (String jarPath : jarPaths) {
