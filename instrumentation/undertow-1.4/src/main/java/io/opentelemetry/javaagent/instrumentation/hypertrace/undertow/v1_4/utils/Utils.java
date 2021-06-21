@@ -24,7 +24,7 @@ import io.undertow.util.Headers;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import org.hypertrace.agent.core.config.HypertraceConfig;
+import org.hypertrace.agent.core.config.InstrumentationConfig.ConfigProvider;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.SpanAndBuffer;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
@@ -53,7 +53,7 @@ public final class Utils {
       final HttpServerExchange httpServerExchange,
       final StreamSourceChannel returnedChannel,
       final ContextStore<StreamSourceChannel, SpanAndBuffer> contextStore) {
-    if (!HypertraceConfig.get().getDataCapture().getHttpBody().getRequest().getValue()
+    if (!ConfigProvider.get().httpBody().request()
         || !ContentTypeUtils.shouldCapture(
             httpServerExchange.getRequestHeaders().getFirst(Headers.CONTENT_TYPE))) {
       return;
