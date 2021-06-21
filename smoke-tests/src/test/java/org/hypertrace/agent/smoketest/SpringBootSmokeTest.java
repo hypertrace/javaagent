@@ -20,7 +20,6 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import okhttp3.Request;
