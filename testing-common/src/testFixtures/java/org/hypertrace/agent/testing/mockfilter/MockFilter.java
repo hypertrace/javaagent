@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.filter.mock;
+package org.hypertrace.agent.testing.mockfilter;
 
 import io.opentelemetry.api.trace.Span;
 import java.util.Map;

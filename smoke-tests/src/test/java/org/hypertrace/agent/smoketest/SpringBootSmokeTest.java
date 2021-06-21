@@ -20,7 +20,6 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import okhttp3.Request;
@@ -147,21 +146,5 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
     //            .collect(Collectors.toList());
     //    Assertions.assertEquals(1, responseBodyAttributes.size());
     //    Assertions.assertEquals("Hi!", responseBodyAttributes.get(0));
-  }
-
-  @Test
-  public void blocking() throws IOException {
-    String url = String.format("http://localhost:%d/greeting", app.getMappedPort(8080));
-    Request request = new Request.Builder().url(url).addHeader("mockblock", "true").get().build();
-    Response response = client.newCall(request).execute();
-    Collection<ExportTraceServiceRequest> traces = waitForTraces();
-
-    Assertions.assertEquals(403, response.code());
-    Assertions.assertEquals(
-        1,
-        getSpanStream(traces)
-            .flatMap(span -> span.getAttributesList().stream())
-            .filter(attribute -> attribute.getKey().equals("hypertrace.mock.filter.result"))
-            .count());
   }
 }

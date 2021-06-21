@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.filter.mock;
+package org.hypertrace.agent.testing.mockfilter;
 
 import com.google.auto.service.AutoService;
 import org.hypertrace.agent.filter.api.Filter;
