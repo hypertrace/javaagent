@@ -6,7 +6,9 @@ on:
     paths-ignore:
       - '**/README.md'
       - 'smoke-tests/matrix'
-  pull_request:
+  pull_request_target:
+    branches:
+      - main
 
 jobs:
   build:
@@ -79,7 +81,7 @@ jobs:
       - name: Setup snyk
         uses: snyk/actions/setup@0.3.0
       - name: Snyk test
-        run: snyk test --all-sub-projects --org=hypertrace --severity-threshold=low --configuration-matching="^runtimeClasspath$"
+        run: snyk test -d --all-sub-projects --org=hypertrace --severity-threshold=low --configuration-matching="^runtimeClasspath$"
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
           GRADLE_OPTS: -Dorg.gradle.workers.max=1
