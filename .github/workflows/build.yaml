@@ -6,7 +6,9 @@ on:
     paths-ignore:
       - '**/README.md'
       - 'smoke-tests/matrix'
-  pull_request:
+  pull_request_target:
+    branches:
+      - main
 
 jobs:
   build:
@@ -72,6 +74,8 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v2.3.4
         with:
+          ref: ${{github.event.pull_request.head.ref}}
+          repository: ${{github.event.pull_request.head.repo.full_name}}
           fetch-depth: 0
           submodules: true
       - name: Setup snyk
