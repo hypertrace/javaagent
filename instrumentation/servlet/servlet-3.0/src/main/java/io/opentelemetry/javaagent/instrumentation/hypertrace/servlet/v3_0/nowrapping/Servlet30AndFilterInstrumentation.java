@@ -47,8 +47,7 @@ import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import net.bytebuddy.matcher.ElementMatcher.Junction;
-import org.hypertrace.agent.config.Config.AgentConfig;
-import org.hypertrace.agent.core.config.HypertraceConfig;
+import org.hypertrace.agent.core.config.InstrumentationConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.SpanAndObjectPair;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
@@ -102,9 +101,10 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
       HttpServletResponse httpResponse = (HttpServletResponse) response;
       currentSpan = Java8BytecodeBridge.currentSpan();
 
-      AgentConfig agentConfig = HypertraceConfig.get();
+      InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
+
       String contentType = httpRequest.getContentType();
-      if (agentConfig.getDataCapture().getHttpBody().getRequest().getValue()
+      if (instrumentationConfig.httpBody().request()
           && ContentTypeUtils.shouldCapture(contentType)) {
         // The HttpServletRequest instrumentation uses this to
         // enable the instrumentation
@@ -123,7 +123,7 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
         AttributeKey<String> attributeKey =
             HypertraceSemanticAttributes.httpRequestHeader(headerName);
 
-        if (HypertraceConfig.get().getDataCapture().getHttpHeaders().getRequest().getValue()) {
+        if (instrumentationConfig.httpHeaders().request()) {
           currentSpan.setAttribute(attributeKey, headerValue);
         }
         headers.put(attributeKey.getKey(), headerValue);
@@ -155,7 +155,7 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
 
       HttpServletResponse httpResponse = (HttpServletResponse) response;
       HttpServletRequest httpRequest = (HttpServletRequest) request;
-      AgentConfig agentConfig = HypertraceConfig.get();
+      InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
 
       // response context to capture body and clear the context
       ContextStore<HttpServletResponse, SpanAndObjectPair> responseContextStore =
@@ -195,7 +195,7 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
       }
 
       if (!request.isAsyncStarted() && responseHandled.compareAndSet(false, true)) {
-        if (agentConfig.getDataCapture().getHttpHeaders().getResponse().getValue()) {
+        if (instrumentationConfig.httpHeaders().response()) {
           for (String headerName : httpResponse.getHeaderNames()) {
             String headerValue = httpResponse.getHeader(headerName);
             currentSpan.setAttribute(
@@ -204,7 +204,7 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
         }
 
         // capture response body
-        if (agentConfig.getDataCapture().getHttpBody().getResponse().getValue()
+        if (instrumentationConfig.httpBody().response()
             && ContentTypeUtils.shouldCapture(httpResponse.getContentType())) {
           Utils.captureResponseBody(
               currentSpan,
@@ -215,7 +215,7 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
         }
 
         // remove request body buffers from context stores, otherwise they might get reused
-        if (agentConfig.getDataCapture().getHttpBody().getRequest().getValue()
+        if (instrumentationConfig.httpBody().request()
             && ContentTypeUtils.shouldCapture(httpRequest.getContentType())) {
           Utils.resetRequestBodyBuffers(
               httpRequest, requestContextStore, inputStreamContextStore, readerContextStore);

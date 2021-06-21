@@ -14,31 +14,19 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.otel.extensions;
+package org.hypertrace.agent.otel.extensions.config;
 
 import com.google.auto.service.AutoService;
 import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.javaagent.spi.ComponentInstaller;
-import java.util.List;
-import java.util.stream.Collectors;
-import org.hypertrace.agent.config.Config.AgentConfig;
-import org.hypertrace.agent.filter.FilterRegistry;
-import org.hypertrace.agent.otel.extensions.config.HypertraceConfig;
+import org.hypertrace.agent.core.config.InstrumentationConfig.ConfigProvider;
 
 @AutoService(ComponentInstaller.class)
-public class FilterComponentInstaller implements ComponentInstaller {
+public class InstrumentationConfigInstaller implements ComponentInstaller {
 
   @Override
   public void beforeByteBuddyAgent(Config config) {
-    AgentConfig agentConfig = HypertraceConfig.get();
-    List<String> jarPaths =
-        agentConfig.getJavaagent().getFilterJarPathsList().stream()
-            .map(r -> r.getValue())
-            .collect(Collectors.toList());
-    // resolves filter via service loader resolution
-    FilterRegistry.initialize(jarPaths);
+    // get initializes singleton
+    ConfigProvider.get();
   }
-
-  @Override
-  public void afterByteBuddyAgent(Config config) {}
 }

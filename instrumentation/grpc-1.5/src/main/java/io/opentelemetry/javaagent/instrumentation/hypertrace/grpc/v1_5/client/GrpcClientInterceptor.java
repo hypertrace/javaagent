@@ -28,7 +28,7 @@ import io.grpc.MethodDescriptor;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.v1_5.GrpcInstrumentationName;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.v1_5.GrpcSpanDecorator;
-import org.hypertrace.agent.core.config.HypertraceConfig;
+import org.hypertrace.agent.core.config.InstrumentationConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 
 public class GrpcClientInterceptor implements ClientInterceptor {
@@ -36,7 +36,9 @@ public class GrpcClientInterceptor implements ClientInterceptor {
   @Override
   public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
       MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
-    if (!HypertraceConfig.isInstrumentationEnabled(
+
+    InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
+    if (!instrumentationConfig.isInstrumentationEnabled(
         GrpcInstrumentationName.PRIMARY, GrpcInstrumentationName.OTHER)) {
       return next.newCall(method, callOptions);
     }
@@ -59,7 +61,9 @@ public class GrpcClientInterceptor implements ClientInterceptor {
     @Override
     public void start(Listener<RespT> responseListener, Metadata headers) {
       super.start(new TracingClientCallListener<>(responseListener, span), headers);
-      if (HypertraceConfig.get().getDataCapture().getRpcMetadata().getRequest().getValue()) {
+
+      InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
+      if (instrumentationConfig.rpcMetadata().request()) {
         GrpcSpanDecorator.addMetadataAttributes(
             headers, span, HypertraceSemanticAttributes::rpcRequestMetadata);
       }
@@ -68,7 +72,9 @@ public class GrpcClientInterceptor implements ClientInterceptor {
     @Override
     public void sendMessage(ReqT message) {
       super.sendMessage(message);
-      if (HypertraceConfig.get().getDataCapture().getRpcBody().getRequest().getValue()) {
+
+      InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
+      if (instrumentationConfig.rpcBody().request()) {
         GrpcSpanDecorator.addMessageAttribute(
             message, span, HypertraceSemanticAttributes.RPC_REQUEST_BODY);
       }
@@ -87,7 +93,9 @@ public class GrpcClientInterceptor implements ClientInterceptor {
     @Override
     public void onMessage(RespT message) {
       delegate().onMessage(message);
-      if (HypertraceConfig.get().getDataCapture().getRpcBody().getResponse().getValue()) {
+
+      InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
+      if (instrumentationConfig.rpcBody().response()) {
         GrpcSpanDecorator.addMessageAttribute(
             message, span, HypertraceSemanticAttributes.RPC_RESPONSE_BODY);
       }
@@ -96,7 +104,9 @@ public class GrpcClientInterceptor implements ClientInterceptor {
     @Override
     public void onHeaders(Metadata headers) {
       super.onHeaders(headers);
-      if (HypertraceConfig.get().getDataCapture().getRpcMetadata().getResponse().getValue()) {
+
+      InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
+      if (instrumentationConfig.rpcMetadata().response()) {
         GrpcSpanDecorator.addMetadataAttributes(
             headers, span, HypertraceSemanticAttributes::rpcResponseMetadata);
       }

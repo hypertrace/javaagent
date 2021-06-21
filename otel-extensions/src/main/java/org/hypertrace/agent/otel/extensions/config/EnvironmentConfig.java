@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.core.config;
+package org.hypertrace.agent.otel.extensions.config;
 
 import com.google.protobuf.BoolValue;
 import com.google.protobuf.Int32Value;

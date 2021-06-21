@@ -16,15 +16,13 @@
 
 package org.hypertrace.agent.filter;
 
-import com.google.protobuf.StringValue;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.ServiceLoader;
-import org.hypertrace.agent.core.config.EnvironmentConfig;
-import org.hypertrace.agent.core.config.HypertraceConfig;
 import org.hypertrace.agent.filter.api.Filter;
 import org.hypertrace.agent.filter.spi.FilterProvider;
 import org.slf4j.Logger;
@@ -55,7 +53,7 @@ public class FilterRegistry {
       synchronized (FilterRegistry.class) {
         if (filter == null) {
           try {
-            filter = load();
+            filter = load(Collections.emptyList());
           } catch (Throwable t) {
             logger.error("Throwable thrown while loading filter jars", t);
           }
@@ -65,13 +63,26 @@ public class FilterRegistry {
     return filter;
   }
 
-  private static Filter load() {
-    ClassLoader cl = loadJars();
+  /**
+   * Initializes the registry by loading the filters. This method should be called only once at
+   * javaagent startup.
+   *
+   * @param jarPaths paths to filter jar files.
+   */
+  public static void initialize(List<String> jarPaths) {
+    try {
+      filter = load(jarPaths);
+    } catch (Throwable t) {
+      logger.error("Throwable thrown while loading filter jars", t);
+    }
+  }
+
+  private static Filter load(List<String> jarPaths) {
+    ClassLoader cl = loadJars(jarPaths);
     ServiceLoader<FilterProvider> providers = ServiceLoader.load(FilterProvider.class, cl);
     List<Filter> filters = new ArrayList<>();
     for (FilterProvider provider : providers) {
-      String disabled =
-          EnvironmentConfig.getProperty(getProviderDisabledPropertyName(provider.getClass()));
+      String disabled = getProperty(getProviderDisabledPropertyName(provider.getClass()));
       if ("true".equalsIgnoreCase(disabled)) {
         continue;
       }
@@ -81,18 +92,16 @@ public class FilterRegistry {
     return new MultiFilter(filters);
   }
 
-  private static ClassLoader loadJars() {
-    List<StringValue> jarPaths = HypertraceConfig.get().getJavaagent().getFilterJarPathsList();
+  private static ClassLoader loadJars(List<String> jarPaths) {
     URL[] urls = new URL[jarPaths.size()];
     int i = 0;
-    for (StringValue jarPath : jarPaths) {
+    for (String jarPath : jarPaths) {
       try {
-        URL url = new URL("file", "", -1, jarPath.getValue());
+        URL url = new URL("file", "", -1, jarPath);
         urls[i] = url;
         i++;
       } catch (MalformedURLException e) {
-        logger.warn(
-            String.format("Malformed URL exception for jar on path: %s", jarPath.getValue()), e);
+        logger.warn(String.format("Malformed URL exception for jar on path: %s", jarPath), e);
       }
     }
     return new URLClassLoader(urls, Thread.currentThread().getContextClassLoader());
@@ -100,5 +109,9 @@ public class FilterRegistry {
 
   public static String getProviderDisabledPropertyName(Class<?> clazz) {
     return String.format("ht.filter.provider.%s.disabled", clazz.getSimpleName());
+  }
+
+  public static String getProperty(String name) {
+    return System.getProperty(name, System.getenv(name.replaceAll("\\.", "_").toUpperCase()));
   }
 }

@@ -35,9 +35,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
-import org.hypertrace.agent.core.config.EnvironmentConfig;
-import org.hypertrace.agent.core.config.HypertraceConfig;
+import org.hypertrace.agent.core.config.InstrumentationConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.otel.extensions.config.EnvironmentConfig;
+import org.hypertrace.agent.otel.extensions.config.HypertraceConfig;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.hypertrace.example.GreeterGrpc;
 import org.hypertrace.example.GreeterGrpc.GreeterBlockingStub;
@@ -190,6 +191,7 @@ public class GrpcInstrumentationTest extends AbstractInstrumenterTest {
     URL configUrl = getClass().getClassLoader().getResource("ht-config-all-disabled.yaml");
     System.setProperty(EnvironmentConfig.CONFIG_FILE_PROPERTY, configUrl.getPath());
     HypertraceConfig.reset();
+    InstrumentationConfig.ConfigProvider.reset();
 
     GreeterBlockingStub blockingStub = GreeterGrpc.newBlockingStub(CHANNEL);
     Response response = blockingStub.sayHello(REQUEST);

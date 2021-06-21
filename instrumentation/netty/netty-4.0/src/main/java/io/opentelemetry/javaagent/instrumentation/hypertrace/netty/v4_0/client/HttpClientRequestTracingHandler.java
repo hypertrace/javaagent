@@ -33,8 +33,7 @@ import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.DataCapt
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
-import org.hypertrace.agent.config.Config.AgentConfig;
-import org.hypertrace.agent.core.config.HypertraceConfig;
+import org.hypertrace.agent.core.config.InstrumentationConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
@@ -44,7 +43,8 @@ import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 
 public class HttpClientRequestTracingHandler extends ChannelOutboundHandlerAdapter {
 
-  private final AgentConfig agentConfig = HypertraceConfig.get();
+  private static final InstrumentationConfig instrumentationConfig =
+      InstrumentationConfig.ConfigProvider.get();
 
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise prm) {
@@ -64,12 +64,12 @@ public class HttpClientRequestTracingHandler extends ChannelOutboundHandlerAdapt
       HttpRequest httpRequest = (HttpRequest) msg;
 
       Map<String, String> headersMap = headersToMap(httpRequest);
-      if (agentConfig.getDataCapture().getHttpHeaders().getRequest().getValue()) {
+      if (instrumentationConfig.httpHeaders().request()) {
         headersMap.forEach((key, value) -> span.setAttribute(key, value));
       }
 
       CharSequence contentType = DataCaptureUtils.getContentType(httpRequest);
-      if (agentConfig.getDataCapture().getHttpBody().getRequest().getValue()
+      if (instrumentationConfig.httpBody().request()
           && contentType != null
           && ContentTypeUtils.shouldCapture(contentType.toString())) {
 
@@ -88,7 +88,7 @@ public class HttpClientRequestTracingHandler extends ChannelOutboundHandlerAdapt
     }
 
     if ((msg instanceof HttpContent || msg instanceof ByteBuf)
-        && agentConfig.getDataCapture().getHttpBody().getRequest().getValue()) {
+        && instrumentationConfig.httpBody().request()) {
       DataCaptureUtils.captureBody(span, channel, AttributeKeys.REQUEST_BODY_BUFFER, msg);
     }
 

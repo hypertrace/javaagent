@@ -28,7 +28,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.v1_5.GrpcInstrumentationName;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.v1_5.GrpcSpanDecorator;
 import java.util.Map;
-import org.hypertrace.agent.core.config.HypertraceConfig;
+import org.hypertrace.agent.core.config.InstrumentationConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.filter.FilterRegistry;
 
@@ -37,7 +37,9 @@ public class GrpcServerInterceptor implements ServerInterceptor {
   @Override
   public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
       ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
-    if (!HypertraceConfig.isInstrumentationEnabled(
+
+    InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
+    if (!instrumentationConfig.isInstrumentationEnabled(
         GrpcInstrumentationName.PRIMARY, GrpcInstrumentationName.OTHER)) {
       return next.startCall(call, headers);
     }
@@ -46,7 +48,7 @@ public class GrpcServerInterceptor implements ServerInterceptor {
 
     Map<String, String> mapHeaders = GrpcSpanDecorator.metadataToMap(headers);
 
-    if (HypertraceConfig.get().getDataCapture().getRpcMetadata().getRequest().getValue()) {
+    if (instrumentationConfig.rpcMetadata().request()) {
       GrpcSpanDecorator.addMetadataAttributes(mapHeaders, currentSpan);
     }
 
@@ -75,7 +77,9 @@ public class GrpcServerInterceptor implements ServerInterceptor {
     @Override
     public void sendMessage(RespT message) {
       super.sendMessage(message);
-      if (HypertraceConfig.get().getDataCapture().getRpcBody().getResponse().getValue()) {
+
+      InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
+      if (instrumentationConfig.rpcBody().response()) {
         GrpcSpanDecorator.addMessageAttribute(
             message, span, HypertraceSemanticAttributes.RPC_RESPONSE_BODY);
       }
@@ -84,7 +88,9 @@ public class GrpcServerInterceptor implements ServerInterceptor {
     @Override
     public void sendHeaders(Metadata headers) {
       super.sendHeaders(headers);
-      if (HypertraceConfig.get().getDataCapture().getRpcMetadata().getResponse().getValue()) {
+
+      InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
+      if (instrumentationConfig.rpcMetadata().response()) {
         GrpcSpanDecorator.addMetadataAttributes(
             headers, span, HypertraceSemanticAttributes::rpcResponseMetadata);
       }
@@ -104,7 +110,9 @@ public class GrpcServerInterceptor implements ServerInterceptor {
     @Override
     public void onMessage(ReqT message) {
       delegate().onMessage(message);
-      if (HypertraceConfig.get().getDataCapture().getRpcBody().getRequest().getValue()) {
+
+      InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
+      if (instrumentationConfig.rpcBody().request()) {
         GrpcSpanDecorator.addMessageAttribute(
             message, span, HypertraceSemanticAttributes.RPC_REQUEST_BODY);
       }

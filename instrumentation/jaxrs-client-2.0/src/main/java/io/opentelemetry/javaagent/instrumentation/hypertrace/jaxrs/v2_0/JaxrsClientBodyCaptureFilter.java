@@ -28,8 +28,7 @@ import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.client.ClientResponseContext;
 import javax.ws.rs.client.ClientResponseFilter;
 import javax.ws.rs.core.MultivaluedMap;
-import org.hypertrace.agent.config.Config.AgentConfig;
-import org.hypertrace.agent.core.config.HypertraceConfig;
+import org.hypertrace.agent.core.config.InstrumentationConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +36,8 @@ import org.slf4j.LoggerFactory;
 public class JaxrsClientBodyCaptureFilter implements ClientRequestFilter, ClientResponseFilter {
 
   private static final Logger log = LoggerFactory.getLogger(JaxrsClientBodyCaptureFilter.class);
+  private static final InstrumentationConfig instrumentationConfig =
+      InstrumentationConfig.ConfigProvider.get();
 
   @Override
   public void filter(ClientRequestContext requestContext) {
@@ -47,10 +48,9 @@ public class JaxrsClientBodyCaptureFilter implements ClientRequestFilter, Client
 
     Context currentContext = (Context) contextObj;
     Span currentSpan = Span.fromContext(currentContext);
-    AgentConfig agentConfig = HypertraceConfig.get();
 
     try {
-      if (agentConfig.getDataCapture().getHttpHeaders().getRequest().getValue()) {
+      if (instrumentationConfig.httpHeaders().request()) {
         captureHeaders(
             currentSpan,
             HypertraceSemanticAttributes::httpRequestHeader,
@@ -70,10 +70,9 @@ public class JaxrsClientBodyCaptureFilter implements ClientRequestFilter, Client
 
     Context currentContext = (Context) contextObj;
     Span currentSpan = Span.fromContext(currentContext);
-    AgentConfig agentConfig = HypertraceConfig.get();
 
     try {
-      if (agentConfig.getDataCapture().getHttpHeaders().getResponse().getValue()) {
+      if (instrumentationConfig.httpHeaders().response()) {
         captureHeaders(
             currentSpan,
             HypertraceSemanticAttributes::httpResponseHeader,

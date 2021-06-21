@@ -17,12 +17,11 @@
 package org.hypertrace.agent.core.instrumentation.buffer;
 
 import java.nio.charset.Charset;
-import org.hypertrace.agent.core.config.HypertraceConfig;
+import org.hypertrace.agent.core.config.InstrumentationConfig;
 
 public class BoundedBuffersFactory {
 
-  public static final int MAX_SIZE =
-      HypertraceConfig.get().getDataCapture().getBodyMaxSizeBytes().getValue();
+  public static final int MAX_SIZE = InstrumentationConfig.ConfigProvider.get().maxBodySizeBytes();
 
   public static BoundedByteArrayOutputStream createStream(Charset charset) {
     return new BoundedByteArrayOutputStream(MAX_SIZE, charset);
