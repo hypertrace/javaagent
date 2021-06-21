@@ -31,5 +31,6 @@ dependencies {
     testFixturesImplementation("net.bytebuddy:byte-buddy:${versions["byte_buddy"]}")
     testFixturesImplementation("net.bytebuddy:byte-buddy-agent:${versions["byte_buddy"]}")
     testFixturesCompileOnly("com.google.auto.service:auto-service-annotations:1.0")
+    testFixturesAnnotationProcessor("com.google.auto.service:auto-service:1.0")
     testFixturesImplementation("org.eclipse.jetty:jetty-server:8.0.0.v20110901")
 }

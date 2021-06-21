@@ -148,20 +148,4 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
     //    Assertions.assertEquals(1, responseBodyAttributes.size());
     //    Assertions.assertEquals("Hi!", responseBodyAttributes.get(0));
   }
-
-  @Test
-  public void blocking() throws IOException {
-    String url = String.format("http://localhost:%d/greeting", app.getMappedPort(8080));
-    Request request = new Request.Builder().url(url).addHeader("mockblock", "true").get().build();
-    Response response = client.newCall(request).execute();
-    Collection<ExportTraceServiceRequest> traces = waitForTraces();
-
-    Assertions.assertEquals(403, response.code());
-    Assertions.assertEquals(
-        1,
-        getSpanStream(traces)
-            .flatMap(span -> span.getAttributesList().stream())
-            .filter(attribute -> attribute.getKey().equals("hypertrace.mock.filter.result"))
-            .count());
-  }
 }
