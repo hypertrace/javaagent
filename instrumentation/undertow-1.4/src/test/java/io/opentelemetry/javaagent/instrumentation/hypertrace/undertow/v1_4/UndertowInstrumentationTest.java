@@ -17,6 +17,7 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.undertow.v1_4;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.undertow.Handlers;
@@ -145,9 +146,52 @@ final class UndertowInstrumentationTest extends AbstractInstrumenterTest {
     assertEquals(
         requestBody,
         putSpanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+
+    // make a third request to an endpoint that should return JSON
+    try (Response response =
+        this.httpClient
+            .newCall(
+                new Builder()
+                    .url("http://localhost:" + availablePort + "/myapp/?format=json")
+                    .get()
+                    .build())
+            .execute()) {
+      assertEquals(200, response.code());
+    }
+
+    TEST_WRITER.waitForTraces(3);
+    final List<List<SpanData>> getJsonTraces = TEST_WRITER.getTraces();
+    Assertions.assertEquals(3, getJsonTraces.size());
+    final List<SpanData> getJsonTrace = getJsonTraces.get(2);
+    Assertions.assertEquals(1, getJsonTrace.size());
+    final SpanData getJsonSpanData = getJsonTrace.get(0);
+    assertEquals(
+        "{\"message\": \"Hello World\"}",
+        getJsonSpanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+    // request body should not be captured
+    assertNull(getJsonSpanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
   }
 
   public static final class TestServlet extends HttpServlet {
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+      final String format = req.getParameter("format");
+      final byte[] responseBody;
+      if ("json".equals(format)) {
+        responseBody = "{\"message\": \"Hello World\"}".getBytes(StandardCharsets.UTF_8);
+        resp.setContentType("application/json; charset=UTF-8");
+
+      } else {
+        responseBody = "<h1>Hello World</h1>".getBytes(StandardCharsets.UTF_8);
+        resp.setContentType("text/html; charset=UTF-8");
+      }
+      resp.setStatus(200);
+      resp.setContentLength(responseBody.length);
+      try (ServletOutputStream servletOutputStream = resp.getOutputStream()) {
+        servletOutputStream.write(responseBody);
+      }
+    }
 
     @Override
     protected void doPost(final HttpServletRequest req, final HttpServletResponse resp)
