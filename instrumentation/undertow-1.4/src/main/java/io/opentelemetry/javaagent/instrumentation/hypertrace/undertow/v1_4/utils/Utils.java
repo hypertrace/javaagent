@@ -21,7 +21,6 @@ import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.undertow.UndertowHttpServerTracer;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import org.hypertrace.agent.core.config.InstrumentationConfig.ConfigProvider;
@@ -30,13 +29,9 @@ import org.hypertrace.agent.core.instrumentation.SpanAndBuffer;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xnio.channels.StreamSourceChannel;
 
 public final class Utils {
-
-  private static final Logger log = LoggerFactory.getLogger(Utils.class);
 
   /**
    * Creates a {@link SpanAndBuffer} and stores it in the {@link
@@ -71,6 +66,8 @@ public final class Utils {
             HypertraceSemanticAttributes.HTTP_REQUEST_BODY,
             charset);
     contextStore.put(returnedChannel, spanAndBuffer);
+    httpServerExchange.addExchangeCompleteListener(
+        new BodyCapturingExchangeCompletionListener(spanAndBuffer));
   }
 
   /**
@@ -96,13 +93,5 @@ public final class Utils {
       final byte b = readOnlyBuffer.get();
       boundedByteArrayOutputStream.write(b);
     }
-    final String body;
-    try {
-      body = boundedByteArrayOutputStream.toStringWithSuppliedCharset();
-    } catch (UnsupportedEncodingException e) {
-      log.error("illegal encoding", e);
-      return;
-    }
-    spanAndBuffer.span.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, body);
   }
 }
