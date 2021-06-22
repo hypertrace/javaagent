@@ -22,7 +22,6 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.returns;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import io.undertow.server.HttpServerExchange;
@@ -74,15 +73,8 @@ public final class UndertowHttpServletRequestInstrumentation implements TypeInst
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void enter(@Advice.This final HttpServletRequestImpl httpServletRequestImpl) {
       final HttpServerExchange exchange = httpServletRequestImpl.getExchange();
-      doPut(
-          exchange,
-          InstrumentationContext.get(HttpServerExchange.class, RequestBodyCaptureMethod.class));
+      InstrumentationContext.get(HttpServerExchange.class, RequestBodyCaptureMethod.class)
+          .put(exchange, RequestBodyCaptureMethod.SERVLET);
     }
-  }
-
-  public static void doPut(
-      HttpServerExchange exchange,
-      ContextStore<HttpServerExchange, RequestBodyCaptureMethod> contextStore) {
-    contextStore.put(exchange, RequestBodyCaptureMethod.SERVLET);
   }
 }
