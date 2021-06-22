@@ -104,6 +104,7 @@ public class Utils {
         // returned
         // it does not even call ServletInputStream#available()
         byteBufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
+        byteBufferSpanPair.span.setAttribute("org.hypertrace.servlet.request_body_capture", "true");
         streamContextStore.put(servletInputStream, null);
       }
     } else if (requestStreamReaderHolder.getAssociatedObject() instanceof BufferedReader) {
@@ -112,6 +113,7 @@ public class Utils {
       CharBufferSpanPair charBufferSpanPair = bufferedReaderContextStore.get(bufferedReader);
       if (charBufferSpanPair != null) {
         charBufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
+        charBufferSpanPair.span.setAttribute("org.hypertrace.servlet.request_body_capture", "true");
         bufferedReaderContextStore.put(bufferedReader, null);
       }
     }
