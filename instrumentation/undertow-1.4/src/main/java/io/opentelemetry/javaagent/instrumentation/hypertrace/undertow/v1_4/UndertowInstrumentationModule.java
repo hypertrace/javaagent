@@ -26,7 +26,7 @@ import java.util.List;
 public final class UndertowInstrumentationModule extends InstrumentationModule {
 
   public UndertowInstrumentationModule() {
-    super("undertow", "undertow-1.4-ht");
+    super("undertow", "undertow-1.4-ht", "ht", "undertow-ht");
   }
 
   @Override
