@@ -30,13 +30,11 @@ import io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers
 import io.undertow.server.HttpServerExchange;
 import java.nio.ByteBuffer;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import net.bytebuddy.matcher.ElementMatcher.Junction;
 import org.hypertrace.agent.core.instrumentation.HypertraceCallDepthThreadLocalMap;
 import org.hypertrace.agent.core.instrumentation.SpanAndBuffer;
 import org.xnio.channels.StreamSourceChannel;
@@ -51,15 +49,13 @@ public final class StreamSourceChannelInstrumentation implements TypeInstrumenta
 
   @Override
   public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    final Map<Junction<MethodDescription>, String> matchers = new HashMap<>();
-    matchers.put(
+    return Collections.singletonMap(
         named("read")
             .and(takesArguments(1))
             .and(takesArgument(0, ByteBuffer.class))
             .and(returns(int.class))
             .and(isPublic()),
         Read_advice.class.getName());
-    return Collections.unmodifiableMap(matchers);
   }
 
   /**
