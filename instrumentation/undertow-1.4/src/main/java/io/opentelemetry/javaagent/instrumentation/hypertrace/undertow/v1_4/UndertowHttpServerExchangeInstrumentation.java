@@ -35,6 +35,7 @@ import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import net.bytebuddy.matcher.ElementMatcher.Junction;
+import org.hypertrace.agent.core.instrumentation.RequestBodyCaptureMethod;
 import org.hypertrace.agent.core.instrumentation.SpanAndBuffer;
 import org.xnio.channels.StreamSourceChannel;
 
@@ -68,6 +69,14 @@ public final class UndertowHttpServerExchangeInstrumentation implements TypeInst
     public static void exit(
         @Advice.This final HttpServerExchange thizz,
         @Advice.Return final StreamSourceChannel returnedChannel) {
+      final RequestBodyCaptureMethod requestBodyCaptureMethod =
+          InstrumentationContext.get(HttpServerExchange.class, RequestBodyCaptureMethod.class)
+              .get(thizz);
+      if (RequestBodyCaptureMethod.SERVLET.equals(requestBodyCaptureMethod)) {
+        // short circuit if we detect that we can capture the request body with servlet
+        // instrumentation
+        return;
+      }
       final ContextStore<StreamSourceChannel, SpanAndBuffer> contextStore =
           InstrumentationContext.get(StreamSourceChannel.class, SpanAndBuffer.class);
       if (contextStore.get(returnedChannel) != null) {
