@@ -54,3 +54,5 @@ include("instrumentation:struts-2.3")
 findProject(":instrumentation:struts-2.3")?.name = "struts-2.3"
 include("instrumentation:undertow-1.4")
 findProject(":instrumentation:undertow-1.4")?.name = "undertow-1.4"
+include("instrumentation:undertow-servlet-1.4")
+findProject(":instrumentation:undertow-servlet-1.4")?.name = "undertow-servlet-1.4"
