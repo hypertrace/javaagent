@@ -17,9 +17,7 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.undertow.v1_4;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
@@ -119,15 +117,6 @@ final class UndertowInstrumentationTest extends AbstractInstrumenterTest {
         spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
     assertEquals(
         requestBody, spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
-    assertNull(
-        spanData
-            .getAttributes()
-            .get(AttributeKey.stringKey("org.hypertrace.servlet.request_body_capture")));
-    assertEquals(
-        "true",
-        spanData
-            .getAttributes()
-            .get(AttributeKey.stringKey("org.hypertrace.undertow.request_body_capture")));
 
     // make a second request to an endpoint that should leverage servlet instrumentation
     try (Response response =
@@ -155,15 +144,6 @@ final class UndertowInstrumentationTest extends AbstractInstrumenterTest {
     assertEquals(
         requestBody,
         putSpanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
-    assertEquals(
-        "true",
-        putSpanData
-            .getAttributes()
-            .get(AttributeKey.stringKey("org.hypertrace.servlet.request_body_capture")));
-    assertNull(
-        putSpanData
-            .getAttributes()
-            .get(AttributeKey.stringKey("org.hypertrace.undertow.request_body_capture")));
   }
 
   public static final class TestServlet extends HttpServlet {

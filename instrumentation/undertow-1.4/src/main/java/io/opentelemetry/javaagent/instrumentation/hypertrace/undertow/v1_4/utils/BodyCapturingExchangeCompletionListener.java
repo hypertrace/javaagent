@@ -45,7 +45,6 @@ public final class BodyCapturingExchangeCompletionListener implements ExchangeCo
       return;
     }
     spanAndBuffer.span.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, body);
-    spanAndBuffer.span.setAttribute("org.hypertrace.undertow.request_body_capture", "true");
     nextListener.proceed();
   }
 }
