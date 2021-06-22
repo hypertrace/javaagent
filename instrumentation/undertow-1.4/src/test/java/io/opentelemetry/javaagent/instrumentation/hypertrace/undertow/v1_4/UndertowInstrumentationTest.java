@@ -17,7 +17,9 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.undertow.v1_4;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
@@ -32,25 +34,30 @@ import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import okhttp3.MediaType;
-import okhttp3.Request;
 import okhttp3.Request.Builder;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 final class UndertowInstrumentationTest extends AbstractInstrumenterTest {
 
-  @Test
-  void testCaptureRequestBody() throws Exception {
-    final int availablePort;
+  private static Undertow server;
+  private static int availablePort;
+
+  @BeforeAll
+  static void startServer() throws ServletException {
     try (ServerSocket socket = new ServerSocket(0)) {
       availablePort = socket.getLocalPort();
     } catch (IOException e) {
@@ -71,22 +78,33 @@ final class UndertowInstrumentationTest extends AbstractInstrumenterTest {
     final PathHandler rootHandler =
         Handlers.path(Handlers.redirect(contextPath)).addPrefixPath(contextPath, servletHandler);
 
-    final Undertow server =
+    server =
         Undertow.builder()
             .addHttpListener(availablePort, "localhost")
             .setHandler(rootHandler)
             .build();
     server.start();
+  }
 
+  @AfterAll
+  static void stopServer() {
+    server.stop();
+  }
+
+  @Test
+  void testCaptureRequestBody() throws Exception {
     final String requestBody = "echo=bar";
-    final Request request =
-        new Builder()
-            .url("http://localhost:" + availablePort + "/myapp/")
-            .post(
-                RequestBody.create(requestBody, MediaType.get("application/x-www-form-urlencoded")))
-            .build();
 
-    try (Response response = this.httpClient.newCall(request).execute()) {
+    try (Response response =
+        this.httpClient
+            .newCall(
+                new Builder()
+                    .url("http://localhost:" + availablePort + "/myapp/")
+                    .post(
+                        RequestBody.create(
+                            requestBody, MediaType.get("application/x-www-form-urlencoded")))
+                    .build())
+            .execute()) {
       assertEquals(200, response.code());
     }
 
@@ -101,7 +119,51 @@ final class UndertowInstrumentationTest extends AbstractInstrumenterTest {
         spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
     assertEquals(
         requestBody, spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
-    server.stop();
+    assertNull(
+        spanData
+            .getAttributes()
+            .get(AttributeKey.stringKey("org.hypertrace.servlet.request_body_capture")));
+    assertEquals(
+        "true",
+        spanData
+            .getAttributes()
+            .get(AttributeKey.stringKey("org.hypertrace.undertow.request_body_capture")));
+
+    // make a second request to an endpoint that should leverage servlet instrumentation
+    try (Response response =
+        this.httpClient
+            .newCall(
+                new Builder()
+                    .url("http://localhost:" + availablePort + "/myapp/")
+                    .put(
+                        RequestBody.create(
+                            requestBody, MediaType.get("application/x-www-form-urlencoded")))
+                    .build())
+            .execute()) {
+      assertEquals(200, response.code());
+    }
+
+    TEST_WRITER.waitForTraces(2);
+    List<List<SpanData>> putTraces = TEST_WRITER.getTraces();
+    Assertions.assertEquals(2, putTraces.size());
+    List<SpanData> putTrace = putTraces.get(1);
+    Assertions.assertEquals(1, putTrace.size());
+    SpanData putSpanData = putTrace.get(0);
+    assertEquals(
+        "echo=bar&append=true",
+        putSpanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+    assertEquals(
+        requestBody,
+        putSpanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+    assertEquals(
+        "true",
+        putSpanData
+            .getAttributes()
+            .get(AttributeKey.stringKey("org.hypertrace.servlet.request_body_capture")));
+    assertNull(
+        putSpanData
+            .getAttributes()
+            .get(AttributeKey.stringKey("org.hypertrace.undertow.request_body_capture")));
   }
 
   public static final class TestServlet extends HttpServlet {
@@ -117,6 +179,24 @@ final class UndertowInstrumentationTest extends AbstractInstrumenterTest {
       resp.setContentLength(responseBody.length);
       try (ServletOutputStream servletOutputStream = resp.getOutputStream()) {
         servletOutputStream.write(responseBody);
+      }
+    }
+
+    @Override
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+
+      final String body;
+      try (ServletInputStream inputStream = req.getInputStream()) {
+        final int contentLength = req.getContentLength();
+        final byte[] requestBytes = new byte[contentLength];
+        inputStream.read(requestBytes);
+        body = new String(requestBytes) + "&append=true";
+      }
+      resp.setStatus(200);
+      resp.setContentType("application/x-www-form-urlencoded");
+      resp.setContentLength(body.length());
+      try (ServletOutputStream outputStream = resp.getOutputStream()) {
+        outputStream.write(body.getBytes(StandardCharsets.UTF_8));
       }
     }
   }
