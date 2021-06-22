@@ -31,7 +31,7 @@ public class BoundedBuffersFactory {
     if (initialSize > MAX_SIZE) {
       initialSize = MAX_SIZE;
     }
-    return initialSize != -1
+    return initialSize >= 0
         ? new BoundedByteArrayOutputStream(MAX_SIZE, initialSize, charset)
         : new BoundedByteArrayOutputStream(MAX_SIZE, charset);
   }
