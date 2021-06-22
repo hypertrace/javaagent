@@ -8,12 +8,6 @@ plugins {
 muzzle {
     pass {
         group = "io.undertow"
-        module = "undertow-core"
-        versions = "[1.4.0.Final,)"
-        assertInverse = true
-    }
-    pass {
-        group = "io.undertow"
         module = "undertow-servlet"
         versions = "[1.4.0.Final,)"
         assertInverse = true
