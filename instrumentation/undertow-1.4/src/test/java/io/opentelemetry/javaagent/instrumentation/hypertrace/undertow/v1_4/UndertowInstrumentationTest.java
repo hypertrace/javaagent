@@ -168,6 +168,27 @@ final class UndertowInstrumentationTest extends AbstractInstrumenterTest {
     assertEquals(
         "{\"message\": \"Hello World\"}",
         getJsonSpanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+    // empty request body should not be captured
+    assertNull(getJsonSpanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+
+    // make a four request to an endpoint that should return HTML
+    try (Response response =
+        this.httpClient
+            .newCall(
+                new Builder().url("http://localhost:" + availablePort + "/myapp/").get().build())
+            .execute()) {
+      assertEquals(200, response.code());
+    }
+
+    TEST_WRITER.waitForTraces(4);
+    final List<List<SpanData>> getHtmlTraces = TEST_WRITER.getTraces();
+    Assertions.assertEquals(4, getHtmlTraces.size());
+    final List<SpanData> getHtmlTrace = getHtmlTraces.get(3);
+    Assertions.assertEquals(1, getHtmlTrace.size());
+    final SpanData getHtmlSpanData = getHtmlTrace.get(0);
+    // HTML body should not be captured
+    assertNull(
+        getHtmlSpanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
     // request body should not be captured
     assertNull(getJsonSpanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
   }
