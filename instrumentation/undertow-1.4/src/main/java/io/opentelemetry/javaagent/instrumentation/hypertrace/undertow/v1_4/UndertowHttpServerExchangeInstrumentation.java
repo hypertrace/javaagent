@@ -28,13 +28,11 @@ import io.opentelemetry.javaagent.instrumentation.hypertrace.undertow.v1_4.utils
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import io.undertow.server.HttpServerExchange;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import net.bytebuddy.matcher.ElementMatcher.Junction;
 import org.hypertrace.agent.core.instrumentation.RequestBodyCaptureMethod;
 import org.hypertrace.agent.core.instrumentation.SpanAndBuffer;
 import org.xnio.channels.StreamSourceChannel;
@@ -49,14 +47,12 @@ public final class UndertowHttpServerExchangeInstrumentation implements TypeInst
 
   @Override
   public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    final Map<Junction<MethodDescription>, String> matchers = new HashMap<>();
-    matchers.put(
+    return Collections.singletonMap(
         named("getRequestChannel")
             .and(takesArguments(0))
             .and(returns(named("org.xnio.channels.StreamSourceChannel")))
             .and(isPublic()),
         GetRequestChannel_advice.class.getName());
-    return Collections.unmodifiableMap(matchers);
   }
 
   /**
