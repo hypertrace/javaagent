@@ -26,7 +26,7 @@ import java.util.List;
 public final class UndertowServletInstrumentationModule extends InstrumentationModule {
 
   public UndertowServletInstrumentationModule() {
-    super("undertow", "undertow-servlet-1.4-ht");
+    super("undertow", "undertow-servlet-1.4-ht", "ht", "undertow-ht");
   }
 
   @Override
