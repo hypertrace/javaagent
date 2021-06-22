@@ -52,7 +52,7 @@ public final class UndertowHttpServerExchangeInstrumentation implements TypeInst
             .and(takesArguments(0))
             .and(returns(named("org.xnio.channels.StreamSourceChannel")))
             .and(isPublic()),
-        GetRequestChannel_advice.class.getName());
+        UndertowHttpServerExchangeInstrumentation.class.getName() + "$GetRequestChannel_advice");
   }
 
   /**

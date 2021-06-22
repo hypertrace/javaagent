@@ -26,7 +26,6 @@ import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.servlet.spec.HttpServletRequestImpl;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import net.bytebuddy.asm.Advice;
@@ -51,14 +50,14 @@ public final class UndertowHttpServletRequestInstrumentation implements TypeInst
             .and(takesArguments(0))
             .and(returns(named("javax.servlet.ServletInputStream")))
             .and(isPublic()),
-        ServletBodyCapture_advice.class.getName());
+        UndertowHttpServletRequestInstrumentation.class.getName() + "$ServletBodyCapture_advice");
     matchers.put(
         named("getReader")
             .and(takesArguments(0))
             .and(returns(named("java.io.BufferedReader")))
             .and(isPublic()),
-        ServletBodyCapture_advice.class.getName());
-    return Collections.unmodifiableMap(matchers);
+        UndertowHttpServletRequestInstrumentation.class.getName() + "$ServletBodyCapture_advice");
+    return matchers;
   }
 
   /**

@@ -55,7 +55,7 @@ public final class StreamSourceChannelInstrumentation implements TypeInstrumenta
             .and(takesArgument(0, ByteBuffer.class))
             .and(returns(int.class))
             .and(isPublic()),
-        Read_advice.class.getName());
+        StreamSourceChannelInstrumentation.class.getName() + "$Read_advice");
   }
 
   /**
