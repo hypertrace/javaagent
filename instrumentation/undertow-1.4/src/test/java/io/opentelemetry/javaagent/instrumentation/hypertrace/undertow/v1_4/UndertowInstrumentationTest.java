@@ -32,6 +32,7 @@ import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
@@ -90,7 +91,7 @@ final class UndertowInstrumentationTest extends AbstractInstrumenterTest {
   }
 
   @Test
-  void testCaptureRequestBody() throws Exception {
+  void postUrlEncoded() throws InterruptedException, TimeoutException, IOException {
     final String requestBody = "echo=bar";
 
     try (Response response =
