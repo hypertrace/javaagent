@@ -18,10 +18,10 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.rw.reader;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
+import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
-import io.opentelemetry.javaagent.tooling.InstrumentationModule;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.io.BufferedReader;
 import java.util.Collections;
 import java.util.HashMap;

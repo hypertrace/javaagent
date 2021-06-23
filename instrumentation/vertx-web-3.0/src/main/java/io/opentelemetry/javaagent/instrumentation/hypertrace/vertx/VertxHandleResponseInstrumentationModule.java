@@ -17,8 +17,8 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.vertx;
 
 import com.google.auto.service.AutoService;
-import io.opentelemetry.javaagent.tooling.InstrumentationModule;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import java.util.Collections;
 import java.util.List;
 
@@ -30,7 +30,7 @@ public class VertxHandleResponseInstrumentationModule extends InstrumentationMod
   }
 
   @Override
-  public int getOrder() {
+  public int order() {
     // run before OTEL to have access to request span.
     // OTEL uses the same instrumentation point and it ends span there.
     return -1;

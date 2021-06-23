@@ -17,9 +17,9 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.v1_5.client;
 
 import com.google.auto.service.AutoService;
+import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.v1_5.GrpcInstrumentationName;
-import io.opentelemetry.javaagent.tooling.InstrumentationModule;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.util.Collections;
 import java.util.List;
 
@@ -31,7 +31,7 @@ public class GrpcClientBodyInstrumentationModule extends InstrumentationModule {
   }
 
   @Override
-  public int getOrder() {
+  public int order() {
     return 1;
   }
 
