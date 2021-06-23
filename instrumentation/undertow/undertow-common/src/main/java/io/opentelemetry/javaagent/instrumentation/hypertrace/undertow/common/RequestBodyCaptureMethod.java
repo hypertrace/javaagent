@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.core.instrumentation;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.undertow.common;
 
 /**
  * Describes instrumentation strategies for capturing the request body on containers. Generally,

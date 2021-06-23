@@ -23,6 +23,7 @@ import static net.bytebuddy.matcher.ElementMatchers.returns;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.undertow.common.RequestBodyCaptureMethod;
 import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.servlet.spec.HttpServletRequestImpl;
@@ -33,7 +34,6 @@ import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import net.bytebuddy.matcher.ElementMatcher.Junction;
-import org.hypertrace.agent.core.instrumentation.RequestBodyCaptureMethod;
 
 public final class UndertowHttpServletRequestInstrumentation implements TypeInstrumentation {
 
