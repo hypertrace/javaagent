@@ -40,8 +40,8 @@ dependencies{
     implementation(project(":instrumentation:apache-httpasyncclient-4.1"))
     implementation(project(":instrumentation:netty:netty-4.0"))
     implementation(project(":instrumentation:netty:netty-4.1"))
-    implementation(project(":instrumentation:undertow-1.4"))
-    implementation(project(":instrumentation:undertow-servlet-1.4"))
+    implementation(project(":instrumentation:undertow:undertow-1.4"))
+    implementation(project(":instrumentation:undertow:undertow-servlet-1.4"))
     implementation(project(":otel-extensions"))
 }
 
