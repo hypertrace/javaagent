@@ -19,19 +19,14 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.undertow.common;
 /**
  * Describes instrumentation strategies for capturing the request body on containers. Generally,
  * this is detected at runtime and stored in the {@link
- * io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext} so that {@link
- * #APP_SERVER} instrumentation can short-circuit when it is know that that the preferred {@link
- * #SERVLET} instrumentation is sufficient to capture the request body
+ * io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext} so that server
+ * instrumentation can short-circuit when it is know that that the preferred {@link #SERVLET}
+ * instrumentation is sufficient to capture the request body
  */
 public enum RequestBodyCaptureMethod {
   /**
    * Signals that the request body should be captured relying on the instrumentation of APIs defined
    * by {@code javax.servlet} implementations
    */
-  SERVLET,
-  /**
-   * Signals that request body should be captured relying on the instrumentation of APIs defined
-   * inside the app server's implementation that do not relate to {@code javax.servlet} APIs
-   */
-  APP_SERVER
+  SERVLET
 }

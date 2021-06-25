@@ -63,9 +63,9 @@ public final class UndertowHttpServletRequestInstrumentation implements TypeInst
   /**
    * When {@link HttpServletRequestImpl#getInputStream()} or {@link
    * HttpServletRequestImpl#getReader()} is invoked, we know that we want to capture the request
-   * body via our {@link RequestBodyCaptureMethod#SERVLET} approach, rather than via the {@link
-   * RequestBodyCaptureMethod#APP_SERVER} specific approach to capture the output of {@link
-   * HttpServerExchange#getRequestChannel()} which can be used without the Servlet APIs.
+   * body via our {@link RequestBodyCaptureMethod#SERVLET} approach, rather than via server
+   * instrumentation to capture the output of {@link HttpServerExchange#getRequestChannel()} which
+   * can be used without the Servlet APIs.
    */
   static final class ServletBodyCapture_advice {
 
