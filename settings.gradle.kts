@@ -34,6 +34,8 @@ include("instrumentation:jaxrs-client-2.0")
 findProject(":instrumentation:jaxrs-client-2.0")?.name = "jaxrs-client-2.0"
 include("instrumentation:java-streams")
 findProject(":instrumentation:java-streams")?.name = "java-streams"
+include(":instrumentation:jsf-2.0")
+findProject("instrumentation:jsf-2.0")?.name = "jsf-2.0"
 include("instrumentation:apache-httpasyncclient-4.1")
 findProject(":instrumentation:apache-httpasyncclient-4.1")?.name = "apache-httpasyncclient-4.1"
 include("instrumentation:vertx-web-3.0")
