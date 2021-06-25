@@ -18,18 +18,18 @@ package org.hypertrace.agent.core.instrumentation;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
-import java.io.ByteArrayOutputStream;
 import java.nio.charset.Charset;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 
 public class SpanAndBuffer {
   public final Span span;
-  public final ByteArrayOutputStream byteArrayBuffer;
+  public final BoundedByteArrayOutputStream byteArrayBuffer;
   public final AttributeKey<String> attributeKey;
   public final Charset charset;
 
   public SpanAndBuffer(
       Span span,
-      ByteArrayOutputStream byteArrayBuffer,
+      BoundedByteArrayOutputStream byteArrayBuffer,
       AttributeKey<String> attributeKey,
       Charset charset) {
     this.span = span;

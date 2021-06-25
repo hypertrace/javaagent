@@ -20,13 +20,14 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.ContextAccessor;
 import org.hypertrace.agent.core.instrumentation.SpanAndBuffer;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -94,7 +95,8 @@ public class InputStreamInstrumentationModuleTest extends AbstractInstrumenterTe
   private void read(InputStream inputStream, Runnable read, String expected) {
     Span span = TEST_TRACER.spanBuilder("test-span").startSpan();
 
-    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+    BoundedByteArrayOutputStream buffer =
+        BoundedBuffersFactory.createStream(StandardCharsets.ISO_8859_1);
     ContextAccessor.addToInputStreamContext(
         inputStream, new SpanAndBuffer(span, buffer, ATTRIBUTE_KEY, StandardCharsets.ISO_8859_1));
 
