@@ -52,7 +52,9 @@ public class HypertraceGlobalIgnoreMatcher implements IgnoreMatcherProvider {
     }
 
     String name = classLoader.getClass().getName();
-    if (name.startsWith("com.singularity.") || name.startsWith("com.yourkit.")) {
+    if (name.startsWith("com.singularity.")
+        || name.startsWith("com.yourkit.")
+        || name.startsWith("com.cisco.mtagent.")) {
       return Result.IGNORE;
     }
     return Result.DEFAULT;
