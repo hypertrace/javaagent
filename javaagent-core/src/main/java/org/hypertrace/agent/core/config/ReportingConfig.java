@@ -16,6 +16,11 @@
 
 package org.hypertrace.agent.core.config;
 
+import java.util.Iterator;
+import java.util.ServiceLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public interface ReportingConfig {
 
   /**
@@ -46,5 +51,33 @@ public interface ReportingConfig {
     String endpoint();
 
     int pollPeriodSeconds();
+  }
+
+  final class ConfigProvider {
+
+    private static final Logger logger = LoggerFactory.getLogger(ConfigProvider.class);
+
+    private static volatile ReportingConfig reportingConfig;
+
+    private static ReportingConfig load() {
+      ServiceLoader<ReportingConfig> configs = ServiceLoader.load(ReportingConfig.class);
+      Iterator<ReportingConfig> iterator = configs.iterator();
+      if (!iterator.hasNext()) {
+        logger.error("Failed to load reporting config");
+        return null;
+      }
+      return iterator.next();
+    }
+
+    public static ReportingConfig get() {
+      if (reportingConfig == null) {
+        synchronized (ConfigProvider.class) {
+          if (reportingConfig == null) {
+            reportingConfig = load();
+          }
+        }
+      }
+      return reportingConfig;
+    }
   }
 }
