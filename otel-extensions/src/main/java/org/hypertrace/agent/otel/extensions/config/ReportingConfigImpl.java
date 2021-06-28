@@ -27,7 +27,7 @@ public final class ReportingConfigImpl implements ReportingConfig {
   private final Config.Reporting reporting;
 
   public ReportingConfigImpl(final Config.Reporting reporting) {
-    opa = new OpaImpl(reporting.getOpa());
+    this.opa = new OpaImpl(reporting.getOpa());
     this.reporting = reporting;
   }
 
