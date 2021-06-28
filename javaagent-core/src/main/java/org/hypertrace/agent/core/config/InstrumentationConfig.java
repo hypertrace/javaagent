@@ -41,7 +41,6 @@ public interface InstrumentationConfig {
 
   /** Message holds data capture configuration for various entities. */
   interface Message {
-
     boolean request();
 
     boolean response();
