@@ -56,7 +56,7 @@ public final class ReportingConfigImpl implements ReportingConfig {
 
     @Override
     public boolean enabled() {
-      return opa.getEnabled().getValue();
+      return opa.hasEnabled() ? opa.getEnabled().getValue() : true;
     }
 
     @Override
