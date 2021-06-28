@@ -96,8 +96,8 @@ final class PrettyFacesInstrumentationTest extends AbstractInstrumenterTest {
                         .post(
                             new FormBody.Builder()
                                 .add("app-form", "app-form")
-                                .add("app-form:name", "test")
-                                .add("app-form:submit", "Say hello")
+                                .add("app-form:name", "exception")
+                                .add("app-form:submit", "Say goodbye")
                                 .add("app-form_SUBMIT", "1") // MyFaces
                                 .build())
                         .build())
