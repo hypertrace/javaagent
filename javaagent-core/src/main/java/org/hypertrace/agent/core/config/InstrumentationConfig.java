@@ -39,47 +39,12 @@ public interface InstrumentationConfig {
   /** Data capture for RPC body */
   Message rpcBody();
 
-  Reporting reporting();
-
   /** Message holds data capture configuration for various entities. */
   interface Message {
 
     boolean request();
 
     boolean response();
-  }
-
-  interface Reporting {
-
-    /**
-     * @return the {@link Opa} config implementation
-     * @see Opa for more information on why this API is deprecated
-     */
-    @Deprecated
-    Opa opa();
-
-    boolean secure();
-
-    String token();
-  }
-
-  /**
-   * Opa holds the configuration for the agent and filter implementations should interact with a
-   * remote Open Policy Agent endpoint.
-   *
-   * <p>Note, this API is deprecated because it is a goal of the Hypertrace community to migrate
-   * away form supplying this vendor-specific config and instead have authors of Hypertrace
-   * extensions/filters to have an indiomatic way to extned the Hypertrace configuration properties
-   * for their use cases
-   */
-  @Deprecated
-  interface Opa {
-
-    boolean enabled();
-
-    String endpoint();
-
-    int pollPeriodSeconds();
   }
 
   default boolean isInstrumentationEnabled(String primaryName, String[] otherNames) {

@@ -21,8 +21,6 @@ import org.hypertrace.agent.config.Config;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.config.Config.DataCapture;
 import org.hypertrace.agent.config.Config.Message;
-import org.hypertrace.agent.config.Config.Opa;
-import org.hypertrace.agent.config.Config.Reporting;
 import org.hypertrace.agent.core.config.InstrumentationConfig;
 
 @AutoService(InstrumentationConfig.class)
@@ -34,7 +32,6 @@ public class InstrumentationConfigImpl implements InstrumentationConfig {
   private final Message httpBody;
   private final Message rpcMetadata;
   private final Message rpcBody;
-  private final Reporting reporting;
 
   public InstrumentationConfigImpl() {
     DataCapture dataCapture = agentConfig.getDataCapture();
@@ -42,7 +39,6 @@ public class InstrumentationConfigImpl implements InstrumentationConfig {
     this.httpBody = new MessageImpl(dataCapture.getHttpBody());
     this.rpcMetadata = new MessageImpl(dataCapture.getRpcMetadata());
     this.rpcBody = new MessageImpl(dataCapture.getRpcBody());
-    reporting = new ReportingImpl(agentConfig.getReporting());
   }
 
   @Override
@@ -70,11 +66,6 @@ public class InstrumentationConfigImpl implements InstrumentationConfig {
     return this.rpcBody;
   }
 
-  @Override
-  public Reporting reporting() {
-    return reporting;
-  }
-
   private static final class MessageImpl implements Message {
 
     private final Config.Message message;
@@ -91,56 +82,6 @@ public class InstrumentationConfigImpl implements InstrumentationConfig {
     @Override
     public boolean response() {
       return message.getResponse().getValue();
-    }
-  }
-
-  private static final class ReportingImpl implements Reporting {
-
-    private final Opa opa;
-    private final Config.Reporting reporting;
-
-    public ReportingImpl(final Config.Reporting reporting) {
-      opa = new OpaImpl(reporting.getOpa());
-      this.reporting = reporting;
-    }
-
-    @Override
-    public Opa opa() {
-      return opa;
-    }
-
-    @Override
-    public boolean secure() {
-      return reporting.getSecure().getValue();
-    }
-
-    @Override
-    public String token() {
-      return reporting.getToken().getValue();
-    }
-  }
-
-  private static final class OpaImpl implements Opa {
-
-    private final Config.Opa opa;
-
-    public OpaImpl(final Config.Opa opa) {
-      this.opa = opa;
-    }
-
-    @Override
-    public boolean enabled() {
-      return opa.getEnabled().getValue();
-    }
-
-    @Override
-    public String endpoint() {
-      return opa.getEndpoint().getValue();
-    }
-
-    @Override
-    public int pollPeriodSeconds() {
-      return opa.getPollPeriodSeconds().getValue();
     }
   }
 }
