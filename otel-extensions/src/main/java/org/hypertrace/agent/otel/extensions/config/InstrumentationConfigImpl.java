@@ -20,6 +20,7 @@ import com.google.auto.service.AutoService;
 import org.hypertrace.agent.config.Config;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.config.Config.DataCapture;
+import org.hypertrace.agent.config.Config.Message;
 import org.hypertrace.agent.core.config.InstrumentationConfig;
 
 @AutoService(InstrumentationConfig.class)
@@ -65,7 +66,7 @@ public class InstrumentationConfigImpl implements InstrumentationConfig {
     return this.rpcBody;
   }
 
-  private class MessageImpl implements Message {
+  private static final class MessageImpl implements Message {
 
     private final Config.Message message;
 
