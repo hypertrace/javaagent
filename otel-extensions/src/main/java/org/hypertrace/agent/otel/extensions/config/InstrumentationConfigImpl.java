@@ -75,7 +75,7 @@ public class InstrumentationConfigImpl implements InstrumentationConfig {
     return reporting;
   }
 
-  private class MessageImpl implements Message {
+  private static final class MessageImpl implements Message {
 
     private final Config.Message message;
 
