@@ -26,9 +26,18 @@ public final class ReportingConfigImpl implements ReportingConfig {
   private final Opa opa;
   private final Config.Reporting reporting;
 
-  public ReportingConfigImpl(final Config.Reporting reporting) {
-    this.opa = new OpaImpl(reporting.getOpa());
-    this.reporting = reporting;
+  /**
+   * This constructor is required in order to be instantiated by the {@link java.util.ServiceLoader}
+   * API.
+   */
+  @SuppressWarnings("unused")
+  public ReportingConfigImpl() {
+    this(HypertraceConfig.get().getReporting());
+  }
+
+  public ReportingConfigImpl(final Config.Reporting reportingConfig) {
+    this.reporting = reportingConfig;
+    this.opa = new OpaImpl(reportingConfig.getOpa());
   }
 
   @Override
