@@ -120,8 +120,8 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
             .getValue()
             .getStringValue());
 
-    Assertions.assertEquals(1, countSpansByName(traces, "/post"));
-    Assertions.assertEquals(1, countSpansByName(traces, "WebController.post"));
+    Assertions.assertEquals(1, countSpansByName(traces, "/echo"));
+    Assertions.assertEquals(1, countSpansByName(traces, "WebController.echo"));
     Assertions.assertTrue(
         getInstrumentationLibSpanStream(traces)
             .anyMatch(
