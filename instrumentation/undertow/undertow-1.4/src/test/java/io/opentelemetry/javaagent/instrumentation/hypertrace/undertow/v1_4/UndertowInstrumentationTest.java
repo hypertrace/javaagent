@@ -108,8 +108,8 @@ final class UndertowInstrumentationTest extends AbstractInstrumenterTest {
       assertEquals(200, response.code());
     }
 
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
     TEST_WRITER.waitForTraces(1);
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
     Assertions.assertEquals(1, traces.size());
     List<SpanData> trace = traces.get(0);
     Assertions.assertEquals(1, trace.size());
