@@ -35,10 +35,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
 
-//@org.junitpioneer.jupiter.SetEnvironmentVariable(
+// @org.junitpioneer.jupiter.SetEnvironmentVariable(
 //    key = "SMOKETEST_JAVAAGENT_PATH",
 //    value =
-//        "/home/ploffay/projects/hypertrace/javaagent/javaagent/build/libs/hypertrace-agent-1.1.1-SNAPSHOT-all.jar")
+//
+// "/home/ploffay/projects/hypertrace/javaagent/javaagent/build/libs/hypertrace-agent-1.1.1-SNAPSHOT-all.jar")
 public class SpringBootSmokeTest extends AbstractSmokeTest {
 
   private static final int DEFAULT_MAX_PAYLOAD_CAPTURE_SIZE = 128 * 1024;
