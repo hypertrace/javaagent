@@ -17,46 +17,28 @@
 package org.hypertrace.agent.otel.extensions;
 
 import com.google.auto.service.AutoService;
-import io.opentelemetry.javaagent.spi.IgnoreMatcherProvider;
+import io.opentelemetry.instrumentation.api.config.Config;
+import io.opentelemetry.javaagent.extension.ignore.IgnoredTypesBuilder;
+import io.opentelemetry.javaagent.extension.ignore.IgnoredTypesConfigurer;
 
-@AutoService(IgnoreMatcherProvider.class)
-public class HypertraceGlobalIgnoreMatcher implements IgnoreMatcherProvider {
-
-  @Override
-  public Result type(net.bytebuddy.description.type.TypeDescription target) {
-    String actualName = target.getActualName();
-
-    if (actualName.startsWith("com.yourkit")) {
-      return Result.IGNORE;
-    }
-
-    if (actualName.startsWith("java.io")) {
-      if (actualName.equals("java.io.InputStream")
-          || actualName.equals("java.io.OutputStream")
-          || actualName.equals("java.io.ByteArrayInputStream")
-          || actualName.equals("java.io.ByteArrayOutputStream")
-          // servlet request/response body capture instrumentation
-          || actualName.equals("java.io.BufferedReader")
-          || actualName.equals("java.io.PrintWriter")) {
-        return Result.ALLOW;
-      }
-    }
-    return Result.DEFAULT;
-  }
+@AutoService(IgnoredTypesConfigurer.class)
+public class HypertraceGlobalIgnoreMatcher implements IgnoredTypesConfigurer {
 
   @Override
-  public Result classloader(ClassLoader classLoader) {
-    // bootstrap
-    if (classLoader == null) {
-      return Result.DEFAULT;
-    }
-
-    String name = classLoader.getClass().getName();
-    if (name.startsWith("com.singularity.")
-        || name.startsWith("com.yourkit.")
-        || name.startsWith("com.cisco.mtagent.")) {
-      return Result.IGNORE;
-    }
-    return Result.DEFAULT;
+  public void configure(Config config, IgnoredTypesBuilder builder) {
+    builder
+        // ignored profiler classes
+        .ignoreClass("com.yourkit")
+        // allowed java io classes
+        .allowClass("java.io.InputStream")
+        .allowClass("java.io.OutputStream")
+        .allowClass("java.io.ByteArrayInputStream")
+        .allowClass("java.io.ByteArrayOutputStream")
+        .allowClass("java.io.BufferedReader")
+        .allowClass("java.io.PrintWriter")
+        // ignored class loaders
+        .ignoreClassLoader("com.singularity.")
+        .ignoreClassLoader("com.yourkit.")
+        .ignoreClassLoader("com.cisco.mtagent.");
   }
 }
