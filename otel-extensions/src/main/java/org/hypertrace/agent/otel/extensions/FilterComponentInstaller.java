@@ -18,18 +18,18 @@ package org.hypertrace.agent.otel.extensions;
 
 import com.google.auto.service.AutoService;
 import io.opentelemetry.instrumentation.api.config.Config;
-import io.opentelemetry.javaagent.spi.ComponentInstaller;
+import io.opentelemetry.javaagent.extension.AgentListener;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.filter.FilterRegistry;
 import org.hypertrace.agent.otel.extensions.config.HypertraceConfig;
 
-@AutoService(ComponentInstaller.class)
-public class FilterComponentInstaller implements ComponentInstaller {
+@AutoService(AgentListener.class)
+public class FilterComponentInstaller implements AgentListener {
 
   @Override
-  public void beforeByteBuddyAgent(Config config) {
+  public void beforeAgent(Config config) {
     AgentConfig agentConfig = HypertraceConfig.get();
     List<String> jarPaths =
         agentConfig.getJavaagent().getFilterJarPathsList().stream()
@@ -40,5 +40,5 @@ public class FilterComponentInstaller implements ComponentInstaller {
   }
 
   @Override
-  public void afterByteBuddyAgent(Config config) {}
+  public void afterAgent(Config config) {}
 }
