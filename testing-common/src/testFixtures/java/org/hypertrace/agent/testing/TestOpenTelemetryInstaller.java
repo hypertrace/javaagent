@@ -33,7 +33,7 @@ public class TestOpenTelemetryInstaller extends OpenTelemetryInstaller {
   }
 
   @Override
-  public void beforeByteBuddyAgent(Config config) {
+  public void beforeAgent(Config config) {
     OpenTelemetrySdk.builder()
         .setTracerProvider(SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build())
         .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
@@ -41,5 +41,5 @@ public class TestOpenTelemetryInstaller extends OpenTelemetryInstaller {
   }
 
   @Override
-  public void afterByteBuddyAgent(Config config) {}
+  public void afterAgent(Config config) {}
 }
