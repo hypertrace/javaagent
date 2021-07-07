@@ -28,17 +28,15 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.core.instrumentation.SpanAndBuffer;
@@ -77,18 +75,17 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
     }
 
     @Override
-    public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-      Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>();
-      transformers.put(
+    public void transform(TypeTransformer transformer) {
+      transformer.applyAdviceToMethod(
           named("read").and(takesArguments(0)).and(isPublic()),
           InputStreamInstrumentationModule.class.getName() + "$InputStream_ReadNoArgsAdvice");
-      transformers.put(
+      transformer.applyAdviceToMethod(
           named("read")
               .and(takesArguments(1))
               .and(takesArgument(0, is(byte[].class)))
               .and(isPublic()),
           InputStreamInstrumentationModule.class.getName() + "$InputStream_ReadByteArrayAdvice");
-      transformers.put(
+      transformer.applyAdviceToMethod(
           named("read")
               .and(takesArguments(3))
               .and(takesArgument(0, is(byte[].class)))
@@ -97,10 +94,10 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
               .and(isPublic()),
           InputStreamInstrumentationModule.class.getName()
               + "$InputStream_ReadByteArrayOffsetAdvice");
-      transformers.put(
+      transformer.applyAdviceToMethod(
           named("readAllBytes").and(takesArguments(0)).and(isPublic()),
           InputStreamInstrumentationModule.class.getName() + "$InputStream_ReadAllBytes");
-      transformers.put(
+      transformer.applyAdviceToMethod(
           named("readNBytes")
               .and(takesArguments(0))
               .and(takesArgument(0, is(byte[].class)))
@@ -108,10 +105,9 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
               .and(takesArgument(2, is(int.class)))
               .and(isPublic()),
           InputStreamInstrumentationModule.class.getName() + "$InputStream_ReadNBytes");
-      transformers.put(
+      transformer.applyAdviceToMethod(
           named("available").and(takesArguments(0)).and(isPublic()),
           InputStreamInstrumentationModule.class.getName() + "$InputStream_Available");
-      return transformers;
     }
   }
 
