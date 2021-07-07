@@ -20,7 +20,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.javaagent.spi.ComponentInstaller;
+import io.opentelemetry.javaagent.extension.AgentListener;
 import io.opentelemetry.javaagent.tooling.AgentInstaller;
 import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
@@ -46,7 +46,7 @@ public abstract class AbstractInstrumenterTest {
   private static final org.slf4j.Logger log =
       LoggerFactory.getLogger(AbstractInstrumenterTest.class);
 
-  private static final ComponentInstaller COMPONENT_INSTALLER;
+  private static final AgentListener COMPONENT_INSTALLER;
 
   /**
    * For test runs, agent's global tracer will report to this list writer.
