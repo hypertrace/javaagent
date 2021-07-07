@@ -24,6 +24,7 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v4_0.ApacheHttpClientObjectRegistry.SpanAndAttributeKey;
@@ -31,10 +32,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.apache.http.Header;
@@ -54,19 +52,16 @@ public class HttpEntityInstrumentation implements TypeInstrumentation {
   }
 
   @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>();
-
+  public void transform(TypeTransformer transformer) {
     // instrumentation for request body along with OutputStream instrumentation
-    transformers.put(
+    transformer.applyAdviceToMethod(
         named("writeTo").and(takesArguments(1)).and(takesArgument(0, is(OutputStream.class))),
         HttpEntityInstrumentation.class.getName() + "$HttpEntity_WriteToAdvice");
 
     // instrumentation for response body along with InputStream instrumentation
-    transformers.put(
+    transformer.applyAdviceToMethod(
         named("getContent").and(takesArguments(0)).and(returns(InputStream.class)),
         HttpEntityInstrumentation.class.getName() + "$HttpEntity_GetContentAdvice");
-    return transformers;
   }
 
   static class HttpEntity_GetContentAdvice {
