@@ -1,5 +1,3 @@
-[![CircleCI](https://circleci.com/gh/hypertrace/javaagent.svg?style=svg&circle-token=b562d40d95cc5906f445004c4a96b666250d260b)](https://circleci.com/gh/hypertrace/javaagent)
-
 # Hypertrace OpenTelemetry Java agent
 
 Hypertrace distribution of [OpenTelemetry Java agent](https://github.com/open-telemetry/opentelemetry-java-instrumentation).
