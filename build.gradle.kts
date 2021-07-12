@@ -3,7 +3,7 @@ import org.hypertrace.gradle.publishing.License.APACHE_2_0;
 plugins {
     `java-library`
     id("com.diffplug.spotless") version "5.2.0" apply false
-    id("org.hypertrace.publish-maven-central-plugin") version "1.0.2" apply false
+    id("org.hypertrace.publish-maven-central-plugin") version "1.0.4" apply false
     id("org.hypertrace.ci-utils-plugin") version "0.3.0"
     id("org.gradle.test-retry") version "1.2.0" apply false
 }
