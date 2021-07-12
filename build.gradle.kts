@@ -18,6 +18,7 @@ allprojects {
     tasks.withType<JavaCompile> {
         options.compilerArgs.add("-Xlint:unchecked")
         options.isDeprecation = true
+        options.release.set(8)
     }
 }
 
