@@ -93,8 +93,7 @@ jobs:
       - name: Release jars
         run: |
           echo "Releasing version:" && ./gradlew printVersion clean
-          ./gradlew -PsigningKey=$(echo $SIGNING_KEY | base64 -d) publish
-          ./gradlew closeAndReleaseRepository
+          ./gradlew -PsigningKey=$(echo $SIGNING_KEY | base64 -d) publishToMavenLocal
         env:
           JVM_OPTS: -Xmx1g
           TERM: dumb
