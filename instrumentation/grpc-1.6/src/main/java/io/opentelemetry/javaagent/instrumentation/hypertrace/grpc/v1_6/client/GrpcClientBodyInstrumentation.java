@@ -17,17 +17,15 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.v1_6.client;
 
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.extendsClass;
-import static java.util.Collections.singletonMap;
 import static net.bytebuddy.matcher.ElementMatchers.declaresField;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 
 import io.grpc.ClientInterceptor;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import java.util.List;
-import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
@@ -40,13 +38,14 @@ public class GrpcClientBodyInstrumentation implements TypeInstrumentation {
   }
 
   @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    return singletonMap(
+  public void transform(TypeTransformer transformer) {
+    transformer.applyAdviceToMethod(
         isMethod().and(named("build")),
         GrpcClientBodyInstrumentation.class.getName() + "$AddInterceptorAdvice");
   }
 
   public static class AddInterceptorAdvice {
+
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void addInterceptor(
         @Advice.FieldValue("interceptors") List<ClientInterceptor> interceptors) {
