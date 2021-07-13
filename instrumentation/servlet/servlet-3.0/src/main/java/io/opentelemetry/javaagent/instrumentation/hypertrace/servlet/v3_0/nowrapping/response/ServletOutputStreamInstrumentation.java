@@ -24,17 +24,14 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import javax.servlet.ServletOutputStream;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import net.bytebuddy.matcher.ElementMatcher.Junction;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 
 public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
@@ -45,9 +42,8 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
   }
 
   @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    Map<Junction<MethodDescription>, String> transformers = new HashMap<>();
-    transformers.put(
+  public void transform(TypeTransformer transformer) {
+    transformer.applyAdviceToMethod(
         named("print")
             .and(takesArguments(1))
             .and(takesArgument(0, is(String.class)))
@@ -56,16 +52,16 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
     // other print methods call print or write on the OutputStream
 
     // OutputStream methods
-    transformers.put(
+    transformer.applyAdviceToMethod(
         named("write").and(takesArguments(1)).and(takesArgument(0, is(int.class))).and(isPublic()),
         ServletOutputStreamInstrumentation.class.getName() + "$OutputStream_write");
-    transformers.put(
+    transformer.applyAdviceToMethod(
         named("write")
             .and(takesArguments(1))
             .and(takesArgument(0, is(byte[].class)))
             .and(isPublic()),
         ServletOutputStreamInstrumentation.class.getName() + "$OutputStream_writeByteArr");
-    transformers.put(
+    transformer.applyAdviceToMethod(
         named("write")
             .and(takesArguments(3))
             .and(takesArgument(0, is(byte[].class)))
@@ -75,14 +71,14 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
         ServletOutputStreamInstrumentation.class.getName() + "$OutputStream_writeByteArrOffset");
 
     // close is not called on Tomcat (tested with Spring Boot)
-    //    transformers.put(
+    //    transformer.applyAdviceToMethod(
     //        named("close").and(takesArguments(0))
     //            .and(isPublic()),
     //        ServletOutputStreamInstrumentation.class.getName() + "$OutputStream_close");
-    return transformers;
   }
 
   static class OutputStream_write {
+
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static BoundedByteArrayOutputStream enter(
         @Advice.This ServletOutputStream thizz, @Advice.Argument(0) int b) {
@@ -110,6 +106,7 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
   }
 
   static class OutputStream_writeByteArr {
+
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static BoundedByteArrayOutputStream enter(
         @Advice.This ServletOutputStream thizz, @Advice.Argument(0) byte[] b) throws IOException {
@@ -138,6 +135,7 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
   }
 
   static class OutputStream_writeByteArrOffset {
+
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static BoundedByteArrayOutputStream enter(
         @Advice.This ServletOutputStream thizz,
@@ -169,6 +167,7 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
   }
 
   static class ServletOutputStream_print {
+
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static BoundedByteArrayOutputStream enter(
         @Advice.This ServletOutputStream thizz, @Advice.Argument(0) String s) throws IOException {
