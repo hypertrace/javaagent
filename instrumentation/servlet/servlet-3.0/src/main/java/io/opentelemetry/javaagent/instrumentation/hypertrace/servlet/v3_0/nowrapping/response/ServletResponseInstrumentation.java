@@ -23,22 +23,19 @@ import static net.bytebuddy.matcher.ElementMatchers.returns;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.Map;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import net.bytebuddy.matcher.ElementMatcher.Junction;
 import org.hypertrace.agent.core.config.InstrumentationConfig;
 import org.hypertrace.agent.core.instrumentation.SpanAndObjectPair;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
@@ -55,21 +52,20 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
   }
 
   @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    Map<Junction<MethodDescription>, String> matchers = new HashMap<>();
-    matchers.put(
+  public void transform(TypeTransformer transformer) {
+    transformer.applyAdviceToMethod(
         named("getOutputStream")
             .and(takesArguments(0))
             .and(returns(named("javax.servlet.ServletOutputStream")))
             .and(isPublic()),
         ServletResponseInstrumentation.class.getName() + "$ServletResponse_getOutputStream");
-    matchers.put(
+    transformer.applyAdviceToMethod(
         named("getWriter").and(takesArguments(0)).and(returns(PrintWriter.class)).and(isPublic()),
         ServletResponseInstrumentation.class.getName() + "$ServletResponse_getWriter_advice");
-    return matchers;
   }
 
   static class ServletResponse_getOutputStream {
+
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static HttpServletResponse enter(@Advice.This ServletResponse servletResponse) {
       if (!(servletResponse instanceof HttpServletResponse)) {
@@ -133,6 +129,7 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
   }
 
   static class ServletResponse_getWriter_advice {
+
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static HttpServletResponse enter(@Advice.This ServletResponse servletResponse) {
       if (!(servletResponse instanceof HttpServletResponse)) {
