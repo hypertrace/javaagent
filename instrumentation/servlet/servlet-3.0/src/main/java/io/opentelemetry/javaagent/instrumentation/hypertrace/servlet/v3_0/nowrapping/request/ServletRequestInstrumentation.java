@@ -23,20 +23,17 @@ import static net.bytebuddy.matcher.ElementMatchers.returns;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.io.BufferedReader;
-import java.util.HashMap;
-import java.util.Map;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import net.bytebuddy.matcher.ElementMatcher.Junction;
 import org.hypertrace.agent.core.instrumentation.SpanAndObjectPair;
 import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
 import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
@@ -49,24 +46,23 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
   }
 
   @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    Map<Junction<MethodDescription>, String> matchers = new HashMap<>();
-    matchers.put(
+  public void transform(TypeTransformer transformer) {
+    transformer.applyAdviceToMethod(
         named("getInputStream")
             .and(takesArguments(0))
             .and(returns(named("javax.servlet.ServletInputStream")))
             .and(isPublic()),
         ServletRequestInstrumentation.class.getName() + "$ServletRequest_getInputStream_advice");
-    matchers.put(
+    transformer.applyAdviceToMethod(
         named("getReader")
             .and(takesArguments(0))
             //            .and(returns(BufferedReader.class))
             .and(isPublic()),
         ServletRequestInstrumentation.class.getName() + "$ServletRequest_getReader_advice");
-    return matchers;
   }
 
   static class ServletRequest_getInputStream_advice {
+
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static SpanAndObjectPair enter(@Advice.This ServletRequest servletRequest) {
       HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
@@ -119,6 +115,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
   }
 
   static class ServletRequest_getReader_advice {
+
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static SpanAndObjectPair enter(@Advice.This ServletRequest servletRequest) {
       HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;

@@ -18,14 +18,15 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowra
 
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.safeHasSuperType;
 import static io.opentelemetry.javaagent.extension.matcher.ClassLoaderMatcher.hasClassesNamed;
-import static io.opentelemetry.javaagent.extension.matcher.NameMatchers.namedOneOf;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.namedOneOf;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
@@ -43,10 +44,8 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import net.bytebuddy.matcher.ElementMatcher.Junction;
 import org.hypertrace.agent.core.config.InstrumentationConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.SpanAndObjectPair;
@@ -70,15 +69,13 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
   }
 
   @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    Map<Junction<MethodDescription>, String> matchers = new HashMap<>();
-    matchers.put(
+  public void transform(TypeTransformer transformer) {
+    transformer.applyAdviceToMethod(
         namedOneOf("doFilter", "service")
             .and(takesArgument(0, named("javax.servlet.ServletRequest")))
             .and(takesArgument(1, named("javax.servlet.ServletResponse")))
             .and(isPublic()),
         Servlet30AndFilterInstrumentation.class.getName() + "$ServletAdvice");
-    return matchers;
   }
 
   public static class ServletAdvice {
