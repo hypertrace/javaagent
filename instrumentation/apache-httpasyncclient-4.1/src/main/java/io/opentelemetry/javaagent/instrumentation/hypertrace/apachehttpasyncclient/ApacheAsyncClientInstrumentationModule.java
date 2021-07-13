@@ -18,7 +18,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpasynccli
 
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.implementsInterface;
 import static io.opentelemetry.javaagent.extension.matcher.ClassLoaderMatcher.hasClassesNamed;
-import static java.util.Collections.singletonMap;
+import static io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge.currentContext;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
@@ -29,20 +29,21 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
-import io.opentelemetry.javaagent.instrumentation.apachehttpasyncclient.ApacheHttpAsyncClientInstrumentation.DelegatingRequestProducer;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v4_0.ApacheHttpClientUtils;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.apache.http.HttpException;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.concurrent.FutureCallback;
+import org.apache.http.nio.ContentEncoder;
+import org.apache.http.nio.IOControl;
 import org.apache.http.nio.protocol.HttpAsyncRequestProducer;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpCoreContext;
@@ -66,7 +67,7 @@ public class ApacheAsyncClientInstrumentationModule extends InstrumentationModul
     return Collections.singletonList(new HttpAsyncClientInstrumentation());
   }
 
-  class HttpAsyncClientInstrumentation implements TypeInstrumentation {
+  static class HttpAsyncClientInstrumentation implements TypeInstrumentation {
 
     @Override
     public ElementMatcher<ClassLoader> classLoaderOptimization() {
@@ -79,8 +80,8 @@ public class ApacheAsyncClientInstrumentationModule extends InstrumentationModul
     }
 
     @Override
-    public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-      return singletonMap(
+    public void transform(TypeTransformer transformer) {
+      transformer.applyAdviceToMethod(
           isMethod()
               .and(named("execute"))
               .and(takesArguments(4))
@@ -95,36 +96,73 @@ public class ApacheAsyncClientInstrumentationModule extends InstrumentationModul
   }
 
   public static class HttpAsyncClient_execute_Advice {
+
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void enter(
         @Advice.Argument(value = 0, readOnly = false) HttpAsyncRequestProducer requestProducer,
         @Advice.Argument(value = 2) HttpContext httpContext,
         @Advice.Argument(value = 3, readOnly = false) FutureCallback futureCallback) {
-      if (requestProducer instanceof DelegatingRequestProducer) {
-        DelegatingRequestProducer delegatingRequestProducer =
-            (DelegatingRequestProducer) requestProducer;
-        Context context = delegatingRequestProducer.getContext();
-        requestProducer = new DelegatingCaptureBodyRequestProducer(context, requestProducer);
+      // TODO we can't use the OTEL DelegatingRequestProducer class anymore, figure out a reasonable
+      // check here
+      if (requestProducer != null) {
+        Context context = currentContext();
         futureCallback = new BodyCaptureDelegatingCallback(context, httpContext, futureCallback);
+        requestProducer = new DelegatingCaptureBodyRequestProducer(context, requestProducer);
       }
     }
   }
 
-  public static class DelegatingCaptureBodyRequestProducer extends DelegatingRequestProducer {
+  public static class DelegatingCaptureBodyRequestProducer implements HttpAsyncRequestProducer {
 
     final Context context;
+    private final HttpAsyncRequestProducer delegate;
 
     public DelegatingCaptureBodyRequestProducer(
         Context context, HttpAsyncRequestProducer delegate) {
-      super(context, delegate);
       this.context = context;
+      this.delegate = delegate;
+    }
+
+    @Override
+    public HttpHost getTarget() {
+      return delegate.getTarget();
     }
 
     @Override
     public HttpRequest generateRequest() throws IOException, HttpException {
-      HttpRequest request = super.generateRequest();
+      HttpRequest request = delegate.generateRequest();
       ApacheHttpClientUtils.traceRequest(Span.fromContext(context), request);
       return request;
+    }
+
+    @Override
+    public void produceContent(ContentEncoder encoder, IOControl ioctrl) throws IOException {
+      delegate.produceContent(encoder, ioctrl);
+    }
+
+    @Override
+    public void requestCompleted(HttpContext context) {
+      delegate.requestCompleted(context);
+    }
+
+    @Override
+    public void failed(Exception ex) {
+      delegate.failed(ex);
+    }
+
+    @Override
+    public boolean isRepeatable() {
+      return delegate.isRepeatable();
+    }
+
+    @Override
+    public void resetRequest() throws IOException {
+      delegate.resetRequest();
+    }
+
+    @Override
+    public void close() throws IOException {
+      delegate.close();
     }
   }
 
