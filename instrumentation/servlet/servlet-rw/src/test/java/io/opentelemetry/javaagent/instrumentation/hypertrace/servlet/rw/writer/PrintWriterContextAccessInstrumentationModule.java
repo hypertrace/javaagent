@@ -43,7 +43,7 @@ public class PrintWriterContextAccessInstrumentationModule extends Instrumentati
   }
 
   @Override
-  protected Map<String, String> getMuzzleContextStoreClasses() {
+  public Map<String, String> getMuzzleContextStoreClasses() {
     return Collections.singletonMap("java.io.PrintWriter", BoundedCharArrayWriter.class.getName());
   }
 

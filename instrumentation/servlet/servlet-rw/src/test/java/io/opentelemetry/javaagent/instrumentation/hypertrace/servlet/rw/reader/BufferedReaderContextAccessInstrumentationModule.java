@@ -41,7 +41,7 @@ public class BufferedReaderContextAccessInstrumentationModule extends Instrument
   }
 
   @Override
-  protected Map<String, String> getMuzzleContextStoreClasses() {
+  public Map<String, String> getMuzzleContextStoreClasses() {
     return Collections.singletonMap("java.io.BufferedReader", CharBufferSpanPair.class.getName());
   }
 
