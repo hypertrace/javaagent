@@ -1,5 +1,7 @@
 plugins {
     `java-library`
+    id("net.bytebuddy.byte-buddy")
+    id("io.opentelemetry.instrumentation.auto-instrumentation")
 }
 
 val versions: Map<String, String> by extra

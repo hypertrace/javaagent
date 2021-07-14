@@ -15,4 +15,13 @@ class LibertyServletOnlySmokeTest extends LibertySmokeTest {
     container.withClasspathResourceMapping("liberty-servlet.xml", "/config/server.xml", BindMode.READ_ONLY)
   }
 
+  @Override
+  protected String getSpanName(String path) {
+    switch (path) {
+      case "/app/hello.txt":
+      case "/app/file-that-does-not-exist":
+        return "HTTP GET"
+    }
+    return super.getSpanName(path)
+  }
 }

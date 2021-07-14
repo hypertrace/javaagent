@@ -20,7 +20,6 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.javaagent.spi.ComponentInstaller;
 import io.opentelemetry.javaagent.tooling.AgentInstaller;
 import java.io.IOException;
@@ -39,8 +38,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.LoggerFactory;
 
 /**
- * Abstract test class that tests {@link io.opentelemetry.javaagent.tooling.InstrumentationModule}
- * on the classpath.
+ * Abstract test class that tests {@link
+ * io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule} on the classpath.
  */
 public abstract class AbstractInstrumenterTest {
 
@@ -87,9 +86,6 @@ public abstract class AbstractInstrumenterTest {
   @BeforeAll
   public static void beforeAll() {
     if (classFileTransformer == null) {
-      // TODO remove once
-      // https://github.com/open-telemetry/opentelemetry-java-instrumentation/pull/2821 is merged
-      COMPONENT_INSTALLER.beforeByteBuddyAgent(Config.get());
       classFileTransformer =
           AgentInstaller.installBytebuddyAgent(
               INSTRUMENTATION, Collections.singleton(COMPONENT_INSTALLER));

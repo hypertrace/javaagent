@@ -22,11 +22,11 @@ import static net.bytebuddy.matcher.ElementMatchers.returns;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.undertow.v1_4.utils.Utils;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
-import io.opentelemetry.javaagent.tooling.bytebuddy.matcher.AgentElementMatchers;
 import io.undertow.server.HttpServerExchange;
 import java.nio.ByteBuffer;
 import java.util.Collections;

@@ -58,8 +58,8 @@ val versions: Map<String, String> by extra
 val grpcVersion = "1.5.0"
 
 dependencies {
-    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-grpc-1.5:${versions["opentelemetry_java_agent"]}")
-    api("io.opentelemetry.instrumentation:opentelemetry-grpc-1.5:${versions["opentelemetry_java_agent"]}")
+    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-grpc-1.6:${versions["opentelemetry_java_agent"]}")
+    api("io.opentelemetry.instrumentation:opentelemetry-grpc-1.6:${versions["opentelemetry_java_agent"]}")
 
     compileOnly("io.grpc:grpc-core:${grpcVersion}")
     compileOnly("io.grpc:grpc-protobuf:${grpcVersion}")

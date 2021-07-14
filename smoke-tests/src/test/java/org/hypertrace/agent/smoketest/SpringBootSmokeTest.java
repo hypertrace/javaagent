@@ -96,19 +96,19 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
         traces.get(0).getResourceSpans(0).getResource().getAttributes(0).getKey());
     Assertions.assertEquals(
         ResourceAttributes.SERVICE_NAME.getKey(),
-        traces.get(0).getResourceSpans(0).getResource().getAttributes(9).getKey());
-    Assertions.assertEquals(
-        ResourceAttributes.TELEMETRY_AUTO_VERSION.getKey(),
-        traces.get(0).getResourceSpans(0).getResource().getAttributes(10).getKey());
-    Assertions.assertEquals(
-        ResourceAttributes.TELEMETRY_SDK_LANGUAGE.getKey(),
         traces.get(0).getResourceSpans(0).getResource().getAttributes(11).getKey());
     Assertions.assertEquals(
-        ResourceAttributes.TELEMETRY_SDK_NAME.getKey(),
+        ResourceAttributes.TELEMETRY_AUTO_VERSION.getKey(),
         traces.get(0).getResourceSpans(0).getResource().getAttributes(12).getKey());
     Assertions.assertEquals(
-        ResourceAttributes.TELEMETRY_SDK_VERSION.getKey(),
+        ResourceAttributes.TELEMETRY_SDK_LANGUAGE.getKey(),
         traces.get(0).getResourceSpans(0).getResource().getAttributes(13).getKey());
+    Assertions.assertEquals(
+        ResourceAttributes.TELEMETRY_SDK_NAME.getKey(),
+        traces.get(0).getResourceSpans(0).getResource().getAttributes(14).getKey());
+    Assertions.assertEquals(
+        ResourceAttributes.TELEMETRY_SDK_VERSION.getKey(),
+        traces.get(0).getResourceSpans(0).getResource().getAttributes(15).getKey());
     // value is specified in resources/ht-config.yaml
     Assertions.assertEquals(
         "app_under_test",
@@ -116,7 +116,7 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
             .get(0)
             .getResourceSpans(0)
             .getResource()
-            .getAttributes(9)
+            .getAttributes(11)
             .getValue()
             .getStringValue());
 

@@ -20,10 +20,10 @@ import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
+import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
-import io.opentelemetry.javaagent.tooling.InstrumentationModule;
-import io.opentelemetry.javaagent.tooling.TypeInstrumentation;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -43,7 +43,7 @@ public class ServletOutputStreamContextAccessInstrumentationModule extends Instr
   }
 
   @Override
-  protected Map<String, String> getMuzzleContextStoreClasses() {
+  public Map<String, String> getMuzzleContextStoreClasses() {
     Map<String, String> context = new HashMap<>();
     context.put("javax.servlet.ServletOutputStream", BoundedByteArrayOutputStream.class.getName());
     return context;
