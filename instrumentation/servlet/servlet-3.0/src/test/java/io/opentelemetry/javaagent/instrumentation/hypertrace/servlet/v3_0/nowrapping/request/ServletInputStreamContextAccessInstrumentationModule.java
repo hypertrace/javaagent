@@ -44,7 +44,7 @@ public class ServletInputStreamContextAccessInstrumentationModule extends Instru
   }
 
   @Override
-  protected Map<String, String> getMuzzleContextStoreClasses() {
+  public Map<String, String> getMuzzleContextStoreClasses() {
     Map<String, String> context = new HashMap<>();
     context.put("javax.servlet.ServletInputStream", ByteBufferSpanPair.class.getName());
     return context;

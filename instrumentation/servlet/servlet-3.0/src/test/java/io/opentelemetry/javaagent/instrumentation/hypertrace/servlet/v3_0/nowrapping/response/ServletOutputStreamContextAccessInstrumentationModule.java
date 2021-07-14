@@ -43,7 +43,7 @@ public class ServletOutputStreamContextAccessInstrumentationModule extends Instr
   }
 
   @Override
-  protected Map<String, String> getMuzzleContextStoreClasses() {
+  public Map<String, String> getMuzzleContextStoreClasses() {
     Map<String, String> context = new HashMap<>();
     context.put("javax.servlet.ServletOutputStream", BoundedByteArrayOutputStream.class.getName());
     return context;
