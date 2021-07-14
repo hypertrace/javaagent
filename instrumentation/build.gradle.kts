@@ -33,7 +33,7 @@ dependencies{
     implementation(project(":instrumentation:servlet:servlet-rw"))
     implementation(project(":instrumentation:servlet:servlet-3.0"))
     implementation(project(":instrumentation:spark-2.3"))
-    implementation(project(":instrumentation:grpc-1.5"))
+    implementation(project(":instrumentation:grpc-1.6"))
     implementation(project(":instrumentation:okhttp:okhttp-3.0"))
     implementation(project(":instrumentation:apache-httpclient-4.0"))
     implementation(project(":instrumentation:jaxrs-client-2.0"))
