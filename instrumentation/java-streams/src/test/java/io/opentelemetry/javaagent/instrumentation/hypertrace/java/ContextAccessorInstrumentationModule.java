@@ -44,7 +44,7 @@ public class ContextAccessorInstrumentationModule extends InstrumentationModule 
   }
 
   @Override
-  protected Map<String, String> getMuzzleContextStoreClasses() {
+  public Map<String, String> getMuzzleContextStoreClasses() {
     Map<String, String> contextStore = new HashMap<>();
     contextStore.put("java.io.InputStream", SpanAndBuffer.class.getName());
     contextStore.put("java.io.OutputStream", BoundedByteArrayOutputStream.class.getName());
