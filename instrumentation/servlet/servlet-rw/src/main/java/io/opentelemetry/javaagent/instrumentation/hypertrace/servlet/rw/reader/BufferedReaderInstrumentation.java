@@ -24,17 +24,14 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import net.bytebuddy.matcher.ElementMatcher.Junction;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
 
@@ -46,18 +43,17 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
   }
 
   @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    Map<Junction<MethodDescription>, String> transformers = new HashMap<>();
-    transformers.put(
+  public void transform(TypeTransformer transformer) {
+    transformer.applyAdviceToMethod(
         named("read").and(takesArguments(0)).and(isPublic()),
         BufferedReaderInstrumentation.class.getName() + "$Reader_readNoArgs");
-    transformers.put(
+    transformer.applyAdviceToMethod(
         named("read")
             .and(takesArguments(1))
             .and(takesArgument(0, is(char[].class)))
             .and(isPublic()),
         BufferedReaderInstrumentation.class.getName() + "$Reader_readCharArray");
-    transformers.put(
+    transformer.applyAdviceToMethod(
         named("read")
             .and(takesArguments(3))
             .and(takesArgument(0, is(char[].class)))
@@ -65,10 +61,9 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
             .and(takesArgument(2, is(int.class)))
             .and(isPublic()),
         BufferedReaderInstrumentation.class.getName() + "$Reader_readByteArrayOffset");
-    transformers.put(
+    transformer.applyAdviceToMethod(
         named("readLine").and(takesArguments(0)).and(isPublic()),
         BufferedReaderInstrumentation.class.getName() + "$BufferedReader_readLine");
-    return transformers;
   }
 
   static class Reader_readNoArgs {
