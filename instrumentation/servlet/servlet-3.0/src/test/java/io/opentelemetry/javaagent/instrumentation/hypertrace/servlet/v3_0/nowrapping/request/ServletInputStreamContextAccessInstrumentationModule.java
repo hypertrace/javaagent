@@ -22,6 +22,7 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.util.Collections;
@@ -30,10 +31,8 @@ import java.util.List;
 import java.util.Map;
 import javax.servlet.ServletInputStream;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import net.bytebuddy.matcher.ElementMatcher.Junction;
 import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
 
 // SPI explicitly added in META-INF/services/...
@@ -55,7 +54,7 @@ public class ServletInputStreamContextAccessInstrumentationModule extends Instru
     return Collections.singletonList(new InputStreamTriggerInstrumentation());
   }
 
-  class InputStreamTriggerInstrumentation implements TypeInstrumentation {
+  static final class InputStreamTriggerInstrumentation implements TypeInstrumentation {
 
     @Override
     public ElementMatcher<TypeDescription> typeMatcher() {
@@ -63,12 +62,10 @@ public class ServletInputStreamContextAccessInstrumentationModule extends Instru
     }
 
     @Override
-    public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-      Map<Junction<MethodDescription>, String> matchers = new HashMap<>();
-      matchers.put(
+    public void transform(TypeTransformer transformer) {
+      transformer.applyAdviceToMethod(
           named("addToInputStreamContext").and(takesArguments(2)).and(isPublic()),
           ServletInputStreamContextAccessInstrumentationModule.class.getName() + "$TestAdvice");
-      return matchers;
     }
   }
 
