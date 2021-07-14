@@ -38,8 +38,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.LoggerFactory;
 
 /**
- * Abstract test class that tests {@link io.opentelemetry.javaagent.tooling.InstrumentationModule}
- * on the classpath.
+ * Abstract test class that tests {@link
+ * io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule} on the classpath.
  */
 public abstract class AbstractInstrumenterTest {
 
