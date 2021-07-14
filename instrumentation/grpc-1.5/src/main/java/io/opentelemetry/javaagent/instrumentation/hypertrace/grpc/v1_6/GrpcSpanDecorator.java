@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.v1_5;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.v1_6;
 
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.v1_5.client;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.v1_6.client;
 
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.extendsClass;
 import static java.util.Collections.singletonMap;

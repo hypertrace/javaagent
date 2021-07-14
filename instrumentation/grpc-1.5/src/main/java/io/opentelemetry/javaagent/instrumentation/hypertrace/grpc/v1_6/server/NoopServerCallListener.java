@@ -14,9 +14,13 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.v1_5;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.v1_6.server;
 
-public class GrpcInstrumentationName {
-  public static final String PRIMARY = "grpc";
-  public static final String[] OTHER = {"ht", "grpc-ht"};
+import io.grpc.ServerCall;
+
+public class NoopServerCallListener<T> extends ServerCall.Listener<T> {
+
+  private NoopServerCallListener() {}
+
+  static NoopServerCallListener INSTANCE = new NoopServerCallListener();
 }
