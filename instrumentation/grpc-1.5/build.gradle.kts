@@ -13,10 +13,10 @@ muzzle {
     pass {
         group = "io.grpc"
         module = "grpc-core"
-        versions = "[1.5.0,)"
+        versions = "[1.6.0,)"
         // for body capture via com.google.protobuf.util.JsonFormat
-        extraDependency("io.grpc:grpc-protobuf:1.5.0")
-        extraDependency("io.grpc:grpc-netty:1.5.0")
+        extraDependency("io.grpc:grpc-protobuf:1.6.0")
+        extraDependency("io.grpc:grpc-netty:1.6.0")
     }
 }
 
@@ -55,7 +55,7 @@ protobuf {
 }
 
 val versions: Map<String, String> by extra
-val grpcVersion = "1.5.0"
+val grpcVersion = "1.6.0"
 
 dependencies {
     api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-grpc-1.6:${versions["opentelemetry_java_agent"]}")
