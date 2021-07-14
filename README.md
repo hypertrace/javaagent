@@ -14,7 +14,7 @@ List of supported frameworks with additional capabilities:
 |--------------------------------------------------------------------------------------------------------|-----------------|
 | [Apache HttpAsyncClient](https://hc.apache.org/index.html)                                             | 4.1+            |
 | [Apache HttpClient](https://hc.apache.org/index.html)                                                  | 4.0+            |
-| [gRPC](https://github.com/grpc/grpc-java)                                                              | 1.5+            |
+| [gRPC](https://github.com/grpc/grpc-java)                                                              | 1.6+            |
 | [JAX-RS Client](https://javaee.github.io/javaee-spec/javadocs/javax/ws/rs/client/package-summary.html) | 2.0+            |
 | [Micronaut](https://micronaut.io/)  (basic support via Netty)                                          | 1.0+            |
 | [Netty](https://github.com/netty/netty)                                                                | 4.0+            |
