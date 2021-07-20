@@ -123,6 +123,7 @@ for (version in listOf("1.30.0")) {
         versionedConfiguration(testFixtures(project(":testing-common")))
         versionedConfiguration("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-grpc-1.6:${versions["opentelemetry_java_agent"]}")
         versionedConfiguration("io.opentelemetry.instrumentation:opentelemetry-grpc-1.6:${versions["opentelemetry_java_agent"]}")
+        versionedConfiguration(project(":instrumentation:grpc-shaded-netty-1.9"))
         versionedConfiguration(platform("io.grpc:grpc-bom:$version"))
         versionedConfiguration("io.grpc:grpc-core")
         versionedConfiguration("io.grpc:grpc-protobuf")
@@ -132,7 +133,7 @@ for (version in listOf("1.30.0")) {
     }
     val versionedTest = task<Test>("test_${version}") {
         group = "verification"
-        classpath = versionedConfiguration + sourceSets.test.get().output + sourceSets.named("test_$version").get().output
+        classpath = versionedConfiguration + sourceSets.main.get().output + sourceSets.test.get().output + sourceSets.named("test_$version").get().output
         useJUnitPlatform()
     }
     tasks.check { dependsOn(versionedTest) }
