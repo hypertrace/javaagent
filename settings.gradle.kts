@@ -26,6 +26,8 @@ include("javaagent-core")
 include("testing-common")
 include("instrumentation:grpc-1.6")
 findProject(":instrumentation:grpc-1.6")?.name = "grpc-1.6"
+include("instrumentation:grpc-common")
+findProject(":instrumentation:grpc-common")?.name = "grpc-common"
 include("instrumentation:okhttp:okhttp-3.0")
 findProject(":instrumentation:okhttp:okhttp-3.0")?.name = "okhttp-3.0"
 include("otel-extensions")

@@ -29,6 +29,7 @@ import io.grpc.ServerInterceptor;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.MetadataUtils;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.GrpcSemanticAttributes;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.IOException;
 import java.net.URL;

@@ -28,6 +28,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.GrpcSemanticAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.v1_6;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.grpc;
 
 import io.grpc.Metadata;
 
