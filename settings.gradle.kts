@@ -28,6 +28,8 @@ include("instrumentation:grpc-1.6")
 findProject(":instrumentation:grpc-1.6")?.name = "grpc-1.6"
 include("instrumentation:grpc-common")
 findProject(":instrumentation:grpc-common")?.name = "grpc-common"
+include("instrumentation:grpc-shaded-netty-1.9")
+findProject(":instrumentation:grpc-shaded-netty-1.9")?.name = "grpc-shaded-netty-1.9"
 include("instrumentation:okhttp:okhttp-3.0")
 findProject(":instrumentation:okhttp:okhttp-3.0")?.name = "okhttp-3.0"
 include("otel-extensions")
