@@ -5,6 +5,14 @@ plugins {
     muzzle
 }
 
+muzzle {
+    pass {
+        group = "io.grpc"
+        module = "grpc-netty-shaded"
+        versions = "[1.9.0,)"
+        assertInverse = true
+    }
+}
 
 dependencies {
     compileOnly("io.grpc:grpc-core:1.9.0")
