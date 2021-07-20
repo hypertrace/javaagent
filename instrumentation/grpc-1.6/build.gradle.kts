@@ -70,7 +70,7 @@ dependencies {
     compileOnly("io.grpc:grpc-netty:${grpcVersion}")
 
     implementation("javax.annotation:javax.annotation-api:1.3.2")
-    
+
     testImplementation(testFixtures(project(":testing-common")))
     testImplementation(project(":instrumentation:grpc-shaded-netty-1.9"))
 
