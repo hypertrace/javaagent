@@ -28,7 +28,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.GrpcSemanticAttributes;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.netty.shaded.v1_9.utils.Utils;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -37,7 +37,6 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 
 @AutoService(InstrumentationModule.class)
 public final class ShadedNettyHttp2HeadersInstrumentationModule extends InstrumentationModule {
@@ -80,30 +79,7 @@ public final class ShadedNettyHttp2HeadersInstrumentationModule extends Instrume
         @Advice.Argument(4) Object method) {
 
       Span currentSpan = Java8BytecodeBridge.currentSpan();
-      if (scheme != null) {
-        currentSpan.setAttribute(
-            HypertraceSemanticAttributes.rpcRequestMetadata(
-                GrpcSemanticAttributes.addColon(GrpcSemanticAttributes.SCHEME)),
-            scheme.toString());
-      }
-      if (defaultPath != null) {
-        currentSpan.setAttribute(
-            HypertraceSemanticAttributes.rpcRequestMetadata(
-                GrpcSemanticAttributes.addColon(GrpcSemanticAttributes.PATH)),
-            defaultPath.toString());
-      }
-      if (authority != null) {
-        currentSpan.setAttribute(
-            HypertraceSemanticAttributes.rpcRequestMetadata(
-                GrpcSemanticAttributes.addColon(GrpcSemanticAttributes.AUTHORITY)),
-            authority.toString());
-      }
-      if (method != null) {
-        currentSpan.setAttribute(
-            HypertraceSemanticAttributes.rpcRequestMetadata(
-                GrpcSemanticAttributes.addColon(GrpcSemanticAttributes.METHOD)),
-            method.toString());
-      }
+      Utils.handleConvertClientHeaders(scheme, defaultPath, authority, method, currentSpan);
     }
   }
 
@@ -115,23 +91,13 @@ public final class ShadedNettyHttp2HeadersInstrumentationModule extends Instrume
    * @see {@link io.grpc.netty.GrpcHttp2HeadersUtils}
    */
   static class GrpcUtils_convertHeaders_Advice {
+
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void exit(
         @Advice.Argument(0) Http2Headers http2Headers, @Advice.Return Metadata metadata) {
 
-      if (http2Headers.authority() != null) {
-        metadata.put(
-            GrpcSemanticAttributes.AUTHORITY_METADATA_KEY, http2Headers.authority().toString());
-      }
-      if (http2Headers.path() != null) {
-        metadata.put(GrpcSemanticAttributes.PATH_METADATA_KEY, http2Headers.path().toString());
-      }
-      if (http2Headers.method() != null) {
-        metadata.put(GrpcSemanticAttributes.METHOD_METADATA_KEY, http2Headers.method().toString());
-      }
-      if (http2Headers.scheme() != null) {
-        metadata.put(GrpcSemanticAttributes.SCHEME_METADATA_KEY, http2Headers.scheme().toString());
-      }
+      Utils.handleConvertHeaders(http2Headers, metadata);
     }
   }
+
 }
