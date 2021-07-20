@@ -34,6 +34,8 @@ idea {
     }
 }
 
+val testGrpcVersion = "1.30.0"
+
 protobuf {
     protoc {
         // The artifact spec for the Protobuf Compiler
@@ -89,4 +91,46 @@ dependencies {
             strictly(grpcVersion)
         }
     }
+}
+
+val grpcVersions = listOf(grpcVersion, "1.30.0")
+
+sourceSets {
+    for (version in grpcVersions) {
+        create("test_$version") {
+            dependencies {
+                implementationConfigurationName("io.grpc:grpc-core:$version")
+            }
+        }
+    }
+}
+
+tasks.compileTestJava {
+    this.classpath += sourceSets.named("test_$grpcVersion").get().output
+}
+tasks.test {
+    classpath += sourceSets.named("test_$grpcVersion").get().output
+}
+
+for (version in listOf("1.30.0")) {
+    val versionedConfiguration = configurations.create("test_${version}") {
+        extendsFrom(configurations.runtimeClasspath.get())
+    }
+    dependencies {
+        versionedConfiguration(testFixtures(project(":testing-common")))
+        versionedConfiguration("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-grpc-1.6:${versions["opentelemetry_java_agent"]}")
+        versionedConfiguration("io.opentelemetry.instrumentation:opentelemetry-grpc-1.6:${versions["opentelemetry_java_agent"]}")
+        versionedConfiguration(platform("io.grpc:grpc-bom:$version"))
+        versionedConfiguration("io.grpc:grpc-core")
+        versionedConfiguration("io.grpc:grpc-protobuf")
+        versionedConfiguration("io.grpc:grpc-stub")
+        versionedConfiguration("io.grpc:grpc-netty")
+
+    }
+    val versionedTest = task<Test>("test_${version}") {
+        group = "verification"
+        classpath = versionedConfiguration + sourceSets.test.get().output + sourceSets.named("test_$version").get().output
+        useJUnitPlatform()
+    }
+    tasks.check { dependsOn(versionedTest) }
 }
