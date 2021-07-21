@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.netty.shaded.v1_9.utils;
+package io.opentelemetry.javaagent.instrumentation.shaded.netty.utils;
 
 import io.grpc.Metadata;
 import io.grpc.netty.shaded.io.netty.handler.codec.http2.Http2Headers;

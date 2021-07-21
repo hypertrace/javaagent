@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.netty.shaded.v1_9;
+package io.opentelemetry.javaagent.instrumentation.shaded.netty;
 
 import static net.bytebuddy.matcher.ElementMatchers.failSafe;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
@@ -28,7 +28,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.netty.shaded.v1_9.utils.NettyUtils;
+import io.opentelemetry.javaagent.instrumentation.shaded.netty.utils.NettyUtils;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
