@@ -42,7 +42,7 @@ import net.bytebuddy.matcher.ElementMatcher;
 public final class ShadedNettyHttp2HeadersInstrumentationModule extends InstrumentationModule {
 
   public ShadedNettyHttp2HeadersInstrumentationModule() {
-    super("");
+    super("grpc-netty", "ht", "grpc-netty-ht");
   }
 
   @Override
@@ -99,5 +99,4 @@ public final class ShadedNettyHttp2HeadersInstrumentationModule extends Instrume
       Utils.handleConvertHeaders(http2Headers, metadata);
     }
   }
-
 }
