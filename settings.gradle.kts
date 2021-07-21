@@ -30,6 +30,8 @@ include("instrumentation:grpc-common")
 findProject(":instrumentation:grpc-common")?.name = "grpc-common"
 include("instrumentation:grpc-shaded-netty-1.9")
 findProject(":instrumentation:grpc-shaded-netty-1.9")?.name = "grpc-shaded-netty-1.9"
+include("shaded-protobuf-java-util")
+findProject(":shaded-protobuf-java-util")?.name = "shaded-protobuf-java-util"
 include("instrumentation:okhttp:okhttp-3.0")
 findProject(":instrumentation:okhttp:okhttp-3.0")?.name = "okhttp-3.0"
 include("otel-extensions")
