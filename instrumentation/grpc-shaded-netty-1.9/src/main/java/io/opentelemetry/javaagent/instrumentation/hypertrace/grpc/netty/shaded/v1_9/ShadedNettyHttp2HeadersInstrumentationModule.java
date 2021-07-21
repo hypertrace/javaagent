@@ -28,7 +28,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.netty.shaded.v1_9.utils.Utils;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.netty.shaded.v1_9.utils.NettyUtils;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -79,7 +79,7 @@ public final class ShadedNettyHttp2HeadersInstrumentationModule extends Instrume
         @Advice.Argument(4) Object method) {
 
       Span currentSpan = Java8BytecodeBridge.currentSpan();
-      Utils.handleConvertClientHeaders(scheme, defaultPath, authority, method, currentSpan);
+      NettyUtils.handleConvertClientHeaders(scheme, defaultPath, authority, method, currentSpan);
     }
   }
 
@@ -96,7 +96,7 @@ public final class ShadedNettyHttp2HeadersInstrumentationModule extends Instrume
     public static void exit(
         @Advice.Argument(0) Http2Headers http2Headers, @Advice.Return Metadata metadata) {
 
-      Utils.handleConvertHeaders(http2Headers, metadata);
+      NettyUtils.handleConvertHeaders(http2Headers, metadata);
     }
   }
 }

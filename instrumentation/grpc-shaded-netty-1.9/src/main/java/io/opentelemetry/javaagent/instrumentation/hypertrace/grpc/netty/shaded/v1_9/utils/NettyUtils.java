@@ -22,7 +22,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.GrpcSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 
-public class Utils {
+public class NettyUtils {
 
   public static void handleConvertHeaders(Http2Headers http2Headers, Metadata metadata) {
     if (http2Headers.authority() != null) {
