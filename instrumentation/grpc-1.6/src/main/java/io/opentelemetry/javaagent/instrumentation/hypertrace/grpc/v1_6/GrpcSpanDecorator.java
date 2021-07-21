@@ -17,11 +17,12 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.v1_6;
 
 import com.google.protobuf.Message;
-import com.google.protobuf.util.JsonFormat;
 import io.grpc.Metadata;
 import io.grpc.Metadata.Key;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.com.google.protobuf.util.JsonFormat;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.GrpcSemanticAttributes;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;

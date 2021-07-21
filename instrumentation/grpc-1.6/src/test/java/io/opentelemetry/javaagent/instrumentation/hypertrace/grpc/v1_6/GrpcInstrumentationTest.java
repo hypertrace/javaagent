@@ -19,7 +19,6 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.v1_6;
 import com.google.protobuf.util.JsonFormat;
 import io.grpc.ForwardingServerCall;
 import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
@@ -30,6 +29,7 @@ import io.grpc.ServerInterceptor;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.MetadataUtils;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.GrpcSemanticAttributes;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.IOException;
 import java.net.URL;
@@ -104,10 +104,7 @@ public class GrpcInstrumentationTest extends AbstractInstrumenterTest {
             .build();
     SERVER.start();
 
-    CHANNEL =
-        ManagedChannelBuilder.forTarget(String.format("localhost:%d", SERVER.getPort()))
-            .usePlaintext(true)
-            .build();
+    CHANNEL = new GrpcChannelProvider(SERVER.getPort()).get();
   }
 
   @AfterAll
