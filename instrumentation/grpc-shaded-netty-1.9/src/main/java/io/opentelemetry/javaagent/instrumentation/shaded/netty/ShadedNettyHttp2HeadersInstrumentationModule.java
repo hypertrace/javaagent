@@ -33,10 +33,4 @@ public final class ShadedNettyHttp2HeadersInstrumentationModule extends Instrume
   public List<TypeInstrumentation> typeInstrumentations() {
     return Collections.singletonList(new ShadedNettyUtilsInstrumentation());
   }
-
-  @Override
-  public boolean isHelperClass(String className) {
-    return "io.opentelemetry.javaagent.instrumentation.shaded.netty.utils.NettyUtils"
-        .equals(className);
-  }
 }
