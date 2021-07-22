@@ -43,7 +43,7 @@ The final artifact is in `javaagent/build/libs/hypertrace-agent-<version>-all.ja
 Download the [latest version](https://github.com/hypertrace/javaagent/releases/latest/download/hypertrace-agent-all.jar).
 
 ```bash
-HT_EXPORTING_ENDPOINT=http://localhost:9411/api/v2/spans java -javaagent:javaagent/build/libs/hypertrace-agent-<version>-all.jar -jar app.jar
+HT_REPORTING_ENDPOINT=http://localhost:4317 java -javaagent:javaagent/build/libs/hypertrace-agent-<version>-all.jar -jar app.jar
 ```
 
 By default the agent uses Zipkin exporter.
