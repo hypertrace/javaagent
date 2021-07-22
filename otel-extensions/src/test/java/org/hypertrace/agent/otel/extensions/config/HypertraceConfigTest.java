@@ -106,7 +106,7 @@ public class HypertraceConfigTest {
     Assertions.assertEquals(
         TraceReporterType.OTLP, agentConfig.getReporting().getTraceReporterType());
     Assertions.assertEquals(
-        "http://localhost:9411", agentConfig.getReporting().getEndpoint().getValue());
+        "http://localhost:4317", agentConfig.getReporting().getEndpoint().getValue());
     Assertions.assertEquals(true, agentConfig.getReporting().getSecure().getValue());
     Assertions.assertEquals(
         "http://opa.localhost:8181/", agentConfig.getReporting().getOpa().getEndpoint().getValue());

@@ -4,7 +4,7 @@ enabled: false
 propagationFormats:
   - B3
 reporting:
-  endpoint: http://localhost:9411
+  endpoint: http://localhost:4317
   secure: true
   trace_reporter_type: OTLP
   opa:
