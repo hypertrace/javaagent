@@ -46,7 +46,7 @@ Download the [latest version](https://github.com/hypertrace/javaagent/releases/l
 HT_REPORTING_ENDPOINT=http://localhost:4317 java -javaagent:javaagent/build/libs/hypertrace-agent-<version>-all.jar -jar app.jar
 ```
 
-By default the agent uses Zipkin exporter.
+By default the agent uses Otlp exporter.
 
 The configuration precedence order 
 1. OpenTelemetry Agent's trace config file `OTEL_TRACE_CONFIG`/`otel.trace.config`
