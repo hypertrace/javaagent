@@ -40,7 +40,7 @@ public class HypertraceConfigTest {
     Assertions.assertTrue(agentConfig.getEnabled().getValue());
     Assertions.assertEquals("unknown", agentConfig.getServiceName().getValue());
     Assertions.assertEquals(
-        TraceReporterType.ZIPKIN, agentConfig.getReporting().getTraceReporterType());
+        TraceReporterType.OTLP, agentConfig.getReporting().getTraceReporterType());
     Assertions.assertEquals(
         HypertraceConfig.DEFAULT_REPORTING_ENDPOINT,
         agentConfig.getReporting().getEndpoint().getValue());
