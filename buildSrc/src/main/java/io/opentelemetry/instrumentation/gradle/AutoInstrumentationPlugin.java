@@ -7,11 +7,18 @@ package io.opentelemetry.instrumentation.gradle;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.Objects;
+import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
+import org.gradle.api.artifacts.dsl.DependencyHandler;
+import org.gradle.api.attributes.AttributeContainer;
+import org.gradle.api.attributes.LibraryElements;
 import org.gradle.api.plugins.JavaLibraryPlugin;
+import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.testing.Test;
 import org.gradle.process.CommandLineArgumentProvider;
@@ -27,6 +34,7 @@ public class AutoInstrumentationPlugin implements Plugin<Project> {
   public void apply(Project project) {
     project.getPlugins().apply(JavaLibraryPlugin.class);
     createLibraryConfiguration(project);
+    addDependencies(project);
     project
         .getTasks()
         .withType(
@@ -41,6 +49,40 @@ public class AutoInstrumentationPlugin implements Plugin<Project> {
               task.getInputs().property("testing-bootstrap-jar", testingBootstrapJar);
               task.getJvmArgumentProviders().add(new InstrumentationTestArgs(testingBootstrapJar));
             });
+  }
+
+  private void addDependencies(Project project) {
+    DependencyHandler dependencies = project.getDependencies();
+    @SuppressWarnings("unchecked") final Map<String, String> versions = Objects.requireNonNull(
+        (Map<String, String>) project.getExtensions().getExtraProperties().get("versions"));
+
+    dependencies.add("implementation", "org.slf4j:slf4j-api:1.7.30");
+    dependencies.add("compileOnly", "com.google.auto.service:auto-service-annotations:1.0");
+    dependencies.add("annotationProcessor", "com.google.auto.service:auto-service:1.0");
+    dependencies.add("implementation", "net.bytebuddy:byte-buddy:" + versions.get("byte_buddy"));
+    dependencies.add("implementation",
+        "io.opentelemetry:opentelemetry-api:" + versions.get("opentelemetry"));
+    dependencies.add("implementation",
+        "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:" + versions
+            .get("opentelemetry_java_agent"));
+    dependencies.add("implementation",
+        "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:" + versions
+            .get("opentelemetry_java_agent"));
+    dependencies.add("implementation",
+        "io.opentelemetry.javaagent:opentelemetry-javaagent-api:" + versions
+            .get("opentelemetry_java_agent"));
+    dependencies.add("implementation",
+        "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:" + versions
+            .get("opentelemetry_java_agent"));
+
+    dependencies.add("implementation", dependencies.project(Map.of("path", ":javaagent-core")));
+    dependencies.add("implementation", dependencies.project(Map.of("path", ":filter-api")));
+
+    project.getConfigurations().named(JavaPlugin.COMPILE_CLASSPATH_CONFIGURATION_NAME).configure(
+        files -> files.attributes(attributeContainer -> attributeContainer.attribute(
+            LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE,
+            project.getObjects().named(LibraryElements.class, LibraryElements.JAR))));
+
   }
 
   /**
