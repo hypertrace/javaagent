@@ -23,17 +23,14 @@ import static net.bytebuddy.matcher.ElementMatchers.returns;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.undertow.common.RequestBodyCaptureMethod;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.servlet.spec.HttpServletRequestImpl;
-import java.util.HashMap;
-import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import net.bytebuddy.matcher.ElementMatcher.Junction;
 
 public final class UndertowHttpServletRequestInstrumentation implements TypeInstrumentation {
 
@@ -43,21 +40,19 @@ public final class UndertowHttpServletRequestInstrumentation implements TypeInst
   }
 
   @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    final Map<Junction<MethodDescription>, String> matchers = new HashMap<>();
-    matchers.put(
+  public void transform(TypeTransformer transformer) {
+    transformer.applyAdviceToMethod(
         named("getInputStream")
             .and(takesArguments(0))
             .and(returns(named("javax.servlet.ServletInputStream")))
             .and(isPublic()),
         UndertowHttpServletRequestInstrumentation.class.getName() + "$ServletBodyCapture_advice");
-    matchers.put(
+    transformer.applyAdviceToMethod(
         named("getReader")
             .and(takesArguments(0))
             .and(returns(named("java.io.BufferedReader")))
             .and(isPublic()),
         UndertowHttpServletRequestInstrumentation.class.getName() + "$ServletBodyCapture_advice");
-    return matchers;
   }
 
   /**
