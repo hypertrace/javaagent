@@ -42,6 +42,7 @@ afterEvaluate{
 val versions: Map<String, String> by extra
 
 dependencies {
+    implementation("io.opentelemetry.instrumentation:opentelemetry-netty-4.1:${versions["opentelemetry_java_agent"]}")
     implementation(project(":instrumentation:netty:otel-netty-4.1-unshaded-for-instrumentation", "shadow"))
     library("io.netty:netty-codec-http:4.1.0.Final")
 
