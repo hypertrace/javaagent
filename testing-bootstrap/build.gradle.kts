@@ -1,6 +1,6 @@
 plugins {
     `java-library`
-    id("com.github.johnrengelman.shadow") version "6.0.0"
+    id("com.github.johnrengelman.shadow")
 }
 
 // Depend on all libraries that are in the bootstrap classloader when running the agent. When
