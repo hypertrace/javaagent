@@ -54,7 +54,7 @@ public class HypertraceConfig {
 
   static final String DEFAULT_SERVICE_NAME = "unknown";
   static final String DEFAULT_REPORTING_ENDPOINT = "http://localhost:4317";
-  static final String DEFAULT_OPA_ENDPOINT = "http://opa.traceableai:8181/";
+  static final String DEFAULT_OPA_ENDPOINT = "http://localhost:8181/";
   static final int DEFAULT_OPA_POLL_PERIOD_SECONDS = 30;
   // 128 KiB
   static final int DEFAULT_BODY_MAX_SIZE_BYTES = 128 * 1024;

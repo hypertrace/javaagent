@@ -22,6 +22,7 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
 import io.opentelemetry.proto.trace.v1.Span;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -162,6 +163,7 @@ public abstract class AbstractSmokeTest {
 
   protected Collection<ExportTraceServiceRequest> waitForTraces(final int count) {
     return Awaitility.await()
+        .atMost(Duration.ofSeconds(10))
         .until(
             this::waitForTraces,
             exportTraceServiceRequests -> exportTraceServiceRequests.size() == count);
