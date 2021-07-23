@@ -25,12 +25,10 @@ import io.grpc.Metadata;
 import io.grpc.netty.shaded.io.netty.handler.codec.http2.Http2Headers;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import io.opentelemetry.javaagent.instrumentation.shaded.netty.utils.NettyUtils;
-import java.util.HashMap;
-import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
@@ -42,15 +40,13 @@ final class ShadedNettyUtilsInstrumentation implements TypeInstrumentation {
   }
 
   @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>();
-    transformers.put(
+  public void transform(TypeTransformer transformer) {
+    transformer.applyAdviceToMethod(
         isMethod().and(named("convertClientHeaders")).and(takesArguments(6)),
         ShadedNettyUtilsInstrumentation.class.getName() + "$Utils_convertClientHeaders_Advice");
-    transformers.put(
+    transformer.applyAdviceToMethod(
         isMethod().and(named("convertHeaders")).and(takesArguments(1)),
         ShadedNettyUtilsInstrumentation.class.getName() + "$GrpcUtils_convertHeaders_Advice");
-    return transformers;
   }
 
   static final class Utils_convertClientHeaders_Advice {
