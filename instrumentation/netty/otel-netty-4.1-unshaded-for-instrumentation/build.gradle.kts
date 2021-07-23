@@ -1,5 +1,5 @@
 plugins {
-    id("com.github.johnrengelman.shadow")
+    id("io.opentelemetry.instrumentation.un-shade")
 }
 
 val versions: Map<String, String> by extra
