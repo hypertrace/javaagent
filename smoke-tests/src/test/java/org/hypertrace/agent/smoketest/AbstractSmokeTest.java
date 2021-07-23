@@ -49,6 +49,7 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 public abstract class AbstractSmokeTest {
+
   private static final Logger log = LoggerFactory.getLogger(OpenTelemetryStorage.class);
   private static final String OTEL_COLLECTOR_IMAGE = "otel/opentelemetry-collector:0.21.0";
   private static final String MOCK_BACKEND_IMAGE =
@@ -157,6 +158,13 @@ public abstract class AbstractSmokeTest {
     return traceRequest.stream()
         .flatMap(request -> request.getResourceSpansList().stream())
         .flatMap(resourceSpans -> resourceSpans.getInstrumentationLibrarySpansList().stream());
+  }
+
+  protected Collection<ExportTraceServiceRequest> waitForTraces(final int count) {
+    return Awaitility.await()
+        .until(
+            this::waitForTraces,
+            exportTraceServiceRequests -> exportTraceServiceRequests.size() == count);
   }
 
   protected Collection<ExportTraceServiceRequest> waitForTraces() throws IOException {

@@ -20,6 +20,7 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -185,7 +186,8 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
     try (Response response = client.newCall(request).execute()) {
       Assertions.assertEquals(response.body().string(), requestBody);
     }
-    ArrayList<ExportTraceServiceRequest> traces = new ArrayList<>(waitForTraces());
+
+    Collection<ExportTraceServiceRequest> traces = waitForTraces(2);
 
     List<String> responseBodyAttributes =
         getSpanStream(traces)

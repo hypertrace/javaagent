@@ -38,6 +38,7 @@ import org.hypertrace.agent.config.Config.Opa;
 import org.hypertrace.agent.config.Config.Opa.Builder;
 import org.hypertrace.agent.config.Config.PropagationFormat;
 import org.hypertrace.agent.config.Config.Reporting;
+import org.hypertrace.agent.config.Config.TraceReporterType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +53,7 @@ public class HypertraceConfig {
   private static volatile AgentConfig agentConfig;
 
   static final String DEFAULT_SERVICE_NAME = "unknown";
-  static final String DEFAULT_REPORTING_ENDPOINT = "http://localhost:9411/api/v2/spans";
+  static final String DEFAULT_REPORTING_ENDPOINT = "http://localhost:4317";
   static final String DEFAULT_OPA_ENDPOINT = "http://opa.traceableai:8181/";
   static final int DEFAULT_OPA_POLL_PERIOD_SECONDS = 30;
   // 128 KiB
@@ -143,7 +144,7 @@ public class HypertraceConfig {
       builder.setEndpoint(StringValue.newBuilder().setValue(DEFAULT_REPORTING_ENDPOINT).build());
     }
     if (builder.getTraceReporterType().equals(Config.TraceReporterType.UNSPECIFIED)) {
-      builder.setTraceReporterType(Config.TraceReporterType.ZIPKIN);
+      builder.setTraceReporterType(TraceReporterType.OTLP);
     }
     Builder opaBuilder = applyOpaDefaults(builder.getOpa().toBuilder());
     builder.setOpa(opaBuilder);
