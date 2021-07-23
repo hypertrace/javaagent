@@ -14,13 +14,6 @@ jobs:
   build:
     runs-on: ubuntu-20.04
     steps:
-      # Set fetch-depth: 0 to fetch commit history and tags for use in version calculation
-      - name: Check out code
-        uses: actions/checkout@v2.3.4
-        with:
-          fetch-depth: 0
-          submodules: true
-
       - name: create checksum file
         uses: hypertrace/github-actions/checksum@main
 
@@ -33,6 +26,15 @@ jobs:
           restore-keys: |
             gradle-packages-${{ runner.os }}-${{ github.job }}
             gradle-packages-${{ runner.os }}
+
+      # Set fetch-depth: 0 to fetch commit history and tags for use in version calculation
+      - name: Check out code
+        uses: actions/checkout@v2.3.4
+        with:
+          ref: ${{github.event.pull_request.head.ref}}
+          repository: ${{github.event.pull_request.head.repo.full_name}}
+          fetch-depth: 0
+          submodules: true
 
       - name: build
         run: make build

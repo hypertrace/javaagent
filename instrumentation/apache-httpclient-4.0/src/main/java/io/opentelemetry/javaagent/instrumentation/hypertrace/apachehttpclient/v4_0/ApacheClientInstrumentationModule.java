@@ -27,14 +27,12 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.apache.http.HttpMessage;
@@ -65,29 +63,25 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
     }
 
     @Override
-    public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-      Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>();
-
+    public void transform(TypeTransformer transformer) {
       // instrument response
-      transformers.put(
+      transformer.applyAdviceToMethod(
           isMethod().and(named("execute")).and(not(isAbstract())),
           ApacheClientInstrumentationModule.class.getName() + "$HttpClient_ExecuteAdvice_response");
 
       // instrument request
-      transformers.put(
+      transformer.applyAdviceToMethod(
           isMethod()
               .and(named("execute"))
               .and(not(isAbstract()))
               .and(takesArgument(0, hasSuperType(named("org.apache.http.HttpMessage")))),
           ApacheClientInstrumentationModule.class.getName() + "$HttpClient_ExecuteAdvice_request0");
-      transformers.put(
+      transformer.applyAdviceToMethod(
           isMethod()
               .and(named("execute"))
               .and(not(isAbstract()))
               .and(takesArgument(1, hasSuperType(named("org.apache.http.HttpMessage")))),
           ApacheClientInstrumentationModule.class.getName() + "$HttpClient_ExecuteAdvice_request1");
-
-      return transformers;
     }
   }
 

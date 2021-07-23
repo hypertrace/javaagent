@@ -27,15 +27,13 @@ import io.netty.handler.codec.http2.Http2Headers;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.GrpcSemanticAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
@@ -68,22 +66,20 @@ public class NettyHttp2HeadersInstrumentationModule extends InstrumentationModul
    * Utils_convertClientHeaders_Advice}. TODO However it does not work for the first request
    * https://github.com/hypertrace/javaagent/issues/109#issuecomment-740918018.
    */
-  class NettyUtilsInstrumentation implements TypeInstrumentation {
+  static class NettyUtilsInstrumentation implements TypeInstrumentation {
     @Override
     public ElementMatcher<TypeDescription> typeMatcher() {
       return failSafe(named("io.grpc.netty.Utils"));
     }
 
     @Override
-    public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-      Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>();
-      transformers.put(
+    public void transform(TypeTransformer transformer) {
+      transformer.applyAdviceToMethod(
           isMethod().and(named("convertClientHeaders")).and(takesArguments(6)),
           Utils_convertClientHeaders_Advice.class.getName());
-      transformers.put(
+      transformer.applyAdviceToMethod(
           isMethod().and(named("convertHeaders")).and(takesArguments(1)),
           GrpcUtils_convertHeaders_Advice.class.getName());
-      return transformers;
     }
   }
 

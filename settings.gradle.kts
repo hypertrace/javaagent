@@ -42,9 +42,11 @@ include("instrumentation:java-streams")
 findProject(":instrumentation:java-streams")?.name = "java-streams"
 include("instrumentation:apache-httpasyncclient-4.1")
 findProject(":instrumentation:apache-httpasyncclient-4.1")?.name = "apache-httpasyncclient-4.1"
-include("instrumentation:vertx-web-3.0")
-findProject(":instrumentation:vertx-web-3.0")?.name = "vertx-web-3.0"
+include("instrumentation:vertx:vertx-web-3.0")
+findProject(":instrumentation:vertx:vertx-web-3.0")?.name = "vertx-web-3.0"
 include("instrumentation:netty:netty-4.0")
+include("instrumentation:netty:otel-netty-4.0-unshaded-for-instrumentation")
+include("instrumentation:netty:otel-netty-4.1-unshaded-for-instrumentation")
 findProject(":instrumentation:netty:netty-4.0")?.name = "netty-4.0"
 include("instrumentation:netty:netty-4.1")
 findProject(":instrumentation:netty:netty-4.1")?.name = "netty-4.1"
@@ -58,9 +60,13 @@ include("instrumentation:servlet:servlet-rw")
 findProject(":instrumentation:servlet:servlet-rw")?.name = "servlet-rw"
 include("instrumentation:struts-2.3")
 findProject(":instrumentation:struts-2.3")?.name = "struts-2.3"
+include("instrumentation:undertow:otel-undertow-1.4-unshaded-for-instrumentation")
+findProject(":instrumentation:undertow:otel-undertow-1.4-unshaded-for-instrumentation")?.name = "otel-undertow-1.4-unshaded-for-instrumentation"
 include("instrumentation:undertow:undertow-common")
 findProject(":instrumentation:undertow:undertow-common")?.name = "undertow-common"
 include("instrumentation:undertow:undertow-1.4")
 findProject(":instrumentation:undertow:undertow-1.4")?.name = "undertow-1.4"
 include("instrumentation:undertow:undertow-servlet-1.4")
 findProject(":instrumentation:undertow:undertow-servlet-1.4")?.name = "undertow-servlet-1.4"
+include("instrumentation:vertx:otel-vertx-web-3.0-unshaded-for-instrumentation")
+findProject(":instrumentation:vertx:otel-vertx-web-3.0-unshaded-for-instrumentation")?.name = "otel-vertx-web-3.0-unshaded-for-instrumentation"

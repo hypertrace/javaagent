@@ -18,14 +18,14 @@ package org.hypertrace.agent.otel.extensions.config;
 
 import com.google.auto.service.AutoService;
 import io.opentelemetry.instrumentation.api.config.Config;
-import io.opentelemetry.javaagent.spi.ComponentInstaller;
+import io.opentelemetry.javaagent.extension.AgentListener;
 import org.hypertrace.agent.core.config.InstrumentationConfig.ConfigProvider;
 
-@AutoService(ComponentInstaller.class)
-public class InstrumentationConfigInstaller implements ComponentInstaller {
+@AutoService(AgentListener.class)
+public class InstrumentationConfigInstaller implements AgentListener {
 
   @Override
-  public void beforeByteBuddyAgent(Config config) {
+  public void beforeAgent(Config config) {
     // get initializes singleton
     ConfigProvider.get();
   }

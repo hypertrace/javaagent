@@ -44,8 +44,8 @@ val versions: Map<String, String> by extra
 val nettyVersion = "4.0.38.Final"
 
 dependencies {
-    implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.0:${versions["opentelemetry_java_agent"]}")
-
+//    implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.0:${versions["opentelemetry_java_agent"]}")
+    implementation(project(":instrumentation:netty:otel-netty-4.0-unshaded-for-instrumentation", "shadow"))
     compileOnly("io.netty:netty-codec-http:${nettyVersion}") {
         version {
             strictly(nettyVersion)
