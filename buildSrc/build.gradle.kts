@@ -8,7 +8,7 @@ gradlePlugin {
   plugins {
     create("muzzle-plugin") {
       id = "muzzle"
-      implementationClass = "MuzzlePlugin"
+      implementationClass = "io.opentelemetry.instrumentation.gradle.muzzle.MuzzlePlugin"
     }
     create("auto-instrumentation-plugin") {
       id = "io.opentelemetry.instrumentation.auto-instrumentation"
@@ -45,4 +45,12 @@ dependencies {
 
   testImplementation("org.spockframework", "spock-core", "1.3-groovy-2.5")
   testImplementation("org.codehaus.groovy", "groovy-all", "2.5.8")
+
+  testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.2")
+  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.2")
+  testImplementation("org.assertj:assertj-core:3.19.0")
+}
+
+tasks.test {
+  useJUnitPlatform()
 }
