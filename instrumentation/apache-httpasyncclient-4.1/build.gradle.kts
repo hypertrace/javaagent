@@ -7,10 +7,10 @@ plugins {
 
 muzzle {
     pass {
-        group = "org.apache.httpcomponents"
-        module = "httpasyncclient"
+        group.set("org.apache.httpcomponents")
+        module.set("httpasyncclient")
         // 4.0 and 4.0.1 don't copy over the traceparent (etc) http headers on redirect
-        versions = "[4.1,)"
+        versions.set("[4.1,)")
         // TODO implement a muzzle check so that 4.0.x (at least 4.0 and 4.0.1) do not get applied
         //  and then bring back assertInverse
     }

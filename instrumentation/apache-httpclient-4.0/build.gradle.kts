@@ -8,23 +8,23 @@ plugins {
 muzzle {
     // TODO this check fails, but it passes in OTEL https://github.com/hypertrace/javaagent/issues/144
 //    fail {
-//        group = "commons-httpclient"
-//        module = "commons-httpclient"
-//        versions = "[,4.0)"
+//        group.set("commons-httpclient")
+//        module.set("commons-httpclient")
+//        versions.set("[,4.0)")
 //        skipVersions.add("3.1-jenkins-1")
 //    }
     pass {
-        group = "org.apache.httpcomponents"
-        module = "httpclient"
-        versions = "[4.0,)"
-        assertInverse = true
+        group.set("org.apache.httpcomponents")
+        module.set("httpclient")
+        versions.set("[4.0,)")
+        assertInverse.set(true)
     }
     pass {
         // We want to support the dropwizard clients too.
-        group = "io.dropwizard"
-        module = "dropwizard-client"
-        versions = "(,)"
-        assertInverse = true
+        group.set("io.dropwizard")
+        module.set("dropwizard-client")
+        versions.set("(,)")
+        assertInverse.set(true)
     }
 }
 

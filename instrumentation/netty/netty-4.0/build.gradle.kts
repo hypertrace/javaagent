@@ -7,27 +7,27 @@ plugins {
 
 muzzle {
     pass {
-        group = "io.netty"
-        module = "netty-codec-http"
-        versions = "[4.0.0.Final,4.1.0.Final)"
-        assertInverse = true
+        group.set("io.netty")
+        module.set("netty-codec-http")
+        versions.set("[4.0.0.Final,4.1.0.Final)")
+        assertInverse.set(true)
     }
     pass {
-        group = "io.netty"
-        module = "netty-all"
-        versions = "[4.0.0.Final,4.1.0.Final)"
-        assertInverse = true
+        group.set("io.netty")
+        module.set("netty-all")
+        versions.set("[4.0.0.Final,4.1.0.Final)")
+        assertInverse.set(true)
     }
     fail {
-        group = "io.netty"
-        module = "netty"
-        versions = "[,]"
+        group.set("io.netty")
+        module.set("netty")
+        versions.set("[,]")
     }
     pass {
-        group = "io.vertx"
-        module = "vertx-core"
-        versions = "[2.0.0,3.3.0)"
-        assertInverse = true
+        group.set("io.vertx")
+        module.set("vertx-core")
+        versions.set("[2.0.0,3.3.0)")
+        assertInverse.set(true)
     }
 }
 
