@@ -7,10 +7,10 @@ plugins {
 
 muzzle {
     pass {
-        group.set("io.grpc")
-        module.set("grpc-netty-shaded")
-        versions.set("[1.9.0,)")
-        assertInverse.set(true)
+        group = "io.grpc"
+        module = "grpc-netty-shaded"
+        versions = "[1.9.0,)"
+        assertInverse = true
     }
 }
 

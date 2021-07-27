@@ -7,15 +7,15 @@ plugins {
 
 muzzle {
     pass {
-        group.set("javax.servlet")
-        module.set("javax.servlet-api")
-        versions.set("[3.0.0,)")
+        group = "javax.servlet"
+        module = "javax.servlet-api"
+        versions = "[3.0.0,)"
     }
     // fail on all old servlet-api. This groupId was changed in 3.x to javax.servlet-api
     fail {
-        group.set("javax.servlet")
-        module.set("servlet-api")
-        versions.set("(,)")
+        group = "javax.servlet"
+        module = "servlet-api"
+        versions = "(,)"
     }
 }
 

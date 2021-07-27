@@ -15,9 +15,9 @@ afterEvaluate{
 
 muzzle {
     pass {
-        group.set("io.vertx")
-        module.set("vertx-web")
-        versions.set("[3.0.0,4.0.0)")
+        group = "io.vertx"
+        module = "vertx-web"
+        versions = "[3.0.0,4.0.0)"
     }
 }
 

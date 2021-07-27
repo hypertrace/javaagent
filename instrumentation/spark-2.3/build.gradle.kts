@@ -8,9 +8,9 @@ plugins {
 // building against 2.3 and testing against 2.4 because JettyHandler is available since 2.4 only
 muzzle {
     pass {
-        group.set("com.sparkjava")
-        module.set("spark-core")
-        versions.set("[2.3,)")
+        group = "com.sparkjava"
+        module = "spark-core"
+        versions = "[2.3,)"
     }
 }
 

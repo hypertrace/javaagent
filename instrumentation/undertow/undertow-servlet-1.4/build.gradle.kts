@@ -7,10 +7,10 @@ plugins {
 
 muzzle {
     pass {
-        group.set("io.undertow")
-        module.set("undertow-servlet")
-        versions.set("(,)")
-        assertInverse.set(true)
+        group = "io.undertow"
+        module = "undertow-servlet"
+        versions = "(,)"
+        assertInverse = true
     }
 }
 
