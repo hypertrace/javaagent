@@ -7,10 +7,10 @@ plugins {
 
 muzzle {
     pass {
-        group.set("com.squareup.okhttp3")
-        module.set("okhttp")
-        versions.set("[3.0,)")
-        assertInverse.set(true)
+        group = "com.squareup.okhttp3"
+        module = "okhttp"
+        versions = "[3.0,)"
+        assertInverse = true
     }
 }
 

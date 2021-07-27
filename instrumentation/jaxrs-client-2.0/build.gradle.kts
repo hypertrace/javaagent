@@ -7,17 +7,17 @@ plugins {
 
 muzzle {
     pass {
-        group.set("javax.ws.rs")
-        module.set("javax.ws.rs-api")
-        versions.set("[2.0,)")
+        group = "javax.ws.rs"
+        module = "javax.ws.rs-api"
+        versions = "[2.0,)"
     }
     pass {
         // We want to support the dropwizard clients too.
-        group.set("io.dropwizard")
-        module.set("dropwizard-client")
-        versions.set("[0.8.0,)")
+        group = "io.dropwizard"
+        module = "dropwizard-client"
+        versions = "[0.8.0,)"
         // TODO this is set in OTEL
-//        assertInverse.set(true)
+//        assertInverse = true
     }
 }
 
