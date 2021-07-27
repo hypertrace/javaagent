@@ -72,7 +72,6 @@ public class MuzzlePlugin implements Plugin<Project> {
                 task -> {
                   task.dependsOn(":javaagent-bootstrap:classes");
                   task.dependsOn(":javaagent-tooling:classes");
-                  task.dependsOn(":javaagent-extension-api:classes");
                   task.dependsOn(project.getTasks().named(JavaPlugin.CLASSES_TASK_NAME));
                 });
 
