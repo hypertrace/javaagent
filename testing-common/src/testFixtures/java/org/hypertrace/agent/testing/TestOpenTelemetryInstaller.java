@@ -23,6 +23,7 @@ import io.opentelemetry.javaagent.tooling.OpenTelemetryInstaller;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanProcessor;
+import java.lang.reflect.Field;
 
 public class TestOpenTelemetryInstaller extends OpenTelemetryInstaller {
 
@@ -38,6 +39,18 @@ public class TestOpenTelemetryInstaller extends OpenTelemetryInstaller {
         .setTracerProvider(SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build())
         .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
         .buildAndRegisterGlobal();
+
+    try {
+      Class<?> agentInitializerClass =
+          ClassLoader.getSystemClassLoader()
+              .loadClass("io.opentelemetry.javaagent.bootstrap.AgentInitializer");
+      Field agentClassLoaderField = agentInitializerClass.getDeclaredField("agentClassLoader");
+      agentClassLoaderField.setAccessible(true);
+      ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
+      agentClassLoaderField.set(null, systemClassLoader);
+    } catch (Throwable t) {
+      throw new AssertionError("Could not access agent classLoader", t);
+    }
   }
 
   @Override
