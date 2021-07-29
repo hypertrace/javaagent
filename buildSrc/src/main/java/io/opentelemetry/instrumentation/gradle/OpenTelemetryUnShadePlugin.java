@@ -26,6 +26,7 @@ public final class OpenTelemetryUnShadePlugin implements Plugin<Project> {
           "io.opentelemetry.semconv");
       shadowJar.relocate("io.opentelemetry.javaagent.shaded.instrumentation.api",
           "io.opentelemetry.instrumentation.api");
+      shadowJar.relocate("io.opentelemetry.javaagent.slf4j", "org.slf4j");
     });
 
   }
