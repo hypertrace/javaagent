@@ -30,8 +30,7 @@ dependencies {
     api(project(":instrumentation:java-streams"))
     api(project(":instrumentation:apache-httpclient-4.0"))
 
-    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-apache-httpasyncclient-4.1:${versions["opentelemetry_java_agent"]}")
-
+    implementation(project(":instrumentation:otel-apache-httpasyncclient-unshaded", "shadow"))
     library("org.apache.httpcomponents:httpasyncclient:4.1")
      testImplementation(testFixtures(project(":testing-common")))
 }
