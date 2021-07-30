@@ -76,3 +76,5 @@ include("instrumentation:otel-unshaded-for-testing:apache-httpclient-unshaded")
 findProject(":instrumentation:otel-unshaded-for-testing:apache-httpclient-unshaded")?.name = "apache-httpclient-unshaded"
 include("instrumentation:otel-unshaded-for-testing:grpc-unshaded")
 findProject(":instrumentation:otel-unshaded-for-testing:grpc-unshaded")?.name = "grpc-unshaded"
+include("instrumentation:otel-unshaded-for-testing:jaxrs-client-unshaded")
+findProject(":instrumentation:otel-unshaded-for-testing:jaxrs-client-unshaded")?.name = "jaxrs-client-unshaded"
