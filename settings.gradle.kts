@@ -78,3 +78,9 @@ include("instrumentation:otel-unshaded-for-testing:grpc-unshaded")
 findProject(":instrumentation:otel-unshaded-for-testing:grpc-unshaded")?.name = "grpc-unshaded"
 include("instrumentation:otel-unshaded-for-testing:jaxrs-client-unshaded")
 findProject(":instrumentation:otel-unshaded-for-testing:jaxrs-client-unshaded")?.name = "jaxrs-client-unshaded"
+include("instrumentation:otel-unshaded-for-testing:spark-unshaded")
+findProject(":instrumentation:otel-unshaded-for-testing:spark-unshaded")?.name = "spark-unshaded"
+include("instrumentation:otel-unshaded-for-testing:servlet-unshaded")
+findProject(":instrumentation:otel-unshaded-for-testing:servlet-unshaded")?.name = "servlet-unshaded"
+include("instrumentation:otel-unshaded-for-testing:jetty-unshaded")
+findProject(":instrumentation:otel-unshaded-for-testing:jetty-unshaded")?.name = "jetty-unshaded"
