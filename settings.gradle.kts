@@ -84,3 +84,5 @@ include("instrumentation:otel-unshaded-for-testing:servlet-unshaded")
 findProject(":instrumentation:otel-unshaded-for-testing:servlet-unshaded")?.name = "servlet-unshaded"
 include("instrumentation:otel-unshaded-for-testing:jetty-unshaded")
 findProject(":instrumentation:otel-unshaded-for-testing:jetty-unshaded")?.name = "jetty-unshaded"
+include("instrumentation:otel-unshaded-for-testing:okhttp-unshaded")
+findProject(":instrumentation:otel-unshaded-for-testing:okhttp-unshaded")?.name = "okhttp-unshaded"

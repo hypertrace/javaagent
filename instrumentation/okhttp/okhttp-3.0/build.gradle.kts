@@ -25,9 +25,7 @@ afterEvaluate{
 val versions: Map<String, String> by extra
 
 dependencies {
-    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-okhttp-3.0:${versions["opentelemetry_java_agent"]}")
-
     compileOnly("com.squareup.okhttp3:okhttp:3.0.0")
-
-     testImplementation(testFixtures(project(":testing-common")))
+    testImplementation(project(":instrumentation:otel-unshaded-for-testing:okhttp-unshaded", "shadow"))
+    testImplementation(testFixtures(project(":testing-common")))
 }
