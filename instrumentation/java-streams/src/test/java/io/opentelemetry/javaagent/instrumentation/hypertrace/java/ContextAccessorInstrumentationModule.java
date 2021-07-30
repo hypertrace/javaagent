@@ -22,6 +22,7 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -64,15 +65,13 @@ public class ContextAccessorInstrumentationModule extends InstrumentationModule 
     }
 
     @Override
-    public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-      Map<ElementMatcher.Junction<MethodDescription>, String> matchers = new HashMap<>();
-      matchers.put(
+    public void transform(TypeTransformer transformer) {
+      transformer.applyAdviceToMethod(
           named("addToInputStreamContext").and(takesArguments(2)).and(isPublic()),
           ContextAccessorInstrumentationModule.class.getName() + "$AddToInputStreamContextAdvice");
-      matchers.put(
+      transformer.applyAdviceToMethod(
           named("addToOutputStreamContext").and(takesArguments(2)).and(isPublic()),
           ContextAccessorInstrumentationModule.class.getName() + "$AddToOutputStreamContextAdvice");
-      return matchers;
     }
   }
 
