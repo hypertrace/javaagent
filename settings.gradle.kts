@@ -74,3 +74,5 @@ include("instrumentation:otel-apache-httpasyncclient-unshaded")
 findProject(":instrumentation:otel-apache-httpasyncclient-unshaded")?.name = "otel-apache-httpasyncclient-unshaded"
 include("instrumentation:otel-unshaded-for-testing:apache-httpclient-unshaded")
 findProject(":instrumentation:otel-unshaded-for-testing:apache-httpclient-unshaded")?.name = "apache-httpclient-unshaded"
+include("instrumentation:otel-unshaded-for-testing:grpc-unshaded")
+findProject(":instrumentation:otel-unshaded-for-testing:grpc-unshaded")?.name = "grpc-unshaded"
