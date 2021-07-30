@@ -13,7 +13,7 @@ dependencies {
     testImplementation(testFixtures(project(":testing-common")) as ProjectDependency) {
         exclude(group = "org.eclipse.jetty", module = "jetty-server")
     }
-    testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0:${versions["opentelemetry_java_agent"]}")
+    testImplementation(project(":instrumentation:otel-unshaded-for-testing:servlet-unshaded", "shadow"))
     testImplementation("org.apache.struts:struts2-core:2.3.1")
     testImplementation("org.apache.struts:struts2-json-plugin:2.3.1")
     testImplementation("org.apache.struts:struts2-convention-plugin:2.3.1")
