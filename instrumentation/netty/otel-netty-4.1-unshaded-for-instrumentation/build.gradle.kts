@@ -15,5 +15,5 @@ tasks.shadowJar {
     // the shaded instrumentation library from this un-shaded project so that our netty-4.1 project
     // can simply use the standalone netty-4.1 library where possible (and hopefully, eventually get
     // rid of this library un-shade hack).
-    exclude("io.opentelemetry.javaagent.shaded.instrumentation.netty")
+    relocate("io.opentelemetry.javaagent.shaded.instrumentation.netty", "io.opentelemetry.instrumentation.netty")
 }
