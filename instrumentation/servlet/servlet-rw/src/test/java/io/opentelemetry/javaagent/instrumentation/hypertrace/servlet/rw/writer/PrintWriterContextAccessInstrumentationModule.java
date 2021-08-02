@@ -22,15 +22,14 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.io.PrintWriter;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
@@ -60,12 +59,10 @@ public class PrintWriterContextAccessInstrumentationModule extends Instrumentati
     }
 
     @Override
-    public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-      Map<ElementMatcher.Junction<MethodDescription>, String> matchers = new HashMap<>();
-      matchers.put(
+    public void transform(TypeTransformer transformer) {
+      transformer.applyAdviceToMethod(
           named("addToPrintWriterContext").and(takesArguments(2)).and(isPublic()),
           PrintWriterContextAccessInstrumentationModule.class.getName() + "$TestAdvice");
-      return matchers;
     }
   }
 
