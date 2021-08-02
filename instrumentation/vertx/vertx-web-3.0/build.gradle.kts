@@ -31,7 +31,6 @@ dependencies {
 
     testImplementation(testFixtures(project(":testing-common")))
     testImplementation(project(":instrumentation:netty:netty-4.0"))
-    testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.0:${versions["opentelemetry_java_agent"]}")
 
     testImplementation("io.netty:netty-codec-http:${nettyVersion}") {
         version {
