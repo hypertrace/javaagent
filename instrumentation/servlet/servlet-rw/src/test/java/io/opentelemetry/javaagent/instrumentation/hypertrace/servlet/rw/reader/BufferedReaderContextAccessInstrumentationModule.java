@@ -20,15 +20,14 @@ import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.io.BufferedReader;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
@@ -50,7 +49,7 @@ public class BufferedReaderContextAccessInstrumentationModule extends Instrument
     return Collections.singletonList(new BufferedReaderTriggerInstrumentation());
   }
 
-  class BufferedReaderTriggerInstrumentation implements TypeInstrumentation {
+  static class BufferedReaderTriggerInstrumentation implements TypeInstrumentation {
 
     @Override
     public ElementMatcher<TypeDescription> typeMatcher() {
@@ -58,12 +57,10 @@ public class BufferedReaderContextAccessInstrumentationModule extends Instrument
     }
 
     @Override
-    public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-      Map<ElementMatcher.Junction<MethodDescription>, String> matchers = new HashMap<>();
-      matchers.put(
+    public void transform(TypeTransformer transformer) {
+      transformer.applyAdviceToMethod(
           named("addToBufferedReaderContext").and(takesArguments(2)).and(isPublic()),
           BufferedReaderContextAccessInstrumentationModule.class.getName() + "$TestAdvice");
-      return matchers;
     }
   }
 
