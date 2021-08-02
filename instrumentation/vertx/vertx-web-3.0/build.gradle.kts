@@ -18,6 +18,7 @@ muzzle {
         group = "io.vertx"
         module = "vertx-web"
         versions = "[3.0.0,4.0.0)"
+//        extraDependency("io.netty:netty-codec-http:4.0.38.Final")
     }
 }
 
