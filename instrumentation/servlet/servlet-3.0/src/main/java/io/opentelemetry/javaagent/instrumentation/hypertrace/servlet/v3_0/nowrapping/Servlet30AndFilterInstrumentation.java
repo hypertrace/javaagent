@@ -170,28 +170,7 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
       ContextStore<BufferedReader, CharBufferSpanPair> readerContextStore =
           InstrumentationContext.get(BufferedReader.class, CharBufferSpanPair.class);
 
-      AtomicBoolean responseHandled = new AtomicBoolean(false);
-      if (request.isAsyncStarted()) {
-        try {
-          request
-              .getAsyncContext()
-              .addListener(
-                  new BodyCaptureAsyncListener(
-                      responseHandled,
-                      currentSpan,
-                      responseContextStore,
-                      outputStreamContextStore,
-                      writerContextStore,
-                      requestContextStore,
-                      inputStreamContextStore,
-                      readerContextStore));
-        } catch (IllegalStateException e) {
-          // org.eclipse.jetty.server.Request may throw an exception here if request became
-          // finished after check above. We just ignore that exception and move on.
-        }
-      }
-
-      if (!request.isAsyncStarted() && responseHandled.compareAndSet(false, true)) {
+      if (!request.isAsyncStarted()) {
         if (instrumentationConfig.httpHeaders().response()) {
           for (String headerName : httpResponse.getHeaderNames()) {
             String headerValue = httpResponse.getHeader(headerName);

@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.async;
 
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.instrumentation.servlet.ServletAsyncListener;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.Utils;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.servlet.AsyncEvent;
-import javax.servlet.AsyncListener;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRequest;
@@ -38,7 +38,7 @@ import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
 import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 
-public class BodyCaptureAsyncListener implements AsyncListener {
+public final class BodyCaptureAsyncListener implements ServletAsyncListener<HttpServletResponse> {
 
   private static final InstrumentationConfig instrumentationConfig =
       InstrumentationConfig.ConfigProvider.get();
@@ -53,6 +53,7 @@ public class BodyCaptureAsyncListener implements AsyncListener {
   private final ContextStore<HttpServletRequest, SpanAndObjectPair> requestContextStore;
   private final ContextStore<ServletInputStream, ByteBufferSpanPair> inputStreamContextStore;
   private final ContextStore<BufferedReader, CharBufferSpanPair> readerContextStore;
+  private final HttpServletRequest request;
 
   public BodyCaptureAsyncListener(
       AtomicBoolean responseHandled,
@@ -71,29 +72,27 @@ public class BodyCaptureAsyncListener implements AsyncListener {
     this.requestContextStore = requestContextStore;
     this.inputStreamContextStore = inputStreamContextStore;
     this.readerContextStore = readerContextStore;
+    this.request = null;
   }
 
   @Override
-  public void onComplete(AsyncEvent event) {
+  public void onComplete(HttpServletResponse response) {
     if (responseHandled.compareAndSet(false, true)) {
-      captureResponseDataAndClearRequestBuffer(
-          event.getSuppliedResponse(), event.getSuppliedRequest());
+      captureResponseDataAndClearRequestBuffer(response, request);
     }
   }
 
   @Override
-  public void onError(AsyncEvent event) {
+  public void onError(Throwable throwable, HttpServletResponse response) {
     if (responseHandled.compareAndSet(false, true)) {
-      captureResponseDataAndClearRequestBuffer(
-          event.getSuppliedResponse(), event.getSuppliedRequest());
+      captureResponseDataAndClearRequestBuffer(response, request);
     }
   }
 
   @Override
-  public void onTimeout(AsyncEvent event) {}
-
-  @Override
-  public void onStartAsync(AsyncEvent event) {}
+  public void onTimeout(long timeout) {
+    // noop
+  }
 
   private void captureResponseDataAndClearRequestBuffer(
       ServletResponse servletResponse, ServletRequest servletRequest) {
