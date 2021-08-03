@@ -113,7 +113,8 @@ public final class Servlet30AsyncInstrumentation implements TypeInstrumentation 
                   writerContextStore,
                   requestContextStore,
                   inputStreamContextStore,
-                  readerContextStore),
+                  readerContextStore,
+                  request),
               accessor.getRequestAttribute(
                   request, ServletHttpServerTracer.ASYNC_LISTENER_RESPONSE_ATTRIBUTE));
           accessor.setRequestAttribute(request, HYPERTRACE_ASYNC_LISTENER_ATTRIBUTE, true);
