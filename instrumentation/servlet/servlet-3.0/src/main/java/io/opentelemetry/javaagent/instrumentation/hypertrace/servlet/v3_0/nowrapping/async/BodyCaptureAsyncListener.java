@@ -25,8 +25,6 @@ import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.hypertrace.agent.core.config.InstrumentationConfig;
@@ -63,7 +61,8 @@ public final class BodyCaptureAsyncListener implements ServletAsyncListener<Http
       ContextStore<PrintWriter, BoundedCharArrayWriter> writerContextStore,
       ContextStore<HttpServletRequest, SpanAndObjectPair> requestContextStore,
       ContextStore<ServletInputStream, ByteBufferSpanPair> inputStreamContextStore,
-      ContextStore<BufferedReader, CharBufferSpanPair> readerContextStore) {
+      ContextStore<BufferedReader, CharBufferSpanPair> readerContextStore,
+      HttpServletRequest request) {
     this.responseHandled = responseHandled;
     this.span = span;
     this.responseContextStore = responseContextStore;
@@ -72,7 +71,7 @@ public final class BodyCaptureAsyncListener implements ServletAsyncListener<Http
     this.requestContextStore = requestContextStore;
     this.inputStreamContextStore = inputStreamContextStore;
     this.readerContextStore = readerContextStore;
-    this.request = null;
+    this.request = request;
   }
 
   @Override
@@ -95,32 +94,28 @@ public final class BodyCaptureAsyncListener implements ServletAsyncListener<Http
   }
 
   private void captureResponseDataAndClearRequestBuffer(
-      ServletResponse servletResponse, ServletRequest servletRequest) {
-    if (servletResponse instanceof HttpServletResponse) {
-      HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
-
+      HttpServletResponse servletResponse, HttpServletRequest servletRequest) {
+    if (servletResponse != null) {
       if (instrumentationConfig.httpBody().response()
-          && ContentTypeUtils.shouldCapture(httpResponse.getContentType())) {
+          && ContentTypeUtils.shouldCapture(servletResponse.getContentType())) {
         Utils.captureResponseBody(
-            span, httpResponse, responseContextStore, streamContextStore, writerContextStore);
+            span, servletResponse, responseContextStore, streamContextStore, writerContextStore);
       }
 
       if (instrumentationConfig.httpHeaders().response()) {
-        for (String headerName : httpResponse.getHeaderNames()) {
-          String headerValue = httpResponse.getHeader(headerName);
+        for (String headerName : servletResponse.getHeaderNames()) {
+          String headerValue = servletResponse.getHeader(headerName);
           span.setAttribute(
               HypertraceSemanticAttributes.httpResponseHeader(headerName), headerValue);
         }
       }
     }
-    if (servletRequest instanceof HttpServletRequest) {
-      HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
-
+    if (servletRequest != null) {
       // remove request body buffers from context stores, otherwise they might get reused
       if (instrumentationConfig.httpBody().request()
-          && ContentTypeUtils.shouldCapture(httpRequest.getContentType())) {
+          && ContentTypeUtils.shouldCapture(servletRequest.getContentType())) {
         Utils.resetRequestBodyBuffers(
-            httpRequest, requestContextStore, inputStreamContextStore, readerContextStore);
+            servletRequest, requestContextStore, inputStreamContextStore, readerContextStore);
       }
     }
   }
