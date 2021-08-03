@@ -27,12 +27,12 @@ import io.opentelemetry.instrumentation.servlet.ServletHttpServerTracer;
 import io.opentelemetry.instrumentation.servlet.v3_0.Servlet3Accessor;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.servlet.AsyncContext;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRequest;
@@ -41,6 +41,7 @@ import javax.servlet.http.HttpServletResponse;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
+import org.hypertrace.agent.core.instrumentation.HypertraceCallDepthThreadLocalMap;
 import org.hypertrace.agent.core.instrumentation.SpanAndObjectPair;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
@@ -71,13 +72,12 @@ public final class Servlet30AsyncInstrumentation implements TypeInstrumentation 
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void startAsyncEnter() {
       // This allows to detect the outermost invocation of startAsync in method exit
-      CallDepthThreadLocalMap.incrementCallDepth(Servlet30AsyncInstrumentation.class);
+      HypertraceCallDepthThreadLocalMap.incrementCallDepth(AsyncContext.class);
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void startAsyncExit(@Advice.This ServletRequest servletRequest) {
-      int callDepth =
-          CallDepthThreadLocalMap.decrementCallDepth(Servlet30AsyncInstrumentation.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.decrementCallDepth(AsyncContext.class);
       if (callDepth != 0) {
         // This is not the outermost invocation, ignore.
         return;
