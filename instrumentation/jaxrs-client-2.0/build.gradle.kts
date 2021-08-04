@@ -33,7 +33,7 @@ val versions: Map<String, String> by extra
 
 dependencies {
     api(project(":instrumentation:java-streams"))
-    testImplementation(project(":instrumentation:otel-unshaded-for-testing:jaxrs-client-unshaded", "shadow"))
+    api(project(":instrumentation:otel-unshaded-for-testing:jaxrs-client-unshaded", "shadow"))
 
     compileOnly("javax.ws.rs:javax.ws.rs-api:2.0.1")
 

@@ -19,6 +19,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.jaxrs.v2_0;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
+import io.opentelemetry.javaagent.instrumentation.jaxrsclient.v2_0.ClientTracingFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -69,8 +70,7 @@ public class JaxrsClientEntityInterceptor implements ReaderInterceptor, WriterIn
       return responseContext.proceed();
     }
 
-    Object contextObj =
-        responseContext.getProperty(JaxrsClientBodyCaptureFilter.OTEL_CONTEXT_PROPERTY_NAME);
+    Object contextObj = responseContext.getProperty(ClientTracingFilter.CONTEXT_PROPERTY_NAME);
     if (!(contextObj instanceof Context)) {
       log.error(
           "Span object is not present in the context properties, response object will not be captured");
@@ -115,8 +115,7 @@ public class JaxrsClientEntityInterceptor implements ReaderInterceptor, WriterIn
   public void aroundWriteTo(WriterInterceptorContext requestContext)
       throws IOException, WebApplicationException {
 
-    Object contextObj =
-        requestContext.getProperty(JaxrsClientBodyCaptureFilter.OTEL_CONTEXT_PROPERTY_NAME);
+    Object contextObj = requestContext.getProperty(ClientTracingFilter.CONTEXT_PROPERTY_NAME);
     if (!(contextObj instanceof Context)) {
       log.error(
           "Span object is not present in the context properties, request body will not be captured");
