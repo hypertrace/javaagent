@@ -16,6 +16,8 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.server;
 
+import static io.opentelemetry.javaagent.instrumentation.netty.v4_0.server.NettyHttpServerTracer.tracer;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
@@ -91,7 +93,7 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
     try (Scope ignored = context.makeCurrent()) {
       ctx.write(msg, prm);
     } catch (Throwable throwable) {
-      NettyHttpServerTracer.tracer().endExceptionally(context, throwable);
+      tracer().endExceptionally(context, throwable);
       throw throwable;
     }
     if (msg instanceof HttpResponse) {
