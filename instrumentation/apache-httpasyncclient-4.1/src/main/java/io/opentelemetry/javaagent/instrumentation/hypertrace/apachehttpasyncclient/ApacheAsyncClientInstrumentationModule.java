@@ -30,6 +30,8 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
+import io.opentelemetry.javaagent.instrumentation.apachehttpasyncclient.ApacheHttpAsyncClientInstrumentation.DelegatingRequestProducer;
+import io.opentelemetry.javaagent.instrumentation.apachehttpasyncclient.ApacheHttpAsyncClientInstrumentation.WrappedFutureCallback;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v4_0.ApacheHttpClientUtils;
 import java.io.IOException;
 import java.util.Collections;
@@ -38,12 +40,9 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.apache.http.HttpException;
-import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.concurrent.FutureCallback;
-import org.apache.http.nio.ContentEncoder;
-import org.apache.http.nio.IOControl;
 import org.apache.http.nio.protocol.HttpAsyncRequestProducer;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpCoreContext;
@@ -101,80 +100,47 @@ public class ApacheAsyncClientInstrumentationModule extends InstrumentationModul
     public static void enter(
         @Advice.Argument(value = 0, readOnly = false) HttpAsyncRequestProducer requestProducer,
         @Advice.Argument(value = 2) HttpContext httpContext,
-        @Advice.Argument(value = 3, readOnly = false) FutureCallback futureCallback) {
-      // TODO we can't use the OTEL DelegatingRequestProducer class anymore, figure out a reasonable
-      // check here
-      if (requestProducer != null) {
+        @Advice.Argument(value = 3, readOnly = false) FutureCallback<?> futureCallback) {
+      if (requestProducer instanceof DelegatingRequestProducer) {
         Context context = currentContext();
-        futureCallback = new BodyCaptureDelegatingCallback(context, httpContext, futureCallback);
-        requestProducer = new DelegatingCaptureBodyRequestProducer(context, requestProducer);
+        BodyCaptureDelegatingCallback<?> bodyCaptureDelegatingCallback =
+            new BodyCaptureDelegatingCallback<>(context, httpContext, futureCallback);
+        futureCallback = bodyCaptureDelegatingCallback;
+        requestProducer =
+            new DelegatingCaptureBodyRequestProducer(
+                context, requestProducer, bodyCaptureDelegatingCallback);
       }
     }
   }
 
-  public static class DelegatingCaptureBodyRequestProducer implements HttpAsyncRequestProducer {
+  public static class DelegatingCaptureBodyRequestProducer extends DelegatingRequestProducer {
 
     final Context context;
-    private final HttpAsyncRequestProducer delegate;
 
     public DelegatingCaptureBodyRequestProducer(
-        Context context, HttpAsyncRequestProducer delegate) {
+        Context context,
+        HttpAsyncRequestProducer delegate,
+        WrappedFutureCallback<?> wrappedFutureCallback) {
+      super(context, delegate, wrappedFutureCallback);
       this.context = context;
-      this.delegate = delegate;
-    }
-
-    @Override
-    public HttpHost getTarget() {
-      return delegate.getTarget();
     }
 
     @Override
     public HttpRequest generateRequest() throws IOException, HttpException {
-      HttpRequest request = delegate.generateRequest();
+      HttpRequest request = super.generateRequest();
       ApacheHttpClientUtils.traceRequest(Span.fromContext(context), request);
       return request;
     }
-
-    @Override
-    public void produceContent(ContentEncoder encoder, IOControl ioctrl) throws IOException {
-      delegate.produceContent(encoder, ioctrl);
-    }
-
-    @Override
-    public void requestCompleted(HttpContext context) {
-      delegate.requestCompleted(context);
-    }
-
-    @Override
-    public void failed(Exception ex) {
-      delegate.failed(ex);
-    }
-
-    @Override
-    public boolean isRepeatable() {
-      return delegate.isRepeatable();
-    }
-
-    @Override
-    public void resetRequest() throws IOException {
-      delegate.resetRequest();
-    }
-
-    @Override
-    public void close() throws IOException {
-      delegate.close();
-    }
   }
 
-  public static class BodyCaptureDelegatingCallback<T> implements FutureCallback<T> {
+  public static class BodyCaptureDelegatingCallback<T> extends WrappedFutureCallback<T> {
 
     final Context context;
-    final FutureCallback<T> delegate;
     final HttpContext httpContext;
 
     public BodyCaptureDelegatingCallback(
         Context context, HttpContext httpContext, FutureCallback<T> delegate) {
-      this.delegate = delegate;
+      super(context, httpContext, delegate);
       this.context = context;
       this.httpContext = httpContext;
     }
@@ -183,21 +149,21 @@ public class ApacheAsyncClientInstrumentationModule extends InstrumentationModul
     public void completed(T result) {
       HttpResponse httpResponse = getResponse(httpContext);
       ApacheHttpClientUtils.traceResponse(Span.fromContext(context), httpResponse);
-      delegate.completed(result);
+      super.completed(result);
     }
 
     @Override
     public void failed(Exception ex) {
       HttpResponse httpResponse = getResponse(httpContext);
       ApacheHttpClientUtils.traceResponse(Span.fromContext(context), httpResponse);
-      delegate.failed(ex);
+      super.failed(ex);
     }
 
     @Override
     public void cancelled() {
       HttpResponse httpResponse = getResponse(httpContext);
       ApacheHttpClientUtils.traceResponse(Span.fromContext(context), httpResponse);
-      delegate.cancelled();
+      super.cancelled();
     }
 
     private static HttpResponse getResponse(HttpContext context) {
