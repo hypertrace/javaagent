@@ -37,8 +37,7 @@ public class HttpServerBlockingRequestHandler extends ChannelInboundHandlerAdapt
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) {
     Channel channel = ctx.channel();
-    NettyHttpServerTracer tracer = NettyHttpServerTracer.tracer();
-    Context context = tracer.getServerContext(channel);
+    Context context = NettyHttpServerTracer.tracer().getServerContext(channel);
     if (context == null) {
       ctx.fireChannelRead(msg);
       return;
