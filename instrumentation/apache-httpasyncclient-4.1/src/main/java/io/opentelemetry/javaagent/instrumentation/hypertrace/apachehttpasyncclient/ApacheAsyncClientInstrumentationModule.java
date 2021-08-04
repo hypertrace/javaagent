@@ -109,14 +109,16 @@ public class ApacheAsyncClientInstrumentationModule extends InstrumentationModul
         @Advice.Argument(value = 0, readOnly = false) HttpAsyncRequestProducer requestProducer,
         @Advice.Argument(value = 2) HttpContext httpContext,
         @Advice.Argument(value = 3, readOnly = false) FutureCallback<?> futureCallback) {
-      if (requestProducer instanceof DelegatingRequestProducer) {
+      if (requestProducer instanceof DelegatingRequestProducer
+          && futureCallback instanceof WrappedFutureCallback<?>) {
         Context context = currentContext();
+        WrappedFutureCallback<?> wrappedFutureCallback = (WrappedFutureCallback<?>) futureCallback;
         BodyCaptureDelegatingCallback<?> bodyCaptureDelegatingCallback =
             new BodyCaptureDelegatingCallback<>(context, httpContext, futureCallback);
         futureCallback = bodyCaptureDelegatingCallback;
         requestProducer =
             new DelegatingCaptureBodyRequestProducer(
-                context, requestProducer, bodyCaptureDelegatingCallback);
+                context, requestProducer, wrappedFutureCallback, bodyCaptureDelegatingCallback);
       }
     }
   }
@@ -145,14 +147,17 @@ public class ApacheAsyncClientInstrumentationModule extends InstrumentationModul
       getContext = localGetContext;
     }
 
-    private final BodyCaptureDelegatingCallback<?> wrappedFutureCallback;
+    private final WrappedFutureCallback<?> wrappedFutureCallback;
+    private final BodyCaptureDelegatingCallback<?> bodyCaptureDelegatingCallback;
 
     public DelegatingCaptureBodyRequestProducer(
         Context parentContext,
         HttpAsyncRequestProducer delegate,
-        BodyCaptureDelegatingCallback<?> wrappedFutureCallback) {
+        WrappedFutureCallback<?> wrappedFutureCallback,
+        BodyCaptureDelegatingCallback<?> bodyCaptureDelegatingCallback) {
       super(parentContext, delegate, wrappedFutureCallback);
       this.wrappedFutureCallback = wrappedFutureCallback;
+      this.bodyCaptureDelegatingCallback = bodyCaptureDelegatingCallback;
     }
 
     @Override
@@ -163,7 +168,7 @@ public class ApacheAsyncClientInstrumentationModule extends InstrumentationModul
         if (getContextResult instanceof Context) {
           Context context = (Context) getContextResult;
           Span clientSpan = ClientSpan.fromContextOrNull(context);
-          wrappedFutureCallback.clientSpan = clientSpan;
+          bodyCaptureDelegatingCallback.clientContext = context;
           ApacheHttpClientUtils.traceRequest(clientSpan, request);
         }
       } catch (Throwable t) {
@@ -173,38 +178,39 @@ public class ApacheAsyncClientInstrumentationModule extends InstrumentationModul
     }
   }
 
-  public static class BodyCaptureDelegatingCallback<T> extends WrappedFutureCallback<T> {
+  public static class BodyCaptureDelegatingCallback<T> implements FutureCallback<T> {
 
     final Context context;
     final HttpContext httpContext;
-    private volatile Span clientSpan;
+    private final FutureCallback<T> delegate;
+    private volatile Context clientContext;
 
     public BodyCaptureDelegatingCallback(
         Context context, HttpContext httpContext, FutureCallback<T> delegate) {
-      super(context, httpContext, delegate);
       this.context = context;
       this.httpContext = httpContext;
+      this.delegate = delegate;
     }
 
     @Override
     public void completed(T result) {
       HttpResponse httpResponse = getResponse(httpContext);
-      ApacheHttpClientUtils.traceResponse(clientSpan, httpResponse);
-      super.completed(result);
+      ApacheHttpClientUtils.traceResponse(Span.fromContext(clientContext), httpResponse);
+      delegate.completed(result);
     }
 
     @Override
     public void failed(Exception ex) {
       HttpResponse httpResponse = getResponse(httpContext);
-      ApacheHttpClientUtils.traceResponse(clientSpan, httpResponse);
-      super.failed(ex);
+      ApacheHttpClientUtils.traceResponse(Span.fromContext(clientContext), httpResponse);
+      delegate.failed(ex);
     }
 
     @Override
     public void cancelled() {
       HttpResponse httpResponse = getResponse(httpContext);
-      ApacheHttpClientUtils.traceResponse(clientSpan, httpResponse);
-      super.cancelled();
+      ApacheHttpClientUtils.traceResponse(Span.fromContext(clientContext), httpResponse);
+      delegate.cancelled();
     }
 
     private static HttpResponse getResponse(HttpContext context) {
