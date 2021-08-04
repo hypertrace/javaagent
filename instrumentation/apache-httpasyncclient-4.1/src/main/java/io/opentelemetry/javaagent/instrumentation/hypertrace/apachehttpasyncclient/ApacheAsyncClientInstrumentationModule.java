@@ -27,6 +27,7 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 import com.google.auto.service.AutoService;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.instrumentation.api.tracer.ClientSpan;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
@@ -34,6 +35,11 @@ import io.opentelemetry.javaagent.instrumentation.apachehttpasyncclient.ApacheHt
 import io.opentelemetry.javaagent.instrumentation.apachehttpasyncclient.ApacheHttpAsyncClientInstrumentation.WrappedFutureCallback;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v4_0.ApacheHttpClientUtils;
 import java.io.IOException;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodHandles.Lookup;
+import java.lang.invoke.MethodType;
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
 import net.bytebuddy.asm.Advice;
@@ -46,6 +52,8 @@ import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.nio.protocol.HttpAsyncRequestProducer;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpCoreContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @AutoService(InstrumentationModule.class)
 public class ApacheAsyncClientInstrumentationModule extends InstrumentationModule {
@@ -115,20 +123,52 @@ public class ApacheAsyncClientInstrumentationModule extends InstrumentationModul
 
   public static class DelegatingCaptureBodyRequestProducer extends DelegatingRequestProducer {
 
-    final Context context;
+    private static final Logger log =
+        LoggerFactory.getLogger(DelegatingCaptureBodyRequestProducer.class);
+
+    private static final Lookup lookup = MethodHandles.lookup();
+    private static final MethodHandle getContext;
+
+    static {
+      MethodHandle localGetContext;
+      try {
+        Field contextField = WrappedFutureCallback.class.getDeclaredField("context");
+        contextField.setAccessible(true);
+        MethodHandle unReflectedField = lookup.unreflectGetter(contextField);
+        localGetContext =
+            unReflectedField.asType(
+                MethodType.methodType(Context.class, WrappedFutureCallback.class));
+      } catch (NoSuchFieldException | IllegalAccessException e) {
+        log.debug("Could not find context field on super class", e);
+        localGetContext = null;
+      }
+      getContext = localGetContext;
+    }
+
+    private final BodyCaptureDelegatingCallback<?> wrappedFutureCallback;
 
     public DelegatingCaptureBodyRequestProducer(
-        Context context,
+        Context parentContext,
         HttpAsyncRequestProducer delegate,
-        WrappedFutureCallback<?> wrappedFutureCallback) {
-      super(context, delegate, wrappedFutureCallback);
-      this.context = context;
+        BodyCaptureDelegatingCallback<?> wrappedFutureCallback) {
+      super(parentContext, delegate, wrappedFutureCallback);
+      this.wrappedFutureCallback = wrappedFutureCallback;
     }
 
     @Override
     public HttpRequest generateRequest() throws IOException, HttpException {
       HttpRequest request = super.generateRequest();
-      ApacheHttpClientUtils.traceRequest(Span.fromContext(context), request);
+      try {
+        Object getContextResult = getContext.invoke(wrappedFutureCallback);
+        if (getContextResult instanceof Context) {
+          Context context = (Context) getContextResult;
+          Span clientSpan = ClientSpan.fromContextOrNull(context);
+          wrappedFutureCallback.clientSpan = clientSpan;
+          ApacheHttpClientUtils.traceRequest(clientSpan, request);
+        }
+      } catch (Throwable t) {
+        log.debug("Could not access context field on super class", t);
+      }
       return request;
     }
   }
@@ -137,6 +177,7 @@ public class ApacheAsyncClientInstrumentationModule extends InstrumentationModul
 
     final Context context;
     final HttpContext httpContext;
+    private volatile Span clientSpan;
 
     public BodyCaptureDelegatingCallback(
         Context context, HttpContext httpContext, FutureCallback<T> delegate) {
@@ -148,21 +189,21 @@ public class ApacheAsyncClientInstrumentationModule extends InstrumentationModul
     @Override
     public void completed(T result) {
       HttpResponse httpResponse = getResponse(httpContext);
-      ApacheHttpClientUtils.traceResponse(Span.fromContext(context), httpResponse);
+      ApacheHttpClientUtils.traceResponse(clientSpan, httpResponse);
       super.completed(result);
     }
 
     @Override
     public void failed(Exception ex) {
       HttpResponse httpResponse = getResponse(httpContext);
-      ApacheHttpClientUtils.traceResponse(Span.fromContext(context), httpResponse);
+      ApacheHttpClientUtils.traceResponse(clientSpan, httpResponse);
       super.failed(ex);
     }
 
     @Override
     public void cancelled() {
       HttpResponse httpResponse = getResponse(httpContext);
-      ApacheHttpClientUtils.traceResponse(Span.fromContext(context), httpResponse);
+      ApacheHttpClientUtils.traceResponse(clientSpan, httpResponse);
       super.cancelled();
     }
 
