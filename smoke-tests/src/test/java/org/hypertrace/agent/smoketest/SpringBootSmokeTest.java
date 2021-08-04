@@ -187,7 +187,7 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
       Assertions.assertEquals(response.body().string(), requestBody);
     }
 
-    Collection<ExportTraceServiceRequest> traces = waitForTraces(2);
+    Collection<ExportTraceServiceRequest> traces = waitForTraces();
 
     List<String> responseBodyAttributes =
         getSpanStream(traces)
