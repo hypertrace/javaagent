@@ -19,7 +19,6 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.jaxrs.v2_0;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.javaagent.instrumentation.jaxrsclient.v2_0.ClientTracingFilter;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -38,10 +37,12 @@ public class JaxrsClientBodyCaptureFilter implements ClientRequestFilter, Client
   private static final Logger log = LoggerFactory.getLogger(JaxrsClientBodyCaptureFilter.class);
   private static final InstrumentationConfig instrumentationConfig =
       InstrumentationConfig.ConfigProvider.get();
+  /** TODO find a better way to access this */
+  public static final String OTEL_CONTEXT_PROPERTY_NAME = "io.opentelemetry.javaagent.context";
 
   @Override
   public void filter(ClientRequestContext requestContext) {
-    Object contextObj = requestContext.getProperty(ClientTracingFilter.CONTEXT_PROPERTY_NAME);
+    Object contextObj = requestContext.getProperty(OTEL_CONTEXT_PROPERTY_NAME);
     if (!(contextObj instanceof Context)) {
       return;
     }
@@ -63,7 +64,7 @@ public class JaxrsClientBodyCaptureFilter implements ClientRequestFilter, Client
 
   @Override
   public void filter(ClientRequestContext requestContext, ClientResponseContext responseContext) {
-    Object contextObj = requestContext.getProperty(ClientTracingFilter.CONTEXT_PROPERTY_NAME);
+    Object contextObj = requestContext.getProperty(OTEL_CONTEXT_PROPERTY_NAME);
     if (!(contextObj instanceof Context)) {
       return;
     }
