@@ -28,7 +28,6 @@ import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import java.util.Arrays;
 import java.util.List;
@@ -37,6 +36,7 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.apache.http.HttpMessage;
 import org.apache.http.HttpResponse;
+import org.hypertrace.agent.core.instrumentation.HypertraceCallDepthThreadLocalMap;
 
 @AutoService(InstrumentationModule.class)
 public class ApacheClientInstrumentationModule extends InstrumentationModule {
@@ -88,7 +88,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
   static class HttpClient_ExecuteAdvice_request0 {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static boolean enter(@Advice.Argument(0) HttpMessage request) {
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(HttpMessage.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.incrementCallDepth(HttpMessage.class);
       if (callDepth > 0) {
         return false;
       }
@@ -100,7 +100,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
     public static void exit(
         @Advice.Enter boolean returnFromEnter, @Advice.Thrown Throwable throwable) {
       if (returnFromEnter) {
-        CallDepthThreadLocalMap.reset(HttpMessage.class);
+        HypertraceCallDepthThreadLocalMap.reset(HttpMessage.class);
       }
     }
   }
@@ -108,7 +108,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
   static class HttpClient_ExecuteAdvice_request1 {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static boolean enter(@Advice.Argument(1) HttpMessage request) {
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(HttpMessage.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.incrementCallDepth(HttpMessage.class);
       if (callDepth > 0) {
         return false;
       }
@@ -120,7 +120,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
     public static void exit(
         @Advice.Enter boolean returnFromEnter, @Advice.Thrown Throwable throwable) {
       if (returnFromEnter) {
-        CallDepthThreadLocalMap.reset(HttpMessage.class);
+        HypertraceCallDepthThreadLocalMap.reset(HttpMessage.class);
       }
     }
   }
@@ -128,7 +128,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
   static class HttpClient_ExecuteAdvice_response {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static boolean enter() {
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(HttpResponse.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.incrementCallDepth(HttpResponse.class);
       if (callDepth > 0) {
         return false;
       }
@@ -141,7 +141,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
         return;
       }
 
-      CallDepthThreadLocalMap.reset(HttpResponse.class);
+      HypertraceCallDepthThreadLocalMap.reset(HttpResponse.class);
       if (response instanceof HttpResponse) {
         HttpResponse httpResponse = (HttpResponse) response;
         ApacheHttpClientUtils.traceResponse(Java8BytecodeBridge.currentSpan(), httpResponse);
