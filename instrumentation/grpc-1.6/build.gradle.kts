@@ -60,8 +60,8 @@ val versions: Map<String, String> by extra
 val grpcVersion = "1.6.0"
 
 dependencies {
-    testImplementation(project(":instrumentation:otel-unshaded-for-testing:grpc-unshaded", "shadow"))
     api("io.opentelemetry.instrumentation:opentelemetry-grpc-1.6:${versions["opentelemetry_java_agent"]}")
+    testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-grpc-1.6:${versions["opentelemetry_java_agent"]}")
     implementation(project(":instrumentation:grpc-common"))
     implementation(project(":shaded-protobuf-java-util", "shadow"))
 
@@ -124,7 +124,7 @@ for (version in listOf("1.30.0")) {
     }
     dependencies {
         versionedConfiguration(testFixtures(project(":testing-common")))
-        versionedConfiguration(project(":instrumentation:otel-unshaded-for-testing:grpc-unshaded", "shadow"))
+        versionedConfiguration("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-grpc-1.6:${versions["opentelemetry_java_agent"]}")
         versionedConfiguration("io.opentelemetry.instrumentation:opentelemetry-grpc-1.6:${versions["opentelemetry_java_agent"]}")
         versionedConfiguration(project(":instrumentation:grpc-shaded-netty-1.9"))
         versionedConfiguration(platform("io.grpc:grpc-bom:$version"))
