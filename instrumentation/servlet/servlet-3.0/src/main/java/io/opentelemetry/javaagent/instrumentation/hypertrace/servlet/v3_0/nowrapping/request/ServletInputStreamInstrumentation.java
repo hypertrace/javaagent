@@ -16,7 +16,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.request;
 
-import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.safeHasSuperType;
+import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasSuperType;
 import static net.bytebuddy.matcher.ElementMatchers.is;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
@@ -25,13 +25,13 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.io.IOException;
 import javax.servlet.ServletInputStream;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
+import org.hypertrace.agent.core.instrumentation.HypertraceCallDepthThreadLocalMap;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
 
@@ -39,7 +39,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
 
   @Override
   public ElementMatcher<TypeDescription> typeMatcher() {
-    return safeHasSuperType(named("javax.servlet.ServletInputStream"));
+    return hasSuperType(named("javax.servlet.ServletInputStream"));
   }
 
   @Override
@@ -94,7 +94,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         return null;
       }
 
-      CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
+      HypertraceCallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
       return bufferSpanPair;
     }
 
@@ -104,7 +104,8 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
       if (bufferSpanPair == null) {
         return;
       }
-      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
+      int callDepth =
+          HypertraceCallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
       if (callDepth > 0) {
         return;
       }
@@ -126,7 +127,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         return null;
       }
 
-      CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
+      HypertraceCallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
       return bufferSpanPair;
     }
 
@@ -138,7 +139,8 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
       if (bufferSpanPair == null) {
         return;
       }
-      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
+      int callDepth =
+          HypertraceCallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
       if (callDepth > 0) {
         return;
       }
@@ -160,7 +162,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         return null;
       }
 
-      CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
+      HypertraceCallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
       return bufferSpanPair;
     }
 
@@ -174,7 +176,8 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
       if (bufferSpanPair == null) {
         return;
       }
-      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
+      int callDepth =
+          HypertraceCallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
       if (callDepth > 0) {
         return;
       }
@@ -196,7 +199,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         return null;
       }
 
-      CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
+      HypertraceCallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
       return bufferSpanPair;
     }
 
@@ -207,7 +210,8 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
       if (bufferSpanPair == null) {
         return;
       }
-      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
+      int callDepth =
+          HypertraceCallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
       if (callDepth > 0) {
         return;
       }
@@ -226,7 +230,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         return null;
       }
 
-      CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
+      HypertraceCallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
       return bufferSpanPair;
     }
 
@@ -240,7 +244,8 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
       if (bufferSpanPair == null) {
         return;
       }
-      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
+      int callDepth =
+          HypertraceCallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
       if (callDepth > 0) {
         return;
       }

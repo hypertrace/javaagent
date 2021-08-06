@@ -31,7 +31,7 @@ val versions: Map<String, String> by extra
 
 dependencies {
     implementation("io.opentelemetry.instrumentation:opentelemetry-servlet-3.0:${versions["opentelemetry_java_agent"]}")
-    testImplementation(project(":instrumentation:otel-unshaded-for-testing:servlet-unshaded", "shadow"))
+    testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0:${versions["opentelemetry_java_agent"]}")
 
     compileOnly("javax.servlet:javax.servlet-api:3.1.0")
 

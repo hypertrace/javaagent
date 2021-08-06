@@ -16,8 +16,8 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping;
 
-import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.safeHasSuperType;
-import static io.opentelemetry.javaagent.extension.matcher.ClassLoaderMatcher.hasClassesNamed;
+import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasClassesNamed;
+import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasSuperType;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.namedOneOf;
@@ -27,7 +27,6 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
@@ -46,6 +45,7 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.core.config.InstrumentationConfig;
+import org.hypertrace.agent.core.instrumentation.HypertraceCallDepthThreadLocalMap;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.SpanAndObjectPair;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
@@ -64,7 +64,7 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
 
   @Override
   public ElementMatcher<TypeDescription> typeMatcher() {
-    return safeHasSuperType(namedOneOf("javax.servlet.Filter", "javax.servlet.Servlet"));
+    return hasSuperType(namedOneOf("javax.servlet.Filter", "javax.servlet.Servlet"));
   }
 
   @Override
@@ -85,7 +85,7 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
         @Advice.Local("currentSpan") Span currentSpan) {
 
       int callDepth =
-          CallDepthThreadLocalMap.incrementCallDepth(Servlet30InstrumentationName.class);
+          HypertraceCallDepthThreadLocalMap.incrementCallDepth(Servlet30InstrumentationName.class);
       if (callDepth > 0) {
         return false;
       }
@@ -139,7 +139,7 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
         @Advice.Argument(1) ServletResponse response,
         @Advice.Local("currentSpan") Span currentSpan) {
       int callDepth =
-          CallDepthThreadLocalMap.decrementCallDepth(Servlet30InstrumentationName.class);
+          HypertraceCallDepthThreadLocalMap.decrementCallDepth(Servlet30InstrumentationName.class);
       if (callDepth > 0) {
         return;
       }

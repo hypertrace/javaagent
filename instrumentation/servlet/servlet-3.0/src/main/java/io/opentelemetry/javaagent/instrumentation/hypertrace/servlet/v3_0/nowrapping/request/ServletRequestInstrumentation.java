@@ -16,7 +16,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.request;
 
-import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.safeHasSuperType;
+import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasSuperType;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.returns;
@@ -24,7 +24,6 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.io.BufferedReader;
@@ -34,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
+import org.hypertrace.agent.core.instrumentation.HypertraceCallDepthThreadLocalMap;
 import org.hypertrace.agent.core.instrumentation.SpanAndObjectPair;
 import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
 import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
@@ -42,7 +42,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
 
   @Override
   public ElementMatcher<TypeDescription> typeMatcher() {
-    return safeHasSuperType(named("javax.servlet.ServletRequest"));
+    return hasSuperType(named("javax.servlet.ServletRequest"));
   }
 
   @Override
@@ -75,7 +75,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
       }
 
       // the getReader method might call getInputStream
-      CallDepthThreadLocalMap.incrementCallDepth(ServletRequest.class);
+      HypertraceCallDepthThreadLocalMap.incrementCallDepth(ServletRequest.class);
       return requestBufferWrapper;
     }
 
@@ -90,7 +90,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
         return;
       }
 
-      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(ServletRequest.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.decrementCallDepth(ServletRequest.class);
       if (callDepth > 0) {
         return;
       }
@@ -126,7 +126,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
         return null;
       }
 
-      CallDepthThreadLocalMap.incrementCallDepth(ServletRequest.class);
+      HypertraceCallDepthThreadLocalMap.incrementCallDepth(ServletRequest.class);
       return spanAndObjectPair;
     }
 
@@ -141,7 +141,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
         return;
       }
 
-      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(ServletRequest.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.decrementCallDepth(ServletRequest.class);
       if (callDepth > 0) {
         return;
       }
