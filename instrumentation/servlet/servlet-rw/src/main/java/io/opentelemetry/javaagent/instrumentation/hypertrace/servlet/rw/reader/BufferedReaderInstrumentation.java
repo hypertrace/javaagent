@@ -16,7 +16,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.rw.reader;
 
-import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.safeHasSuperType;
+import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasSuperType;
 import static net.bytebuddy.matcher.ElementMatchers.is;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
@@ -25,13 +25,13 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.io.BufferedReader;
 import java.io.IOException;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
+import org.hypertrace.agent.core.instrumentation.HypertraceCallDepthThreadLocalMap;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
 
@@ -39,7 +39,7 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
 
   @Override
   public ElementMatcher<TypeDescription> typeMatcher() {
-    return safeHasSuperType(named("java.io.BufferedReader")).or(named("java.io.BufferedReader"));
+    return hasSuperType(named("java.io.BufferedReader")).or(named("java.io.BufferedReader"));
   }
 
   @Override
@@ -75,7 +75,7 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
         return null;
       }
 
-      CallDepthThreadLocalMap.incrementCallDepth(BufferedReader.class);
+      HypertraceCallDepthThreadLocalMap.incrementCallDepth(BufferedReader.class);
       return bufferSpanPair;
     }
 
@@ -87,7 +87,7 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
       if (bufferSpanPair == null) {
         return;
       }
-      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(BufferedReader.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.decrementCallDepth(BufferedReader.class);
       if (callDepth > 0) {
         return;
       }
@@ -109,7 +109,7 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
         return null;
       }
 
-      CallDepthThreadLocalMap.incrementCallDepth(BufferedReader.class);
+      HypertraceCallDepthThreadLocalMap.incrementCallDepth(BufferedReader.class);
       return bufferSpanPair;
     }
 
@@ -121,7 +121,7 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
       if (bufferSpanPair == null) {
         return;
       }
-      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(BufferedReader.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.decrementCallDepth(BufferedReader.class);
       if (callDepth > 0) {
         return;
       }
@@ -143,7 +143,7 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
         return null;
       }
 
-      CallDepthThreadLocalMap.incrementCallDepth(BufferedReader.class);
+      HypertraceCallDepthThreadLocalMap.incrementCallDepth(BufferedReader.class);
       return bufferSpanPair;
     }
 
@@ -157,7 +157,7 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
       if (bufferSpanPair == null) {
         return;
       }
-      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(BufferedReader.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.decrementCallDepth(BufferedReader.class);
       if (callDepth > 0) {
         return;
       }
@@ -179,7 +179,7 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
         return null;
       }
 
-      CallDepthThreadLocalMap.incrementCallDepth(BufferedReader.class);
+      HypertraceCallDepthThreadLocalMap.incrementCallDepth(BufferedReader.class);
       return bufferSpanPair;
     }
 
@@ -190,7 +190,7 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
       if (bufferSpanPair == null) {
         return;
       }
-      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(BufferedReader.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.decrementCallDepth(BufferedReader.class);
       if (callDepth > 0) {
         return;
       }

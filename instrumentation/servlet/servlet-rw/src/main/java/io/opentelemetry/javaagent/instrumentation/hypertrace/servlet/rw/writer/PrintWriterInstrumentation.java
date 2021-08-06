@@ -16,7 +16,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.rw.writer;
 
-import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.safeHasSuperType;
+import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasSuperType;
 import static net.bytebuddy.matcher.ElementMatchers.is;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
@@ -25,20 +25,20 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.io.IOException;
 import java.io.PrintWriter;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
+import org.hypertrace.agent.core.instrumentation.HypertraceCallDepthThreadLocalMap;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
 
 public class PrintWriterInstrumentation implements TypeInstrumentation {
 
   @Override
   public ElementMatcher<TypeDescription> typeMatcher() {
-    return safeHasSuperType(named("java.io.PrintWriter")).or(named("java.io.PrintWriter"));
+    return hasSuperType(named("java.io.PrintWriter")).or(named("java.io.PrintWriter"));
   }
 
   @Override
@@ -100,7 +100,7 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
       if (buffer == null) {
         return null;
       }
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
       if (callDepth > 0) {
         return buffer;
       }
@@ -112,7 +112,7 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(@Advice.Enter BoundedCharArrayWriter buffer) {
       if (buffer != null) {
-        CallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
+        HypertraceCallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
       }
     }
   }
@@ -127,7 +127,7 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
       if (buffer == null) {
         return null;
       }
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
       if (callDepth > 0) {
         return buffer;
       }
@@ -139,7 +139,7 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(@Advice.Enter BoundedCharArrayWriter buffer) {
       if (buffer != null) {
-        CallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
+        HypertraceCallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
       }
     }
   }
@@ -157,7 +157,7 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
       if (buffer == null) {
         return null;
       }
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
       if (callDepth > 0) {
         return buffer;
       }
@@ -169,7 +169,7 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(@Advice.Enter BoundedCharArrayWriter buffer) {
       if (buffer != null) {
-        CallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
+        HypertraceCallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
       }
     }
   }
@@ -187,7 +187,7 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
       if (buffer == null) {
         return null;
       }
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
       if (callDepth > 0) {
         return buffer;
       }
@@ -199,7 +199,7 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(@Advice.Enter BoundedCharArrayWriter buffer) {
       if (buffer != null) {
-        CallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
+        HypertraceCallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
       }
     }
   }
@@ -214,7 +214,7 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
       if (buffer == null) {
         return null;
       }
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
       if (callDepth > 0) {
         return buffer;
       }
@@ -226,7 +226,7 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(@Advice.Enter BoundedCharArrayWriter buffer) {
       if (buffer != null) {
-        CallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
+        HypertraceCallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
       }
     }
   }
@@ -239,7 +239,7 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
       if (buffer == null) {
         return null;
       }
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
       if (callDepth > 0) {
         return buffer;
       }
@@ -251,7 +251,7 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(@Advice.Enter BoundedCharArrayWriter buffer) {
       if (buffer != null) {
-        CallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
+        HypertraceCallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
       }
     }
   }
@@ -265,7 +265,7 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
       if (buffer == null) {
         return null;
       }
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.incrementCallDepth(PrintWriter.class);
       if (callDepth > 0) {
         return buffer;
       }
@@ -278,7 +278,7 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(@Advice.Enter BoundedCharArrayWriter buffer) {
       if (buffer != null) {
-        CallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
+        HypertraceCallDepthThreadLocalMap.decrementCallDepth(PrintWriter.class);
       }
     }
   }
