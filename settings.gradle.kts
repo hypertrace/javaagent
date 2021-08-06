@@ -70,7 +70,5 @@ include("instrumentation:undertow:undertow-servlet-1.4")
 findProject(":instrumentation:undertow:undertow-servlet-1.4")?.name = "undertow-servlet-1.4"
 include("instrumentation:vertx:otel-vertx-web-3.0-unshaded-for-instrumentation")
 findProject(":instrumentation:vertx:otel-vertx-web-3.0-unshaded-for-instrumentation")?.name = "otel-vertx-web-3.0-unshaded-for-instrumentation"
-include("instrumentation:otel-unshaded-for-testing:servlet-unshaded")
-findProject(":instrumentation:otel-unshaded-for-testing:servlet-unshaded")?.name = "servlet-unshaded"
 include("instrumentation:otel-unshaded-for-testing:okhttp-unshaded")
 findProject(":instrumentation:otel-unshaded-for-testing:okhttp-unshaded")?.name = "okhttp-unshaded"
