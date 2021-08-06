@@ -17,7 +17,7 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.java.inputstream;
 
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.extendsClass;
-import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.safeHasSuperType;
+import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasSuperType;
 import static net.bytebuddy.matcher.ElementMatchers.is;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
@@ -29,7 +29,6 @@ import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.io.IOException;
@@ -39,6 +38,7 @@ import java.util.List;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
+import org.hypertrace.agent.core.instrumentation.HypertraceCallDepthThreadLocalMap;
 import org.hypertrace.agent.core.instrumentation.SpanAndBuffer;
 
 /**
@@ -71,7 +71,7 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
     @Override
     public ElementMatcher<TypeDescription> typeMatcher() {
       return extendsClass(named(InputStream.class.getName()))
-          .and(not(safeHasSuperType(named("javax.servlet.ServletInputStream"))));
+          .and(not(hasSuperType(named("javax.servlet.ServletInputStream"))));
     }
 
     @Override
@@ -126,7 +126,7 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
       if (spanAndBuffer == null) {
         return;
       }
-      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(InputStream.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.decrementCallDepth(InputStream.class);
       if (callDepth > 0) {
         return;
       }
@@ -155,7 +155,7 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
       if (spanAndBuffer == null) {
         return;
       }
-      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(InputStream.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.decrementCallDepth(InputStream.class);
       if (callDepth > 0) {
         return;
       }
@@ -182,7 +182,7 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
       if (spanAndBuffer == null) {
         return;
       }
-      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(InputStream.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.decrementCallDepth(InputStream.class);
       if (callDepth > 0) {
         return;
       }
@@ -214,7 +214,7 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
       if (spanAndBuffer == null) {
         return;
       }
-      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(InputStream.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.decrementCallDepth(InputStream.class);
       if (callDepth > 0) {
         return;
       }
@@ -245,7 +245,7 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
       if (spanAndBuffer == null) {
         return;
       }
-      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(InputStream.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.decrementCallDepth(InputStream.class);
       if (callDepth > 0) {
         return;
       }
