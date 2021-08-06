@@ -58,8 +58,6 @@ include("instrumentation:servlet:servlet-rw")
 findProject(":instrumentation:servlet:servlet-rw")?.name = "servlet-rw"
 include("instrumentation:struts-2.3")
 findProject(":instrumentation:struts-2.3")?.name = "struts-2.3"
-include("instrumentation:undertow:otel-undertow-1.4-unshaded-for-instrumentation")
-findProject(":instrumentation:undertow:otel-undertow-1.4-unshaded-for-instrumentation")?.name = "otel-undertow-1.4-unshaded-for-instrumentation"
 include("instrumentation:undertow:undertow-common")
 findProject(":instrumentation:undertow:undertow-common")?.name = "undertow-common"
 include("instrumentation:undertow:undertow-1.4")

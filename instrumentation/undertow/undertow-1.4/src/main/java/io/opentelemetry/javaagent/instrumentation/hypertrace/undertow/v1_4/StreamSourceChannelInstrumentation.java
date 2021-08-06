@@ -42,7 +42,7 @@ public final class StreamSourceChannelInstrumentation implements TypeInstrumenta
 
   @Override
   public ElementMatcher<TypeDescription> typeMatcher() {
-    return AgentElementMatchers.safeHasSuperType(named("org.xnio.channels.StreamSourceChannel"));
+    return AgentElementMatchers.hasSuperType(named("org.xnio.channels.StreamSourceChannel"));
   }
 
   @Override
