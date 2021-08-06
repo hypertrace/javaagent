@@ -45,8 +45,6 @@ findProject(":instrumentation:apache-httpasyncclient-4.1")?.name = "apache-httpa
 include("instrumentation:vertx:vertx-web-3.0")
 findProject(":instrumentation:vertx:vertx-web-3.0")?.name = "vertx-web-3.0"
 include("instrumentation:netty:netty-4.0")
-include("instrumentation:netty:otel-netty-4.0-unshaded-for-instrumentation")
-include("instrumentation:netty:otel-netty-4.1-unshaded-for-instrumentation")
 findProject(":instrumentation:netty:netty-4.0")?.name = "netty-4.0"
 include("instrumentation:netty:netty-4.1")
 findProject(":instrumentation:netty:netty-4.1")?.name = "netty-4.1"

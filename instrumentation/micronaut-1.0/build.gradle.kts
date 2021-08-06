@@ -11,7 +11,7 @@ val micronautTestVersion = "1.0.0"
 
 dependencies {
     implementation(project(":instrumentation:netty:netty-4.1"))
-    testImplementation(project(":instrumentation:netty:otel-netty-4.1-unshaded-for-instrumentation", "shadow"))
+    testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.1:${versions["opentelemetry_java_agent"]}")
     testImplementation(testFixtures(project(":testing-common")))
     testImplementation("io.micronaut.test:micronaut-test-junit5:${micronautTestVersion}")
     testImplementation("io.micronaut:micronaut-http-server-netty:${micronautVersion}")
