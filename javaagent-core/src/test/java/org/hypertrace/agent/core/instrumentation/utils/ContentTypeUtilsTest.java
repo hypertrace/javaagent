@@ -58,4 +58,15 @@ class ContentTypeUtilsTest {
     Assertions.assertEquals(
         null, ContentTypeUtils.parseCharset("Content-Type: application/json; charset="));
   }
+
+  /**
+   * Charsets can contain a "quality factor" per <a
+   * href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.2"></a>
+   */
+  @Test
+  void charsetWithCharsetQualityFactor() {
+    Assertions.assertEquals(
+        "utf-8",
+        ContentTypeUtils.parseCharset("Content-Type: application/json; charset=utf-8;q=.2"));
+  }
 }

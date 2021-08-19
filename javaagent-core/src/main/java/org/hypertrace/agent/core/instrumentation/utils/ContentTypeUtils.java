@@ -21,6 +21,7 @@ public class ContentTypeUtils {
   private ContentTypeUtils() {}
 
   private static final String CHARSET_EQUALS = "charset=";
+  private static final String SEPARATOR = ";";
 
   /**
    * Returns true if the request/response with this content type should be captured.
@@ -51,7 +52,13 @@ public class ContentTypeUtils {
 
     int indexOfEncoding = indexOfCharset + CHARSET_EQUALS.length();
     if (indexOfEncoding < contentType.length()) {
-      return contentType.substring(indexOfEncoding, contentType.length());
+      String substring = contentType.substring(indexOfEncoding, contentType.length());
+      int semicolonIndex = substring.indexOf(SEPARATOR);
+      if (semicolonIndex == -1) {
+        return substring;
+      } else {
+        return substring.substring(0, semicolonIndex);
+      }
     }
     return null;
   }
