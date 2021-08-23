@@ -59,7 +59,9 @@ dependencies {
     testImplementation("org.apache.httpcomponents:httpasyncclient:4.1")
     testImplementation("io.opentelemetry.javaagent:opentelemetry-testing-common:${versions["opentelemetry_java_agent"]}")
 
-    testImplementation(testFixtures(project(":testing-common")))
+    testInstrumentation(project(":javaagent-core"))
+    testImplementation(project(":javaagent-core"))
+    testImplementation("org.eclipse.jetty:jetty-server:8.0.0.v20110901")
 }
 
 tasks.shadowJar {
@@ -99,6 +101,13 @@ tasks.withType<Test> {
     dependsOn(tasks.shadowJar)
 
     jvmArgs("-javaagent:${testAgent.files.first().absolutePath}")
+
+//    classpath = classpath.filter {
+//        if (it.equals(File("$buildDir/resources/main")) || it.equals(File("$buildDir/classes/java/main"))) {
+//            return@filter false
+//        }
+//        return@filter true
+//    }
 }
 
 
