@@ -16,10 +16,6 @@
 
 package io.opentelemetry.instrumentation.hypertrace.apachehttpasyncclient;
 
-import io.opentelemetry.instrumentation.hypertrace.apachehttpasyncclient.util.TestHttpServer;
-import io.opentelemetry.instrumentation.hypertrace.apachehttpasyncclient.util.TestHttpServer.GetJsonHandler;
-import io.opentelemetry.instrumentation.testing.junit.AgentInstrumentationExtension;
-import io.opentelemetry.instrumentation.testing.junit.InstrumentationExtension;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -46,17 +42,16 @@ import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.message.BasicHeader;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.testing.AbstractInstrumenterTest;
+import org.hypertrace.agent.testing.TestHttpServer;
+import org.hypertrace.agent.testing.TestHttpServer.GetJsonHandler;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 
-final class ApacheAsyncClientInstrumentationModuleTest {
-
-  @RegisterExtension
-  static final InstrumentationExtension testing = AgentInstrumentationExtension.create();
+class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTest {
 
   private static final String JSON = "{\"id\":1,\"name\":\"John\"}";
   private static final TestHttpServer testHttpServer = new TestHttpServer();
@@ -88,11 +83,13 @@ final class ApacheAsyncClientInstrumentationModuleTest {
     String responseBody = readInputStream(response.getEntity().getContent());
     Assertions.assertEquals(GetJsonHandler.RESPONSE_BODY, responseBody);
 
+    TEST_WRITER.waitForTraces(1);
     // TODO : It needs some time to create second span for responseBody
-    testing.waitForTraces(2);
-    List<SpanData> spans =     testing.spans();
-    Assertions.assertEquals(2, spans.size());
-    SpanData clientSpan = spans.get(0);
+    TEST_WRITER.waitForSpans(2);
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    Assertions.assertEquals(1, traces.size());
+    Assertions.assertEquals(2, traces.get(0).size());
+    SpanData clientSpan = traces.get(0).get(0);
 
     Assertions.assertEquals(
         "test-value",
@@ -104,7 +101,7 @@ final class ApacheAsyncClientInstrumentationModuleTest {
         clientSpan.getAttributes().get(HypertraceSemanticAttributes.httpRequestHeader("foo")));
     Assertions.assertNull(
         clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
-    SpanData responseBodySpan = spans.get(1);
+    SpanData responseBodySpan = traces.get(0).get(1);
     Assertions.assertEquals(
         GetJsonHandler.RESPONSE_BODY,
         responseBodySpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
@@ -138,11 +135,11 @@ final class ApacheAsyncClientInstrumentationModuleTest {
     HttpResponse response = responseFuture.get();
     Assertions.assertEquals(204, response.getStatusLine().getStatusCode());
 
-
-    testing.waitForTraces(1);
-    List<SpanData> spans = testing.spans();
-    Assertions.assertEquals(1, spans.size());
-    SpanData clientSpan = spans.get(0);
+    TEST_WRITER.waitForTraces(1);
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    Assertions.assertEquals(1, traces.size());
+    Assertions.assertEquals(1, traces.get(0).size());
+    SpanData clientSpan = traces.get(0).get(0);
 
     String requestBody = readInputStream(entity.getContent());
     Assertions.assertEquals(
