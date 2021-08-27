@@ -61,6 +61,7 @@ public abstract class AbstractInstrumenterTest {
 
   static {
     // always run with the thread propagation debugger to help track down sporadic test failures
+    System.setProperty("io.opentelemetry.context.contextStorageProvider", "default");
     System.setProperty("otel.threadPropagationDebugger", "true");
     System.setProperty("otel.internal.failOnContextLeak", "true");
     System.setProperty("io.opentelemetry.javaagent.slf4j.simpleLogger.log.muzzleMatcher", "warn");
