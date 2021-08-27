@@ -60,15 +60,15 @@ public class ClasspathByteBuddyPlugin implements Plugin {
   private static Plugin pluginFromClassPath(
       Iterable<File> classPath, File sourceDirectory, String className) {
     try {
-      ClassLoader classLoader = classLoaderFromClassPath(classPath, sourceDirectory);
+      URLClassLoader classLoader = classLoaderFromClassPath(classPath, sourceDirectory);
       Class<?> clazz = Class.forName(className, false, classLoader);
-      return (Plugin) clazz.getDeclaredConstructor().newInstance();
+      return (Plugin) clazz.getDeclaredConstructor(URLClassLoader.class).newInstance(classLoader);
     } catch (Exception e) {
       throw new RuntimeException("Failed to create ByteBuddy plugin instance", e);
     }
   }
 
-  private static ClassLoader classLoaderFromClassPath(
+  private static URLClassLoader classLoaderFromClassPath(
       Iterable<File> classPath, File sourceDirectory) {
     List<URL> urls = new ArrayList<>();
     urls.add(fileAsUrl(sourceDirectory));
