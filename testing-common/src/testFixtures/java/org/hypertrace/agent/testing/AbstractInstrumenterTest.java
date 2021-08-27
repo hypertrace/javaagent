@@ -20,6 +20,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.javaagent.bootstrap.InstrumentationHolder;
 import io.opentelemetry.javaagent.extension.AgentListener;
 import io.opentelemetry.javaagent.tooling.AgentInstaller;
 import java.io.IOException;
@@ -65,6 +66,7 @@ public abstract class AbstractInstrumenterTest {
     System.setProperty("io.opentelemetry.javaagent.slf4j.simpleLogger.log.muzzleMatcher", "warn");
 
     INSTRUMENTATION = ByteBuddyAgent.install();
+    InstrumentationHolder.setInstrumentation(INSTRUMENTATION);
 
     // TODO causes Caused by: java.lang.ClassCastException
     ((Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(Level.WARN);
