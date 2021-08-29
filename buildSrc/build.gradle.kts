@@ -14,10 +14,6 @@ gradlePlugin {
       id = "io.opentelemetry.instrumentation.auto-instrumentation"
       implementationClass = "io.opentelemetry.instrumentation.gradle.AutoInstrumentationPlugin"
     }
-    create("open-telemetry-un-shade-plugin") {
-      id = "io.opentelemetry.instrumentation.un-shade"
-      implementationClass = "io.opentelemetry.instrumentation.gradle.OpenTelemetryUnShadePlugin"
-    }
   }
 }
 
