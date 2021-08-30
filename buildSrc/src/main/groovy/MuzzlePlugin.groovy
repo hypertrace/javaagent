@@ -4,7 +4,7 @@
  */
 
 
-import io.opentelemetry.javaagent.muzzle.matcher.MuzzleGradlePluginUtil
+import org.gradle.api.file.FileCollection
 
 import java.lang.reflect.Method
 import java.security.SecureClassLoader
@@ -33,6 +33,8 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.model.ObjectFactory
+
+import java.util.stream.StreamSupport
 
 /**
  * muzzle task plugin which runs muzzle validation against a range of dependencies.
@@ -78,7 +80,7 @@ class MuzzlePlugin implements Plugin<Project> {
           project.getLogger().info('No muzzle pass directives configured. Asserting pass against instrumentation compile-time dependencies')
           ClassLoader userCL = createCompileDepsClassLoader(project, bootstrapProject)
           ClassLoader instrumentationCL = createInstrumentationClassloader(project, toolingProject)
-          Method assertionMethod = instrumentationCL.loadClass(MuzzleGradlePluginUtil.class.getName())
+          Method assertionMethod = instrumentationCL.loadClass('io.opentelemetry.javaagent.muzzle.matcher.MuzzleGradlePluginUtil')
             .getMethod('assertInstrumentationMuzzled', ClassLoader.class, ClassLoader.class, boolean.class)
           assertionMethod.invoke(null, instrumentationCL, userCL, true)
         }
@@ -90,7 +92,7 @@ class MuzzlePlugin implements Plugin<Project> {
       description = "Print references created by instrumentation muzzle"
       doLast {
         ClassLoader instrumentationCL = createInstrumentationClassloader(project, toolingProject)
-        Method assertionMethod = instrumentationCL.loadClass(MuzzleGradlePluginUtil.class.getName())
+        Method assertionMethod = instrumentationCL.loadClass('io.opentelemetry.javaagent.muzzle.matcher.MuzzleGradlePluginUtil')
           .getMethod('printMuzzleReferences', ClassLoader.class)
         assertionMethod.invoke(null, instrumentationCL)
       }
@@ -170,7 +172,8 @@ class MuzzlePlugin implements Plugin<Project> {
   private static ClassLoader createInstrumentationClassloader(Project project, Project toolingProject) {
     project.getLogger().info("Creating instrumentation classpath for: " + project.getName())
     Set<URL> urls = new HashSet<>()
-    for (File f : project.sourceSets.main.runtimeClasspath.getFiles()) {
+    FileCollection classpath = project.sourceSets.main.runtimeClasspath + toolingProject.configurations.named("instrumentationMuzzle").get()
+    StreamSupport.stream(classpath.spliterator(), false).forEach { f ->
       project.getLogger().info('--' + f)
       urls.add(f.toURI().toURL())
     }
@@ -377,7 +380,7 @@ class MuzzlePlugin implements Plugin<Project> {
         ClassLoader userCL = createClassLoaderForTask(instrumentationProject, bootstrapProject, taskName)
         try {
           // find all instrumenters, get muzzle, and assert
-          Method assertionMethod = instrumentationCL.loadClass(MuzzleGradlePluginUtil.class.getName())
+          Method assertionMethod = instrumentationCL.loadClass('io.opentelemetry.javaagent.muzzle.matcher.MuzzleGradlePluginUtil')
             .getMethod('assertInstrumentationMuzzled', ClassLoader.class, ClassLoader.class, boolean.class)
           assertionMethod.invoke(null, instrumentationCL, userCL, muzzleDirective.assertPass)
         } finally {
