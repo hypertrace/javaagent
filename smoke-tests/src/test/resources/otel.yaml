@@ -27,7 +27,7 @@ exporters:
 service:
   pipelines:
     traces:
-      receivers: [otlp, zipkin, jaeger]
+      receivers: [otlp, zipkin]
       processors: [batch]
       exporters: [logging, otlp]
 
