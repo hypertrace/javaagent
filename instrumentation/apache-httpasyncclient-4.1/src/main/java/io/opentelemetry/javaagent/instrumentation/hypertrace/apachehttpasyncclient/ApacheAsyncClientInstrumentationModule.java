@@ -164,6 +164,12 @@ public class ApacheAsyncClientInstrumentationModule extends InstrumentationModul
     public HttpRequest generateRequest() throws IOException, HttpException {
       HttpRequest request = super.generateRequest();
       try {
+        /*
+         * Ideally, we should not rely on the getContext MethodHandle here. The client context isn't
+         * generated until super.generateRequest is called so ideally we should architect our code
+         * such that we can access the client span more idiomatically after it is created, like via
+         * the Java8BytecodeBridge.currentSpan call.
+         */
         Object getContextResult = getContext.invoke(wrappedFutureCallback);
         if (getContextResult instanceof Context) {
           Context context = (Context) getContextResult;
