@@ -373,14 +373,7 @@ class MuzzlePlugin implements Plugin<Project> {
       doLast {
         ClassLoader instrumentationCL = createInstrumentationClassloader(instrumentationProject, toolingProject)
         def ccl = Thread.currentThread().contextClassLoader
-        def bogusLoader = new SecureClassLoader() {
-          @Override
-          String toString() {
-            return "bogus"
-          }
-
-        }
-        Thread.currentThread().contextClassLoader = bogusLoader
+        Thread.currentThread().contextClassLoader = instrumentationCL
         ClassLoader userCL = createClassLoaderForTask(instrumentationProject, bootstrapProject, taskName)
         try {
           // find all instrumenters, get muzzle, and assert
@@ -392,7 +385,7 @@ class MuzzlePlugin implements Plugin<Project> {
         }
 
         for (Thread thread : Thread.getThreads()) {
-          if (thread.contextClassLoader == bogusLoader || thread.contextClassLoader == instrumentationCL || thread.contextClassLoader == userCL) {
+          if (thread.contextClassLoader == instrumentationCL || thread.contextClassLoader == userCL) {
             throw new GradleException("Task $taskName has spawned a thread: $thread with classloader $thread.contextClassLoader. This will prevent GC of dynamic muzzle classes. Aborting muzzle run.")
           }
         }
