@@ -40,6 +40,12 @@ public class TestOpenTelemetryInstaller extends OpenTelemetryInstaller {
         .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
         .buildAndRegisterGlobal();
 
+    /*
+     * OpenTelemetry moved the initialization of some agent primitives to the OTEL class
+     * OpenTelemetryAgent which does not get used in the scope of these tests. To remove this
+     * workaround, we should adopt their testing pattern leveraging the agent-for-teseting artifact
+     * and the AgentInstrumentationExtension for JUnit.
+     */
     try {
       Class<?> agentInitializerClass =
           ClassLoader.getSystemClassLoader()
