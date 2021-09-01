@@ -33,8 +33,8 @@ subprojects {
 
     extra.set("versions", mapOf(
             "opentelemetry" to "1.5.0",
-            "opentelemetry_java_agent" to "1.5.3-alpha",
-            "opentelemetry_java_agent_all" to "1.5.3",
+            "opentelemetry_java_agent" to "1.6.0-alpha-SNAPSHOT",
+            "opentelemetry_java_agent_all" to "1.6.0-SNAPSHOT",
             "byte_buddy" to "1.11.2",
                 "slf4j" to "1.7.30"
     ))
@@ -47,7 +47,7 @@ subprojects {
         mavenCentral()
         jcenter()
         maven {
-            url = uri("https://oss.jfrog.org/artifactory/oss-snapshot-local")
+            url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
         }
     }
 
