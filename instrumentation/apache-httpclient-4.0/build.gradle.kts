@@ -40,8 +40,7 @@ val versions: Map<String, String> by extra
 
 dependencies {
     api(project(":instrumentation:java-streams"))
-    api("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-apache-httpclient-4.0:${versions["opentelemetry_java_agent"]}")
-
+    testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-apache-httpclient-4.0:${versions["opentelemetry_java_agent"]}")
     library("org.apache.httpcomponents:httpclient:4.0")
 
      testImplementation(testFixtures(project(":testing-common")))

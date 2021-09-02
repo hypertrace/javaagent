@@ -16,9 +16,9 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpasyncclient;
 
+import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasClassesNamed;
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.implementsInterface;
-import static io.opentelemetry.javaagent.extension.matcher.ClassLoaderMatcher.hasClassesNamed;
-import static java.util.Collections.singletonMap;
+import static io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge.currentContext;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
@@ -27,16 +27,22 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 import com.google.auto.service.AutoService;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.instrumentation.api.tracer.ClientSpan;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.apachehttpasyncclient.ApacheHttpAsyncClientInstrumentation.DelegatingRequestProducer;
+import io.opentelemetry.javaagent.instrumentation.apachehttpasyncclient.ApacheHttpAsyncClientInstrumentation.WrappedFutureCallback;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v4_0.ApacheHttpClientUtils;
 import java.io.IOException;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodHandles.Lookup;
+import java.lang.invoke.MethodType;
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.apache.http.HttpException;
@@ -46,6 +52,8 @@ import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.nio.protocol.HttpAsyncRequestProducer;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpCoreContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @AutoService(InstrumentationModule.class)
 public class ApacheAsyncClientInstrumentationModule extends InstrumentationModule {
@@ -66,7 +74,7 @@ public class ApacheAsyncClientInstrumentationModule extends InstrumentationModul
     return Collections.singletonList(new HttpAsyncClientInstrumentation());
   }
 
-  class HttpAsyncClientInstrumentation implements TypeInstrumentation {
+  static class HttpAsyncClientInstrumentation implements TypeInstrumentation {
 
     @Override
     public ElementMatcher<ClassLoader> classLoaderOptimization() {
@@ -79,8 +87,8 @@ public class ApacheAsyncClientInstrumentationModule extends InstrumentationModul
     }
 
     @Override
-    public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-      return singletonMap(
+    public void transform(TypeTransformer transformer) {
+      transformer.applyAdviceToMethod(
           isMethod()
               .and(named("execute"))
               .and(takesArguments(4))
@@ -95,35 +103,83 @@ public class ApacheAsyncClientInstrumentationModule extends InstrumentationModul
   }
 
   public static class HttpAsyncClient_execute_Advice {
+
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void enter(
         @Advice.Argument(value = 0, readOnly = false) HttpAsyncRequestProducer requestProducer,
         @Advice.Argument(value = 2) HttpContext httpContext,
-        @Advice.Argument(value = 3, readOnly = false) FutureCallback futureCallback) {
-      if (requestProducer instanceof DelegatingRequestProducer) {
-        DelegatingRequestProducer delegatingRequestProducer =
-            (DelegatingRequestProducer) requestProducer;
-        Context context = delegatingRequestProducer.getContext();
-        requestProducer = new DelegatingCaptureBodyRequestProducer(context, requestProducer);
-        futureCallback = new BodyCaptureDelegatingCallback(context, httpContext, futureCallback);
+        @Advice.Argument(value = 3, readOnly = false) FutureCallback<?> futureCallback) {
+      if (requestProducer instanceof DelegatingRequestProducer
+          && futureCallback instanceof WrappedFutureCallback<?>) {
+        Context context = currentContext();
+        WrappedFutureCallback<?> wrappedFutureCallback = (WrappedFutureCallback<?>) futureCallback;
+        BodyCaptureDelegatingCallback<?> bodyCaptureDelegatingCallback =
+            new BodyCaptureDelegatingCallback<>(context, httpContext, futureCallback);
+        futureCallback = bodyCaptureDelegatingCallback;
+        requestProducer =
+            new DelegatingCaptureBodyRequestProducer(
+                context, requestProducer, wrappedFutureCallback, bodyCaptureDelegatingCallback);
       }
     }
   }
 
   public static class DelegatingCaptureBodyRequestProducer extends DelegatingRequestProducer {
 
-    final Context context;
+    private static final Logger log =
+        LoggerFactory.getLogger(DelegatingCaptureBodyRequestProducer.class);
+
+    private static final Lookup lookup = MethodHandles.lookup();
+    private static final MethodHandle getContext;
+
+    static {
+      MethodHandle localGetContext;
+      try {
+        Field contextField = WrappedFutureCallback.class.getDeclaredField("context");
+        contextField.setAccessible(true);
+        MethodHandle unReflectedField = lookup.unreflectGetter(contextField);
+        localGetContext =
+            unReflectedField.asType(
+                MethodType.methodType(Context.class, WrappedFutureCallback.class));
+      } catch (NoSuchFieldException | IllegalAccessException e) {
+        log.debug("Could not find context field on super class", e);
+        localGetContext = null;
+      }
+      getContext = localGetContext;
+    }
+
+    private final WrappedFutureCallback<?> wrappedFutureCallback;
+    private final BodyCaptureDelegatingCallback<?> bodyCaptureDelegatingCallback;
 
     public DelegatingCaptureBodyRequestProducer(
-        Context context, HttpAsyncRequestProducer delegate) {
-      super(context, delegate);
-      this.context = context;
+        Context parentContext,
+        HttpAsyncRequestProducer delegate,
+        WrappedFutureCallback<?> wrappedFutureCallback,
+        BodyCaptureDelegatingCallback<?> bodyCaptureDelegatingCallback) {
+      super(parentContext, delegate, wrappedFutureCallback);
+      this.wrappedFutureCallback = wrappedFutureCallback;
+      this.bodyCaptureDelegatingCallback = bodyCaptureDelegatingCallback;
     }
 
     @Override
     public HttpRequest generateRequest() throws IOException, HttpException {
       HttpRequest request = super.generateRequest();
-      ApacheHttpClientUtils.traceRequest(Span.fromContext(context), request);
+      try {
+        /*
+         * Ideally, we should not rely on the getContext MethodHandle here. The client context isn't
+         * generated until super.generateRequest is called so ideally we should architect our code
+         * such that we can access the client span more idiomatically after it is created, like via
+         * the Java8BytecodeBridge.currentSpan call.
+         */
+        Object getContextResult = getContext.invoke(wrappedFutureCallback);
+        if (getContextResult instanceof Context) {
+          Context context = (Context) getContextResult;
+          Span clientSpan = ClientSpan.fromContextOrNull(context);
+          bodyCaptureDelegatingCallback.clientContext = context;
+          ApacheHttpClientUtils.traceRequest(clientSpan, request);
+        }
+      } catch (Throwable t) {
+        log.debug("Could not access context field on super class", t);
+      }
       return request;
     }
   }
@@ -131,34 +187,35 @@ public class ApacheAsyncClientInstrumentationModule extends InstrumentationModul
   public static class BodyCaptureDelegatingCallback<T> implements FutureCallback<T> {
 
     final Context context;
-    final FutureCallback<T> delegate;
     final HttpContext httpContext;
+    private final FutureCallback<T> delegate;
+    private volatile Context clientContext;
 
     public BodyCaptureDelegatingCallback(
         Context context, HttpContext httpContext, FutureCallback<T> delegate) {
-      this.delegate = delegate;
       this.context = context;
       this.httpContext = httpContext;
+      this.delegate = delegate;
     }
 
     @Override
     public void completed(T result) {
       HttpResponse httpResponse = getResponse(httpContext);
-      ApacheHttpClientUtils.traceResponse(Span.fromContext(context), httpResponse);
+      ApacheHttpClientUtils.traceResponse(Span.fromContext(clientContext), httpResponse);
       delegate.completed(result);
     }
 
     @Override
     public void failed(Exception ex) {
       HttpResponse httpResponse = getResponse(httpContext);
-      ApacheHttpClientUtils.traceResponse(Span.fromContext(context), httpResponse);
+      ApacheHttpClientUtils.traceResponse(Span.fromContext(clientContext), httpResponse);
       delegate.failed(ex);
     }
 
     @Override
     public void cancelled() {
       HttpResponse httpResponse = getResponse(httpContext);
-      ApacheHttpClientUtils.traceResponse(Span.fromContext(context), httpResponse);
+      ApacheHttpClientUtils.traceResponse(Span.fromContext(clientContext), httpResponse);
       delegate.cancelled();
     }
 

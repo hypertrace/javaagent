@@ -22,6 +22,7 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -30,7 +31,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.core.instrumentation.SpanAndBuffer;
@@ -64,15 +64,13 @@ public class ContextAccessorInstrumentationModule extends InstrumentationModule 
     }
 
     @Override
-    public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-      Map<ElementMatcher.Junction<MethodDescription>, String> matchers = new HashMap<>();
-      matchers.put(
+    public void transform(TypeTransformer transformer) {
+      transformer.applyAdviceToMethod(
           named("addToInputStreamContext").and(takesArguments(2)).and(isPublic()),
           ContextAccessorInstrumentationModule.class.getName() + "$AddToInputStreamContextAdvice");
-      matchers.put(
+      transformer.applyAdviceToMethod(
           named("addToOutputStreamContext").and(takesArguments(2)).and(isPublic()),
           ContextAccessorInstrumentationModule.class.getName() + "$AddToOutputStreamContextAdvice");
-      return matchers;
     }
   }
 

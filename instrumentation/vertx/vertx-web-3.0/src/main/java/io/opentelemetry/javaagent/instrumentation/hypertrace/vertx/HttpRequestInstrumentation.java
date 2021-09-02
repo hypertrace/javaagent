@@ -16,8 +16,8 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.vertx;
 
+import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasClassesNamed;
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.implementsInterface;
-import static io.opentelemetry.javaagent.extension.matcher.ClassLoaderMatcher.hasClassesNamed;
 import static net.bytebuddy.matcher.ElementMatchers.is;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.named;
@@ -26,7 +26,7 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
-import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.vertx.client.Contexts;
@@ -35,13 +35,11 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClientRequest;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.core.config.InstrumentationConfig;
+import org.hypertrace.agent.core.instrumentation.HypertraceCallDepthThreadLocalMap;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
@@ -60,13 +58,11 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
   }
 
   @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>();
-
-    transformers.put(
+  public void transform(TypeTransformer transformer) {
+    transformer.applyAdviceToMethod(
         isMethod().and(named("write").and(takesArgument(0, is(String.class)))),
         HttpRequestInstrumentation.class.getName() + "$WriteRequestAdvice_string");
-    transformers.put(
+    transformer.applyAdviceToMethod(
         isMethod()
             .and(
                 named("write")
@@ -74,28 +70,26 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
                     .and(takesArgument(0, named("io.vertx.core.buffer.Buffer")))),
         HttpRequestInstrumentation.class.getName() + "$WriteRequestAdvice_buffer");
 
-    transformers.put(
+    transformer.applyAdviceToMethod(
         isMethod().and(named("end").and(takesArguments(0))),
         HttpRequestInstrumentation.class.getName() + "$EndRequestAdvice");
-    transformers.put(
+    transformer.applyAdviceToMethod(
         isMethod().and(named("end").and(takesArgument(0, is(String.class)))),
         HttpRequestInstrumentation.class.getName() + "$EndRequestAdvice_string");
-    transformers.put(
+    transformer.applyAdviceToMethod(
         isMethod()
             .and(
                 named("end")
                     .and(takesArguments(1))
                     .and(takesArgument(0, named("io.vertx.core.buffer.Buffer")))),
         HttpRequestInstrumentation.class.getName() + "$EndRequestAdvice_buffer");
-
-    return transformers;
   }
 
   public static class EndRequestAdvice {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void enter(@Advice.This HttpClientRequest request) {
 
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(HttpClientRequest.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.incrementCallDepth(HttpClientRequest.class);
       if (callDepth > 0) {
         return;
       }
@@ -117,7 +111,7 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit() {
-      CallDepthThreadLocalMap.decrementCallDepth(HttpClientRequest.class);
+      HypertraceCallDepthThreadLocalMap.decrementCallDepth(HttpClientRequest.class);
     }
   }
 
@@ -127,7 +121,7 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
         @Advice.This HttpClientRequest request, @Advice.Argument(0) String chunk)
         throws IOException {
 
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(HttpClientRequest.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.incrementCallDepth(HttpClientRequest.class);
       if (callDepth > 0) {
         return;
       }
@@ -157,7 +151,7 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit() {
-      CallDepthThreadLocalMap.decrementCallDepth(HttpClientRequest.class);
+      HypertraceCallDepthThreadLocalMap.decrementCallDepth(HttpClientRequest.class);
     }
   }
 
@@ -167,7 +161,7 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
         @Advice.This HttpClientRequest request, @Advice.Argument(0) Buffer chunk)
         throws IOException {
 
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(HttpClientRequest.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.incrementCallDepth(HttpClientRequest.class);
       if (callDepth > 0) {
         return;
       }
@@ -200,7 +194,7 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit() {
-      CallDepthThreadLocalMap.decrementCallDepth(HttpClientRequest.class);
+      HypertraceCallDepthThreadLocalMap.decrementCallDepth(HttpClientRequest.class);
     }
   }
 
@@ -210,7 +204,7 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
         @Advice.This HttpClientRequest request, @Advice.Argument(0) String chunk)
         throws IOException {
 
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(HttpClientRequest.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.incrementCallDepth(HttpClientRequest.class);
       if (callDepth > 0) {
         return;
       }
@@ -233,7 +227,7 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit() {
-      CallDepthThreadLocalMap.decrementCallDepth(HttpClientRequest.class);
+      HypertraceCallDepthThreadLocalMap.decrementCallDepth(HttpClientRequest.class);
     }
   }
 
@@ -243,7 +237,7 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
         @Advice.This HttpClientRequest request, @Advice.Argument(0) Buffer chunk)
         throws IOException {
 
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(HttpClientRequest.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.incrementCallDepth(HttpClientRequest.class);
       if (callDepth > 0) {
         return;
       }
@@ -266,7 +260,7 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit() {
-      CallDepthThreadLocalMap.decrementCallDepth(HttpClientRequest.class);
+      HypertraceCallDepthThreadLocalMap.decrementCallDepth(HttpClientRequest.class);
     }
   }
 }

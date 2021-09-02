@@ -14,19 +14,17 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.async;
 
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.instrumentation.servlet.ServletAsyncListener;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.Utils;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.servlet.AsyncEvent;
-import javax.servlet.AsyncListener;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.hypertrace.agent.core.config.InstrumentationConfig;
@@ -38,7 +36,7 @@ import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
 import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 
-public class BodyCaptureAsyncListener implements AsyncListener {
+public final class BodyCaptureAsyncListener implements ServletAsyncListener<HttpServletResponse> {
 
   private static final InstrumentationConfig instrumentationConfig =
       InstrumentationConfig.ConfigProvider.get();
@@ -53,6 +51,7 @@ public class BodyCaptureAsyncListener implements AsyncListener {
   private final ContextStore<HttpServletRequest, SpanAndObjectPair> requestContextStore;
   private final ContextStore<ServletInputStream, ByteBufferSpanPair> inputStreamContextStore;
   private final ContextStore<BufferedReader, CharBufferSpanPair> readerContextStore;
+  private final HttpServletRequest request;
 
   public BodyCaptureAsyncListener(
       AtomicBoolean responseHandled,
@@ -62,7 +61,8 @@ public class BodyCaptureAsyncListener implements AsyncListener {
       ContextStore<PrintWriter, BoundedCharArrayWriter> writerContextStore,
       ContextStore<HttpServletRequest, SpanAndObjectPair> requestContextStore,
       ContextStore<ServletInputStream, ByteBufferSpanPair> inputStreamContextStore,
-      ContextStore<BufferedReader, CharBufferSpanPair> readerContextStore) {
+      ContextStore<BufferedReader, CharBufferSpanPair> readerContextStore,
+      HttpServletRequest request) {
     this.responseHandled = responseHandled;
     this.span = span;
     this.responseContextStore = responseContextStore;
@@ -71,57 +71,51 @@ public class BodyCaptureAsyncListener implements AsyncListener {
     this.requestContextStore = requestContextStore;
     this.inputStreamContextStore = inputStreamContextStore;
     this.readerContextStore = readerContextStore;
+    this.request = request;
   }
 
   @Override
-  public void onComplete(AsyncEvent event) {
+  public void onComplete(HttpServletResponse response) {
     if (responseHandled.compareAndSet(false, true)) {
-      captureResponseDataAndClearRequestBuffer(
-          event.getSuppliedResponse(), event.getSuppliedRequest());
+      captureResponseDataAndClearRequestBuffer(response, request);
     }
   }
 
   @Override
-  public void onError(AsyncEvent event) {
+  public void onError(Throwable throwable, HttpServletResponse response) {
     if (responseHandled.compareAndSet(false, true)) {
-      captureResponseDataAndClearRequestBuffer(
-          event.getSuppliedResponse(), event.getSuppliedRequest());
+      captureResponseDataAndClearRequestBuffer(response, request);
     }
   }
 
   @Override
-  public void onTimeout(AsyncEvent event) {}
-
-  @Override
-  public void onStartAsync(AsyncEvent event) {}
+  public void onTimeout(long timeout) {
+    // noop
+  }
 
   private void captureResponseDataAndClearRequestBuffer(
-      ServletResponse servletResponse, ServletRequest servletRequest) {
-    if (servletResponse instanceof HttpServletResponse) {
-      HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
-
+      HttpServletResponse servletResponse, HttpServletRequest servletRequest) {
+    if (servletResponse != null) {
       if (instrumentationConfig.httpBody().response()
-          && ContentTypeUtils.shouldCapture(httpResponse.getContentType())) {
+          && ContentTypeUtils.shouldCapture(servletResponse.getContentType())) {
         Utils.captureResponseBody(
-            span, httpResponse, responseContextStore, streamContextStore, writerContextStore);
+            span, servletResponse, responseContextStore, streamContextStore, writerContextStore);
       }
 
       if (instrumentationConfig.httpHeaders().response()) {
-        for (String headerName : httpResponse.getHeaderNames()) {
-          String headerValue = httpResponse.getHeader(headerName);
+        for (String headerName : servletResponse.getHeaderNames()) {
+          String headerValue = servletResponse.getHeader(headerName);
           span.setAttribute(
               HypertraceSemanticAttributes.httpResponseHeader(headerName), headerValue);
         }
       }
     }
-    if (servletRequest instanceof HttpServletRequest) {
-      HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
-
+    if (servletRequest != null) {
       // remove request body buffers from context stores, otherwise they might get reused
       if (instrumentationConfig.httpBody().request()
-          && ContentTypeUtils.shouldCapture(httpRequest.getContentType())) {
+          && ContentTypeUtils.shouldCapture(servletRequest.getContentType())) {
         Utils.resetRequestBodyBuffers(
-            httpRequest, requestContextStore, inputStreamContextStore, readerContextStore);
+            servletRequest, requestContextStore, inputStreamContextStore, readerContextStore);
       }
     }
   }

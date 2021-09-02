@@ -18,7 +18,7 @@ package org.hypertrace.agent.otel.extensions.config;
 
 import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
-import io.opentelemetry.javaagent.spi.config.PropertySource;
+import io.opentelemetry.javaagent.extension.config.ConfigPropertySource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,8 +27,8 @@ import org.hypertrace.agent.config.Config.AgentConfig;
 import org.hypertrace.agent.config.Config.PropagationFormat;
 import org.hypertrace.agent.config.Config.TraceReporterType;
 
-@AutoService(PropertySource.class)
-public class HypertraceAgentConfiguration implements PropertySource {
+@AutoService(ConfigPropertySource.class)
+public class HypertraceAgentConfiguration implements ConfigPropertySource {
 
   // https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/sdk-environment-variables.md
   private static final String OTEL_TRACE_EXPORTER = "otel.traces.exporter";

@@ -19,6 +19,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowra
 import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.async.Servlet30AsyncInstrumentation;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.request.ServletInputStreamInstrumentation;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.request.ServletRequestInstrumentation;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.response.ServletOutputStreamInstrumentation;
@@ -45,6 +46,7 @@ public class Servlet30InstrumentationModule extends InstrumentationModule {
         new ServletRequestInstrumentation(),
         new ServletInputStreamInstrumentation(),
         new ServletResponseInstrumentation(),
-        new ServletOutputStreamInstrumentation());
+        new ServletOutputStreamInstrumentation(),
+        new Servlet30AsyncInstrumentation());
   }
 }

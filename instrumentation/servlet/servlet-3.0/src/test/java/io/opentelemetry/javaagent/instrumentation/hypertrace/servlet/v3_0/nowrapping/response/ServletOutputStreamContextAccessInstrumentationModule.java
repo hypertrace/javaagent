@@ -22,6 +22,7 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.util.Collections;
@@ -30,10 +31,8 @@ import java.util.List;
 import java.util.Map;
 import javax.servlet.ServletOutputStream;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import net.bytebuddy.matcher.ElementMatcher.Junction;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 
 public class ServletOutputStreamContextAccessInstrumentationModule extends InstrumentationModule {
@@ -54,7 +53,7 @@ public class ServletOutputStreamContextAccessInstrumentationModule extends Instr
     return Collections.singletonList(new OutputStreamTriggerInstrumentation());
   }
 
-  class OutputStreamTriggerInstrumentation implements TypeInstrumentation {
+  static final class OutputStreamTriggerInstrumentation implements TypeInstrumentation {
 
     @Override
     public ElementMatcher<TypeDescription> typeMatcher() {
@@ -62,12 +61,10 @@ public class ServletOutputStreamContextAccessInstrumentationModule extends Instr
     }
 
     @Override
-    public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-      Map<Junction<MethodDescription>, String> matchers = new HashMap<>();
-      matchers.put(
+    public void transform(TypeTransformer transformer) {
+      transformer.applyAdviceToMethod(
           named("addToOutputStreamContext").and(takesArguments(2)).and(isPublic()),
           ServletOutputStreamContextAccessInstrumentationModule.class.getName() + "$TestAdvice");
-      return matchers;
     }
   }
 

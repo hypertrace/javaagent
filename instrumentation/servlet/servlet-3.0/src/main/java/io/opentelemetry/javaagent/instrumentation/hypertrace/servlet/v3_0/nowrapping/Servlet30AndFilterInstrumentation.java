@@ -16,17 +16,17 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping;
 
-import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.safeHasSuperType;
-import static io.opentelemetry.javaagent.extension.matcher.ClassLoaderMatcher.hasClassesNamed;
-import static io.opentelemetry.javaagent.extension.matcher.NameMatchers.namedOneOf;
+import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasClassesNamed;
+import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasSuperType;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.namedOneOf;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
-import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
@@ -35,7 +35,6 @@ import java.io.PrintWriter;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRequest;
@@ -43,11 +42,10 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import net.bytebuddy.matcher.ElementMatcher.Junction;
 import org.hypertrace.agent.core.config.InstrumentationConfig;
+import org.hypertrace.agent.core.instrumentation.HypertraceCallDepthThreadLocalMap;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.SpanAndObjectPair;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
@@ -66,19 +64,17 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
 
   @Override
   public ElementMatcher<TypeDescription> typeMatcher() {
-    return safeHasSuperType(namedOneOf("javax.servlet.Filter", "javax.servlet.Servlet"));
+    return hasSuperType(namedOneOf("javax.servlet.Filter", "javax.servlet.Servlet"));
   }
 
   @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    Map<Junction<MethodDescription>, String> matchers = new HashMap<>();
-    matchers.put(
+  public void transform(TypeTransformer transformer) {
+    transformer.applyAdviceToMethod(
         namedOneOf("doFilter", "service")
             .and(takesArgument(0, named("javax.servlet.ServletRequest")))
             .and(takesArgument(1, named("javax.servlet.ServletResponse")))
             .and(isPublic()),
         Servlet30AndFilterInstrumentation.class.getName() + "$ServletAdvice");
-    return matchers;
   }
 
   public static class ServletAdvice {
@@ -89,7 +85,7 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
         @Advice.Local("currentSpan") Span currentSpan) {
 
       int callDepth =
-          CallDepthThreadLocalMap.incrementCallDepth(Servlet30InstrumentationName.class);
+          HypertraceCallDepthThreadLocalMap.incrementCallDepth(Servlet30InstrumentationName.class);
       if (callDepth > 0) {
         return false;
       }
@@ -143,7 +139,7 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
         @Advice.Argument(1) ServletResponse response,
         @Advice.Local("currentSpan") Span currentSpan) {
       int callDepth =
-          CallDepthThreadLocalMap.decrementCallDepth(Servlet30InstrumentationName.class);
+          HypertraceCallDepthThreadLocalMap.decrementCallDepth(Servlet30InstrumentationName.class);
       if (callDepth > 0) {
         return;
       }
@@ -173,28 +169,7 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
       ContextStore<BufferedReader, CharBufferSpanPair> readerContextStore =
           InstrumentationContext.get(BufferedReader.class, CharBufferSpanPair.class);
 
-      AtomicBoolean responseHandled = new AtomicBoolean(false);
-      if (request.isAsyncStarted()) {
-        try {
-          request
-              .getAsyncContext()
-              .addListener(
-                  new BodyCaptureAsyncListener(
-                      responseHandled,
-                      currentSpan,
-                      responseContextStore,
-                      outputStreamContextStore,
-                      writerContextStore,
-                      requestContextStore,
-                      inputStreamContextStore,
-                      readerContextStore));
-        } catch (IllegalStateException e) {
-          // org.eclipse.jetty.server.Request may throw an exception here if request became
-          // finished after check above. We just ignore that exception and move on.
-        }
-      }
-
-      if (!request.isAsyncStarted() && responseHandled.compareAndSet(false, true)) {
+      if (!request.isAsyncStarted()) {
         if (instrumentationConfig.httpHeaders().response()) {
           for (String headerName : httpResponse.getHeaderNames()) {
             String headerValue = httpResponse.getHeader(headerName);

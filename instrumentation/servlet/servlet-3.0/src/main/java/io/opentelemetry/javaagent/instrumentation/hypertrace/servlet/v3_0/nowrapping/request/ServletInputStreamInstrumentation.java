@@ -16,7 +16,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.request;
 
-import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.safeHasSuperType;
+import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasSuperType;
 import static net.bytebuddy.matcher.ElementMatchers.is;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
@@ -24,17 +24,14 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
-import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import javax.servlet.ServletInputStream;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
-import net.bytebuddy.matcher.ElementMatcher.Junction;
+import org.hypertrace.agent.core.instrumentation.HypertraceCallDepthThreadLocalMap;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
 
@@ -42,22 +39,22 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
 
   @Override
   public ElementMatcher<TypeDescription> typeMatcher() {
-    return safeHasSuperType(named("javax.servlet.ServletInputStream"));
+    return hasSuperType(named("javax.servlet.ServletInputStream"));
   }
 
   @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    Map<Junction<MethodDescription>, String> transformers = new HashMap<>();
-    transformers.put(
+  public void transform(TypeTransformer transformer) {
+
+    transformer.applyAdviceToMethod(
         named("read").and(takesArguments(0)).and(isPublic()),
         ServletInputStreamInstrumentation.class.getName() + "$InputStream_ReadNoArgs");
-    transformers.put(
+    transformer.applyAdviceToMethod(
         named("read")
             .and(takesArguments(1))
             .and(takesArgument(0, is(byte[].class)))
             .and(isPublic()),
         ServletInputStreamInstrumentation.class.getName() + "$InputStream_ReadByteArray");
-    transformers.put(
+    transformer.applyAdviceToMethod(
         named("read")
             .and(takesArguments(3))
             .and(takesArgument(0, is(byte[].class)))
@@ -65,10 +62,10 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
             .and(takesArgument(2, is(int.class)))
             .and(isPublic()),
         ServletInputStreamInstrumentation.class.getName() + "$InputStream_ReadByteArrayOffset");
-    transformers.put(
+    transformer.applyAdviceToMethod(
         named("readAllBytes").and(takesArguments(0)).and(isPublic()),
         ServletInputStreamInstrumentation.class.getName() + "$InputStream_ReadAllBytes");
-    transformers.put(
+    transformer.applyAdviceToMethod(
         named("readNBytes")
             .and(takesArguments(0))
             .and(takesArgument(0, is(byte[].class)))
@@ -78,7 +75,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         ServletInputStreamInstrumentation.class.getName() + "$InputStream_ReadNBytes");
 
     // ServletInputStream methods
-    transformers.put(
+    transformer.applyAdviceToMethod(
         named("readLine")
             .and(takesArguments(3))
             .and(takesArgument(0, is(byte[].class)))
@@ -86,7 +83,6 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
             .and(takesArgument(2, is(int.class)))
             .and(isPublic()),
         ServletInputStreamInstrumentation.class.getName() + "$InputStream_ReadByteArrayOffset");
-    return transformers;
   }
 
   static class InputStream_ReadNoArgs {
@@ -98,7 +94,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         return null;
       }
 
-      CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
+      HypertraceCallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
       return bufferSpanPair;
     }
 
@@ -108,7 +104,8 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
       if (bufferSpanPair == null) {
         return;
       }
-      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
+      int callDepth =
+          HypertraceCallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
       if (callDepth > 0) {
         return;
       }
@@ -130,7 +127,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         return null;
       }
 
-      CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
+      HypertraceCallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
       return bufferSpanPair;
     }
 
@@ -142,7 +139,8 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
       if (bufferSpanPair == null) {
         return;
       }
-      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
+      int callDepth =
+          HypertraceCallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
       if (callDepth > 0) {
         return;
       }
@@ -164,7 +162,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         return null;
       }
 
-      CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
+      HypertraceCallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
       return bufferSpanPair;
     }
 
@@ -178,7 +176,8 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
       if (bufferSpanPair == null) {
         return;
       }
-      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
+      int callDepth =
+          HypertraceCallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
       if (callDepth > 0) {
         return;
       }
@@ -200,7 +199,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         return null;
       }
 
-      CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
+      HypertraceCallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
       return bufferSpanPair;
     }
 
@@ -211,7 +210,8 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
       if (bufferSpanPair == null) {
         return;
       }
-      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
+      int callDepth =
+          HypertraceCallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
       if (callDepth > 0) {
         return;
       }
@@ -230,7 +230,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         return null;
       }
 
-      CallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
+      HypertraceCallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
       return bufferSpanPair;
     }
 
@@ -244,7 +244,8 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
       if (bufferSpanPair == null) {
         return;
       }
-      int callDepth = CallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
+      int callDepth =
+          HypertraceCallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
       if (callDepth > 0) {
         return;
       }

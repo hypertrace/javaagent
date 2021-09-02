@@ -16,9 +16,8 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.v1_6.server;
 
-import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.safeHasSuperType;
-import static io.opentelemetry.javaagent.extension.matcher.ClassLoaderMatcher.hasClassesNamed;
-import static java.util.Collections.singletonMap;
+import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasClassesNamed;
+import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasSuperType;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
@@ -26,12 +25,11 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.grpc.ServerBuilder;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
-import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
-import java.util.Map;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
+import org.hypertrace.agent.core.instrumentation.HypertraceCallDepthThreadLocalMap;
 
 public class GrpcServerBodyInstrumentation implements TypeInstrumentation {
 
@@ -42,20 +40,22 @@ public class GrpcServerBodyInstrumentation implements TypeInstrumentation {
 
   @Override
   public ElementMatcher<TypeDescription> typeMatcher() {
-    return safeHasSuperType(named("io.grpc.ServerBuilder"));
+    return hasSuperType(named("io.grpc.ServerBuilder"));
   }
 
   @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    return singletonMap(
+  public void transform(TypeTransformer transformer) {
+    transformer.applyAdviceToMethod(
         isMethod().and(isPublic()).and(named("build")).and(takesArguments(0)),
         GrpcServerBodyInstrumentation.class.getName() + "$AddInterceptorAdvice");
   }
 
   public static class AddInterceptorAdvice {
+
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void onEnter(@Advice.This ServerBuilder<?> serverBuilder) {
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(GrpcServerInterceptor.class);
+      int callDepth =
+          HypertraceCallDepthThreadLocalMap.incrementCallDepth(GrpcServerInterceptor.class);
       if (callDepth == 0) {
         serverBuilder.intercept(new GrpcServerInterceptor());
       }
@@ -63,7 +63,7 @@ public class GrpcServerBodyInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
     public static void onExit() {
-      CallDepthThreadLocalMap.decrementCallDepth(GrpcServerInterceptor.class);
+      HypertraceCallDepthThreadLocalMap.decrementCallDepth(GrpcServerInterceptor.class);
     }
   }
 }

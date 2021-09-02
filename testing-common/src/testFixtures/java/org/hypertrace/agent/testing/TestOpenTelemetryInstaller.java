@@ -23,6 +23,7 @@ import io.opentelemetry.javaagent.tooling.OpenTelemetryInstaller;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanProcessor;
+import java.lang.reflect.Field;
 
 public class TestOpenTelemetryInstaller extends OpenTelemetryInstaller {
 
@@ -33,13 +34,31 @@ public class TestOpenTelemetryInstaller extends OpenTelemetryInstaller {
   }
 
   @Override
-  public void beforeByteBuddyAgent(Config config) {
+  public void beforeAgent(Config config) {
     OpenTelemetrySdk.builder()
         .setTracerProvider(SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build())
         .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
         .buildAndRegisterGlobal();
+
+    /*
+     * OpenTelemetry moved the initialization of some agent primitives to the OTEL class
+     * OpenTelemetryAgent which does not get used in the scope of these tests. To remove this
+     * workaround, we should adopt their testing pattern leveraging the agent-for-teseting artifact
+     * and the AgentInstrumentationExtension for JUnit.
+     */
+    try {
+      Class<?> agentInitializerClass =
+          ClassLoader.getSystemClassLoader()
+              .loadClass("io.opentelemetry.javaagent.bootstrap.AgentInitializer");
+      Field agentClassLoaderField = agentInitializerClass.getDeclaredField("agentClassLoader");
+      agentClassLoaderField.setAccessible(true);
+      ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
+      agentClassLoaderField.set(null, systemClassLoader);
+    } catch (Throwable t) {
+      throw new AssertionError("Could not access agent classLoader", t);
+    }
   }
 
   @Override
-  public void afterByteBuddyAgent(Config config) {}
+  public void afterAgent(Config config) {}
 }

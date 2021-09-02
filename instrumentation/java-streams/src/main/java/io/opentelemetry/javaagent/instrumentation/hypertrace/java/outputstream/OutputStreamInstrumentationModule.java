@@ -26,18 +26,16 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
-import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
+import org.hypertrace.agent.core.instrumentation.HypertraceCallDepthThreadLocalMap;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 
 /**
@@ -69,21 +67,20 @@ public class OutputStreamInstrumentationModule extends InstrumentationModule {
     }
 
     @Override
-    public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-      Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>();
-      transformers.put(
+    public void transform(TypeTransformer transformer) {
+      transformer.applyAdviceToMethod(
           named("write")
               .and(takesArguments(1))
               .and(takesArgument(0, is(int.class)))
               .and(isPublic()),
           OutputStreamInstrumentationModule.class.getName() + "$OutputStream_WriteIntAdvice");
-      transformers.put(
+      transformer.applyAdviceToMethod(
           named("write")
               .and(takesArguments(1))
               .and(takesArgument(0, is(byte[].class)))
               .and(isPublic()),
           OutputStreamInstrumentationModule.class.getName() + "$OutputStream_WriteByteArrAdvice");
-      transformers.put(
+      transformer.applyAdviceToMethod(
           named("write")
               .and(takesArguments(3))
               .and(takesArgument(0, is(byte[].class)))
@@ -92,7 +89,6 @@ public class OutputStreamInstrumentationModule extends InstrumentationModule {
               .and(isPublic()),
           OutputStreamInstrumentationModule.class.getName()
               + "$OutputStream_WriteByteArrOffsetAdvice");
-      return transformers;
     }
   }
 
@@ -106,7 +102,7 @@ public class OutputStreamInstrumentationModule extends InstrumentationModule {
       if (buffer == null) {
         return null;
       }
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(OutputStream.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.incrementCallDepth(OutputStream.class);
       if (callDepth > 0) {
         return buffer;
       }
@@ -118,7 +114,7 @@ public class OutputStreamInstrumentationModule extends InstrumentationModule {
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(@Advice.Enter BoundedByteArrayOutputStream buffer) {
       if (buffer != null) {
-        CallDepthThreadLocalMap.decrementCallDepth(OutputStream.class);
+        HypertraceCallDepthThreadLocalMap.decrementCallDepth(OutputStream.class);
       }
     }
   }
@@ -133,7 +129,7 @@ public class OutputStreamInstrumentationModule extends InstrumentationModule {
       if (buffer == null) {
         return null;
       }
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(OutputStream.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.incrementCallDepth(OutputStream.class);
       if (callDepth > 0) {
         return buffer;
       }
@@ -145,7 +141,7 @@ public class OutputStreamInstrumentationModule extends InstrumentationModule {
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(@Advice.Enter BoundedByteArrayOutputStream buffer) {
       if (buffer != null) {
-        CallDepthThreadLocalMap.decrementCallDepth(OutputStream.class);
+        HypertraceCallDepthThreadLocalMap.decrementCallDepth(OutputStream.class);
       }
     }
   }
@@ -163,7 +159,7 @@ public class OutputStreamInstrumentationModule extends InstrumentationModule {
       if (buffer == null) {
         return null;
       }
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(OutputStream.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.incrementCallDepth(OutputStream.class);
       if (callDepth > 0) {
         return buffer;
       }
@@ -175,7 +171,7 @@ public class OutputStreamInstrumentationModule extends InstrumentationModule {
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(@Advice.Enter BoundedByteArrayOutputStream buffer) {
       if (buffer != null) {
-        CallDepthThreadLocalMap.decrementCallDepth(OutputStream.class);
+        HypertraceCallDepthThreadLocalMap.decrementCallDepth(OutputStream.class);
       }
     }
   }

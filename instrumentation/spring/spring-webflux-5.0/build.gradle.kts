@@ -7,11 +7,8 @@ plugins {
 val versions: Map<String, String> by extra
 
 dependencies {
-     testImplementation(testFixtures(project(":testing-common")))
+    testImplementation(testFixtures(project(":testing-common")))
     testImplementation(project(":instrumentation:netty:netty-4.1"))
-
-    testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.1:${versions["opentelemetry_java_agent"]}")
-
     testImplementation("org.springframework:spring-webflux:5.0.0.RELEASE")
     testImplementation("io.projectreactor.ipc:reactor-netty:0.7.0.RELEASE")
 

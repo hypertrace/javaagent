@@ -16,8 +16,8 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0;
 
+import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasClassesNamed;
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.implementsInterface;
-import static io.opentelemetry.javaagent.extension.matcher.ClassLoaderMatcher.hasClassesNamed;
 import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.nameStartsWith;
 import static net.bytebuddy.matcher.ElementMatchers.named;
@@ -32,7 +32,7 @@ import io.netty.handler.codec.http.HttpResponseDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
-import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.client.HttpClientRequestTracingHandler;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.client.HttpClientResponseTracingHandler;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.client.HttpClientTracingHandler;
@@ -40,12 +40,10 @@ import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.server.H
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.server.HttpServerRequestTracingHandler;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.server.HttpServerResponseTracingHandler;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.server.HttpServerTracingHandler;
-import java.util.HashMap;
-import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
+import org.hypertrace.agent.core.instrumentation.HypertraceCallDepthThreadLocalMap;
 
 public class NettyChannelPipelineInstrumentation implements TypeInstrumentation {
 
@@ -60,14 +58,12 @@ public class NettyChannelPipelineInstrumentation implements TypeInstrumentation 
   }
 
   @Override
-  public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-    Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>();
-    transformers.put(
+  public void transform(TypeTransformer transformer) {
+    transformer.applyAdviceToMethod(
         isMethod()
             .and(nameStartsWith("add"))
             .and(takesArgument(2, named("io.netty.channel.ChannelHandler"))),
         NettyChannelPipelineInstrumentation.class.getName() + "$ChannelPipelineAddAdvice");
-    return transformers;
   }
 
   /**
@@ -78,7 +74,7 @@ public class NettyChannelPipelineInstrumentation implements TypeInstrumentation 
   public static class ChannelPipelineAddAdvice {
     @Advice.OnMethodEnter
     public static int trackCallDepth() {
-      return CallDepthThreadLocalMap.incrementCallDepth(ChannelHandler.class);
+      return HypertraceCallDepthThreadLocalMap.incrementCallDepth(ChannelHandler.class);
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
@@ -89,7 +85,7 @@ public class NettyChannelPipelineInstrumentation implements TypeInstrumentation 
       if (callDepth > 0) {
         return;
       }
-      CallDepthThreadLocalMap.reset(ChannelHandler.class);
+      HypertraceCallDepthThreadLocalMap.reset(ChannelHandler.class);
 
       try {
         // Server pipeline handlers

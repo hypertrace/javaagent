@@ -27,18 +27,16 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
-import io.opentelemetry.javaagent.instrumentation.api.CallDepthThreadLocalMap;
+import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import net.bytebuddy.asm.Advice;
-import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.apache.http.HttpMessage;
 import org.apache.http.HttpResponse;
+import org.hypertrace.agent.core.instrumentation.HypertraceCallDepthThreadLocalMap;
 
 @AutoService(InstrumentationModule.class)
 public class ApacheClientInstrumentationModule extends InstrumentationModule {
@@ -65,36 +63,32 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
     }
 
     @Override
-    public Map<? extends ElementMatcher<? super MethodDescription>, String> transformers() {
-      Map<ElementMatcher<? super MethodDescription>, String> transformers = new HashMap<>();
-
+    public void transform(TypeTransformer transformer) {
       // instrument response
-      transformers.put(
+      transformer.applyAdviceToMethod(
           isMethod().and(named("execute")).and(not(isAbstract())),
           ApacheClientInstrumentationModule.class.getName() + "$HttpClient_ExecuteAdvice_response");
 
       // instrument request
-      transformers.put(
+      transformer.applyAdviceToMethod(
           isMethod()
               .and(named("execute"))
               .and(not(isAbstract()))
               .and(takesArgument(0, hasSuperType(named("org.apache.http.HttpMessage")))),
           ApacheClientInstrumentationModule.class.getName() + "$HttpClient_ExecuteAdvice_request0");
-      transformers.put(
+      transformer.applyAdviceToMethod(
           isMethod()
               .and(named("execute"))
               .and(not(isAbstract()))
               .and(takesArgument(1, hasSuperType(named("org.apache.http.HttpMessage")))),
           ApacheClientInstrumentationModule.class.getName() + "$HttpClient_ExecuteAdvice_request1");
-
-      return transformers;
     }
   }
 
   static class HttpClient_ExecuteAdvice_request0 {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static boolean enter(@Advice.Argument(0) HttpMessage request) {
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(HttpMessage.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.incrementCallDepth(HttpMessage.class);
       if (callDepth > 0) {
         return false;
       }
@@ -106,7 +100,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
     public static void exit(
         @Advice.Enter boolean returnFromEnter, @Advice.Thrown Throwable throwable) {
       if (returnFromEnter) {
-        CallDepthThreadLocalMap.reset(HttpMessage.class);
+        HypertraceCallDepthThreadLocalMap.reset(HttpMessage.class);
       }
     }
   }
@@ -114,7 +108,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
   static class HttpClient_ExecuteAdvice_request1 {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static boolean enter(@Advice.Argument(1) HttpMessage request) {
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(HttpMessage.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.incrementCallDepth(HttpMessage.class);
       if (callDepth > 0) {
         return false;
       }
@@ -126,7 +120,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
     public static void exit(
         @Advice.Enter boolean returnFromEnter, @Advice.Thrown Throwable throwable) {
       if (returnFromEnter) {
-        CallDepthThreadLocalMap.reset(HttpMessage.class);
+        HypertraceCallDepthThreadLocalMap.reset(HttpMessage.class);
       }
     }
   }
@@ -134,7 +128,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
   static class HttpClient_ExecuteAdvice_response {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static boolean enter() {
-      int callDepth = CallDepthThreadLocalMap.incrementCallDepth(HttpResponse.class);
+      int callDepth = HypertraceCallDepthThreadLocalMap.incrementCallDepth(HttpResponse.class);
       if (callDepth > 0) {
         return false;
       }
@@ -147,7 +141,7 @@ public class ApacheClientInstrumentationModule extends InstrumentationModule {
         return;
       }
 
-      CallDepthThreadLocalMap.reset(HttpResponse.class);
+      HypertraceCallDepthThreadLocalMap.reset(HttpResponse.class);
       if (response instanceof HttpResponse) {
         HttpResponse httpResponse = (HttpResponse) response;
         ApacheHttpClientUtils.traceResponse(Java8BytecodeBridge.currentSpan(), httpResponse);
