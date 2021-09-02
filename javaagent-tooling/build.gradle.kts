@@ -18,7 +18,7 @@ repositories {
 dependencies {
     api("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${versions["opentelemetry_java_agent"]}")
     api("io.opentelemetry.javaagent:opentelemetry-javaagent-instrumentation-api:${versions["opentelemetry_java_agent"]}")
-    instrumentationMuzzle("io.opentelemetry.instrumentation.muzzle-check:io.opentelemetry.instrumentation.muzzle-check.gradle.plugin:0.7.0")
+    instrumentationMuzzle("io.opentelemetry.instrumentation:gradle-plugins:0.7.0")
     instrumentationMuzzle("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:${versions["opentelemetry_java_agent"]}")
     instrumentationMuzzle("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:${versions["opentelemetry_java_agent"]}")
     instrumentationMuzzle("net.bytebuddy:byte-buddy:1.11.2")
