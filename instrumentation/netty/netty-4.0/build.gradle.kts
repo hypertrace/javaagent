@@ -34,7 +34,7 @@ muzzle {
 afterEvaluate{
     io.opentelemetry.instrumentation.gradle.bytebuddy.ByteBuddyPluginConfigurator(project,
             sourceSets.main.get(),
-            "io.opentelemetry.javaagent.tooling.muzzle.collector.MuzzleCodeGenerationPlugin",
+            io.opentelemetry.javaagent.muzzle.generation.MuzzleCodeGenerationPlugin::class.java.name,
             project(":javaagent-tooling").configurations["instrumentationMuzzle"] + configurations.runtimeClasspath
     ).configure()
 }
@@ -45,6 +45,7 @@ val nettyVersion = "4.0.38.Final"
 
 dependencies {
     implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.0:${versions["opentelemetry_java_agent"]}")
+    implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4-common:${versions["opentelemetry_java_agent"]}")
     compileOnly("io.netty:netty-codec-http:${nettyVersion}") {
         version {
             strictly(nettyVersion)

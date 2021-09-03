@@ -8,7 +8,7 @@ plugins {
 afterEvaluate{
     io.opentelemetry.instrumentation.gradle.bytebuddy.ByteBuddyPluginConfigurator(project,
             sourceSets.main.get(),
-            "io.opentelemetry.javaagent.tooling.muzzle.collector.MuzzleCodeGenerationPlugin",
+            io.opentelemetry.javaagent.muzzle.generation.MuzzleCodeGenerationPlugin::class.java.name,
             project(":javaagent-tooling").configurations["instrumentationMuzzle"] + configurations.runtimeClasspath
     ).configure()
 }
@@ -28,6 +28,7 @@ val nettyVersion = "4.0.28.Final"
 dependencies {
     implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-vertx-web-3.0:${versions["opentelemetry_java_agent"]}")
     implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-vertx-http-client-3.0:${versions["opentelemetry_java_agent"]}")
+    implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-vertx-http-client-common:${versions["opentelemetry_java_agent"]}")
     library("io.vertx:vertx-web:3.0.0")
 
     testImplementation(testFixtures(project(":testing-common")))
