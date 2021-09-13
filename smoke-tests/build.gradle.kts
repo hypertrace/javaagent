@@ -16,6 +16,7 @@ dependencies{
     testImplementation("com.squareup.okhttp3:okhttp:4.9.0")
     testImplementation("org.awaitility:awaitility:4.0.3")
     testImplementation("io.opentelemetry:opentelemetry-proto:${versions["opentelemetry"]}-alpha")
+    testImplementation("io.grpc:grpc-core:1.36.1") // needed at runtime to send gRPC requests to the gRPC app
     testRuntimeOnly("io.grpc:grpc-netty-shaded:1.36.1") // needed at runtime to send gRPC requests to the gRPC app
     testImplementation("io.opentelemetry:opentelemetry-sdk:${versions["opentelemetry"]}")
     testImplementation("com.google.protobuf:protobuf-java-util:3.15.8")
