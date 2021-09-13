@@ -17,7 +17,8 @@
 package org.hypertrace.agent.otel.extensions.processor;
 
 import com.google.auto.service.AutoService;
-import io.opentelemetry.sdk.autoconfigure.spi.SdkTracerProviderConfigurer;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 
 /**
@@ -32,7 +33,8 @@ import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 public class HypertraceTracerCustomizer implements SdkTracerProviderConfigurer {
 
   @Override
-  public void configure(SdkTracerProviderBuilder tracerProvider) {
+  public void configure(
+      SdkTracerProviderBuilder tracerProvider, ConfigProperties configProperties) {
     tracerProvider.addSpanProcessor(new AddTagsSpanProcessor());
   }
 }
