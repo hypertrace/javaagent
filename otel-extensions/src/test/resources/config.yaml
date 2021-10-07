@@ -7,6 +7,7 @@ reporting:
   endpoint: http://localhost:4317
   secure: true
   trace_reporter_type: OTLP
+  cert_file: /foo/bar/example.pem
   opa:
     endpoint: http://opa.localhost:8181/
     pollPeriodSeconds: 12

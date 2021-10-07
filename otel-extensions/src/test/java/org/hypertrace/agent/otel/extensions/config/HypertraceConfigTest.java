@@ -41,6 +41,7 @@ public class HypertraceConfigTest {
     Assertions.assertEquals("unknown", agentConfig.getServiceName().getValue());
     Assertions.assertEquals(
         TraceReporterType.OTLP, agentConfig.getReporting().getTraceReporterType());
+    Assertions.assertFalse(agentConfig.getReporting().hasCertFile());
     Assertions.assertEquals(
         HypertraceConfig.DEFAULT_REPORTING_ENDPOINT,
         agentConfig.getReporting().getEndpoint().getValue());
@@ -105,6 +106,8 @@ public class HypertraceConfigTest {
         Arrays.asList(PropagationFormat.B3), agentConfig.getPropagationFormatsList());
     Assertions.assertEquals(
         TraceReporterType.OTLP, agentConfig.getReporting().getTraceReporterType());
+    Assertions.assertEquals(
+        "/foo/bar/example.pem", agentConfig.getReporting().getCertFile().getValue());
     Assertions.assertEquals(
         "http://localhost:4317", agentConfig.getReporting().getEndpoint().getValue());
     Assertions.assertEquals(true, agentConfig.getReporting().getSecure().getValue());
