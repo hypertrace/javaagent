@@ -43,6 +43,7 @@ public class HypertraceAgentConfiguration implements ConfigPropertySource {
   private static final String OTEL_EXPORTER_OTLP_ENDPOINT = "otel.exporter.otlp.endpoint";
 
   private static final String OTEL_ENABLED = "otel.javaagent.enabled";
+  private static final String OTEL_CERT = "otel.exporter.otlp.certificate";
 
   @Override
   public Map<String, String> getProperties() {
@@ -66,6 +67,9 @@ public class HypertraceAgentConfiguration implements ConfigPropertySource {
         OTEL_PROPAGATORS, toOtelPropagators(agentConfig.getPropagationFormatsList()));
     // metrics are not reported
     configProperties.put(OTEL_METRICS_EXPORTER, "none");
+    if (agentConfig.getReporting().hasCertFile()) {
+      configProperties.put(OTEL_CERT, agentConfig.getReporting().getCertFile().getValue());
+    }
 
     return configProperties;
   }
