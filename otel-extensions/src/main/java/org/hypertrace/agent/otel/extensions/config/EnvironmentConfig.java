@@ -19,15 +19,15 @@ package org.hypertrace.agent.otel.extensions.config;
 import com.google.protobuf.BoolValue;
 import com.google.protobuf.Int32Value;
 import com.google.protobuf.StringValue;
-import org.hypertrace.agent.config.Config.AgentConfig;
-import org.hypertrace.agent.config.Config.DataCapture;
-import org.hypertrace.agent.config.Config.JavaAgent;
-import org.hypertrace.agent.config.Config.Message;
-import org.hypertrace.agent.config.Config.Opa;
-import org.hypertrace.agent.config.Config.Opa.Builder;
-import org.hypertrace.agent.config.Config.PropagationFormat;
-import org.hypertrace.agent.config.Config.Reporting;
-import org.hypertrace.agent.config.Config.TraceReporterType;
+import org.hypertrace.agent.config.v1.Config.AgentConfig;
+import org.hypertrace.agent.config.v1.Config.DataCapture;
+import org.hypertrace.agent.config.v1.Config.JavaAgent;
+import org.hypertrace.agent.config.v1.Config.Message;
+import org.hypertrace.agent.config.v1.Config.Opa;
+import org.hypertrace.agent.config.v1.Config.Opa.Builder;
+import org.hypertrace.agent.config.v1.Config.PropagationFormat;
+import org.hypertrace.agent.config.v1.Config.Reporting;
+import org.hypertrace.agent.config.v1.Config.TraceReporterType;
 
 public class EnvironmentConfig {
 

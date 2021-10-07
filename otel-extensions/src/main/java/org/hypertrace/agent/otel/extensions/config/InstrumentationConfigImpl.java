@@ -17,10 +17,10 @@
 package org.hypertrace.agent.otel.extensions.config;
 
 import com.google.auto.service.AutoService;
-import org.hypertrace.agent.config.Config;
-import org.hypertrace.agent.config.Config.AgentConfig;
-import org.hypertrace.agent.config.Config.DataCapture;
-import org.hypertrace.agent.config.Config.Message;
+import org.hypertrace.agent.config.v1.Config;
+import org.hypertrace.agent.config.v1.Config.AgentConfig;
+import org.hypertrace.agent.config.v1.Config.DataCapture;
+import org.hypertrace.agent.config.v1.Config.Message;
 import org.hypertrace.agent.core.config.InstrumentationConfig;
 
 @AutoService(InstrumentationConfig.class)

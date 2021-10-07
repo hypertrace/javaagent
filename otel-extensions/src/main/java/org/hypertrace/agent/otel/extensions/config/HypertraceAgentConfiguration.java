@@ -23,9 +23,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.hypertrace.agent.config.Config.AgentConfig;
-import org.hypertrace.agent.config.Config.PropagationFormat;
-import org.hypertrace.agent.config.Config.TraceReporterType;
+import org.hypertrace.agent.config.v1.Config.AgentConfig;
+import org.hypertrace.agent.config.v1.Config.PropagationFormat;
+import org.hypertrace.agent.config.v1.Config.TraceReporterType;
 
 @AutoService(ConfigPropertySource.class)
 public class HypertraceAgentConfiguration implements ConfigPropertySource {

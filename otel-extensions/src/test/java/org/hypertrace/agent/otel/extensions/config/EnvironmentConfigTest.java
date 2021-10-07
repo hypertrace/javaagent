@@ -18,9 +18,9 @@ package org.hypertrace.agent.otel.extensions.config;
 
 import com.google.protobuf.StringValue;
 import java.util.Arrays;
-import org.hypertrace.agent.config.Config.AgentConfig;
-import org.hypertrace.agent.config.Config.PropagationFormat;
-import org.hypertrace.agent.config.Config.TraceReporterType;
+import org.hypertrace.agent.config.v1.Config.AgentConfig;
+import org.hypertrace.agent.config.v1.Config.PropagationFormat;
+import org.hypertrace.agent.config.v1.Config.TraceReporterType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ClearSystemProperty;
