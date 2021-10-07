@@ -46,6 +46,7 @@ public class EnvironmentConfig {
   static final String REPORTING_ENDPOINT = REPORTING_PREFIX + "endpoint";
   static final String REPORTING_TRACE_TYPE = REPORTING_PREFIX + "trace.reporter.type";
   static final String REPORTING_SECURE = REPORTING_PREFIX + "secure";
+  static final String REPORTING_CERT_FILE = REPORTING_PREFIX + "cert.file";
 
   private static final String OPA_PREFIX = REPORTING_PREFIX + "opa.";
   static final String OPA_ENDPOINT = OPA_PREFIX + "endpoint";
@@ -132,6 +133,10 @@ public class EnvironmentConfig {
     String secure = getProperty(REPORTING_SECURE);
     if (secure != null) {
       builder.setSecure(BoolValue.newBuilder().setValue(Boolean.valueOf(secure)).build());
+    }
+    String certFilePath = getProperty(REPORTING_CERT_FILE);
+    if (certFilePath != null) {
+      builder.setCertFile(StringValue.of(certFilePath));
     }
     Builder opaBuilder = applyOpa(builder.getOpa().toBuilder());
     builder.setOpa(opaBuilder);
