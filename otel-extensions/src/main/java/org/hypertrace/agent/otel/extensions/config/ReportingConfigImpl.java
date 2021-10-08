@@ -17,7 +17,7 @@
 package org.hypertrace.agent.otel.extensions.config;
 
 import com.google.auto.service.AutoService;
-import org.hypertrace.agent.config.Config;
+import org.hypertrace.agent.config.v1.Config;
 import org.hypertrace.agent.core.config.ReportingConfig;
 
 @AutoService(ReportingConfig.class)

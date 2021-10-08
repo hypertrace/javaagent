@@ -21,7 +21,7 @@ import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.javaagent.extension.AgentListener;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.hypertrace.agent.config.Config.AgentConfig;
+import org.hypertrace.agent.config.v1.Config.AgentConfig;
 import org.hypertrace.agent.filter.FilterRegistry;
 import org.hypertrace.agent.otel.extensions.config.HypertraceConfig;
 

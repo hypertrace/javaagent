@@ -23,12 +23,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.hypertrace.agent.config.Config.AgentConfig;
-import org.hypertrace.agent.config.Config.PropagationFormat;
-import org.hypertrace.agent.config.Config.TraceReporterType;
+import org.hypertrace.agent.config.v1.Config.AgentConfig;
+import org.hypertrace.agent.config.v1.Config.PropagationFormat;
+import org.hypertrace.agent.config.v1.Config.TraceReporterType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @AutoService(ConfigPropertySource.class)
 public class HypertraceAgentConfiguration implements ConfigPropertySource {
+
+  private static final Logger log = LoggerFactory.getLogger(HypertraceAgentConfiguration.class);
 
   // https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/sdk-environment-variables.md
   private static final String OTEL_TRACE_EXPORTER = "otel.traces.exporter";
@@ -43,6 +47,7 @@ public class HypertraceAgentConfiguration implements ConfigPropertySource {
   private static final String OTEL_EXPORTER_OTLP_ENDPOINT = "otel.exporter.otlp.endpoint";
 
   private static final String OTEL_ENABLED = "otel.javaagent.enabled";
+  private static final String OTEL_OTLP_CERT = "otel.exporter.otlp.certificate";
 
   @Override
   public Map<String, String> getProperties() {
@@ -66,6 +71,14 @@ public class HypertraceAgentConfiguration implements ConfigPropertySource {
         OTEL_PROPAGATORS, toOtelPropagators(agentConfig.getPropagationFormatsList()));
     // metrics are not reported
     configProperties.put(OTEL_METRICS_EXPORTER, "none");
+    if (agentConfig.getReporting().hasCertFile()) {
+      if (agentConfig.getReporting().getTraceReporterType() == TraceReporterType.OTLP) {
+        configProperties.put(OTEL_OTLP_CERT, agentConfig.getReporting().getCertFile().getValue());
+      } else {
+        log.warn(
+            "A certificate file was configured, but a trace exporter other than OTLP was configured. If you would like to use a custom certificate file, you must use the OTLP exporter");
+      }
+    }
 
     return configProperties;
   }

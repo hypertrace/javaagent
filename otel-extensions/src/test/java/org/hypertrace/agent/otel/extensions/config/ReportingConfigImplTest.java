@@ -21,9 +21,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.google.protobuf.BoolValue;
 import java.util.Iterator;
 import java.util.ServiceLoader;
-import org.hypertrace.agent.config.Config.Opa;
-import org.hypertrace.agent.config.Config.Reporting;
-import org.hypertrace.agent.config.Config.Reporting.Builder;
+import org.hypertrace.agent.config.v1.Config.Opa;
+import org.hypertrace.agent.config.v1.Config.Reporting;
+import org.hypertrace.agent.config.v1.Config.Reporting.Builder;
 import org.hypertrace.agent.core.config.ReportingConfig;
 import org.junit.jupiter.api.Test;
 

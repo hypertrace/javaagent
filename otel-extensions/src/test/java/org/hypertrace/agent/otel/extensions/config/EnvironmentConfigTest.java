@@ -18,9 +18,9 @@ package org.hypertrace.agent.otel.extensions.config;
 
 import com.google.protobuf.StringValue;
 import java.util.Arrays;
-import org.hypertrace.agent.config.Config.AgentConfig;
-import org.hypertrace.agent.config.Config.PropagationFormat;
-import org.hypertrace.agent.config.Config.TraceReporterType;
+import org.hypertrace.agent.config.v1.Config.AgentConfig;
+import org.hypertrace.agent.config.v1.Config.PropagationFormat;
+import org.hypertrace.agent.config.v1.Config.TraceReporterType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ClearSystemProperty;
@@ -31,6 +31,7 @@ class EnvironmentConfigTest {
   @ClearSystemProperty(key = EnvironmentConfig.REPORTING_ENDPOINT)
   @ClearSystemProperty(key = EnvironmentConfig.REPORTING_SECURE)
   @ClearSystemProperty(key = EnvironmentConfig.REPORTING_TRACE_TYPE)
+  @ClearSystemProperty(key = EnvironmentConfig.REPORTING_CERT_FILE)
   @ClearSystemProperty(key = EnvironmentConfig.OPA_ENDPOINT)
   @ClearSystemProperty(key = EnvironmentConfig.OPA_POLL_PERIOD)
   @ClearSystemProperty(key = EnvironmentConfig.OPA_ENABLED)
@@ -46,6 +47,7 @@ class EnvironmentConfigTest {
     System.setProperty(EnvironmentConfig.REPORTING_ENDPOINT, "http://:-)");
     System.setProperty(EnvironmentConfig.REPORTING_TRACE_TYPE, "OTLP");
     System.setProperty(EnvironmentConfig.REPORTING_SECURE, "true");
+    System.setProperty(EnvironmentConfig.REPORTING_CERT_FILE, "/bar/test.pem");
     System.setProperty(EnvironmentConfig.CAPTURE_HTTP_BODY_PREFIX + "request", "true");
     System.setProperty(EnvironmentConfig.OPA_ENDPOINT, "http://azkaban:9090");
     System.setProperty(EnvironmentConfig.OPA_POLL_PERIOD, "10");
@@ -78,6 +80,7 @@ class EnvironmentConfigTest {
         10, agentConfig.getReporting().getOpa().getPollPeriodSeconds().getValue());
     Assertions.assertEquals(512, agentConfig.getDataCapture().getBodyMaxSizeBytes().getValue());
     Assertions.assertEquals(true, agentConfig.getReporting().getSecure().getValue());
+    Assertions.assertEquals("/bar/test.pem", agentConfig.getReporting().getCertFile().getValue());
     Assertions.assertEquals(
         true, agentConfig.getDataCapture().getHttpBody().getRequest().getValue());
     Assertions.assertEquals(2, agentConfig.getJavaagent().getFilterJarPathsCount());
