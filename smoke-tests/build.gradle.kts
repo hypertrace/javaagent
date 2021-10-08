@@ -18,6 +18,8 @@ dependencies{
     testImplementation("io.opentelemetry:opentelemetry-proto:${versions["opentelemetry"]}-alpha")
     testImplementation("io.grpc:grpc-core:1.36.1") // needed at runtime to send gRPC requests to the gRPC app
     testRuntimeOnly("io.grpc:grpc-netty-shaded:1.36.1") // needed at runtime to send gRPC requests to the gRPC app
+    testRuntimeOnly("io.grpc:grpc-stub:1.36.1") // needed at runtime to send gRPC requests to the gRPC app
+    testRuntimeOnly("io.grpc:grpc-protobuf:1.36.1") // needed at runtime to send gRPC requests to the gRPC app
     testImplementation("io.opentelemetry:opentelemetry-sdk:${versions["opentelemetry"]}")
     testImplementation("com.google.protobuf:protobuf-java-util:3.15.8")
     testImplementation("org.spockframework:spock-core:1.3-groovy-2.5")
