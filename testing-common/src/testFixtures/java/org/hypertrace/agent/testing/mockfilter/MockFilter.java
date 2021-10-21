@@ -37,6 +37,6 @@ class MockFilter implements Filter {
 
   @Override
   public boolean evaluateRequestBody(Span span, String body) {
-    return false;
+    return body.contains("block=true");
   }
 }
