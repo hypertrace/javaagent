@@ -267,6 +267,35 @@ public class Servlet30InstrumentationTest extends AbstractInstrumenterTest {
         spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
   }
 
+  @Test
+  public void blockBody() throws Exception {
+    FormBody formBody = new FormBody.Builder().add("block", "true").build();
+    Request request =
+        new Request.Builder()
+            .url(String.format("http://localhost:%d/echo_stream_single_byte", serverPort))
+            .post(formBody)
+            .header(REQUEST_HEADER, REQUEST_HEADER_VALUE)
+            .build();
+    try (Response response = httpClient.newCall(request).execute()) {
+      Assertions.assertEquals(403, response.code());
+    }
+
+    TEST_WRITER.waitForTraces(1);
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    Assertions.assertEquals(1, traces.size());
+    List<SpanData> spans = traces.get(0);
+    Assertions.assertEquals(1, spans.size());
+    SpanData spanData = spans.get(0);
+    Assertions.assertNull(
+        spanData
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpResponseHeader(TestServlets.RESPONSE_HEADER)));
+    Assertions.assertEquals(
+        "block=true", spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+    Assertions.assertNull(
+        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+  }
+
   public void postJson(String url) throws Exception {
     Request request =
         new Request.Builder()
