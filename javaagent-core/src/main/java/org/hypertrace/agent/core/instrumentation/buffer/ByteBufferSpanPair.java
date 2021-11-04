@@ -19,16 +19,22 @@ package org.hypertrace.agent.core.instrumentation.buffer;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import java.io.UnsupportedEncodingException;
+import java.util.Objects;
+import java.util.function.BiFunction;
+import org.hypertrace.agent.core.instrumentation.HypertraceEvaluationException;
 
 public class ByteBufferSpanPair {
 
   public final Span span;
   public final BoundedByteArrayOutputStream buffer;
   private boolean bufferCaptured;
+  private final BiFunction<Span, String, Boolean> filter;
 
-  public ByteBufferSpanPair(Span span, BoundedByteArrayOutputStream buffer) {
+  public ByteBufferSpanPair(
+      Span span, BoundedByteArrayOutputStream buffer, BiFunction<Span, String, Boolean> filter) {
     this.span = span;
     this.buffer = buffer;
+    this.filter = Objects.requireNonNull(filter);
   }
 
   public void captureBody(AttributeKey<String> attributeKey) {
@@ -44,5 +50,10 @@ public class ByteBufferSpanPair {
       // ignore charset has been parsed before
     }
     span.setAttribute(attributeKey, requestBody);
+    final boolean block;
+    block = filter.apply(span, requestBody);
+    if (block) {
+      throw new HypertraceEvaluationException();
+    }
   }
 }

@@ -20,6 +20,7 @@ import io.opentelemetry.api.trace.Span;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.function.BiFunction;
 import javax.servlet.ServletInputStream;
 import org.ServletStreamContextAccess;
 import org.TestServletInputStream;
@@ -44,7 +45,7 @@ public class ServletInputStreamInstrumentationTest extends AbstractInstrumenterT
 
     BoundedByteArrayOutputStream buffer =
         BoundedBuffersFactory.createStream(StandardCharsets.UTF_8);
-    ByteBufferSpanPair bufferSpanPair = new ByteBufferSpanPair(span, buffer);
+    ByteBufferSpanPair bufferSpanPair = new ByteBufferSpanPair(span, buffer, NOOP_FILTER);
     ServletStreamContextAccess.addToInputStreamContext(servletInputStream, bufferSpanPair);
 
     while (servletInputStream.read() != -1) {}
@@ -61,7 +62,7 @@ public class ServletInputStreamInstrumentationTest extends AbstractInstrumenterT
 
     BoundedByteArrayOutputStream buffer =
         BoundedBuffersFactory.createStream(StandardCharsets.UTF_8);
-    ByteBufferSpanPair bufferSpanPair = new ByteBufferSpanPair(span, buffer);
+    ByteBufferSpanPair bufferSpanPair = new ByteBufferSpanPair(span, buffer, NOOP_FILTER);
     ServletStreamContextAccess.addToInputStreamContext(servletInputStream, bufferSpanPair);
 
     while (servletInputStream.read() != -1) {}
@@ -78,10 +79,12 @@ public class ServletInputStreamInstrumentationTest extends AbstractInstrumenterT
 
     BoundedByteArrayOutputStream buffer =
         BoundedBuffersFactory.createStream(StandardCharsets.UTF_8);
-    ByteBufferSpanPair bufferSpanPair = new ByteBufferSpanPair(span, buffer);
+    ByteBufferSpanPair bufferSpanPair = new ByteBufferSpanPair(span, buffer, NOOP_FILTER);
     ServletStreamContextAccess.addToInputStreamContext(servletInputStream, bufferSpanPair);
 
     servletInputStream.read(new byte[BODY.length()]);
     Assertions.assertEquals(BODY.substring(2), buffer.toStringWithSuppliedCharset());
   }
+
+  private static final BiFunction<Span, String, Boolean> NOOP_FILTER = (span, body) -> false;
 }

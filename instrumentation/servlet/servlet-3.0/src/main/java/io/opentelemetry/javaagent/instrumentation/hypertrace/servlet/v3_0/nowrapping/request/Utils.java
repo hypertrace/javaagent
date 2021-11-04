@@ -24,8 +24,12 @@ import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
 import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
 import org.hypertrace.agent.core.instrumentation.utils.ContentLengthUtils;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeCharsetUtils;
+import org.hypertrace.agent.filter.FilterRegistry;
+import org.hypertrace.agent.filter.api.Filter;
 
 public class Utils {
+
+  private static final Filter filter = FilterRegistry.getFilter();
 
   private Utils() {}
 
@@ -37,7 +41,10 @@ public class Utils {
     if (contentLength < 0) {
       contentLength = ContentLengthUtils.DEFAULT;
     }
-    return new ByteBufferSpanPair(span, BoundedBuffersFactory.createStream(contentLength, charset));
+    return new ByteBufferSpanPair(
+        span,
+        BoundedBuffersFactory.createStream(contentLength, charset),
+        filter::evaluateRequestBody);
   }
 
   public static CharBufferSpanPair createRequestCharBufferSpanPair(
