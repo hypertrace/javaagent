@@ -32,10 +32,16 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.core.instrumentation.HypertraceCallDepthThreadLocalMap;
+import org.hypertrace.agent.core.instrumentation.HypertraceEvaluationException;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ServletInputStreamInstrumentation implements TypeInstrumentation {
+
+  private static final Logger log =
+      LoggerFactory.getLogger(ServletInputStreamInstrumentation.class);
 
   @Override
   public ElementMatcher<TypeDescription> typeMatcher() {
@@ -86,6 +92,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
   }
 
   static class InputStream_ReadNoArgs {
+
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
       ByteBufferSpanPair bufferSpanPair =
@@ -98,27 +105,36 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
       return bufferSpanPair;
     }
 
-    @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
+    @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void exit(
         @Advice.Return int read, @Advice.Enter ByteBufferSpanPair bufferSpanPair) {
-      if (bufferSpanPair == null) {
-        return;
-      }
-      int callDepth =
-          HypertraceCallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
-      if (callDepth > 0) {
-        return;
-      }
+      try {
+        if (bufferSpanPair == null) {
+          return;
+        }
+        int callDepth =
+            HypertraceCallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
+        if (callDepth > 0) {
+          return;
+        }
 
-      if (read == -1) {
-        bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
-      } else {
-        bufferSpanPair.buffer.write((byte) read);
+        if (read == -1) {
+          bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
+        } else {
+          bufferSpanPair.buffer.write((byte) read);
+        }
+      } catch (Throwable t) {
+        if (t instanceof HypertraceEvaluationException) {
+          throw t;
+        } else {
+          log.debug("Failed to handle exception in instrumentation while reading body", t);
+        }
       }
     }
   }
 
   public static class InputStream_ReadByteArray {
+
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
       ByteBufferSpanPair bufferSpanPair =
@@ -154,6 +170,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
   }
 
   public static class InputStream_ReadByteArrayOffset {
+
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
       ByteBufferSpanPair bufferSpanPair =
@@ -191,6 +208,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
   }
 
   public static class InputStream_ReadAllBytes {
+
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
       ByteBufferSpanPair bufferSpanPair =
@@ -222,6 +240,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
   }
 
   public static class InputStream_ReadNBytes {
+
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
       ByteBufferSpanPair bufferSpanPair =
