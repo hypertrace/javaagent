@@ -46,6 +46,7 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.core.config.InstrumentationConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceCallDepthThreadLocalMap;
+import org.hypertrace.agent.core.instrumentation.HypertraceEvaluationException;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.SpanAndObjectPair;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
@@ -78,6 +79,7 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
   }
 
   public static class ServletAdvice {
+
     @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = Advice.OnNonDefaultValue.class)
     public static boolean start(
         @Advice.Argument(value = 0) ServletRequest request,
@@ -133,10 +135,11 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
       return false;
     }
 
-    @Advice.OnMethodExit(suppress = Throwable.class)
+    @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
     public static void exit(
         @Advice.Argument(0) ServletRequest request,
         @Advice.Argument(1) ServletResponse response,
+        @Advice.Thrown(readOnly = false) Throwable throwable,
         @Advice.Local("currentSpan") Span currentSpan) {
       int callDepth =
           HypertraceCallDepthThreadLocalMap.decrementCallDepth(Servlet30InstrumentationName.class);
@@ -152,6 +155,14 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
       HttpServletResponse httpResponse = (HttpServletResponse) response;
       HttpServletRequest httpRequest = (HttpServletRequest) request;
       InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
+
+      if (throwable instanceof HypertraceEvaluationException) {
+        httpResponse.setStatus(403);
+        // bytebuddy treats the reassignment of this variable to null as an instruction to suppress
+        // this exception, which is what we want
+        throwable = null;
+        return;
+      }
 
       // response context to capture body and clear the context
       ContextStore<HttpServletResponse, SpanAndObjectPair> responseContextStore =
