@@ -52,11 +52,11 @@ class MultiFilter implements Filter {
   }
 
   @Override
-  public boolean evaluateRequestBody(Span span, String body) {
+  public boolean evaluateRequestBody(Span span, String body, Map<String, String> headers) {
     boolean shouldBlock = false;
     for (Filter filter : filters) {
       try {
-        if (filter.evaluateRequestBody(span, body)) {
+        if (filter.evaluateRequestBody(span, body, headers)) {
           shouldBlock = true;
         }
       } catch (Throwable t) {

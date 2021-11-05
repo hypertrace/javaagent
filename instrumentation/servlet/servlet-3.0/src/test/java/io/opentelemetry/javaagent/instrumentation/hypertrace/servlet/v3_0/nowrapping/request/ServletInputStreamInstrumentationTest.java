@@ -20,10 +20,11 @@ import io.opentelemetry.api.trace.Span;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.function.BiFunction;
+import java.util.Map;
 import javax.servlet.ServletInputStream;
 import org.ServletStreamContextAccess;
 import org.TestServletInputStream;
+import org.hypertrace.agent.core.TriFunction;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
@@ -86,5 +87,6 @@ public class ServletInputStreamInstrumentationTest extends AbstractInstrumenterT
     Assertions.assertEquals(BODY.substring(2), buffer.toStringWithSuppliedCharset());
   }
 
-  private static final BiFunction<Span, String, Boolean> NOOP_FILTER = (span, body) -> false;
+  private static final TriFunction<Span, String, Map<String, String>, Boolean> NOOP_FILTER =
+      (span, body, headers) -> false;
 }

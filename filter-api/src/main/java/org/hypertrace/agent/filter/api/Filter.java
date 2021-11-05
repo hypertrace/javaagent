@@ -37,8 +37,10 @@ public interface Filter {
   /**
    * Evaluate the execution.
    *
+   * @param span of the HTTP request associated with this body
    * @param body request body
+   * @param headers of the request associated with this body
    * @return filter result
    */
-  boolean evaluateRequestBody(Span span, String body);
+  boolean evaluateRequestBody(Span span, String body, Map<String, String> headers);
 }
