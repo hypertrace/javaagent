@@ -120,7 +120,7 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
         Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
         BoundedByteArrayOutputStream buffer = BoundedBuffersFactory.createStream(charset);
         contextStore.put(servletOutputStream, buffer);
-        SpanAndObjectPair spanAndObjectPair = new SpanAndObjectPair(null);
+        SpanAndObjectPair spanAndObjectPair = new SpanAndObjectPair(null, null);
         spanAndObjectPair.setAssociatedObject(servletOutputStream);
         InstrumentationContext.get(HttpServletResponse.class, SpanAndObjectPair.class)
             .put(httpServletResponse, spanAndObjectPair);
@@ -178,7 +178,7 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
 
         BoundedCharArrayWriter writer = BoundedBuffersFactory.createWriter();
         contextStore.put(printWriter, writer);
-        SpanAndObjectPair spanAndObjectPair = new SpanAndObjectPair(null);
+        SpanAndObjectPair spanAndObjectPair = new SpanAndObjectPair(null, null);
         spanAndObjectPair.setAssociatedObject(printWriter);
         InstrumentationContext.get(HttpServletResponse.class, SpanAndObjectPair.class)
             .put(httpServletResponse, spanAndObjectPair);

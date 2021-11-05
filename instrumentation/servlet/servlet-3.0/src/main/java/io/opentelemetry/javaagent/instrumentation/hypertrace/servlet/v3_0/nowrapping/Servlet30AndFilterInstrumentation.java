@@ -32,6 +32,7 @@ import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -101,15 +102,6 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
 
       InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
 
-      String contentType = httpRequest.getContentType();
-      if (instrumentationConfig.httpBody().request()
-          && ContentTypeUtils.shouldCapture(contentType)) {
-        // The HttpServletRequest instrumentation uses this to
-        // enable the instrumentation
-        InstrumentationContext.get(HttpServletRequest.class, SpanAndObjectPair.class)
-            .put(httpRequest, new SpanAndObjectPair(currentSpan));
-      }
-
       Utils.addSessionId(currentSpan, httpRequest);
 
       // set request headers
@@ -131,6 +123,16 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
         httpResponse.setStatus(403);
         // skip execution of the user code
         return true;
+      }
+
+      if (instrumentationConfig.httpBody().request()
+          && ContentTypeUtils.shouldCapture(httpRequest.getContentType())) {
+        // The HttpServletRequest instrumentation uses this to
+        // enable the instrumentation
+        InstrumentationContext.get(HttpServletRequest.class, SpanAndObjectPair.class)
+            .put(
+                httpRequest,
+                new SpanAndObjectPair(currentSpan, Collections.unmodifiableMap(headers)));
       }
       return false;
     }

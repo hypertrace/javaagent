@@ -17,14 +17,17 @@
 package org.hypertrace.agent.core.instrumentation;
 
 import io.opentelemetry.api.trace.Span;
+import java.util.Map;
 
 public class SpanAndObjectPair {
 
   private final Span span;
+  private final Map<String, String> headers;
   private Object associatedObject;
 
-  public SpanAndObjectPair(Span span) {
+  public SpanAndObjectPair(Span span, Map<String, String> headers) {
     this.span = span;
+    this.headers = headers;
   }
 
   public Span getSpan() {
@@ -37,5 +40,9 @@ public class SpanAndObjectPair {
 
   public void setAssociatedObject(Object associatedObject) {
     this.associatedObject = associatedObject;
+  }
+
+  public Map<String, String> getHeaders() {
+    return headers;
   }
 }
