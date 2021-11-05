@@ -20,6 +20,7 @@ import io.opentelemetry.api.trace.Span;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.Map;
 import javax.servlet.ServletInputStream;
 import org.ServletStreamContextAccess;
@@ -46,7 +47,8 @@ public class ServletInputStreamInstrumentationTest extends AbstractInstrumenterT
 
     BoundedByteArrayOutputStream buffer =
         BoundedBuffersFactory.createStream(StandardCharsets.UTF_8);
-    ByteBufferSpanPair bufferSpanPair = new ByteBufferSpanPair(span, buffer, NOOP_FILTER);
+    ByteBufferSpanPair bufferSpanPair =
+        new ByteBufferSpanPair(span, buffer, NOOP_FILTER, Collections.emptyMap());
     ServletStreamContextAccess.addToInputStreamContext(servletInputStream, bufferSpanPair);
 
     while (servletInputStream.read() != -1) {}
@@ -63,7 +65,8 @@ public class ServletInputStreamInstrumentationTest extends AbstractInstrumenterT
 
     BoundedByteArrayOutputStream buffer =
         BoundedBuffersFactory.createStream(StandardCharsets.UTF_8);
-    ByteBufferSpanPair bufferSpanPair = new ByteBufferSpanPair(span, buffer, NOOP_FILTER);
+    ByteBufferSpanPair bufferSpanPair =
+        new ByteBufferSpanPair(span, buffer, NOOP_FILTER, Collections.emptyMap());
     ServletStreamContextAccess.addToInputStreamContext(servletInputStream, bufferSpanPair);
 
     while (servletInputStream.read() != -1) {}
@@ -80,7 +83,8 @@ public class ServletInputStreamInstrumentationTest extends AbstractInstrumenterT
 
     BoundedByteArrayOutputStream buffer =
         BoundedBuffersFactory.createStream(StandardCharsets.UTF_8);
-    ByteBufferSpanPair bufferSpanPair = new ByteBufferSpanPair(span, buffer, NOOP_FILTER);
+    ByteBufferSpanPair bufferSpanPair =
+        new ByteBufferSpanPair(span, buffer, NOOP_FILTER, Collections.emptyMap());
     ServletStreamContextAccess.addToInputStreamContext(servletInputStream, bufferSpanPair);
 
     servletInputStream.read(new byte[BODY.length()]);

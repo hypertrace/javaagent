@@ -18,6 +18,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowra
 
 import io.opentelemetry.api.trace.Span;
 import java.nio.charset.Charset;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
@@ -34,7 +35,7 @@ public class Utils {
   private Utils() {}
 
   public static ByteBufferSpanPair createRequestByteBufferSpanPair(
-      HttpServletRequest httpServletRequest, Span span) {
+      HttpServletRequest httpServletRequest, Span span, Map<String, String> headers) {
     String charsetStr = httpServletRequest.getCharacterEncoding();
     Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
     int contentLength = httpServletRequest.getContentLength();
@@ -44,7 +45,8 @@ public class Utils {
     return new ByteBufferSpanPair(
         span,
         BoundedBuffersFactory.createStream(contentLength, charset),
-        filter::evaluateRequestBody);
+        filter::evaluateRequestBody,
+        headers);
   }
 
   public static CharBufferSpanPair createRequestCharBufferSpanPair(
