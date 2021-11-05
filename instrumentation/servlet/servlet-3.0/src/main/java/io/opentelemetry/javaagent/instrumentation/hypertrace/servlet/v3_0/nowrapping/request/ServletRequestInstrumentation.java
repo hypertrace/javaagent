@@ -160,7 +160,8 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
       }
 
       CharBufferSpanPair bufferSpanPair =
-          Utils.createRequestCharBufferSpanPair(httpServletRequest, spanAndObjectPair.getSpan());
+          Utils.createRequestCharBufferSpanPair(
+              httpServletRequest, spanAndObjectPair.getSpan(), spanAndObjectPair.getHeaders());
       contextStore.put(reader, bufferSpanPair);
       spanAndObjectPair.setAssociatedObject(reader);
     }

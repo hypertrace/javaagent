@@ -50,11 +50,15 @@ public class Utils {
   }
 
   public static CharBufferSpanPair createRequestCharBufferSpanPair(
-      HttpServletRequest httpServletRequest, Span span) {
+      HttpServletRequest httpServletRequest, Span span, Map<String, String> headers) {
     int contentLength = httpServletRequest.getContentLength();
     if (contentLength < 0) {
       contentLength = ContentLengthUtils.DEFAULT;
     }
-    return new CharBufferSpanPair(span, BoundedBuffersFactory.createWriter(contentLength));
+    return new CharBufferSpanPair(
+        span,
+        BoundedBuffersFactory.createWriter(contentLength),
+        filter::evaluateRequestBody,
+        headers);
   }
 }
