@@ -27,7 +27,6 @@ import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.io.BufferedReader;
-import java.util.Collections;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
@@ -110,7 +109,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
 
       ByteBufferSpanPair bufferSpanPair =
           Utils.createRequestByteBufferSpanPair(
-              httpServletRequest, spanAndObjectPair.getSpan(), Collections.emptyMap());
+              httpServletRequest, spanAndObjectPair.getSpan(), spanAndObjectPair.getHeaders());
       contextStore.put(servletInputStream, bufferSpanPair);
       spanAndObjectPair.setAssociatedObject(servletInputStream);
     }
