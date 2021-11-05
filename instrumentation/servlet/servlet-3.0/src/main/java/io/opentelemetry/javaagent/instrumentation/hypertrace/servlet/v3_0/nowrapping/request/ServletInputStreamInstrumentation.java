@@ -35,13 +35,8 @@ import org.hypertrace.agent.core.instrumentation.HypertraceCallDepthThreadLocalM
 import org.hypertrace.agent.core.instrumentation.HypertraceEvaluationException;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ServletInputStreamInstrumentation implements TypeInstrumentation {
-
-  private static final Logger log =
-      LoggerFactory.getLogger(ServletInputStreamInstrumentation.class);
 
   @Override
   public ElementMatcher<TypeDescription> typeMatcher() {
@@ -127,7 +122,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         if (t instanceof HypertraceEvaluationException) {
           throw t;
         } else {
-          log.debug("Failed to handle exception in instrumentation while reading body", t);
+          // TODO find way to log this without mucking with muzzle
         }
       }
     }
