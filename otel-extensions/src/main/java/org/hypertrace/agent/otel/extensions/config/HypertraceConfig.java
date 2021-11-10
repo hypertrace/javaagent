@@ -30,10 +30,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import org.hypertrace.agent.config.v1.Config;
 import org.hypertrace.agent.config.v1.Config.AgentConfig;
 import org.hypertrace.agent.config.v1.Config.DataCapture;
 import org.hypertrace.agent.config.v1.Config.Message;
+import org.hypertrace.agent.config.v1.Config.MetricReporterType;
 import org.hypertrace.agent.config.v1.Config.Opa;
 import org.hypertrace.agent.config.v1.Config.Opa.Builder;
 import org.hypertrace.agent.config.v1.Config.PropagationFormat;
@@ -53,6 +53,7 @@ public class HypertraceConfig {
   private static volatile AgentConfig agentConfig;
 
   static final String DEFAULT_SERVICE_NAME = "unknown";
+  // Default reporting endpoint for traces and metrics
   static final String DEFAULT_REPORTING_ENDPOINT = "http://localhost:4317";
   static final String DEFAULT_OPA_ENDPOINT = "http://localhost:8181/";
   static final int DEFAULT_OPA_POLL_PERIOD_SECONDS = 30;
@@ -143,8 +144,17 @@ public class HypertraceConfig {
     if (!builder.hasEndpoint()) {
       builder.setEndpoint(StringValue.newBuilder().setValue(DEFAULT_REPORTING_ENDPOINT).build());
     }
-    if (builder.getTraceReporterType().equals(Config.TraceReporterType.UNSPECIFIED)) {
+    if (!builder.hasMetricEndpoint()) {
+      builder.setMetricEndpoint(
+          StringValue.newBuilder().setValue(DEFAULT_REPORTING_ENDPOINT).build());
+    }
+    if (builder.getTraceReporterType().equals(TraceReporterType.UNSPECIFIED)) {
       builder.setTraceReporterType(TraceReporterType.OTLP);
+    }
+    if (builder
+        .getMetricReporterType()
+        .equals(MetricReporterType.METRIC_REPORTER_TYPE_UNSPECIFIED)) {
+      builder.setMetricReporterType(MetricReporterType.METRIC_REPORTER_TYPE_OTLP);
     }
     Builder opaBuilder = applyOpaDefaults(builder.getOpa().toBuilder());
     builder.setOpa(opaBuilder);

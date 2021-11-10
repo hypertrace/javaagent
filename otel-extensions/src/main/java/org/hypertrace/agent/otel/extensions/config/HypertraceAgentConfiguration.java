@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.hypertrace.agent.config.v1.Config.AgentConfig;
+import org.hypertrace.agent.config.v1.Config.MetricReporterType;
 import org.hypertrace.agent.config.v1.Config.PropagationFormat;
 import org.hypertrace.agent.config.v1.Config.TraceReporterType;
 import org.slf4j.Logger;
@@ -44,7 +45,10 @@ public class HypertraceAgentConfiguration implements ConfigPropertySource {
   private static final String OTEL_PROCESSOR_BATCH_MAX_QUEUE = "otel.bsp.max.queue.size";
   private static final String OTEL_DEFAULT_LOG_LEVEL =
       "io.opentelemetry.javaagent.slf4j.simpleLogger.defaultLogLevel";
-  private static final String OTEL_EXPORTER_OTLP_ENDPOINT = "otel.exporter.otlp.endpoint";
+  private static final String OTEL_EXPORTER_OTLP_TRACES_ENDPOINT =
+      "otel.exporter.otlp.traces.endpoint";
+  private static final String OTEL_EXPORTER_OTLP_METRICS_ENDPOINT =
+      "otel.exporter.otlp.metrics.endpoint";
 
   private static final String OTEL_ENABLED = "otel.javaagent.enabled";
   private static final String OTEL_OTLP_CERT = "otel.exporter.otlp.certificate";
@@ -65,12 +69,25 @@ public class HypertraceAgentConfiguration implements ConfigPropertySource {
           OTEL_EXPORTER_ZIPKIN_ENDPOINT, agentConfig.getReporting().getEndpoint().getValue());
     } else if (agentConfig.getReporting().getTraceReporterType() == TraceReporterType.OTLP) {
       configProperties.put(
-          OTEL_EXPORTER_OTLP_ENDPOINT, agentConfig.getReporting().getEndpoint().getValue());
+          OTEL_EXPORTER_OTLP_TRACES_ENDPOINT, agentConfig.getReporting().getEndpoint().getValue());
+    }
+    if (agentConfig.getReporting().getMetricReporterType()
+        == MetricReporterType.METRIC_REPORTER_TYPE_OTLP) {
+      configProperties.put(
+          OTEL_EXPORTER_OTLP_METRICS_ENDPOINT,
+          agentConfig.getReporting().getMetricEndpoint().getValue());
+    }
+    if (agentConfig.getReporting().getMetricReporterType()
+        == MetricReporterType.METRIC_REPORTER_TYPE_OTLP) {
+      configProperties.put(OTEL_METRICS_EXPORTER, "otlp");
+    } else if (agentConfig.getReporting().getMetricReporterType()
+        == MetricReporterType.METRIC_REPORTER_TYPE_PROMETHEUS) {
+      configProperties.put(OTEL_METRICS_EXPORTER, "prometheus");
+    } else {
+      configProperties.put(OTEL_METRICS_EXPORTER, "none");
     }
     configProperties.put(
         OTEL_PROPAGATORS, toOtelPropagators(agentConfig.getPropagationFormatsList()));
-    // metrics are not reported
-    configProperties.put(OTEL_METRICS_EXPORTER, "none");
     if (agentConfig.getReporting().hasCertFile()) {
       if (agentConfig.getReporting().getTraceReporterType() == TraceReporterType.OTLP) {
         configProperties.put(OTEL_OTLP_CERT, agentConfig.getReporting().getCertFile().getValue());
