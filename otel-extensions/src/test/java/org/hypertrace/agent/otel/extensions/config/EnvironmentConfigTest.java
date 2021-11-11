@@ -19,6 +19,7 @@ package org.hypertrace.agent.otel.extensions.config;
 import com.google.protobuf.StringValue;
 import java.util.Arrays;
 import org.hypertrace.agent.config.v1.Config.AgentConfig;
+import org.hypertrace.agent.config.v1.Config.MetricReporterType;
 import org.hypertrace.agent.config.v1.Config.PropagationFormat;
 import org.hypertrace.agent.config.v1.Config.TraceReporterType;
 import org.junit.jupiter.api.Assertions;
@@ -29,8 +30,10 @@ class EnvironmentConfigTest {
 
   @Test
   @ClearSystemProperty(key = EnvironmentConfig.REPORTING_ENDPOINT)
+  @ClearSystemProperty(key = EnvironmentConfig.REPORTING_METRIC_ENDPOINT)
   @ClearSystemProperty(key = EnvironmentConfig.REPORTING_SECURE)
   @ClearSystemProperty(key = EnvironmentConfig.REPORTING_TRACE_TYPE)
+  @ClearSystemProperty(key = EnvironmentConfig.REPORTING_METRIC_TYPE)
   @ClearSystemProperty(key = EnvironmentConfig.REPORTING_CERT_FILE)
   @ClearSystemProperty(key = EnvironmentConfig.OPA_ENDPOINT)
   @ClearSystemProperty(key = EnvironmentConfig.OPA_POLL_PERIOD)
@@ -46,6 +49,8 @@ class EnvironmentConfigTest {
     // parallel tests
     System.setProperty(EnvironmentConfig.REPORTING_ENDPOINT, "http://:-)");
     System.setProperty(EnvironmentConfig.REPORTING_TRACE_TYPE, "OTLP");
+    System.setProperty(EnvironmentConfig.REPORTING_METRIC_ENDPOINT, "http://:-)");
+    System.setProperty(EnvironmentConfig.REPORTING_METRIC_TYPE, "METRIC_REPORTER_TYPE_OTLP");
     System.setProperty(EnvironmentConfig.REPORTING_SECURE, "true");
     System.setProperty(EnvironmentConfig.REPORTING_CERT_FILE, "/bar/test.pem");
     System.setProperty(EnvironmentConfig.CAPTURE_HTTP_BODY_PREFIX + "request", "true");
@@ -73,6 +78,11 @@ class EnvironmentConfigTest {
     Assertions.assertEquals("http://:-)", agentConfig.getReporting().getEndpoint().getValue());
     Assertions.assertEquals(
         TraceReporterType.OTLP, agentConfig.getReporting().getTraceReporterType());
+    Assertions.assertEquals(
+        "http://:-)", agentConfig.getReporting().getMetricEndpoint().getValue());
+    Assertions.assertEquals(
+        MetricReporterType.METRIC_REPORTER_TYPE_OTLP,
+        agentConfig.getReporting().getMetricReporterType());
     Assertions.assertEquals(
         "http://azkaban:9090", agentConfig.getReporting().getOpa().getEndpoint().getValue());
     Assertions.assertEquals(true, agentConfig.getReporting().getOpa().getEnabled().getValue());

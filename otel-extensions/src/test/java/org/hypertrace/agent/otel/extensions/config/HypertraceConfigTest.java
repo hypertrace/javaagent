@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import org.hypertrace.agent.config.v1.Config.AgentConfig;
+import org.hypertrace.agent.config.v1.Config.MetricReporterType;
 import org.hypertrace.agent.config.v1.Config.PropagationFormat;
 import org.hypertrace.agent.config.v1.Config.TraceReporterType;
 import org.junit.jupiter.api.Assertions;
@@ -41,10 +42,16 @@ public class HypertraceConfigTest {
     Assertions.assertEquals("unknown", agentConfig.getServiceName().getValue());
     Assertions.assertEquals(
         TraceReporterType.OTLP, agentConfig.getReporting().getTraceReporterType());
+    Assertions.assertEquals(
+        MetricReporterType.METRIC_REPORTER_TYPE_OTLP,
+        agentConfig.getReporting().getMetricReporterType());
     Assertions.assertFalse(agentConfig.getReporting().hasCertFile());
     Assertions.assertEquals(
         HypertraceConfig.DEFAULT_REPORTING_ENDPOINT,
         agentConfig.getReporting().getEndpoint().getValue());
+    Assertions.assertEquals(
+        HypertraceConfig.DEFAULT_REPORTING_ENDPOINT,
+        agentConfig.getReporting().getMetricEndpoint().getValue());
     Assertions.assertEquals(
         Arrays.asList(PropagationFormat.TRACECONTEXT), agentConfig.getPropagationFormatsList());
     Assertions.assertEquals(false, agentConfig.getReporting().getSecure().getValue());
@@ -107,9 +114,14 @@ public class HypertraceConfigTest {
     Assertions.assertEquals(
         TraceReporterType.OTLP, agentConfig.getReporting().getTraceReporterType());
     Assertions.assertEquals(
+        MetricReporterType.METRIC_REPORTER_TYPE_OTLP,
+        agentConfig.getReporting().getMetricReporterType());
+    Assertions.assertEquals(
         "/foo/bar/example.pem", agentConfig.getReporting().getCertFile().getValue());
     Assertions.assertEquals(
         "http://localhost:4317", agentConfig.getReporting().getEndpoint().getValue());
+    Assertions.assertEquals(
+        "http://localhost:4317", agentConfig.getReporting().getMetricEndpoint().getValue());
     Assertions.assertEquals(true, agentConfig.getReporting().getSecure().getValue());
     Assertions.assertEquals(
         "http://opa.localhost:8181/", agentConfig.getReporting().getOpa().getEndpoint().getValue());
