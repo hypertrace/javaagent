@@ -105,10 +105,6 @@ public class HypertraceConfigTest {
     Assertions.assertEquals(
         "http://localhost:4317", agentConfig.getReporting().getEndpoint().getValue());
     Assertions.assertEquals(true, agentConfig.getReporting().getSecure().getValue());
-    Assertions.assertEquals(
-        "http://opa.localhost:8181/", agentConfig.getReporting().getOpa().getEndpoint().getValue());
-    Assertions.assertEquals(
-        12, agentConfig.getReporting().getOpa().getPollPeriodSeconds().getValue());
     Assertions.assertEquals(16, agentConfig.getDataCapture().getBodyMaxSizeBytes().getValue());
     Assertions.assertEquals(
         true, agentConfig.getDataCapture().getHttpHeaders().getRequest().getValue());
