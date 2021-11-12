@@ -136,6 +136,9 @@ public class EnvironmentConfig {
     String metricReporterAddress = getProperty(REPORTING_METRIC_ENDPOINT);
     if (metricReporterAddress != null) {
       builder.setMetricEndpoint(StringValue.newBuilder().setValue(metricReporterAddress).build());
+    } else if (reporterAddress != null) {
+      // If metric endpoint is not given, use the reporter endpoint
+      builder.setMetricEndpoint(StringValue.newBuilder().setValue(reporterAddress).build());
     }
     String metricReportingType = getProperty(REPORTING_METRIC_TYPE);
     if (metricReportingType != null) {

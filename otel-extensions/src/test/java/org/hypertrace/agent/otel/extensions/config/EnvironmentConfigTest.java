@@ -49,7 +49,6 @@ class EnvironmentConfigTest {
     // parallel tests
     System.setProperty(EnvironmentConfig.REPORTING_ENDPOINT, "http://:-)");
     System.setProperty(EnvironmentConfig.REPORTING_TRACE_TYPE, "OTLP");
-    System.setProperty(EnvironmentConfig.REPORTING_METRIC_ENDPOINT, "http://:-)");
     System.setProperty(EnvironmentConfig.REPORTING_METRIC_TYPE, "METRIC_REPORTER_TYPE_OTLP");
     System.setProperty(EnvironmentConfig.REPORTING_SECURE, "true");
     System.setProperty(EnvironmentConfig.REPORTING_CERT_FILE, "/bar/test.pem");
@@ -78,6 +77,7 @@ class EnvironmentConfigTest {
     Assertions.assertEquals("http://:-)", agentConfig.getReporting().getEndpoint().getValue());
     Assertions.assertEquals(
         TraceReporterType.OTLP, agentConfig.getReporting().getTraceReporterType());
+    // Assert that metrics endpoint is same as reporter endpoint if not set
     Assertions.assertEquals(
         "http://:-)", agentConfig.getReporting().getMetricEndpoint().getValue());
     Assertions.assertEquals(
@@ -100,5 +100,11 @@ class EnvironmentConfigTest {
     Assertions.assertEquals(
         StringValue.newBuilder().setValue("/path/2/jar.jar").build(),
         agentConfig.getJavaagent().getFilterJarPaths(1));
+
+    // Assert that metrics endpoint is added correctly if set
+    System.setProperty(EnvironmentConfig.REPORTING_METRIC_ENDPOINT, "https://:-)");
+    agentConfig = EnvironmentConfig.applyPropertiesAndEnvVars(configBuilder).build();
+    Assertions.assertEquals(
+        "https://:-)", agentConfig.getReporting().getMetricEndpoint().getValue());
   }
 }
