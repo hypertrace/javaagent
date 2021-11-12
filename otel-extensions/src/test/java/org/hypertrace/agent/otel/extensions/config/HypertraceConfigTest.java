@@ -49,12 +49,6 @@ public class HypertraceConfigTest {
         Arrays.asList(PropagationFormat.TRACECONTEXT), agentConfig.getPropagationFormatsList());
     Assertions.assertEquals(false, agentConfig.getReporting().getSecure().getValue());
     Assertions.assertEquals(
-        HypertraceConfig.DEFAULT_OPA_ENDPOINT,
-        agentConfig.getReporting().getOpa().getEndpoint().getValue());
-    Assertions.assertEquals(
-        HypertraceConfig.DEFAULT_OPA_POLL_PERIOD_SECONDS,
-        agentConfig.getReporting().getOpa().getPollPeriodSeconds().getValue());
-    Assertions.assertEquals(
         HypertraceConfig.DEFAULT_BODY_MAX_SIZE_BYTES,
         agentConfig.getDataCapture().getBodyMaxSizeBytes().getValue());
     Assertions.assertEquals(

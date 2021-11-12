@@ -34,8 +34,6 @@ import org.hypertrace.agent.config.v1.Config;
 import org.hypertrace.agent.config.v1.Config.AgentConfig;
 import org.hypertrace.agent.config.v1.Config.DataCapture;
 import org.hypertrace.agent.config.v1.Config.Message;
-import org.hypertrace.agent.config.v1.Config.Opa;
-import org.hypertrace.agent.config.v1.Config.Opa.Builder;
 import org.hypertrace.agent.config.v1.Config.PropagationFormat;
 import org.hypertrace.agent.config.v1.Config.Reporting;
 import org.hypertrace.agent.config.v1.Config.TraceReporterType;
@@ -54,8 +52,6 @@ public class HypertraceConfig {
 
   static final String DEFAULT_SERVICE_NAME = "unknown";
   static final String DEFAULT_REPORTING_ENDPOINT = "http://localhost:4317";
-  static final String DEFAULT_OPA_ENDPOINT = "http://localhost:8181/";
-  static final int DEFAULT_OPA_POLL_PERIOD_SECONDS = 30;
   // 128 KiB
   static final int DEFAULT_BODY_MAX_SIZE_BYTES = 128 * 1024;
 
@@ -145,19 +141,6 @@ public class HypertraceConfig {
     }
     if (builder.getTraceReporterType().equals(Config.TraceReporterType.UNSPECIFIED)) {
       builder.setTraceReporterType(TraceReporterType.OTLP);
-    }
-    Builder opaBuilder = applyOpaDefaults(builder.getOpa().toBuilder());
-    builder.setOpa(opaBuilder);
-    return builder;
-  }
-
-  private static Opa.Builder applyOpaDefaults(Opa.Builder builder) {
-    if (!builder.hasEndpoint()) {
-      builder.setEndpoint(StringValue.newBuilder().setValue(DEFAULT_OPA_ENDPOINT).build());
-    }
-    if (!builder.hasPollPeriodSeconds()) {
-      builder.setPollPeriodSeconds(
-          Int32Value.newBuilder().setValue(DEFAULT_OPA_POLL_PERIOD_SECONDS).build());
     }
     return builder;
   }

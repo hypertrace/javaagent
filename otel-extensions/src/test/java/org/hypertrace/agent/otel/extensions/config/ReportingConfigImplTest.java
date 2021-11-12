@@ -18,12 +18,8 @@ package org.hypertrace.agent.otel.extensions.config;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.google.protobuf.BoolValue;
 import java.util.Iterator;
 import java.util.ServiceLoader;
-import org.hypertrace.agent.config.v1.Config.Opa;
-import org.hypertrace.agent.config.v1.Config.Reporting;
-import org.hypertrace.agent.config.v1.Config.Reporting.Builder;
 import org.hypertrace.agent.core.config.ReportingConfig;
 import org.junit.jupiter.api.Test;
 
@@ -38,22 +34,5 @@ final class ReportingConfigImplTest {
     final ReportingConfig reportingConfig = iterator.next();
     assertNotNull(reportingConfig);
     assertFalse(iterator.hasNext());
-  }
-
-  @Test
-  void opaEnabledIfNotProvided() {
-    final ReportingConfigImpl reportingConfig =
-        new ReportingConfigImpl(Reporting.getDefaultInstance());
-    assertTrue(reportingConfig.opa().enabled());
-  }
-
-  @Test
-  void opaDisabledIfExplicitlySet() {
-    final Builder reportingBuilder = Reporting.getDefaultInstance().toBuilder();
-    final Opa explicitOpaConfig =
-        reportingBuilder.getOpaBuilder().setEnabled(BoolValue.of(false)).build();
-    final ReportingConfigImpl reportingConfig =
-        new ReportingConfigImpl(reportingBuilder.setOpa(explicitOpaConfig).build());
-    assertFalse(reportingConfig.opa().enabled());
   }
 }
