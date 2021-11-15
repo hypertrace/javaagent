@@ -32,6 +32,7 @@ import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,6 +47,7 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.core.config.InstrumentationConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceCallDepthThreadLocalMap;
+import org.hypertrace.agent.core.instrumentation.HypertraceEvaluationException;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.SpanAndObjectPair;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
@@ -78,6 +80,7 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
   }
 
   public static class ServletAdvice {
+
     @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = Advice.OnNonDefaultValue.class)
     public static boolean start(
         @Advice.Argument(value = 0) ServletRequest request,
@@ -98,15 +101,6 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
       currentSpan = Java8BytecodeBridge.currentSpan();
 
       InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
-
-      String contentType = httpRequest.getContentType();
-      if (instrumentationConfig.httpBody().request()
-          && ContentTypeUtils.shouldCapture(contentType)) {
-        // The HttpServletRequest instrumentation uses this to
-        // enable the instrumentation
-        InstrumentationContext.get(HttpServletRequest.class, SpanAndObjectPair.class)
-            .put(httpRequest, new SpanAndObjectPair(currentSpan));
-      }
 
       Utils.addSessionId(currentSpan, httpRequest);
 
@@ -130,13 +124,24 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
         // skip execution of the user code
         return true;
       }
+
+      if (instrumentationConfig.httpBody().request()
+          && ContentTypeUtils.shouldCapture(httpRequest.getContentType())) {
+        // The HttpServletRequest instrumentation uses this to
+        // enable the instrumentation
+        InstrumentationContext.get(HttpServletRequest.class, SpanAndObjectPair.class)
+            .put(
+                httpRequest,
+                new SpanAndObjectPair(currentSpan, Collections.unmodifiableMap(headers)));
+      }
       return false;
     }
 
-    @Advice.OnMethodExit(suppress = Throwable.class)
+    @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
     public static void exit(
         @Advice.Argument(0) ServletRequest request,
         @Advice.Argument(1) ServletResponse response,
+        @Advice.Thrown(readOnly = false) Throwable throwable,
         @Advice.Local("currentSpan") Span currentSpan) {
       int callDepth =
           HypertraceCallDepthThreadLocalMap.decrementCallDepth(Servlet30InstrumentationName.class);
@@ -152,6 +157,14 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
       HttpServletResponse httpResponse = (HttpServletResponse) response;
       HttpServletRequest httpRequest = (HttpServletRequest) request;
       InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
+
+      if (throwable instanceof HypertraceEvaluationException) {
+        httpResponse.setStatus(403);
+        // bytebuddy treats the reassignment of this variable to null as an instruction to suppress
+        // this exception, which is what we want
+        throwable = null;
+        return;
+      }
 
       // response context to capture body and clear the context
       ContextStore<HttpServletResponse, SpanAndObjectPair> responseContextStore =

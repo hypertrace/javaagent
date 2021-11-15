@@ -20,8 +20,11 @@ import io.opentelemetry.api.trace.Span;
 import java.io.BufferedReader;
 import java.io.CharArrayReader;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
 import org.BufferedReaderPrintWriterContextAccess;
 import org.TestBufferedReader;
+import org.hypertrace.agent.core.TriFunction;
 import org.hypertrace.agent.core.instrumentation.buffer.*;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.junit.jupiter.api.Assertions;
@@ -31,6 +34,8 @@ public class BufferedReaderInstrumentationTest extends AbstractInstrumenterTest 
 
   private static final String TEST_SPAN_NAME = "foo";
   private static final String BODY = "boobar";
+  private static final TriFunction<Span, String, Map<String, String>, Boolean> NOOP_FILTER =
+      (span, s, stringStringMap) -> false;
 
   @Test
   public void read() throws IOException {
@@ -39,7 +44,8 @@ public class BufferedReaderInstrumentationTest extends AbstractInstrumenterTest 
     BufferedReader bufferedReader = new BufferedReader(new CharArrayReader(BODY.toCharArray()));
 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
-    CharBufferSpanPair bufferSpanPair = new CharBufferSpanPair(span, buffer);
+    CharBufferSpanPair bufferSpanPair =
+        new CharBufferSpanPair(span, buffer, NOOP_FILTER, Collections.emptyMap());
 
     BufferedReaderPrintWriterContextAccess.addToBufferedReaderContext(
         bufferedReader, bufferSpanPair);
@@ -56,7 +62,8 @@ public class BufferedReaderInstrumentationTest extends AbstractInstrumenterTest 
     bufferedReader.read();
 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
-    CharBufferSpanPair bufferSpanPair = new CharBufferSpanPair(span, buffer);
+    CharBufferSpanPair bufferSpanPair =
+        new CharBufferSpanPair(span, buffer, NOOP_FILTER, Collections.emptyMap());
 
     BufferedReaderPrintWriterContextAccess.addToBufferedReaderContext(
         bufferedReader, bufferSpanPair);
@@ -72,7 +79,8 @@ public class BufferedReaderInstrumentationTest extends AbstractInstrumenterTest 
     BufferedReader bufferedReader = new BufferedReader(new CharArrayReader(BODY.toCharArray()));
 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
-    CharBufferSpanPair bufferSpanPair = new CharBufferSpanPair(span, buffer);
+    CharBufferSpanPair bufferSpanPair =
+        new CharBufferSpanPair(span, buffer, NOOP_FILTER, Collections.emptyMap());
 
     BufferedReaderPrintWriterContextAccess.addToBufferedReaderContext(
         bufferedReader, bufferSpanPair);
@@ -89,7 +97,8 @@ public class BufferedReaderInstrumentationTest extends AbstractInstrumenterTest 
     bufferedReader.read(new char[2]);
 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
-    CharBufferSpanPair bufferSpanPair = new CharBufferSpanPair(span, buffer);
+    CharBufferSpanPair bufferSpanPair =
+        new CharBufferSpanPair(span, buffer, NOOP_FILTER, Collections.emptyMap());
 
     BufferedReaderPrintWriterContextAccess.addToBufferedReaderContext(
         bufferedReader, bufferSpanPair);
@@ -105,7 +114,8 @@ public class BufferedReaderInstrumentationTest extends AbstractInstrumenterTest 
     BufferedReader bufferedReader = new BufferedReader(new CharArrayReader(BODY.toCharArray()));
 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
-    CharBufferSpanPair bufferSpanPair = new CharBufferSpanPair(span, buffer);
+    CharBufferSpanPair bufferSpanPair =
+        new CharBufferSpanPair(span, buffer, NOOP_FILTER, Collections.emptyMap());
 
     BufferedReaderPrintWriterContextAccess.addToBufferedReaderContext(
         bufferedReader, bufferSpanPair);
@@ -123,7 +133,8 @@ public class BufferedReaderInstrumentationTest extends AbstractInstrumenterTest 
         new TestBufferedReader(new CharArrayReader((BODY + "\n").toCharArray()));
 
     BoundedCharArrayWriter buffer = BoundedBuffersFactory.createWriter();
-    CharBufferSpanPair bufferSpanPair = new CharBufferSpanPair(span, buffer);
+    CharBufferSpanPair bufferSpanPair =
+        new CharBufferSpanPair(span, buffer, NOOP_FILTER, Collections.emptyMap());
 
     BufferedReaderPrintWriterContextAccess.addToBufferedReaderContext(
         bufferedReader, bufferSpanPair);
