@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junitpioneer.jupiter.ClearSystemProperty;
+import org.junitpioneer.jupiter.SetEnvironmentVariable;
 
 public class HypertraceConfigTest {
 
@@ -155,5 +156,44 @@ public class HypertraceConfigTest {
     Assertions.assertEquals(
         "http://nowhere.here", agentConfig.getReporting().getEndpoint().getValue());
     Assertions.assertEquals("service", agentConfig.getServiceName().getValue());
+  }
+
+  @Test
+  @SetEnvironmentVariable(key = "HT_REPORTING_ENDPOINT", value = "http://oltp.hypertrace.org:4317")
+  public void complexConfig() throws IOException {
+    // GIVEN a config file with a non-default reporting endpoint and an env-var with a different
+    // non-default otlp reporting endpoint
+    URL resource = getClass().getClassLoader().getResource("config.yaml");
+    // WHEN we load the config
+    AgentConfig agentConfig = HypertraceConfig.load(resource.getPath());
+    // VERIFY the trace and metric endpoints are the both the value of the env var
+    String expectedEndpoint = "http://oltp.hypertrace.org:4317";
+    Assertions.assertEquals(expectedEndpoint, agentConfig.getReporting().getEndpoint().getValue());
+    Assertions.assertEquals(
+        expectedEndpoint, agentConfig.getReporting().getMetricEndpoint().getValue());
+    Assertions.assertEquals(
+        TraceReporterType.OTLP, agentConfig.getReporting().getTraceReporterType());
+    Assertions.assertEquals(
+        MetricReporterType.METRIC_REPORTER_TYPE_OTLP,
+        agentConfig.getReporting().getMetricReporterType());
+  }
+
+  @Test
+  public void zipkinExporter() throws IOException {
+    // GIVEN a config file with a non-default zipkin reporting endpoint
+    URL resource = getClass().getClassLoader().getResource("zipkinConfig.yaml");
+    // WHEN we load the config
+    AgentConfig agentConfig = HypertraceConfig.load(resource.getPath());
+    // VERIFY the trace reporting endpoint is the zipkin endpoint
+    Assertions.assertEquals(
+        "http://example.com:9411/api/v2/spans",
+        agentConfig.getReporting().getEndpoint().getValue());
+    // VERIFY the trace reporting type is ZIPKIN
+    Assertions.assertEquals(
+        TraceReporterType.ZIPKIN, agentConfig.getReporting().getTraceReporterType());
+    // VERIFY the metric reporting type is none
+    Assertions.assertEquals(
+        MetricReporterType.METRIC_REPORTER_TYPE_NONE,
+        agentConfig.getReporting().getMetricReporterType());
   }
 }

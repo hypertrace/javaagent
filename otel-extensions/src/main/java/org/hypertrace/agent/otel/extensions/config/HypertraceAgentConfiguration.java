@@ -83,6 +83,9 @@ public class HypertraceAgentConfiguration implements ConfigPropertySource {
     } else if (agentConfig.getReporting().getMetricReporterType()
         == MetricReporterType.METRIC_REPORTER_TYPE_PROMETHEUS) {
       configProperties.put(OTEL_METRICS_EXPORTER, "prometheus");
+    } else if (agentConfig.getReporting().getMetricReporterType()
+        == MetricReporterType.METRIC_REPORTER_TYPE_LOGGING) {
+      configProperties.put(OTEL_METRICS_EXPORTER, "logging");
     } else {
       configProperties.put(OTEL_METRICS_EXPORTER, "none");
     }

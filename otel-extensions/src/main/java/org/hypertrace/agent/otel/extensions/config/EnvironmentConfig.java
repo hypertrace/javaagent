@@ -133,16 +133,22 @@ public class EnvironmentConfig {
     if (traceReportingType != null) {
       builder.setTraceReporterType(TraceReporterType.valueOf(traceReportingType));
     }
-    String metricReporterAddress = getProperty(REPORTING_METRIC_ENDPOINT);
-    if (metricReporterAddress != null) {
-      builder.setMetricEndpoint(StringValue.newBuilder().setValue(metricReporterAddress).build());
-    } else if (reporterAddress != null) {
-      // If metric endpoint is not given, use the reporter endpoint
-      builder.setMetricEndpoint(StringValue.newBuilder().setValue(reporterAddress).build());
-    }
     String metricReportingType = getProperty(REPORTING_METRIC_TYPE);
     if (metricReportingType != null) {
       builder.setMetricReporterType(MetricReporterType.valueOf(metricReportingType));
+    }
+    if (builder.getTraceReporterType().equals(TraceReporterType.ZIPKIN)) {
+      // disable metric reporting if trace reporter type is ZIPKIN
+      builder.setMetricReporterType(MetricReporterType.METRIC_REPORTER_TYPE_NONE);
+    }
+    String metricReporterAddress = getProperty(REPORTING_METRIC_ENDPOINT);
+    if (metricReporterAddress != null) {
+      builder.setMetricEndpoint(StringValue.newBuilder().setValue(metricReporterAddress).build());
+    } else if (reporterAddress != null
+        && TraceReporterType.OTLP.name().equals(traceReportingType)
+        && builder.getMetricReporterType() == MetricReporterType.METRIC_REPORTER_TYPE_OTLP) {
+      // If metric endpoint is not given, use the reporter endpoint if it is otlp
+      builder.setMetricEndpoint(StringValue.newBuilder().setValue(reporterAddress).build());
     }
     String secure = getProperty(REPORTING_SECURE);
     if (secure != null) {

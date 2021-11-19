@@ -77,7 +77,7 @@ class EnvironmentConfigTest {
     Assertions.assertEquals("http://:-)", agentConfig.getReporting().getEndpoint().getValue());
     Assertions.assertEquals(
         TraceReporterType.OTLP, agentConfig.getReporting().getTraceReporterType());
-    // Assert that metrics endpoint is same as reporter endpoint if not set
+    // Assert that metrics endpoint is same as reporter endpoint if not set for otlp reporter type
     Assertions.assertEquals(
         "http://:-)", agentConfig.getReporting().getMetricEndpoint().getValue());
     Assertions.assertEquals(
@@ -106,5 +106,12 @@ class EnvironmentConfigTest {
     agentConfig = EnvironmentConfig.applyPropertiesAndEnvVars(configBuilder).build();
     Assertions.assertEquals(
         "https://:-)", agentConfig.getReporting().getMetricEndpoint().getValue());
+
+    // Assert that metrics reporter is disabled if ZIPKIN trace reporter is used
+    System.setProperty(EnvironmentConfig.REPORTING_TRACE_TYPE, "ZIPKIN");
+    agentConfig = EnvironmentConfig.applyPropertiesAndEnvVars(configBuilder).build();
+    Assertions.assertEquals(
+        MetricReporterType.METRIC_REPORTER_TYPE_NONE,
+        agentConfig.getReporting().getMetricReporterType());
   }
 }
