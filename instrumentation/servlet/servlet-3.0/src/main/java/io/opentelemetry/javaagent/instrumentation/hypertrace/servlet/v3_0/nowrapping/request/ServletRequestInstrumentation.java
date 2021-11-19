@@ -108,7 +108,8 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
       }
 
       ByteBufferSpanPair bufferSpanPair =
-          Utils.createRequestByteBufferSpanPair(httpServletRequest, spanAndObjectPair.getSpan());
+          Utils.createRequestByteBufferSpanPair(
+              httpServletRequest, spanAndObjectPair.getSpan(), spanAndObjectPair.getHeaders());
       contextStore.put(servletInputStream, bufferSpanPair);
       spanAndObjectPair.setAssociatedObject(servletInputStream);
     }
@@ -159,7 +160,8 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
       }
 
       CharBufferSpanPair bufferSpanPair =
-          Utils.createRequestCharBufferSpanPair(httpServletRequest, spanAndObjectPair.getSpan());
+          Utils.createRequestCharBufferSpanPair(
+              httpServletRequest, spanAndObjectPair.getSpan(), spanAndObjectPair.getHeaders());
       contextStore.put(reader, bufferSpanPair);
       spanAndObjectPair.setAssociatedObject(reader);
     }

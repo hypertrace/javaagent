@@ -90,7 +90,7 @@ public class Utils {
       ContextStore<BufferedReader, CharBufferSpanPair> bufferedReaderContextStore) {
 
     SpanAndObjectPair requestStreamReaderHolder = requestContextStore.get(httpServletRequest);
-    if (requestContextStore == null) {
+    if (requestStreamReaderHolder == null) {
       return;
     }
     requestContextStore.put(httpServletRequest, null);

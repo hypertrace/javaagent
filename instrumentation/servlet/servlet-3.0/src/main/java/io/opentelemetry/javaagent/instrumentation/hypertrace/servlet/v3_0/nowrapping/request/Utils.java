@@ -18,34 +18,47 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowra
 
 import io.opentelemetry.api.trace.Span;
 import java.nio.charset.Charset;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
 import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
 import org.hypertrace.agent.core.instrumentation.utils.ContentLengthUtils;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeCharsetUtils;
+import org.hypertrace.agent.filter.FilterRegistry;
+import org.hypertrace.agent.filter.api.Filter;
 
 public class Utils {
+
+  private static final Filter filter = FilterRegistry.getFilter();
 
   private Utils() {}
 
   public static ByteBufferSpanPair createRequestByteBufferSpanPair(
-      HttpServletRequest httpServletRequest, Span span) {
+      HttpServletRequest httpServletRequest, Span span, Map<String, String> headers) {
     String charsetStr = httpServletRequest.getCharacterEncoding();
     Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
     int contentLength = httpServletRequest.getContentLength();
     if (contentLength < 0) {
       contentLength = ContentLengthUtils.DEFAULT;
     }
-    return new ByteBufferSpanPair(span, BoundedBuffersFactory.createStream(contentLength, charset));
+    return new ByteBufferSpanPair(
+        span,
+        BoundedBuffersFactory.createStream(contentLength, charset),
+        filter::evaluateRequestBody,
+        headers);
   }
 
   public static CharBufferSpanPair createRequestCharBufferSpanPair(
-      HttpServletRequest httpServletRequest, Span span) {
+      HttpServletRequest httpServletRequest, Span span, Map<String, String> headers) {
     int contentLength = httpServletRequest.getContentLength();
     if (contentLength < 0) {
       contentLength = ContentLengthUtils.DEFAULT;
     }
-    return new CharBufferSpanPair(span, BoundedBuffersFactory.createWriter(contentLength));
+    return new CharBufferSpanPair(
+        span,
+        BoundedBuffersFactory.createWriter(contentLength),
+        filter::evaluateRequestBody,
+        headers);
   }
 }
