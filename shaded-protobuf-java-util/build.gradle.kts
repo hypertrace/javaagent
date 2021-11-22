@@ -8,6 +8,10 @@ dependencies {
         exclude("com.google.protobuf", "protobuf-java")
         exclude("com.google.guava", "guava")
     }
+    // fix vulnerability
+    constraints {
+        implementation("com.google.code.gson:gson:2.8.9")
+    }
 }
 
 tasks.shadowJar {
