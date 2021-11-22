@@ -146,7 +146,7 @@ public class HypertraceConfig {
         builder.setMetricEndpoint(builder.getEndpoint());
       } else {
         builder.setMetricEndpoint(
-                StringValue.newBuilder().setValue(DEFAULT_REPORTING_ENDPOINT).build());
+            StringValue.newBuilder().setValue(DEFAULT_REPORTING_ENDPOINT).build());
       }
     }
     if (builder.getTraceReporterType().equals(TraceReporterType.UNSPECIFIED)) {

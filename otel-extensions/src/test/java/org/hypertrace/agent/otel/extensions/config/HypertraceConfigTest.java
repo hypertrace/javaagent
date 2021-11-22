@@ -195,14 +195,14 @@ public class HypertraceConfigTest {
     AgentConfig agentConfig = HypertraceConfig.load(resource.getPath());
     // VERIFY the trace reporting type is NONE
     Assertions.assertEquals(
-            TraceReporterType.NONE, agentConfig.getReporting().getTraceReporterType());
+        TraceReporterType.NONE, agentConfig.getReporting().getTraceReporterType());
     // VERIFY the metric reporting type is OTLP
     Assertions.assertEquals(
-            MetricReporterType.METRIC_REPORTER_TYPE_OTLP,
-            agentConfig.getReporting().getMetricReporterType());
+        MetricReporterType.METRIC_REPORTER_TYPE_OTLP,
+        agentConfig.getReporting().getMetricReporterType());
     // VERIFY the metric reporting endpoint is default
     Assertions.assertEquals(
-            HypertraceConfig.DEFAULT_REPORTING_ENDPOINT,
-            agentConfig.getReporting().getMetricEndpoint().getValue());
+        HypertraceConfig.DEFAULT_REPORTING_ENDPOINT,
+        agentConfig.getReporting().getMetricEndpoint().getValue());
   }
 }
