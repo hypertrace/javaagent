@@ -186,4 +186,23 @@ public class HypertraceConfigTest {
         MetricReporterType.METRIC_REPORTER_TYPE_NONE,
         agentConfig.getReporting().getMetricReporterType());
   }
+
+  @Test
+  public void noneTraceExporter() throws IOException {
+    // GIVEN a config file with a non-default zipkin reporting endpoint
+    URL resource = getClass().getClassLoader().getResource("noneTraceReportingConfig.yaml");
+    // WHEN we load the config
+    AgentConfig agentConfig = HypertraceConfig.load(resource.getPath());
+    // VERIFY the trace reporting type is NONE
+    Assertions.assertEquals(
+            TraceReporterType.NONE, agentConfig.getReporting().getTraceReporterType());
+    // VERIFY the metric reporting type is OTLP
+    Assertions.assertEquals(
+            MetricReporterType.METRIC_REPORTER_TYPE_OTLP,
+            agentConfig.getReporting().getMetricReporterType());
+    // VERIFY the metric reporting endpoint is default
+    Assertions.assertEquals(
+            HypertraceConfig.DEFAULT_REPORTING_ENDPOINT,
+            agentConfig.getReporting().getMetricEndpoint().getValue());
+  }
 }
