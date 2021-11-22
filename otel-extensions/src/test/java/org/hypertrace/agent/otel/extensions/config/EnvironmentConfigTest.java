@@ -35,9 +35,6 @@ class EnvironmentConfigTest {
   @ClearSystemProperty(key = EnvironmentConfig.REPORTING_TRACE_TYPE)
   @ClearSystemProperty(key = EnvironmentConfig.REPORTING_METRIC_TYPE)
   @ClearSystemProperty(key = EnvironmentConfig.REPORTING_CERT_FILE)
-  @ClearSystemProperty(key = EnvironmentConfig.OPA_ENDPOINT)
-  @ClearSystemProperty(key = EnvironmentConfig.OPA_POLL_PERIOD)
-  @ClearSystemProperty(key = EnvironmentConfig.OPA_ENABLED)
   @ClearSystemProperty(key = EnvironmentConfig.PROPAGATION_FORMATS)
   @ClearSystemProperty(key = EnvironmentConfig.CAPTURE_HTTP_BODY_PREFIX + "request")
   @ClearSystemProperty(key = EnvironmentConfig.CAPTURE_BODY_MAX_SIZE_BYTES)
@@ -53,9 +50,6 @@ class EnvironmentConfigTest {
     System.setProperty(EnvironmentConfig.REPORTING_SECURE, "true");
     System.setProperty(EnvironmentConfig.REPORTING_CERT_FILE, "/bar/test.pem");
     System.setProperty(EnvironmentConfig.CAPTURE_HTTP_BODY_PREFIX + "request", "true");
-    System.setProperty(EnvironmentConfig.OPA_ENDPOINT, "http://azkaban:9090");
-    System.setProperty(EnvironmentConfig.OPA_POLL_PERIOD, "10");
-    System.setProperty(EnvironmentConfig.OPA_ENABLED, "true");
     System.setProperty(EnvironmentConfig.PROPAGATION_FORMATS, "B3,TRACECONTEXT");
     System.setProperty(EnvironmentConfig.CAPTURE_BODY_MAX_SIZE_BYTES, "512");
     System.setProperty(EnvironmentConfig.JAVAAGENT_FILTER_JAR_PATHS, "/path1.jar,/path/2/jar.jar");
@@ -83,11 +77,6 @@ class EnvironmentConfigTest {
     Assertions.assertEquals(
         MetricReporterType.METRIC_REPORTER_TYPE_OTLP,
         agentConfig.getReporting().getMetricReporterType());
-    Assertions.assertEquals(
-        "http://azkaban:9090", agentConfig.getReporting().getOpa().getEndpoint().getValue());
-    Assertions.assertEquals(true, agentConfig.getReporting().getOpa().getEnabled().getValue());
-    Assertions.assertEquals(
-        10, agentConfig.getReporting().getOpa().getPollPeriodSeconds().getValue());
     Assertions.assertEquals(512, agentConfig.getDataCapture().getBodyMaxSizeBytes().getValue());
     Assertions.assertEquals(true, agentConfig.getReporting().getSecure().getValue());
     Assertions.assertEquals("/bar/test.pem", agentConfig.getReporting().getCertFile().getValue());

@@ -46,6 +46,10 @@ dependencies {
     api("com.google.protobuf:protobuf-java-util")
     // convert yaml to json, since java protobuf impl supports only json
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.11.3")
+    // fix vulnerability
+    constraints {
+        api("com.google.code.gson:gson:2.8.9")
+    }
 
     testImplementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${versions["opentelemetry"]}-alpha")
     testImplementation("io.opentelemetry:opentelemetry-sdk:${versions["opentelemetry"]}")

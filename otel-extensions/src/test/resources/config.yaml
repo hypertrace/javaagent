@@ -10,9 +10,6 @@ reporting:
   trace_reporter_type: OTLP
   metric_reporter_type: METRIC_REPORTER_TYPE_OTLP
   cert_file: /foo/bar/example.pem
-  opa:
-    endpoint: http://opa.localhost:8181/
-    pollPeriodSeconds: 12
 dataCapture:
   bodyMaxSizeBytes: 16
   httpHeaders:

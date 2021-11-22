@@ -23,7 +23,6 @@ import org.hypertrace.agent.core.config.ReportingConfig;
 @AutoService(ReportingConfig.class)
 public final class ReportingConfigImpl implements ReportingConfig {
 
-  private final Opa opa;
   private final Config.Reporting reporting;
 
   /**
@@ -37,12 +36,6 @@ public final class ReportingConfigImpl implements ReportingConfig {
 
   public ReportingConfigImpl(final Config.Reporting reportingConfig) {
     this.reporting = reportingConfig;
-    this.opa = new OpaImpl(reportingConfig.getOpa());
-  }
-
-  @Override
-  public Opa opa() {
-    return opa;
   }
 
   @Override
@@ -53,29 +46,5 @@ public final class ReportingConfigImpl implements ReportingConfig {
   @Override
   public String token() {
     return reporting.getToken().getValue();
-  }
-
-  private static final class OpaImpl implements Opa {
-
-    private final Config.Opa opa;
-
-    public OpaImpl(final Config.Opa opa) {
-      this.opa = opa;
-    }
-
-    @Override
-    public boolean enabled() {
-      return opa.hasEnabled() ? opa.getEnabled().getValue() : true;
-    }
-
-    @Override
-    public String endpoint() {
-      return opa.getEndpoint().getValue();
-    }
-
-    @Override
-    public int pollPeriodSeconds() {
-      return opa.getPollPeriodSeconds().getValue();
-    }
   }
 }

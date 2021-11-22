@@ -24,8 +24,6 @@ import org.hypertrace.agent.config.v1.Config.DataCapture;
 import org.hypertrace.agent.config.v1.Config.JavaAgent;
 import org.hypertrace.agent.config.v1.Config.Message;
 import org.hypertrace.agent.config.v1.Config.MetricReporterType;
-import org.hypertrace.agent.config.v1.Config.Opa;
-import org.hypertrace.agent.config.v1.Config.Opa.Builder;
 import org.hypertrace.agent.config.v1.Config.PropagationFormat;
 import org.hypertrace.agent.config.v1.Config.Reporting;
 import org.hypertrace.agent.config.v1.Config.TraceReporterType;
@@ -50,11 +48,6 @@ public class EnvironmentConfig {
   static final String REPORTING_METRIC_TYPE = REPORTING_PREFIX + "metric.reporter.type";
   static final String REPORTING_SECURE = REPORTING_PREFIX + "secure";
   static final String REPORTING_CERT_FILE = REPORTING_PREFIX + "cert.file";
-
-  private static final String OPA_PREFIX = REPORTING_PREFIX + "opa.";
-  static final String OPA_ENDPOINT = OPA_PREFIX + "endpoint";
-  static final String OPA_POLL_PERIOD = OPA_PREFIX + "poll.period.seconds";
-  static final String OPA_ENABLED = OPA_PREFIX + "enabled";
 
   private static final String CAPTURE_PREFIX = HT_PREFIX + "data.capture.";
   public static final String CAPTURE_BODY_MAX_SIZE_BYTES = CAPTURE_PREFIX + "body.max.size.bytes";
@@ -157,25 +150,6 @@ public class EnvironmentConfig {
     String certFilePath = getProperty(REPORTING_CERT_FILE);
     if (certFilePath != null) {
       builder.setCertFile(StringValue.of(certFilePath));
-    }
-    Builder opaBuilder = applyOpa(builder.getOpa().toBuilder());
-    builder.setOpa(opaBuilder);
-    return builder;
-  }
-
-  private static Opa.Builder applyOpa(Opa.Builder builder) {
-    String address = getProperty(OPA_ENDPOINT);
-    if (address != null) {
-      builder.setEndpoint(StringValue.newBuilder().setValue(address).build());
-    }
-    String pollPeriod = getProperty(OPA_POLL_PERIOD);
-    if (pollPeriod != null) {
-      builder.setPollPeriodSeconds(
-          Int32Value.newBuilder().setValue(Integer.parseInt(pollPeriod)).build());
-    }
-    String enabled = getProperty(OPA_ENABLED);
-    if (enabled != null) {
-      builder.setEnabled(BoolValue.newBuilder().setValue(Boolean.valueOf(enabled)).build());
     }
     return builder;
   }
