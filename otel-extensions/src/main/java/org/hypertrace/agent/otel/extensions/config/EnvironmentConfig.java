@@ -138,7 +138,7 @@ public class EnvironmentConfig {
     if (metricReporterAddress != null) {
       builder.setMetricEndpoint(StringValue.newBuilder().setValue(metricReporterAddress).build());
     } else if (reporterAddress != null
-        && TraceReporterType.OTLP.name().equals(traceReportingType)
+        && TraceReporterType.OTLP.equals(builder.getTraceReporterType())
         && builder.getMetricReporterType() == MetricReporterType.METRIC_REPORTER_TYPE_OTLP) {
       // If metric endpoint is not given, use the reporter endpoint if it is otlp
       builder.setMetricEndpoint(StringValue.newBuilder().setValue(reporterAddress).build());
