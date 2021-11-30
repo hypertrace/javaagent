@@ -5,8 +5,10 @@ propagationFormats:
   - B3
 reporting:
   endpoint: http://localhost:4317
+  metric_endpoint: http://localhost:4317
   secure: true
   trace_reporter_type: OTLP
+  metric_reporter_type: METRIC_REPORTER_TYPE_OTLP
   cert_file: /foo/bar/example.pem
 dataCapture:
   bodyMaxSizeBytes: 16

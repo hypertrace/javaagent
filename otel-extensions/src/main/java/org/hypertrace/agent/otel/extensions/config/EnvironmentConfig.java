@@ -23,6 +23,7 @@ import org.hypertrace.agent.config.v1.Config.AgentConfig;
 import org.hypertrace.agent.config.v1.Config.DataCapture;
 import org.hypertrace.agent.config.v1.Config.JavaAgent;
 import org.hypertrace.agent.config.v1.Config.Message;
+import org.hypertrace.agent.config.v1.Config.MetricReporterType;
 import org.hypertrace.agent.config.v1.Config.PropagationFormat;
 import org.hypertrace.agent.config.v1.Config.Reporting;
 import org.hypertrace.agent.config.v1.Config.TraceReporterType;
@@ -43,6 +44,8 @@ public class EnvironmentConfig {
   private static final String REPORTING_PREFIX = HT_PREFIX + "reporting.";
   static final String REPORTING_ENDPOINT = REPORTING_PREFIX + "endpoint";
   static final String REPORTING_TRACE_TYPE = REPORTING_PREFIX + "trace.reporter.type";
+  static final String REPORTING_METRIC_ENDPOINT = REPORTING_PREFIX + "metric.endpoint";
+  static final String REPORTING_METRIC_TYPE = REPORTING_PREFIX + "metric.reporter.type";
   static final String REPORTING_SECURE = REPORTING_PREFIX + "secure";
   static final String REPORTING_CERT_FILE = REPORTING_PREFIX + "cert.file";
 
@@ -122,6 +125,23 @@ public class EnvironmentConfig {
     String traceReportingType = getProperty(REPORTING_TRACE_TYPE);
     if (traceReportingType != null) {
       builder.setTraceReporterType(TraceReporterType.valueOf(traceReportingType));
+    }
+    String metricReportingType = getProperty(REPORTING_METRIC_TYPE);
+    if (metricReportingType != null) {
+      builder.setMetricReporterType(MetricReporterType.valueOf(metricReportingType));
+    }
+    if (builder.getTraceReporterType().equals(TraceReporterType.ZIPKIN)) {
+      // disable metric reporting if trace reporter type is ZIPKIN
+      builder.setMetricReporterType(MetricReporterType.METRIC_REPORTER_TYPE_NONE);
+    }
+    String metricReporterAddress = getProperty(REPORTING_METRIC_ENDPOINT);
+    if (metricReporterAddress != null) {
+      builder.setMetricEndpoint(StringValue.newBuilder().setValue(metricReporterAddress).build());
+    } else if (reporterAddress != null
+        && TraceReporterType.OTLP.equals(builder.getTraceReporterType())
+        && builder.getMetricReporterType() == MetricReporterType.METRIC_REPORTER_TYPE_OTLP) {
+      // If metric endpoint is not given, use the reporter endpoint if it is otlp
+      builder.setMetricEndpoint(StringValue.newBuilder().setValue(reporterAddress).build());
     }
     String secure = getProperty(REPORTING_SECURE);
     if (secure != null) {

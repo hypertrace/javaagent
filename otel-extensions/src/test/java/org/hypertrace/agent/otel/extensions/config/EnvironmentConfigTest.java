@@ -19,6 +19,7 @@ package org.hypertrace.agent.otel.extensions.config;
 import com.google.protobuf.StringValue;
 import java.util.Arrays;
 import org.hypertrace.agent.config.v1.Config.AgentConfig;
+import org.hypertrace.agent.config.v1.Config.MetricReporterType;
 import org.hypertrace.agent.config.v1.Config.PropagationFormat;
 import org.hypertrace.agent.config.v1.Config.TraceReporterType;
 import org.junit.jupiter.api.Assertions;
@@ -29,8 +30,10 @@ class EnvironmentConfigTest {
 
   @Test
   @ClearSystemProperty(key = EnvironmentConfig.REPORTING_ENDPOINT)
+  @ClearSystemProperty(key = EnvironmentConfig.REPORTING_METRIC_ENDPOINT)
   @ClearSystemProperty(key = EnvironmentConfig.REPORTING_SECURE)
   @ClearSystemProperty(key = EnvironmentConfig.REPORTING_TRACE_TYPE)
+  @ClearSystemProperty(key = EnvironmentConfig.REPORTING_METRIC_TYPE)
   @ClearSystemProperty(key = EnvironmentConfig.REPORTING_CERT_FILE)
   @ClearSystemProperty(key = EnvironmentConfig.PROPAGATION_FORMATS)
   @ClearSystemProperty(key = EnvironmentConfig.CAPTURE_HTTP_BODY_PREFIX + "request")
@@ -43,6 +46,7 @@ class EnvironmentConfigTest {
     // parallel tests
     System.setProperty(EnvironmentConfig.REPORTING_ENDPOINT, "http://:-)");
     System.setProperty(EnvironmentConfig.REPORTING_TRACE_TYPE, "OTLP");
+    System.setProperty(EnvironmentConfig.REPORTING_METRIC_TYPE, "METRIC_REPORTER_TYPE_OTLP");
     System.setProperty(EnvironmentConfig.REPORTING_SECURE, "true");
     System.setProperty(EnvironmentConfig.REPORTING_CERT_FILE, "/bar/test.pem");
     System.setProperty(EnvironmentConfig.CAPTURE_HTTP_BODY_PREFIX + "request", "true");
@@ -67,6 +71,12 @@ class EnvironmentConfigTest {
     Assertions.assertEquals("http://:-)", agentConfig.getReporting().getEndpoint().getValue());
     Assertions.assertEquals(
         TraceReporterType.OTLP, agentConfig.getReporting().getTraceReporterType());
+    // Assert that metrics endpoint is same as reporter endpoint if not set for otlp reporter type
+    Assertions.assertEquals(
+        "http://:-)", agentConfig.getReporting().getMetricEndpoint().getValue());
+    Assertions.assertEquals(
+        MetricReporterType.METRIC_REPORTER_TYPE_OTLP,
+        agentConfig.getReporting().getMetricReporterType());
     Assertions.assertEquals(512, agentConfig.getDataCapture().getBodyMaxSizeBytes().getValue());
     Assertions.assertEquals(true, agentConfig.getReporting().getSecure().getValue());
     Assertions.assertEquals("/bar/test.pem", agentConfig.getReporting().getCertFile().getValue());
@@ -79,5 +89,18 @@ class EnvironmentConfigTest {
     Assertions.assertEquals(
         StringValue.newBuilder().setValue("/path/2/jar.jar").build(),
         agentConfig.getJavaagent().getFilterJarPaths(1));
+
+    // Assert that metrics endpoint is added correctly if set
+    System.setProperty(EnvironmentConfig.REPORTING_METRIC_ENDPOINT, "https://:-)");
+    agentConfig = EnvironmentConfig.applyPropertiesAndEnvVars(configBuilder).build();
+    Assertions.assertEquals(
+        "https://:-)", agentConfig.getReporting().getMetricEndpoint().getValue());
+
+    // Assert that metrics reporter is disabled if ZIPKIN trace reporter is used
+    System.setProperty(EnvironmentConfig.REPORTING_TRACE_TYPE, "ZIPKIN");
+    agentConfig = EnvironmentConfig.applyPropertiesAndEnvVars(configBuilder).build();
+    Assertions.assertEquals(
+        MetricReporterType.METRIC_REPORTER_TYPE_NONE,
+        agentConfig.getReporting().getMetricReporterType());
   }
 }

@@ -16,6 +16,7 @@
 
 package org.hypertrace.agent.smoketest;
 
+import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import java.io.IOException;
@@ -170,6 +171,16 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
             .collect(Collectors.toList());
     Assertions.assertEquals(1, requestBodyAttributes.size());
     Assertions.assertEquals(requestBody, requestBodyAttributes.get(0));
+
+    ArrayList<ExportMetricsServiceRequest> metrics = new ArrayList<>(waitForMetrics());
+    Assertions.assertTrue(hasMetricNamed("spansSeenByExporter", metrics));
+    Assertions.assertTrue(hasMetricNamed("spansExportedByExporter", metrics));
+    Assertions.assertTrue(hasMetricNamed("processedSpans", metrics));
+    Assertions.assertTrue(hasMetricNamed("queueSize", metrics));
+    Assertions.assertTrue(hasMetricNamed("runtime.jvm.gc.count", metrics));
+    Assertions.assertTrue(hasMetricNamed("runtime.jvm.gc.time", metrics));
+    Assertions.assertTrue(hasMetricNamed("runtime.jvm.memory.pool", metrics));
+    Assertions.assertTrue(hasMetricNamed("runtime.jvm.memory.area", metrics));
   }
 
   @Test

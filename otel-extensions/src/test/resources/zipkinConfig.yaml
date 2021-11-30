@@ -1,0 +1,4 @@
+service_name: service
+reporting:
+  trace_reporter_type: ZIPKIN
+  endpoint: http://example.com:9411/api/v2/spans

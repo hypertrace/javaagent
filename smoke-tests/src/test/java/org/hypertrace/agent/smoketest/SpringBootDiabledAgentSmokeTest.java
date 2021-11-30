@@ -71,5 +71,10 @@ public class SpringBootDiabledAgentSmokeTest extends AbstractSmokeTest {
         () -> {
           waitForTraces();
         });
+    Assertions.assertThrows(
+        ConditionTimeoutException.class,
+        () -> {
+          waitForMetrics();
+        });
   }
 }

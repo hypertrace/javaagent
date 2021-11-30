@@ -18,6 +18,7 @@ package org.hypertrace.agent.smoketest;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
+import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
 import io.opentelemetry.proto.trace.v1.Span;
@@ -54,7 +55,7 @@ public abstract class AbstractSmokeTest {
   private static final Logger log = LoggerFactory.getLogger(OpenTelemetryStorage.class);
   private static final String OTEL_COLLECTOR_IMAGE = "otel/opentelemetry-collector:0.21.0";
   private static final String MOCK_BACKEND_IMAGE =
-      "ghcr.io/open-telemetry/java-test-containers:smoke-fake-backend-20201128.1734635";
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-fake-backend:20210918.1248928123";
   private static final String NETWORK_ALIAS_OTEL_COLLECTOR = "collector";
   private static final String NETWORK_ALIAS_OTEL_MOCK_STORAGE = "backend";
   private static final String OTEL_EXPORTER_ENDPOINT =
@@ -114,9 +115,7 @@ public abstract class AbstractSmokeTest {
     client
         .newCall(
             new Request.Builder()
-                .url(
-                    String.format(
-                        "http://localhost:%d/clear-requests", openTelemetryStorage.getPort()))
+                .url(String.format("http://localhost:%d/clear", openTelemetryStorage.getPort()))
                 .build())
         .execute()
         .close();
@@ -141,7 +140,8 @@ public abstract class AbstractSmokeTest {
         .withEnv("HT_CONFIG_FILE", "/etc/ht-config.yaml")
         .withEnv("OTEL_BSP_MAX_EXPORT_BATCH_SIZE", "1")
         .withEnv("OTEL_BSP_SCHEDULE_DELAY", "10")
-        .withEnv("HT_REPORTING_ENDPOINT", OTEL_EXPORTER_ENDPOINT);
+        .withEnv("HT_REPORTING_ENDPOINT", OTEL_EXPORTER_ENDPOINT)
+        .withEnv("HT_REPORTING_METRIC_ENDPOINT", OTEL_EXPORTER_ENDPOINT);
   }
 
   protected static int countSpansByName(
@@ -170,7 +170,7 @@ public abstract class AbstractSmokeTest {
   }
 
   protected Collection<ExportTraceServiceRequest> waitForTraces() throws IOException {
-    String content = waitForContent();
+    String content = waitForContent("get-traces");
 
     return StreamSupport.stream(OBJECT_MAPPER.readTree(content).spliterator(), false)
         .map(
@@ -186,14 +186,32 @@ public abstract class AbstractSmokeTest {
         .collect(Collectors.toList());
   }
 
-  private String waitForContent() throws IOException {
+  protected Collection<ExportMetricsServiceRequest> waitForMetrics() throws IOException {
+    String content = waitForContent("get-metrics");
+
+    return StreamSupport.stream(OBJECT_MAPPER.readTree(content).spliterator(), false)
+        .map(
+            it -> {
+              ExportMetricsServiceRequest.Builder builder =
+                  ExportMetricsServiceRequest.newBuilder();
+              try {
+                JsonFormat.parser().merge(OBJECT_MAPPER.writeValueAsString(it), builder);
+              } catch (InvalidProtocolBufferException | JsonProcessingException e) {
+                e.printStackTrace();
+              }
+              return builder.build();
+            })
+        .collect(Collectors.toList());
+  }
+
+  private String waitForContent(String path) throws IOException {
     Request request =
         new Builder()
-            .url(String.format("http://localhost:%d/get-requests", openTelemetryStorage.getPort()))
+            .url(String.format("http://localhost:%d/%s", openTelemetryStorage.getPort(), path))
             .build();
     // TODO do not use local vars in lambda
     final AtomicLong previousSize = new AtomicLong();
-    Awaitility.await()
+    Awaitility.waitAtMost(Duration.ofSeconds(60))
         .until(
             () -> {
               try (ResponseBody body = client.newCall(request).execute().body()) {
@@ -207,6 +225,17 @@ public abstract class AbstractSmokeTest {
               return false;
             });
     return client.newCall(request).execute().body().string();
+  }
+
+  protected boolean hasMetricNamed(
+      String metricName, Collection<ExportMetricsServiceRequest> metricRequests) {
+    return metricRequests.stream()
+        .flatMap(metricRequest -> metricRequest.getResourceMetricsList().stream())
+        .flatMap(resourceMetrics -> resourceMetrics.getInstrumentationLibraryMetricsList().stream())
+        .flatMap(
+            instrumentationLibraryMetrics ->
+                instrumentationLibraryMetrics.getMetricsList().stream())
+        .anyMatch(metric -> metric.getName().equals(metricName));
   }
 
   public static String getPropertyOrEnv(String propName) {

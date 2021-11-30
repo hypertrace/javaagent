@@ -24,12 +24,14 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import org.hypertrace.agent.config.v1.Config.AgentConfig;
+import org.hypertrace.agent.config.v1.Config.MetricReporterType;
 import org.hypertrace.agent.config.v1.Config.PropagationFormat;
 import org.hypertrace.agent.config.v1.Config.TraceReporterType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junitpioneer.jupiter.ClearSystemProperty;
+import org.junitpioneer.jupiter.SetEnvironmentVariable;
 
 public class HypertraceConfigTest {
 
@@ -41,10 +43,16 @@ public class HypertraceConfigTest {
     Assertions.assertEquals("unknown", agentConfig.getServiceName().getValue());
     Assertions.assertEquals(
         TraceReporterType.OTLP, agentConfig.getReporting().getTraceReporterType());
+    Assertions.assertEquals(
+        MetricReporterType.METRIC_REPORTER_TYPE_OTLP,
+        agentConfig.getReporting().getMetricReporterType());
     Assertions.assertFalse(agentConfig.getReporting().hasCertFile());
     Assertions.assertEquals(
         HypertraceConfig.DEFAULT_REPORTING_ENDPOINT,
         agentConfig.getReporting().getEndpoint().getValue());
+    Assertions.assertEquals(
+        HypertraceConfig.DEFAULT_REPORTING_ENDPOINT,
+        agentConfig.getReporting().getMetricEndpoint().getValue());
     Assertions.assertEquals(
         Arrays.asList(PropagationFormat.TRACECONTEXT), agentConfig.getPropagationFormatsList());
     Assertions.assertEquals(false, agentConfig.getReporting().getSecure().getValue());
@@ -101,9 +109,14 @@ public class HypertraceConfigTest {
     Assertions.assertEquals(
         TraceReporterType.OTLP, agentConfig.getReporting().getTraceReporterType());
     Assertions.assertEquals(
+        MetricReporterType.METRIC_REPORTER_TYPE_OTLP,
+        agentConfig.getReporting().getMetricReporterType());
+    Assertions.assertEquals(
         "/foo/bar/example.pem", agentConfig.getReporting().getCertFile().getValue());
     Assertions.assertEquals(
         "http://localhost:4317", agentConfig.getReporting().getEndpoint().getValue());
+    Assertions.assertEquals(
+        "http://localhost:4317", agentConfig.getReporting().getMetricEndpoint().getValue());
     Assertions.assertEquals(true, agentConfig.getReporting().getSecure().getValue());
     Assertions.assertEquals(16, agentConfig.getDataCapture().getBodyMaxSizeBytes().getValue());
     Assertions.assertEquals(
@@ -133,5 +146,63 @@ public class HypertraceConfigTest {
     Assertions.assertEquals(
         "http://nowhere.here", agentConfig.getReporting().getEndpoint().getValue());
     Assertions.assertEquals("service", agentConfig.getServiceName().getValue());
+  }
+
+  @Test
+  @SetEnvironmentVariable(key = "HT_REPORTING_ENDPOINT", value = "http://oltp.hypertrace.org:4317")
+  public void complexConfig() throws IOException {
+    // GIVEN a config file with a non-default reporting endpoint and an env-var with a different
+    // non-default otlp reporting endpoint
+    URL resource = getClass().getClassLoader().getResource("config.yaml");
+    // WHEN we load the config
+    AgentConfig agentConfig = HypertraceConfig.load(resource.getPath());
+    // VERIFY the trace and metric endpoints are the both the value of the env var
+    String expectedEndpoint = "http://oltp.hypertrace.org:4317";
+    Assertions.assertEquals(expectedEndpoint, agentConfig.getReporting().getEndpoint().getValue());
+    Assertions.assertEquals(
+        expectedEndpoint, agentConfig.getReporting().getMetricEndpoint().getValue());
+    Assertions.assertEquals(
+        TraceReporterType.OTLP, agentConfig.getReporting().getTraceReporterType());
+    Assertions.assertEquals(
+        MetricReporterType.METRIC_REPORTER_TYPE_OTLP,
+        agentConfig.getReporting().getMetricReporterType());
+  }
+
+  @Test
+  public void zipkinExporter() throws IOException {
+    // GIVEN a config file with a non-default zipkin reporting endpoint
+    URL resource = getClass().getClassLoader().getResource("zipkinConfig.yaml");
+    // WHEN we load the config
+    AgentConfig agentConfig = HypertraceConfig.load(resource.getPath());
+    // VERIFY the trace reporting endpoint is the zipkin endpoint
+    Assertions.assertEquals(
+        "http://example.com:9411/api/v2/spans",
+        agentConfig.getReporting().getEndpoint().getValue());
+    // VERIFY the trace reporting type is ZIPKIN
+    Assertions.assertEquals(
+        TraceReporterType.ZIPKIN, agentConfig.getReporting().getTraceReporterType());
+    // VERIFY the metric reporting type is none
+    Assertions.assertEquals(
+        MetricReporterType.METRIC_REPORTER_TYPE_NONE,
+        agentConfig.getReporting().getMetricReporterType());
+  }
+
+  @Test
+  public void noneTraceExporter() throws IOException {
+    // GIVEN a config file with a non-default zipkin reporting endpoint
+    URL resource = getClass().getClassLoader().getResource("noneTraceReportingConfig.yaml");
+    // WHEN we load the config
+    AgentConfig agentConfig = HypertraceConfig.load(resource.getPath());
+    // VERIFY the trace reporting type is NONE
+    Assertions.assertEquals(
+        TraceReporterType.NONE, agentConfig.getReporting().getTraceReporterType());
+    // VERIFY the metric reporting type is OTLP
+    Assertions.assertEquals(
+        MetricReporterType.METRIC_REPORTER_TYPE_OTLP,
+        agentConfig.getReporting().getMetricReporterType());
+    // VERIFY the metric reporting endpoint is default
+    Assertions.assertEquals(
+        HypertraceConfig.DEFAULT_REPORTING_ENDPOINT,
+        agentConfig.getReporting().getMetricEndpoint().getValue());
   }
 }
