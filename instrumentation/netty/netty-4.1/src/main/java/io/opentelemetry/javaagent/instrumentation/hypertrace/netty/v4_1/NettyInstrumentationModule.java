@@ -21,7 +21,7 @@ import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.
 import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import net.bytebuddy.matcher.ElementMatcher;
 
@@ -46,6 +46,6 @@ public class NettyInstrumentationModule extends InstrumentationModule {
 
   @Override
   public List<TypeInstrumentation> typeInstrumentations() {
-    return Arrays.asList(new NettyChannelPipelineInstrumentation());
+    return Collections.singletonList(new NettyChannelPipelineInstrumentation());
   }
 }

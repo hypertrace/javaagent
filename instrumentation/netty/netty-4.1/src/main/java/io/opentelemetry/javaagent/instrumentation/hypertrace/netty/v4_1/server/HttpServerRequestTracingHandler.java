@@ -61,7 +61,7 @@ public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapte
 
       Map<String, String> headersMap = headersToMap(httpRequest);
       if (instrumentationConfig.httpHeaders().request()) {
-        headersMap.forEach((key, value) -> span.setAttribute(key, value));
+        headersMap.forEach(span::setAttribute);
       }
       // used by blocking handler
       channel.attr(AttributeKeys.REQUEST_HEADERS).set(headersMap);
