@@ -65,7 +65,7 @@ public class HttpClientRequestTracingHandler extends ChannelOutboundHandlerAdapt
 
       Map<String, String> headersMap = headersToMap(httpRequest);
       if (instrumentationConfig.httpHeaders().request()) {
-        headersMap.forEach((key, value) -> span.setAttribute(key, value));
+        headersMap.forEach(span::setAttribute);
       }
 
       CharSequence contentType = DataCaptureUtils.getContentType(httpRequest);

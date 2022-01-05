@@ -101,7 +101,7 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
       span.setAttribute(SemanticAttributes.HTTP_STATUS_CODE, httpResponse.getStatus().code());
       span.setStatus(HttpStatusConverter.statusFromHttpStatus(httpResponse.getStatus().code()));
     }
-    if (msg instanceof FullHttpMessage || msg instanceof LastHttpContent) {
+    if (msg instanceof LastHttpContent) {
       span.end();
     }
   }

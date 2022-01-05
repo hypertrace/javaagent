@@ -91,7 +91,7 @@ public class NettyChannelPipelineInstrumentation implements TypeInstrumentation 
         @Advice.Enter int callDepth,
         @Advice.This ChannelPipeline pipeline,
         @Advice.Argument(2) ChannelHandler handler) {
-      if (callDepth > 0) {
+      if (callDepth > 1) {
         return;
       }
       HypertraceCallDepthThreadLocalMap.reset(handler.getClass());
@@ -163,21 +163,6 @@ public class NettyChannelPipelineInstrumentation implements TypeInstrumentation 
               HttpClientResponseTracingHandler.class.getName(),
               new HttpClientResponseTracingHandler());
         }
-        // TODO add client instrumentation
-        //        else
-        // Client pipeline handlers
-        //          if (handler instanceof HttpClientCodec) {
-        //            pipeline.addLast(
-        //                HttpClientTracingHandler.class.getName(), new HttpClientTracingHandler());
-        //          } else if (handler instanceof HttpRequestEncoder) {
-        //            pipeline.addLast(
-        //                HttpClientRequestTracingHandler.class.getName(),
-        //                new HttpClientRequestTracingHandler());
-        //          } else if (handler instanceof HttpResponseDecoder) {
-        //            pipeline.addLast(
-        //                HttpClientResponseTracingHandler.class.getName(),
-        //                new HttpClientResponseTracingHandler());
-        //          }
       } catch (IllegalArgumentException e) {
         // Prevented adding duplicate handlers.
       }
