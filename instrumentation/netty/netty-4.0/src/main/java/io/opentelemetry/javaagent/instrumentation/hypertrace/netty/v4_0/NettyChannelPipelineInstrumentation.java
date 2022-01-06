@@ -82,7 +82,7 @@ public class NettyChannelPipelineInstrumentation implements TypeInstrumentation 
         @Advice.Enter int callDepth,
         @Advice.This ChannelPipeline pipeline,
         @Advice.Argument(2) ChannelHandler handler) {
-      if (callDepth > 1) {
+      if (callDepth > 0) {
         return;
       }
       HypertraceCallDepthThreadLocalMap.reset(ChannelHandler.class);
