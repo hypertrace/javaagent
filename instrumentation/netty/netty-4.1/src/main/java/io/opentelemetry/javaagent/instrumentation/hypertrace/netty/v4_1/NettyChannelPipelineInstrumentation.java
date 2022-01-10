@@ -136,12 +136,13 @@ public class NettyChannelPipelineInstrumentation implements TypeInstrumentation 
         } else
         //         Client pipeline handlers
         if (handler instanceof HttpClientCodec) {
-          pipeline.replace(
-              io.opentelemetry.javaagent.instrumentation.netty.v4_1.client.HttpClientTracingHandler
-                  .class
-                  .getName(),
-              HttpClientTracingHandler.class.getName(),
-              new HttpClientTracingHandler());
+          //          pipeline.replace(
+          //
+          // io.opentelemetry.javaagent.instrumentation.netty.v4_1.client.HttpClientTracingHandler
+          //                  .class
+          //                  .getName(),
+          //              HttpClientTracingHandler.class.getName(),
+          //              new HttpClientTracingHandler());
 
           // add OTEL request handler to start spans
           pipeline.addAfter(
