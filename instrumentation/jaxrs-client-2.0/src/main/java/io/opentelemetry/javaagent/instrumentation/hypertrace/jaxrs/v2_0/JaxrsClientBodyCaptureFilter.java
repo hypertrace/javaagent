@@ -39,6 +39,12 @@ public class JaxrsClientBodyCaptureFilter implements ClientRequestFilter, Client
       InstrumentationConfig.ConfigProvider.get();
   /** TODO find a better way to access this */
   public static final String OTEL_CONTEXT_PROPERTY_NAME = "io.opentelemetry.javaagent.context";
+  /**
+   * In certain contexts, like reading HTTP client entities, the body will be read after the OTEL
+   * context has been removed from the carrier. In order to mitigate this, we re-store a reference
+   * to the object under a different property key and remove it when it is no longer needed
+   */
+  public static final String HYPERTRACE_CONTEXT_PROPERTY_NAME = "org.hypertrace.javaagent.context";
 
   @Override
   public void filter(ClientRequestContext requestContext) {
@@ -46,6 +52,7 @@ public class JaxrsClientBodyCaptureFilter implements ClientRequestFilter, Client
     if (!(contextObj instanceof Context)) {
       return;
     }
+    requestContext.setProperty(HYPERTRACE_CONTEXT_PROPERTY_NAME, contextObj);
 
     Context currentContext = (Context) contextObj;
     Span currentSpan = Span.fromContext(currentContext);

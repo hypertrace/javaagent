@@ -146,8 +146,8 @@ public class NettyChannelPipelineInstrumentation implements TypeInstrumentation 
           // add OTEL request handler to start spans
           pipeline.addAfter(
               HttpClientTracingHandler.class.getName(),
-              io.opentelemetry.javaagent.instrumentation.netty.v4_1.client
-                  .HttpClientRequestTracingHandler.class
+              io.opentelemetry.javaagent.instrumentation.netty.v4_1.client.HttpClientTracingHandler
+                  .class
                   .getName(),
               new io.opentelemetry.javaagent.instrumentation.netty.v4_1.client
                   .HttpClientRequestTracingHandler());

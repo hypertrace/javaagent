@@ -61,6 +61,9 @@ public class JaxrsClientEntityInterceptor implements ReaderInterceptor, WriterIn
   @Override
   public Object aroundReadFrom(ReaderInterceptorContext responseContext)
       throws IOException, WebApplicationException {
+    Object contextObj =
+        responseContext.getProperty(JaxrsClientBodyCaptureFilter.HYPERTRACE_CONTEXT_PROPERTY_NAME);
+    responseContext.removeProperty(JaxrsClientBodyCaptureFilter.HYPERTRACE_CONTEXT_PROPERTY_NAME);
 
     MediaType mediaType = responseContext.getMediaType();
     if (mediaType == null
@@ -69,8 +72,6 @@ public class JaxrsClientEntityInterceptor implements ReaderInterceptor, WriterIn
       return responseContext.proceed();
     }
 
-    Object contextObj =
-        responseContext.getProperty(JaxrsClientBodyCaptureFilter.OTEL_CONTEXT_PROPERTY_NAME);
     if (!(contextObj instanceof Context)) {
       log.error(
           "Span object is not present in the context properties, response object will not be captured");
