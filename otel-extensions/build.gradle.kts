@@ -7,7 +7,7 @@ plugins {
 }
 
 
-val protobufVersion = "3.15.8"
+val protobufVersion = "3.16.1"
 
 protobuf {
     protoc {
