@@ -25,10 +25,9 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.vertx.client.Contexts;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
@@ -94,16 +93,14 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
         return;
       }
 
-      Contexts contexts =
-          InstrumentationContext.get(HttpClientRequest.class, Contexts.class).get(request);
+      Contexts contexts = VirtualField.find(HttpClientRequest.class, Contexts.class).get(request);
       if (contexts == null) {
         return;
       }
       Span span = Span.fromContext(contexts.context);
 
       BoundedCharArrayWriter buffer =
-          InstrumentationContext.get(MultiMap.class, BoundedCharArrayWriter.class)
-              .get(request.headers());
+          VirtualField.find(MultiMap.class, BoundedCharArrayWriter.class).get(request.headers());
       if (buffer != null) {
         span.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, buffer.toString());
       }
@@ -126,8 +123,7 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
         return;
       }
 
-      Contexts contexts =
-          InstrumentationContext.get(HttpClientRequest.class, Contexts.class).get(request);
+      Contexts contexts = VirtualField.find(HttpClientRequest.class, Contexts.class).get(request);
       if (contexts == null) {
         return;
       }
@@ -138,8 +134,7 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
       if (instrumentationConfig.httpBody().request()
           && ContentTypeUtils.shouldCapture(contentType)) {
         BoundedCharArrayWriter buffer =
-            InstrumentationContext.get(MultiMap.class, BoundedCharArrayWriter.class)
-                .get(request.headers());
+            VirtualField.find(MultiMap.class, BoundedCharArrayWriter.class).get(request.headers());
         if (buffer == null) {
           span.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, chunk);
         } else {
@@ -166,8 +161,7 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
         return;
       }
 
-      Contexts contexts =
-          InstrumentationContext.get(HttpClientRequest.class, Contexts.class).get(request);
+      Contexts contexts = VirtualField.find(HttpClientRequest.class, Contexts.class).get(request);
       if (contexts == null) {
         return;
       }
@@ -179,8 +173,7 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
           && ContentTypeUtils.shouldCapture(contentType)) {
 
         BoundedCharArrayWriter buffer =
-            InstrumentationContext.get(MultiMap.class, BoundedCharArrayWriter.class)
-                .get(request.headers());
+            VirtualField.find(MultiMap.class, BoundedCharArrayWriter.class).get(request.headers());
         if (buffer == null) {
           span.setAttribute(
               HypertraceSemanticAttributes.HTTP_REQUEST_BODY,
@@ -214,12 +207,12 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
       if (instrumentationConfig.httpBody().request()
           && ContentTypeUtils.shouldCapture(contentType)) {
 
-        ContextStore<MultiMap, BoundedCharArrayWriter> contextStore =
-            InstrumentationContext.get(MultiMap.class, BoundedCharArrayWriter.class);
+        VirtualField<MultiMap, BoundedCharArrayWriter> contextStore =
+            VirtualField.find(MultiMap.class, BoundedCharArrayWriter.class);
         BoundedCharArrayWriter buffer = contextStore.get(request.headers());
         if (buffer == null) {
           buffer = BoundedBuffersFactory.createWriter();
-          contextStore.put(request.headers(), buffer);
+          contextStore.set(request.headers(), buffer);
         }
         buffer.write(chunk);
       }
@@ -247,12 +240,12 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
       if (instrumentationConfig.httpBody().request()
           && ContentTypeUtils.shouldCapture(contentType)) {
 
-        ContextStore<MultiMap, BoundedCharArrayWriter> contextStore =
-            InstrumentationContext.get(MultiMap.class, BoundedCharArrayWriter.class);
+        VirtualField<MultiMap, BoundedCharArrayWriter> contextStore =
+            VirtualField.find(MultiMap.class, BoundedCharArrayWriter.class);
         BoundedCharArrayWriter buffer = contextStore.get(request.headers());
         if (buffer == null) {
           buffer = BoundedBuffersFactory.createWriter();
-          contextStore.put(request.headers(), buffer);
+          contextStore.set(request.headers(), buffer);
         }
         buffer.write(chunk.toString(StandardCharsets.UTF_8.name()));
       }
