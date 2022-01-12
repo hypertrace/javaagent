@@ -28,7 +28,6 @@ import io.netty.util.ReferenceCountUtil;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.AttributeKeys;
-import io.opentelemetry.javaagent.instrumentation.netty.v4_1.server.NettyHttpServerTracer;
 import java.util.Map;
 import org.hypertrace.agent.filter.FilterRegistry;
 
@@ -37,7 +36,10 @@ public class HttpServerBlockingRequestHandler extends ChannelInboundHandlerAdapt
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) {
     Channel channel = ctx.channel();
-    Context context = NettyHttpServerTracer.tracer().getServerContext(channel);
+    Context context =
+        channel
+            .attr(io.opentelemetry.instrumentation.netty.v4_1.AttributeKeys.SERVER_CONTEXT)
+            .get();
     if (context == null) {
       ctx.fireChannelRead(msg);
       return;

@@ -31,7 +31,7 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.api.tracer.HttpStatusConverter;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.AttributeKeys;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.DataCaptureUtils;
-import io.opentelemetry.javaagent.instrumentation.netty.v4_1.server.NettyHttpServerTracer;
+import io.opentelemetry.javaagent.instrumentation.netty.v4_1.server.NettyServerSingletons;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.nio.charset.Charset;
 import java.util.Map;
@@ -50,7 +50,10 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
 
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise prm) {
-    Context context = NettyHttpServerTracer.tracer().getServerContext(ctx.channel());
+    Context context =
+        ctx.channel()
+            .attr(io.opentelemetry.instrumentation.netty.v4_1.AttributeKeys.SERVER_CONTEXT)
+            .get();
     if (context == null) {
       ctx.write(msg, prm);
       return;
@@ -90,7 +93,7 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
     try (Scope ignored = context.makeCurrent()) {
       ctx.write(msg, prm);
     } catch (Throwable throwable) {
-      NettyHttpServerTracer.tracer().endExceptionally(context, throwable);
+      NettyServerSingletons.instrumenter().end(context, null, null, throwable);
       throw throwable;
     }
     if (msg instanceof HttpResponse) {
