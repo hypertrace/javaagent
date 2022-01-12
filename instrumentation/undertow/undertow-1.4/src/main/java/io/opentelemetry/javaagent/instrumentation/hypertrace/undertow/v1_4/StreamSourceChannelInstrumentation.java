@@ -22,11 +22,10 @@ import static net.bytebuddy.matcher.ElementMatchers.returns;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.undertow.v1_4.utils.Utils;
 import io.undertow.server.HttpServerExchange;
 import java.nio.ByteBuffer;
@@ -88,8 +87,8 @@ public final class StreamSourceChannelInstrumentation implements TypeInstrumenta
           || thrown != null) {
         return;
       }
-      final ContextStore<StreamSourceChannel, SpanAndBuffer> contextStore =
-          InstrumentationContext.get(StreamSourceChannel.class, SpanAndBuffer.class);
+      final VirtualField<StreamSourceChannel, SpanAndBuffer> contextStore =
+          VirtualField.find(StreamSourceChannel.class, SpanAndBuffer.class);
       final SpanAndBuffer spanAndBuffer = contextStore.get(streamSourceChannel);
       if (spanAndBuffer != null) {
         Utils.handleRead(byteBuffer.asReadOnlyBuffer(), numBytesRead, spanAndBuffer);

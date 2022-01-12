@@ -17,8 +17,8 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.undertow.v1_4.utils;
 
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
-import io.opentelemetry.javaagent.instrumentation.undertow.UndertowHttpServerTracer;
+import io.opentelemetry.instrumentation.api.field.VirtualField;
+import io.opentelemetry.javaagent.instrumentation.undertow.UndertowSingletons;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
 import java.nio.ByteBuffer;
@@ -47,14 +47,14 @@ public final class Utils {
   public static void createAndStoreBufferForSpan(
       final HttpServerExchange httpServerExchange,
       final StreamSourceChannel returnedChannel,
-      final ContextStore<StreamSourceChannel, SpanAndBuffer> contextStore) {
+      final VirtualField<StreamSourceChannel, SpanAndBuffer> contextStore) {
     if (!ConfigProvider.get().httpBody().request()
         || !ContentTypeUtils.shouldCapture(
             httpServerExchange.getRequestHeaders().getFirst(Headers.CONTENT_TYPE))) {
       return;
     }
     final Span span =
-        Span.fromContext(UndertowHttpServerTracer.tracer().getServerContext(httpServerExchange));
+        Span.fromContext(UndertowSingletons.helper().getServerContext(httpServerExchange));
     final Charset charset = Charset.forName(httpServerExchange.getRequestCharset());
     final BoundedByteArrayOutputStream boundedByteArrayOutputStream =
         BoundedBuffersFactory.createStream(
@@ -65,7 +65,7 @@ public final class Utils {
             boundedByteArrayOutputStream,
             HypertraceSemanticAttributes.HTTP_REQUEST_BODY,
             charset);
-    contextStore.put(returnedChannel, spanAndBuffer);
+    contextStore.set(returnedChannel, spanAndBuffer);
     httpServerExchange.addExchangeCompleteListener(
         new BodyCapturingExchangeCompletionListener(spanAndBuffer));
   }
@@ -74,10 +74,9 @@ public final class Utils {
    * @param readOnlyBuffer that was just read into {@link StreamSourceChannel#read(ByteBuffer)}
    * @param numBytesRead into the provided {@link ByteBuffer} by {@link
    *     StreamSourceChannel#read(ByteBuffer)}
-   * @param spanAndBuffer named tuple retrieved from the {@link
-   *     io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext} where the {@link
-   *     StreamSourceChannel} instance is the key. This was put into the {@link
-   *     io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext} by {@link
+   * @param spanAndBuffer named tuple retrieved from the {@link VirtualField} where the {@link
+   *     StreamSourceChannel} instance is the key. This was put into the {@link VirtualField} by
+   *     {@link
    *     io.opentelemetry.javaagent.instrumentation.hypertrace.undertow.v1_4.UndertowHttpServerExchangeInstrumentation}
    *     the first time {@link HttpServerExchange#getRequestChannel()} was invoked on the request
    */
