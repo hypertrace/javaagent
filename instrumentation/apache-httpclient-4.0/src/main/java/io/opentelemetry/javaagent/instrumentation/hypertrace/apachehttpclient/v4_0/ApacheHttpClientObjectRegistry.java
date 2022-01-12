@@ -24,7 +24,7 @@ import org.apache.http.HttpEntity;
 public class ApacheHttpClientObjectRegistry {
 
   public static final Cache<HttpEntity, SpanAndAttributeKey> entityToSpan =
-      Cache.newBuilder().setWeakKeys().build();
+      Cache.builder().setWeakKeys().build();
 
   public static class SpanAndAttributeKey {
     public final Span span;
