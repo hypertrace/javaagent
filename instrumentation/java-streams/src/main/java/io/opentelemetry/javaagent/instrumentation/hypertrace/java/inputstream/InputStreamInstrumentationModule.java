@@ -29,8 +29,7 @@ import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
@@ -43,10 +42,10 @@ import org.hypertrace.agent.core.instrumentation.SpanAndBuffer;
 
 /**
  * {@link InputStream} instrumentation. The type matcher applies to all implementations. However
- * only streams that are in the {@link ContextStore} are instrumented, otherwise the instrumentation
+ * only streams that are in the {@link VirtualField} are instrumented, otherwise the instrumentation
  * is noop.
  *
- * <p>If the stream is in the {@link ContextStore} then result of read methods is also passed to the
+ * <p>If the stream is in the {@link VirtualField} then result of read methods is also passed to the
  * buffered stream (value) from the map. The instrumentation adds buffer to span from the map when
  * read is finished (return -1), creates new span with buffer when the original span is not
  * recording.
@@ -115,7 +114,7 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static SpanAndBuffer enter(@Advice.This InputStream thizz) {
       return InputStreamUtils.check(
-          thizz, InstrumentationContext.get(InputStream.class, SpanAndBuffer.class));
+          thizz, VirtualField.find(InputStream.class, SpanAndBuffer.class));
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
@@ -134,7 +133,7 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
       InputStreamUtils.read(
           thizz,
           spanAndBuffer,
-          InstrumentationContext.get(InputStream.class, SpanAndBuffer.class),
+          VirtualField.find(InputStream.class, SpanAndBuffer.class),
           read);
     }
   }
@@ -143,7 +142,7 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static SpanAndBuffer enter(@Advice.This InputStream thizz) {
       return InputStreamUtils.check(
-          thizz, InstrumentationContext.get(InputStream.class, SpanAndBuffer.class));
+          thizz, VirtualField.find(InputStream.class, SpanAndBuffer.class));
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
@@ -168,7 +167,7 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static SpanAndBuffer enter(@Advice.This InputStream thizz) {
       return InputStreamUtils.check(
-          thizz, InstrumentationContext.get(InputStream.class, SpanAndBuffer.class));
+          thizz, VirtualField.find(InputStream.class, SpanAndBuffer.class));
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
@@ -190,7 +189,7 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
       InputStreamUtils.read(
           thizz,
           spanAndBuffer,
-          InstrumentationContext.get(InputStream.class, SpanAndBuffer.class),
+          VirtualField.find(InputStream.class, SpanAndBuffer.class),
           read,
           b,
           off,
@@ -202,7 +201,7 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static SpanAndBuffer enter(@Advice.This InputStream thizz) {
       return InputStreamUtils.check(
-          thizz, InstrumentationContext.get(InputStream.class, SpanAndBuffer.class));
+          thizz, VirtualField.find(InputStream.class, SpanAndBuffer.class));
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
@@ -222,7 +221,7 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
       InputStreamUtils.readAll(
           thizz,
           spanAndBuffer,
-          InstrumentationContext.get(InputStream.class, SpanAndBuffer.class),
+          VirtualField.find(InputStream.class, SpanAndBuffer.class),
           b);
     }
   }
@@ -231,7 +230,7 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static SpanAndBuffer enter(@Advice.This InputStream thizz) {
       return InputStreamUtils.check(
-          thizz, InstrumentationContext.get(InputStream.class, SpanAndBuffer.class));
+          thizz, VirtualField.find(InputStream.class, SpanAndBuffer.class));
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
@@ -252,7 +251,7 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
       InputStreamUtils.readNBytes(
           thizz,
           spanAndBuffer,
-          InstrumentationContext.get(InputStream.class, SpanAndBuffer.class),
+          VirtualField.find(InputStream.class, SpanAndBuffer.class),
           read,
           b,
           off,
@@ -266,8 +265,8 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
       if (available != 0) {
         return;
       }
-      ContextStore<InputStream, SpanAndBuffer> contextStore =
-          InstrumentationContext.get(InputStream.class, SpanAndBuffer.class);
+      VirtualField<InputStream, SpanAndBuffer> contextStore =
+          VirtualField.find(InputStream.class, SpanAndBuffer.class);
 
       SpanAndBuffer spanAndBuffer = contextStore.get(thizz);
       if (spanAndBuffer != null) {
@@ -276,7 +275,7 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
             spanAndBuffer.attributeKey,
             spanAndBuffer.byteArrayBuffer,
             spanAndBuffer.charset);
-        contextStore.put(thizz, null);
+        contextStore.set(thizz, null);
       }
     }
   }
