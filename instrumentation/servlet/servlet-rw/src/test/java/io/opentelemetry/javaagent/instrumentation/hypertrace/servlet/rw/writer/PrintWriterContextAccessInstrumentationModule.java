@@ -20,11 +20,10 @@ import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.List;
@@ -71,9 +70,9 @@ public class PrintWriterContextAccessInstrumentationModule extends Instrumentati
     public static void enter(
         @Advice.Argument(0) PrintWriter printWriter,
         @Advice.Argument(1) BoundedCharArrayWriter metadata) {
-      ContextStore<PrintWriter, BoundedCharArrayWriter> contextStore =
-          InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class);
-      contextStore.put(printWriter, metadata);
+      VirtualField<PrintWriter, BoundedCharArrayWriter> contextStore =
+          VirtualField.find(PrintWriter.class, BoundedCharArrayWriter.class);
+      contextStore.set(printWriter, metadata);
     }
   }
 }

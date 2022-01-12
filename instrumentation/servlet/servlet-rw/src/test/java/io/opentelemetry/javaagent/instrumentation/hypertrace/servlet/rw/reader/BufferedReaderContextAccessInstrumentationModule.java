@@ -18,11 +18,10 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.rw.reader;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.io.BufferedReader;
 import java.util.Collections;
 import java.util.List;
@@ -69,9 +68,9 @@ public class BufferedReaderContextAccessInstrumentationModule extends Instrument
     public static void enter(
         @Advice.Argument(0) BufferedReader bufferedReader,
         @Advice.Argument(1) CharBufferSpanPair metadata) {
-      ContextStore<BufferedReader, CharBufferSpanPair> contextStore =
-          InstrumentationContext.get(BufferedReader.class, CharBufferSpanPair.class);
-      contextStore.put(bufferedReader, metadata);
+      VirtualField<BufferedReader, CharBufferSpanPair> contextStore =
+          VirtualField.find(BufferedReader.class, CharBufferSpanPair.class);
+      contextStore.set(bufferedReader, metadata);
     }
   }
 }

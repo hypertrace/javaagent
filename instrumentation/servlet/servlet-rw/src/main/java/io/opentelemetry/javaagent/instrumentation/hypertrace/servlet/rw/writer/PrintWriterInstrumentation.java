@@ -23,9 +23,9 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.io.IOException;
 import java.io.PrintWriter;
 import net.bytebuddy.asm.Advice;
@@ -96,7 +96,7 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
     public static BoundedCharArrayWriter enter(
         @Advice.This PrintWriter thizz, @Advice.Argument(0) int ch) {
       BoundedCharArrayWriter buffer =
-          InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class).get(thizz);
+          VirtualField.find(PrintWriter.class, BoundedCharArrayWriter.class).get(thizz);
       if (buffer == null) {
         return null;
       }
@@ -123,7 +123,7 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
         @Advice.This PrintWriter thizz, @Advice.Argument(0) char[] buf) throws IOException {
 
       BoundedCharArrayWriter buffer =
-          InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class).get(thizz);
+          VirtualField.find(PrintWriter.class, BoundedCharArrayWriter.class).get(thizz);
       if (buffer == null) {
         return null;
       }
@@ -153,7 +153,7 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
         @Advice.Argument(2) int len) {
 
       BoundedCharArrayWriter buffer =
-          InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class).get(thizz);
+          VirtualField.find(PrintWriter.class, BoundedCharArrayWriter.class).get(thizz);
       if (buffer == null) {
         return null;
       }
@@ -183,7 +183,7 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
         @Advice.Argument(2) int len) {
 
       BoundedCharArrayWriter buffer =
-          InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class).get(thizz);
+          VirtualField.find(PrintWriter.class, BoundedCharArrayWriter.class).get(thizz);
       if (buffer == null) {
         return null;
       }
@@ -210,7 +210,7 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
         @Advice.This PrintWriter thizz, @Advice.Argument(0) String str) throws IOException {
 
       BoundedCharArrayWriter buffer =
-          InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class).get(thizz);
+          VirtualField.find(PrintWriter.class, BoundedCharArrayWriter.class).get(thizz);
       if (buffer == null) {
         return null;
       }
@@ -235,7 +235,7 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static BoundedCharArrayWriter enter(@Advice.This PrintWriter thizz) {
       BoundedCharArrayWriter buffer =
-          InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class).get(thizz);
+          VirtualField.find(PrintWriter.class, BoundedCharArrayWriter.class).get(thizz);
       if (buffer == null) {
         return null;
       }
@@ -261,7 +261,7 @@ public class PrintWriterInstrumentation implements TypeInstrumentation {
     public static BoundedCharArrayWriter enter(
         @Advice.This PrintWriter thizz, @Advice.Argument(0) String str) throws IOException {
       BoundedCharArrayWriter buffer =
-          InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class).get(thizz);
+          VirtualField.find(PrintWriter.class, BoundedCharArrayWriter.class).get(thizz);
       if (buffer == null) {
         return null;
       }
