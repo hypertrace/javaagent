@@ -24,8 +24,10 @@ import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
+import io.opentelemetry.javaagent.tooling.muzzle.InstrumentationModuleMuzzle;
+import io.opentelemetry.javaagent.tooling.muzzle.VirtualFieldMappingsBuilder;
+import io.opentelemetry.javaagent.tooling.muzzle.references.ClassRef;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.ServletInputStream;
@@ -35,22 +37,31 @@ import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
 
 // SPI explicitly added in META-INF/services/...
-public class ServletInputStreamContextAccessInstrumentationModule extends InstrumentationModule {
+public class ServletInputStreamContextAccessInstrumentationModule extends InstrumentationModule
+    implements InstrumentationModuleMuzzle {
 
   public ServletInputStreamContextAccessInstrumentationModule() {
     super("test-servlet-input-stream");
   }
 
   @Override
-  public Map<String, String> getMuzzleContextStoreClasses() {
-    Map<String, String> context = new HashMap<>();
-    context.put("javax.servlet.ServletInputStream", ByteBufferSpanPair.class.getName());
-    return context;
+  public List<TypeInstrumentation> typeInstrumentations() {
+    return Collections.singletonList(new InputStreamTriggerInstrumentation());
   }
 
   @Override
-  public List<TypeInstrumentation> typeInstrumentations() {
-    return Collections.singletonList(new InputStreamTriggerInstrumentation());
+  public Map<String, ClassRef> getMuzzleReferences() {
+    return Collections.emptyMap();
+  }
+
+  @Override
+  public void registerMuzzleVirtualFields(VirtualFieldMappingsBuilder builder) {
+    builder.register("javax.servlet.ServletInputStream", ByteBufferSpanPair.class.getName());
+  }
+
+  @Override
+  public List<String> getMuzzleHelperClassNames() {
+    return Collections.emptyList();
   }
 
   static final class InputStreamTriggerInstrumentation implements TypeInstrumentation {
@@ -69,6 +80,7 @@ public class ServletInputStreamContextAccessInstrumentationModule extends Instru
   }
 
   static class TestAdvice {
+
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void enter(
         @Advice.Argument(0) ServletInputStream servletInputStream,

@@ -33,6 +33,7 @@ dependencies {
     implementation("io.opentelemetry.instrumentation:opentelemetry-servlet-common:${versions["opentelemetry_java_agent"]}")
     implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0:${versions["opentelemetry_java_agent"]}") // Servlet3Accessor
     testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0:${versions["opentelemetry_java_agent"]}")
+    testImplementation("io.opentelemetry.javaagent:opentelemetry-muzzle:${versions["opentelemetry_java_agent"]}")
     compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:${versions["opentelemetry_java_agent"]}")
     compileOnly("javax.servlet:javax.servlet-api:3.1.0")
 

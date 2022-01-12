@@ -24,8 +24,10 @@ import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
+import io.opentelemetry.javaagent.tooling.muzzle.InstrumentationModuleMuzzle;
+import io.opentelemetry.javaagent.tooling.muzzle.VirtualFieldMappingsBuilder;
+import io.opentelemetry.javaagent.tooling.muzzle.references.ClassRef;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.ServletOutputStream;
@@ -34,22 +36,32 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 
-public class ServletOutputStreamContextAccessInstrumentationModule extends InstrumentationModule {
+public class ServletOutputStreamContextAccessInstrumentationModule extends InstrumentationModule
+    implements InstrumentationModuleMuzzle {
 
   public ServletOutputStreamContextAccessInstrumentationModule() {
     super("test-servlet-output-stream");
   }
 
   @Override
-  public Map<String, String> getMuzzleContextStoreClasses() {
-    Map<String, String> context = new HashMap<>();
-    context.put("javax.servlet.ServletOutputStream", BoundedByteArrayOutputStream.class.getName());
-    return context;
+  public List<TypeInstrumentation> typeInstrumentations() {
+    return Collections.singletonList(new OutputStreamTriggerInstrumentation());
   }
 
   @Override
-  public List<TypeInstrumentation> typeInstrumentations() {
-    return Collections.singletonList(new OutputStreamTriggerInstrumentation());
+  public Map<String, ClassRef> getMuzzleReferences() {
+    return Collections.emptyMap();
+  }
+
+  @Override
+  public void registerMuzzleVirtualFields(VirtualFieldMappingsBuilder builder) {
+    builder.register(
+        "javax.servlet.ServletOutputStream", BoundedByteArrayOutputStream.class.getName());
+  }
+
+  @Override
+  public List<String> getMuzzleHelperClassNames() {
+    return Collections.emptyList();
   }
 
   static final class OutputStreamTriggerInstrumentation implements TypeInstrumentation {
