@@ -23,10 +23,9 @@ import static net.bytebuddy.matcher.ElementMatchers.returns;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.instrumentation.api.field.VirtualField;
-
 import io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v4_0.ApacheHttpClientObjectRegistry.SpanAndAttributeKey;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -99,8 +98,7 @@ public class HttpEntityInstrumentation implements TypeInstrumentation {
               BoundedBuffersFactory.createStream((int) contentSize, charset),
               clientSpan.attributeKey,
               charset);
-      VirtualField.find(InputStream.class, SpanAndBuffer.class)
-          .set(inputStream, spanAndBuffer);
+      VirtualField.find(InputStream.class, SpanAndBuffer.class).set(inputStream, spanAndBuffer);
     }
   }
 
@@ -129,7 +127,7 @@ public class HttpEntityInstrumentation implements TypeInstrumentation {
           BoundedBuffersFactory.createStream((int) contentSize, charset);
 
       VirtualField.find(OutputStream.class, BoundedByteArrayOutputStream.class)
-          .set( outputStream, byteArrayOutputStream);
+          .set(outputStream, byteArrayOutputStream);
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
