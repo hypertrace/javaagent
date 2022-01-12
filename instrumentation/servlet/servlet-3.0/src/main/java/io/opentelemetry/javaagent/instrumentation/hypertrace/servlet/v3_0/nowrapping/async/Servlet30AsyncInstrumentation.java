@@ -16,19 +16,19 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.async;
 
-import static io.opentelemetry.instrumentation.servlet.v3_0.Servlet3HttpServerTracer.tracer;
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasClassesNamed;
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.implementsInterface;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.returns;
 
-import io.opentelemetry.instrumentation.servlet.ServletHttpServerTracer;
-import io.opentelemetry.instrumentation.servlet.v3_0.Servlet3Accessor;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
+import io.opentelemetry.javaagent.instrumentation.servlet.ServletHelper;
+import io.opentelemetry.javaagent.instrumentation.servlet.v3_0.Servlet3Accessor;
+import io.opentelemetry.javaagent.instrumentation.servlet.v3_0.Servlet3Singletons;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -84,30 +84,32 @@ public final class Servlet30AsyncInstrumentation implements TypeInstrumentation 
       }
 
       // response context to capture body and clear the context
-      ContextStore<HttpServletResponse, SpanAndObjectPair> responseContextStore =
-          InstrumentationContext.get(HttpServletResponse.class, SpanAndObjectPair.class);
-      ContextStore<ServletOutputStream, BoundedByteArrayOutputStream> outputStreamContextStore =
-          InstrumentationContext.get(ServletOutputStream.class, BoundedByteArrayOutputStream.class);
-      ContextStore<PrintWriter, BoundedCharArrayWriter> writerContextStore =
-          InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class);
+      VirtualField<HttpServletResponse, SpanAndObjectPair> responseContextStore =
+          VirtualField.find(HttpServletResponse.class, SpanAndObjectPair.class);
+      VirtualField<ServletOutputStream, BoundedByteArrayOutputStream> outputStreamContextStore =
+          VirtualField.find(ServletOutputStream.class, BoundedByteArrayOutputStream.class);
+      VirtualField<PrintWriter, BoundedCharArrayWriter> writerContextStore =
+          VirtualField.find(PrintWriter.class, BoundedCharArrayWriter.class);
 
       // request context to clear body buffer
-      ContextStore<HttpServletRequest, SpanAndObjectPair> requestContextStore =
-          InstrumentationContext.get(HttpServletRequest.class, SpanAndObjectPair.class);
-      ContextStore<ServletInputStream, ByteBufferSpanPair> inputStreamContextStore =
-          InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class);
-      ContextStore<BufferedReader, CharBufferSpanPair> readerContextStore =
-          InstrumentationContext.get(BufferedReader.class, CharBufferSpanPair.class);
+      VirtualField<HttpServletRequest, SpanAndObjectPair> requestContextStore =
+          VirtualField.find(HttpServletRequest.class, SpanAndObjectPair.class);
+      VirtualField<ServletInputStream, ByteBufferSpanPair> inputStreamContextStore =
+          VirtualField.find(ServletInputStream.class, ByteBufferSpanPair.class);
+      VirtualField<BufferedReader, CharBufferSpanPair> readerContextStore =
+          VirtualField.find(BufferedReader.class, CharBufferSpanPair.class);
 
       if (servletRequest instanceof HttpServletRequest) {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         Servlet3Accessor accessor = Servlet3Accessor.INSTANCE;
         if (accessor.getRequestAttribute(request, HYPERTRACE_ASYNC_LISTENER_ATTRIBUTE) == null) {
+          ServletHelper<HttpServletRequest, HttpServletResponse> helper =
+              Servlet3Singletons.helper();
           accessor.addRequestAsyncListener(
               request,
               new BodyCaptureAsyncListener(
                   new AtomicBoolean(),
-                  tracer().getServerSpan(request),
+                  Span.fromContext(helper.getServerContext(request)),
                   responseContextStore,
                   outputStreamContextStore,
                   writerContextStore,
@@ -115,8 +117,7 @@ public final class Servlet30AsyncInstrumentation implements TypeInstrumentation 
                   inputStreamContextStore,
                   readerContextStore,
                   request),
-              accessor.getRequestAttribute(
-                  request, ServletHttpServerTracer.ASYNC_LISTENER_RESPONSE_ATTRIBUTE));
+              helper.getAsyncListenerResponse(request));
           accessor.setRequestAttribute(request, HYPERTRACE_ASYNC_LISTENER_ATTRIBUTE, true);
         }
       }

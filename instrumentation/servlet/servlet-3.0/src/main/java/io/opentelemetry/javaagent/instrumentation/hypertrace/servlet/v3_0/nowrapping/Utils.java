@@ -17,7 +17,7 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping;
 
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -49,15 +49,15 @@ public class Utils {
   public static void captureResponseBody(
       Span span,
       HttpServletResponse httpServletResponse,
-      ContextStore<HttpServletResponse, SpanAndObjectPair> responseContextStore,
-      ContextStore<ServletOutputStream, BoundedByteArrayOutputStream> streamContextStore,
-      ContextStore<PrintWriter, BoundedCharArrayWriter> writerContextStore) {
+      VirtualField<HttpServletResponse, SpanAndObjectPair> responseContextStore,
+      VirtualField<ServletOutputStream, BoundedByteArrayOutputStream> streamContextStore,
+      VirtualField<PrintWriter, BoundedCharArrayWriter> writerContextStore) {
 
     SpanAndObjectPair responseStreamWriterHolder = responseContextStore.get(httpServletResponse);
     if (responseStreamWriterHolder == null) {
       return;
     }
-    responseContextStore.put(httpServletResponse, null);
+    responseContextStore.set(httpServletResponse, null);
 
     if (responseStreamWriterHolder.getAssociatedObject() instanceof ServletOutputStream) {
       ServletOutputStream servletOutputStream =
@@ -71,29 +71,29 @@ public class Utils {
         } catch (UnsupportedEncodingException e) {
           // should not happen
         }
-        streamContextStore.put(servletOutputStream, null);
+        streamContextStore.set(servletOutputStream, null);
       }
     } else if (responseStreamWriterHolder.getAssociatedObject() instanceof PrintWriter) {
       PrintWriter printWriter = (PrintWriter) responseStreamWriterHolder.getAssociatedObject();
       BoundedCharArrayWriter buffer = writerContextStore.get(printWriter);
       if (buffer != null) {
         span.setAttribute(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, buffer.toString());
-        writerContextStore.put(printWriter, null);
+        writerContextStore.set(printWriter, null);
       }
     }
   }
 
   public static void resetRequestBodyBuffers(
       HttpServletRequest httpServletRequest,
-      ContextStore<HttpServletRequest, SpanAndObjectPair> requestContextStore,
-      ContextStore<ServletInputStream, ByteBufferSpanPair> streamContextStore,
-      ContextStore<BufferedReader, CharBufferSpanPair> bufferedReaderContextStore) {
+      VirtualField<HttpServletRequest, SpanAndObjectPair> requestContextStore,
+      VirtualField<ServletInputStream, ByteBufferSpanPair> streamContextStore,
+      VirtualField<BufferedReader, CharBufferSpanPair> bufferedReaderContextStore) {
 
     SpanAndObjectPair requestStreamReaderHolder = requestContextStore.get(httpServletRequest);
     if (requestStreamReaderHolder == null) {
       return;
     }
-    requestContextStore.put(httpServletRequest, null);
+    requestContextStore.set(httpServletRequest, null);
 
     if (requestStreamReaderHolder.getAssociatedObject() instanceof ServletInputStream) {
       ServletInputStream servletInputStream =
@@ -104,7 +104,7 @@ public class Utils {
         // returned
         // it does not even call ServletInputStream#available()
         byteBufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
-        streamContextStore.put(servletInputStream, null);
+        streamContextStore.set(servletInputStream, null);
       }
     } else if (requestStreamReaderHolder.getAssociatedObject() instanceof BufferedReader) {
       BufferedReader bufferedReader =
@@ -112,7 +112,7 @@ public class Utils {
       CharBufferSpanPair charBufferSpanPair = bufferedReaderContextStore.get(bufferedReader);
       if (charBufferSpanPair != null) {
         charBufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
-        bufferedReaderContextStore.put(bufferedReader, null);
+        bufferedReaderContextStore.set(bufferedReader, null);
       }
     }
   }

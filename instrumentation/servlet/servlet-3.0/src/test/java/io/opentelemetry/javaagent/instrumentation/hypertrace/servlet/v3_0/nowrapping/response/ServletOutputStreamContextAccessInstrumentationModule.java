@@ -20,11 +20,10 @@ import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -73,9 +72,9 @@ public class ServletOutputStreamContextAccessInstrumentationModule extends Instr
     public static void enter(
         @Advice.Argument(0) ServletOutputStream servletOutputStream,
         @Advice.Argument(1) BoundedByteArrayOutputStream buffer) {
-      ContextStore<ServletOutputStream, BoundedByteArrayOutputStream> contextStore =
-          InstrumentationContext.get(ServletOutputStream.class, BoundedByteArrayOutputStream.class);
-      contextStore.put(servletOutputStream, buffer);
+      VirtualField<ServletOutputStream, BoundedByteArrayOutputStream> contextStore =
+          VirtualField.find(ServletOutputStream.class, BoundedByteArrayOutputStream.class);
+      contextStore.set(servletOutputStream, buffer);
     }
   }
 }

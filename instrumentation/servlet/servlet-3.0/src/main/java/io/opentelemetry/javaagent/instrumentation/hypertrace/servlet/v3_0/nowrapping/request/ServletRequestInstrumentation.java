@@ -22,10 +22,9 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.returns;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.io.BufferedReader;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletRequest;
@@ -68,7 +67,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
       HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
       // span is added in servlet/filter instrumentation if data capture is enabled
       SpanAndObjectPair requestBufferWrapper =
-          InstrumentationContext.get(HttpServletRequest.class, SpanAndObjectPair.class)
+          VirtualField.find(HttpServletRequest.class, SpanAndObjectPair.class)
               .get(httpServletRequest);
       if (requestBufferWrapper == null) {
         return null;
@@ -100,8 +99,8 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
       }
       HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
 
-      ContextStore<ServletInputStream, ByteBufferSpanPair> contextStore =
-          InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class);
+      VirtualField<ServletInputStream, ByteBufferSpanPair> contextStore =
+          VirtualField.find(ServletInputStream.class, ByteBufferSpanPair.class);
       if (contextStore.get(servletInputStream) != null) {
         // getInputStream() can be called multiple times
         return;
@@ -110,7 +109,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
       ByteBufferSpanPair bufferSpanPair =
           Utils.createRequestByteBufferSpanPair(
               httpServletRequest, spanAndObjectPair.getSpan(), spanAndObjectPair.getHeaders());
-      contextStore.put(servletInputStream, bufferSpanPair);
+      contextStore.set(servletInputStream, bufferSpanPair);
       spanAndObjectPair.setAssociatedObject(servletInputStream);
     }
   }
@@ -121,7 +120,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
     public static SpanAndObjectPair enter(@Advice.This ServletRequest servletRequest) {
       HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
       SpanAndObjectPair spanAndObjectPair =
-          InstrumentationContext.get(HttpServletRequest.class, SpanAndObjectPair.class)
+          VirtualField.find(HttpServletRequest.class, SpanAndObjectPair.class)
               .get(httpServletRequest);
       if (spanAndObjectPair == null) {
         return null;
@@ -152,8 +151,8 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
       }
       HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
 
-      ContextStore<BufferedReader, CharBufferSpanPair> contextStore =
-          InstrumentationContext.get(BufferedReader.class, CharBufferSpanPair.class);
+      VirtualField<BufferedReader, CharBufferSpanPair> contextStore =
+          VirtualField.find(BufferedReader.class, CharBufferSpanPair.class);
       if (contextStore.get(reader) != null) {
         // getReader() can be called multiple times
         return;
@@ -162,7 +161,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
       CharBufferSpanPair bufferSpanPair =
           Utils.createRequestCharBufferSpanPair(
               httpServletRequest, spanAndObjectPair.getSpan(), spanAndObjectPair.getHeaders());
-      contextStore.put(reader, bufferSpanPair);
+      contextStore.set(reader, bufferSpanPair);
       spanAndObjectPair.setAssociatedObject(reader);
     }
   }

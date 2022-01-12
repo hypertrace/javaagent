@@ -23,9 +23,9 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.io.IOException;
 import javax.servlet.ServletOutputStream;
 import net.bytebuddy.asm.Advice;
@@ -83,7 +83,7 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
     public static BoundedByteArrayOutputStream enter(
         @Advice.This ServletOutputStream thizz, @Advice.Argument(0) int b) {
       BoundedByteArrayOutputStream buffer =
-          InstrumentationContext.get(ServletOutputStream.class, BoundedByteArrayOutputStream.class)
+          VirtualField.find(ServletOutputStream.class, BoundedByteArrayOutputStream.class)
               .get(thizz);
       if (buffer == null) {
         return null;
@@ -113,7 +113,7 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
         @Advice.This ServletOutputStream thizz, @Advice.Argument(0) byte[] b) throws IOException {
 
       BoundedByteArrayOutputStream buffer =
-          InstrumentationContext.get(ServletOutputStream.class, BoundedByteArrayOutputStream.class)
+          VirtualField.find(ServletOutputStream.class, BoundedByteArrayOutputStream.class)
               .get(thizz);
       if (buffer == null) {
         return null;
@@ -146,7 +146,7 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
         @Advice.Argument(2) int len) {
 
       BoundedByteArrayOutputStream buffer =
-          InstrumentationContext.get(ServletOutputStream.class, BoundedByteArrayOutputStream.class)
+          VirtualField.find(ServletOutputStream.class, BoundedByteArrayOutputStream.class)
               .get(thizz);
       if (buffer == null) {
         return null;
@@ -176,7 +176,7 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
         @Advice.This ServletOutputStream thizz, @Advice.Argument(0) String s) throws IOException {
 
       BoundedByteArrayOutputStream buffer =
-          InstrumentationContext.get(ServletOutputStream.class, BoundedByteArrayOutputStream.class)
+          VirtualField.find(ServletOutputStream.class, BoundedByteArrayOutputStream.class)
               .get(thizz);
       if (buffer == null) {
         return null;
