@@ -23,7 +23,6 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collections;
@@ -79,8 +78,7 @@ public class ContextAccessorInstrumentationModule extends InstrumentationModule 
     public static void enter(
         @Advice.Argument(0) InputStream inputStream,
         @Advice.Argument(1) SpanAndBuffer spanAndBuffer) {
-      VirtualField.find(InputStream.class, SpanAndBuffer.class)
-          .put(inputStream, spanAndBuffer);
+      VirtualField.find(InputStream.class, SpanAndBuffer.class).put(inputStream, spanAndBuffer);
     }
   }
 

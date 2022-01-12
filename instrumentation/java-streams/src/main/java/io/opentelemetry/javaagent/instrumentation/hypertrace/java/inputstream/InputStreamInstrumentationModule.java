@@ -26,10 +26,10 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import com.google.auto.service.AutoService;
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.instrumentation.api.field.VirtualField;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
@@ -131,10 +131,7 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
       }
 
       InputStreamUtils.read(
-          thizz,
-          spanAndBuffer,
-          VirtualField.find(InputStream.class, SpanAndBuffer.class),
-          read);
+          thizz, spanAndBuffer, VirtualField.find(InputStream.class, SpanAndBuffer.class), read);
     }
   }
 
@@ -219,10 +216,7 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
       }
 
       InputStreamUtils.readAll(
-          thizz,
-          spanAndBuffer,
-          VirtualField.find(InputStream.class, SpanAndBuffer.class),
-          b);
+          thizz, spanAndBuffer, VirtualField.find(InputStream.class, SpanAndBuffer.class), b);
     }
   }
 

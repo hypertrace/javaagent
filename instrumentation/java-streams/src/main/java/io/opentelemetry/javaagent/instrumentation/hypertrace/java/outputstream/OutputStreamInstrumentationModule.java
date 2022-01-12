@@ -40,11 +40,11 @@ import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputSt
 
 /**
  * {@link OutputStream} instrumentation. The type matcher applies to all implementations. However
- * only streams that are in the {@link io.opentelemetry.instrumentation.api.field.VirtualField}
- * are instrumented, otherwise the instrumentation is noop.
+ * only streams that are in the {@link io.opentelemetry.instrumentation.api.field.VirtualField} are
+ * instrumented, otherwise the instrumentation is noop.
  *
- * <p>If the stream is in the {@link io.opentelemetry.instrumentation.api.field.VirtualField}
- * then arguments to write methods are also passed to the buffered stream (value) from the map. The
+ * <p>If the stream is in the {@link io.opentelemetry.instrumentation.api.field.VirtualField} then
+ * arguments to write methods are also passed to the buffered stream (value) from the map. The
  * buffered stream is then used by other instrumentations to capture body.
  */
 @AutoService(InstrumentationModule.class)
@@ -97,8 +97,7 @@ public class OutputStreamInstrumentationModule extends InstrumentationModule {
     public static BoundedByteArrayOutputStream enter(
         @Advice.This OutputStream thizz, @Advice.Argument(0) int b) {
       BoundedByteArrayOutputStream buffer =
-          VirtualField.find(OutputStream.class, BoundedByteArrayOutputStream.class)
-              .get(thizz);
+          VirtualField.find(OutputStream.class, BoundedByteArrayOutputStream.class).get(thizz);
       if (buffer == null) {
         return null;
       }
@@ -124,8 +123,7 @@ public class OutputStreamInstrumentationModule extends InstrumentationModule {
     public static BoundedByteArrayOutputStream enter(
         @Advice.This OutputStream thizz, @Advice.Argument(0) byte b[]) throws IOException {
       BoundedByteArrayOutputStream buffer =
-          VirtualField.find(OutputStream.class, BoundedByteArrayOutputStream.class)
-              .get(thizz);
+          VirtualField.find(OutputStream.class, BoundedByteArrayOutputStream.class).get(thizz);
       if (buffer == null) {
         return null;
       }
@@ -154,8 +152,7 @@ public class OutputStreamInstrumentationModule extends InstrumentationModule {
         @Advice.Argument(1) int off,
         @Advice.Argument(2) int len) {
       BoundedByteArrayOutputStream buffer =
-          VirtualField.find(OutputStream.class, BoundedByteArrayOutputStream.class)
-              .get(thizz);
+          VirtualField.find(OutputStream.class, BoundedByteArrayOutputStream.class).get(thizz);
       if (buffer == null) {
         return null;
       }
