@@ -24,6 +24,9 @@ import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
+import io.opentelemetry.javaagent.tooling.muzzle.InstrumentationModuleMuzzle;
+import io.opentelemetry.javaagent.tooling.muzzle.VirtualFieldMappingsBuilder;
+import io.opentelemetry.javaagent.tooling.muzzle.references.ClassRef;
 import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.List;
@@ -34,20 +37,31 @@ import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
 
 // SPI explicitly added in META-INF/services/...
-public class PrintWriterContextAccessInstrumentationModule extends InstrumentationModule {
+public class PrintWriterContextAccessInstrumentationModule extends InstrumentationModule
+    implements InstrumentationModuleMuzzle {
 
   public PrintWriterContextAccessInstrumentationModule() {
     super("test-print-writer");
   }
 
   @Override
-  public Map<String, String> getMuzzleContextStoreClasses() {
-    return Collections.singletonMap("java.io.PrintWriter", BoundedCharArrayWriter.class.getName());
+  public List<TypeInstrumentation> typeInstrumentations() {
+    return Collections.singletonList(new PrintWriterTriggerInstrumentation());
   }
 
   @Override
-  public List<TypeInstrumentation> typeInstrumentations() {
-    return Collections.singletonList(new PrintWriterTriggerInstrumentation());
+  public Map<String, ClassRef> getMuzzleReferences() {
+    return Collections.emptyMap();
+  }
+
+  @Override
+  public void registerMuzzleVirtualFields(VirtualFieldMappingsBuilder builder) {
+    builder.register("java.io.PrintWriter", BoundedCharArrayWriter.class.getName());
+  }
+
+  @Override
+  public List<String> getMuzzleHelperClassNames() {
+    return Collections.emptyList();
   }
 
   class PrintWriterTriggerInstrumentation implements TypeInstrumentation {

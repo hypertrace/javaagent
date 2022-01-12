@@ -19,6 +19,9 @@ afterEvaluate{
     ).configure()
 }
 
+val versions: Map<String, String> by extra
+
 dependencies {
      testImplementation(testFixtures(project(":testing-common")))
+     testImplementation("io.opentelemetry.javaagent:opentelemetry-muzzle:${versions["opentelemetry_java_agent"]}")
 }
