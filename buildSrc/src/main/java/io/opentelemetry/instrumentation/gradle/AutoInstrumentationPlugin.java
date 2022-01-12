@@ -9,13 +9,11 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
-import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
-import org.gradle.api.attributes.AttributeContainer;
 import org.gradle.api.attributes.LibraryElements;
 import org.gradle.api.plugins.JavaLibraryPlugin;
 import org.gradle.api.plugins.JavaPlugin;
@@ -62,9 +60,6 @@ public class AutoInstrumentationPlugin implements Plugin<Project> {
     dependencies.add("implementation", "net.bytebuddy:byte-buddy:" + versions.get("byte_buddy"));
     dependencies.add("implementation",
         "io.opentelemetry:opentelemetry-api:" + versions.get("opentelemetry"));
-    dependencies.add("implementation",
-        "io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:" + versions
-            .get("opentelemetry_java_agent"));
     dependencies.add("implementation",
         "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:" + versions
             .get("opentelemetry_java_agent"));
