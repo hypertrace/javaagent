@@ -20,6 +20,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.instrumentation.servlet.ServletAsyncListener;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.Utils;
+import io.opentelemetry.javaagent.instrumentation.servlet.v3_0.Servlet3Singletons;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -55,7 +56,6 @@ public final class BodyCaptureAsyncListener implements ServletAsyncListener<Http
 
   public BodyCaptureAsyncListener(
       AtomicBoolean responseHandled,
-      Span span,
       VirtualField<HttpServletResponse, SpanAndObjectPair> responseContextStore,
       VirtualField<ServletOutputStream, BoundedByteArrayOutputStream> streamContextStore,
       VirtualField<PrintWriter, BoundedCharArrayWriter> writerContextStore,
@@ -64,7 +64,7 @@ public final class BodyCaptureAsyncListener implements ServletAsyncListener<Http
       VirtualField<BufferedReader, CharBufferSpanPair> readerContextStore,
       HttpServletRequest request) {
     this.responseHandled = responseHandled;
-    this.span = span;
+    this.span = Span.fromContext(Servlet3Singletons.helper().getServerContext(request));
     this.responseContextStore = responseContextStore;
     this.streamContextStore = streamContextStore;
     this.writerContextStore = writerContextStore;

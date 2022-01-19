@@ -22,7 +22,6 @@ import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.returns;
 
-import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
@@ -109,7 +108,6 @@ public final class Servlet30AsyncInstrumentation implements TypeInstrumentation 
               request,
               new BodyCaptureAsyncListener(
                   new AtomicBoolean(),
-                  Span.fromContext(helper.getServerContext(request)),
                   responseContextStore,
                   outputStreamContextStore,
                   writerContextStore,
