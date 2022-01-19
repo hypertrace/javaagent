@@ -31,6 +31,7 @@ public class AutoInstrumentationPlugin implements Plugin<Project> {
   @Override
   public void apply(Project project) {
     project.getPlugins().apply(JavaLibraryPlugin.class);
+    project.getPlugins().apply("hypertrace.instrumentation-conventions");
     createLibraryConfiguration(project);
     addDependencies(project);
     project
