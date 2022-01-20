@@ -52,7 +52,8 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise prm) {
     Context context =
         ctx.channel()
-            .attr(io.opentelemetry.instrumentation.netty.v4_1.AttributeKeys.SERVER_CONTEXT)
+            .attr(
+                io.opentelemetry.javaagent.instrumentation.netty.v4_1.AttributeKeys.SERVER_CONTEXT)
             .get();
     if (context == null) {
       ctx.write(msg, prm);
@@ -99,7 +100,7 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
     if (msg instanceof HttpResponse) {
       HttpResponse httpResponse = (HttpResponse) msg;
       span.setAttribute(SemanticAttributes.HTTP_STATUS_CODE, httpResponse.status().code());
-      span.setStatus(HttpStatusConverter.statusFromHttpStatus(httpResponse.status().code()));
+      span.setStatus(HttpStatusConverter.SERVER.statusFromHttpStatus(httpResponse.status().code()));
     }
     if (msg instanceof LastHttpContent) {
       span.end();
