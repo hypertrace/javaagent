@@ -39,7 +39,7 @@ subprojects {
             "opentelemetry_java_agent" to "1.9.2-alpha",
             "opentelemetry_java_agent_all" to "1.9.2",
             "opentelemetry_gradle_plugin" to "1.9.2-alpha",
-            "byte_buddy" to "1.11.2",
+            "byte_buddy" to "1.11.22",
                 "slf4j" to "1.7.30"
     ))
 

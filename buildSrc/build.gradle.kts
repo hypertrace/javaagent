@@ -37,10 +37,13 @@ dependencies {
   implementation("org.apache.maven", "maven-aether-provider", "3.3.9")
 
   implementation("com.google.guava", "guava", "20.0")
-  implementation("org.ow2.asm", "asm", "7.0-beta")
-  implementation("org.ow2.asm", "asm-tree", "7.0-beta")
+  implementation("org.ow2.asm", "asm", "9.1")
+  implementation("org.ow2.asm", "asm-tree", "9.1")
   implementation("org.apache.httpcomponents:httpclient:4.5.10")
-  implementation("net.bytebuddy:byte-buddy-gradle-plugin:1.11.2")
+  implementation("net.bytebuddy:byte-buddy-gradle-plugin:1.11.22") {
+    exclude(group = "net.bytebuddy", module = "byte-buddy")
+  }
+  implementation("net.bytebuddy:byte-buddy-dep:1.11.22")
 
   testImplementation("org.spockframework", "spock-core", "1.3-groovy-2.5")
   testImplementation("org.codehaus.groovy", "groovy-all", "2.5.8")
