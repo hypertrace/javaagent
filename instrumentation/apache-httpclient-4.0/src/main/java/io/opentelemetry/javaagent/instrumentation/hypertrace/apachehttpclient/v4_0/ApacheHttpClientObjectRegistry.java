@@ -18,13 +18,12 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.instrumentation.api.caching.Cache;
+import io.opentelemetry.instrumentation.api.cache.Cache;
 import org.apache.http.HttpEntity;
 
 public class ApacheHttpClientObjectRegistry {
 
-  public static final Cache<HttpEntity, SpanAndAttributeKey> entityToSpan =
-      Cache.builder().setWeakKeys().build();
+  public static final Cache<HttpEntity, SpanAndAttributeKey> entityToSpan = Cache.weak();
 
   public static class SpanAndAttributeKey {
     public final Span span;
