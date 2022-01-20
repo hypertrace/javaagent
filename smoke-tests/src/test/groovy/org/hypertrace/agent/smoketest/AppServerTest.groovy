@@ -5,10 +5,15 @@
 
 package org.hypertrace.agent.smoketest
 
+import io.opentelemetry.proto.common.v1.KeyValue
 import okhttp3.MediaType
 import okhttp3.RequestBody
 import spock.lang.Ignore
 import spock.lang.IgnoreIf
+
+import java.util.function.Function
+import java.util.function.Predicate
+import java.util.stream.Stream
 
 import static org.junit.Assume.assumeTrue
 
@@ -57,7 +62,8 @@ abstract class AppServerTest extends SmokeTest {
   def "#appServer smoke test on JDK #jdk"(String appServer, String jdk) {
     assumeTrue(testSmoke())
 
-    String url = "http://localhost:${target.getMappedPort(8080)}/app/greeting"
+    def port = target.getMappedPort(8080)
+    String url = "http://localhost:${port}/app/greeting"
     def request = new Request.Builder().url(url).get().build()
 
     when:
@@ -80,10 +86,16 @@ abstract class AppServerTest extends SmokeTest {
     traces.countSpansByName(getSpanName('/app/headers')) == 1
 
     and: "The span for the initial web request"
-    traces.countFilteredAttributes("http.url", url) == 1
+    traces.countFilteredAttributes("http.scheme", "http") == 2
+    traces.countFilteredAttributes("http.target", "/app/greeting") == 1
+    traces.countFilteredAttributes("http.host", "localhost:" + port) == 1
+
 
     and: "Client and server spans for the remote call"
-    traces.countFilteredAttributes("http.url", "http://localhost:8080/app/headers") == 2
+    // client span still has the http.url attribute
+    traces.countFilteredAttributes("http.url", "http://localhost:8080/app/headers") == 1
+    traces.countFilteredAttributes("http.target", "/app/headers") == 1
+    traces.countFilteredAttributes("http.host", "localhost:8080") == 1
 
     cleanup:
     response?.close()
@@ -96,7 +108,8 @@ abstract class AppServerTest extends SmokeTest {
   def "#appServer request response capture test smoke test on JDK #jdk"(String appServer, String jdk) {
     assumeTrue(testSmoke())
 
-    String url = "http://localhost:${target.getMappedPort(8080)}/app/echo"
+    def port = target.getMappedPort(8080)
+    String url = "http://localhost:${port}/app/echo"
     MediaType JSON = MediaType.parse("application/json; charset=utf-8")
     String requestData = "{\"greeting\" : \"Hello\",\"name\" : \"John\"}"
     RequestBody requestBody = RequestBody.create(requestData, JSON);
@@ -122,10 +135,15 @@ abstract class AppServerTest extends SmokeTest {
     traces.countSpansByName(getSpanName('/app/headers')) == 1
 
     and: "The span for the initial web request"
-    traces.countFilteredAttributes("http.url", url) == 1
+    traces.countFilteredAttributes("http.scheme", "http") == 2
+    traces.countFilteredAttributes("http.target", "/app/echo") == 1
+    traces.countFilteredAttributes("http.host", "localhost:" + port) == 1
 
     and: "Client and server spans for the remote call"
-    traces.countFilteredAttributes("http.url", "http://localhost:8080/app/headers") == 2
+    // client span still has the http.url attribute
+    traces.countFilteredAttributes("http.url", "http://localhost:8080/app/headers") == 1
+    traces.countFilteredAttributes("http.target", "/app/headers") == 1
+    traces.countFilteredAttributes("http.host", "localhost:8080") == 1
 
     and: "response body attribute should be present"
     traces.countFilteredAttributes("http.response.body") == 1
@@ -148,7 +166,8 @@ abstract class AppServerTest extends SmokeTest {
 
   @Unroll
   def "#appServer test static file found on JDK #jdk"(String appServer, String jdk) {
-    String url = "http://localhost:${target.getMappedPort(8080)}/app/hello.txt"
+    def port = target.getMappedPort(8080)
+    String url = "http://localhost:${port}/app/hello.txt"
     def request = new Request.Builder().url(url).get().build()
 
     when:
@@ -170,7 +189,9 @@ abstract class AppServerTest extends SmokeTest {
     traces.countSpansByName(getSpanName('/app/hello.txt')) == 1
 
     and: "The span for the initial web request"
-    traces.countFilteredAttributes("http.url", url) == 1
+    traces.countFilteredAttributes("http.scheme", "http") == 1
+    traces.countFilteredAttributes("http.target", "/app/hello.txt") == 1
+    traces.countFilteredAttributes("http.host", "localhost:" + port) == 1
 
     cleanup:
     response?.close()
@@ -181,7 +202,8 @@ abstract class AppServerTest extends SmokeTest {
 
   @Unroll
   def "#appServer test static file not found on JDK #jdk"(String appServer, String jdk) {
-    String url = "http://localhost:${target.getMappedPort(8080)}/app/file-that-does-not-exist"
+    def port = target.getMappedPort(8080)
+    String url = "http://localhost:${port}/app/file-that-does-not-exist"
     def request = new Request.Builder().url(url).get().build()
 
     when:
@@ -202,7 +224,9 @@ abstract class AppServerTest extends SmokeTest {
     traces.countSpansByName(getSpanName('/app/file-that-does-not-exist')) == 1
 
     and: "The span for the initial web request"
-    traces.countFilteredAttributes("http.url", url) == 1
+    traces.countFilteredAttributes("http.scheme", "http") == 1
+    traces.countFilteredAttributes("http.target", "/app/file-that-does-not-exist") == 1
+    traces.countFilteredAttributes("http.host", "localhost:" + port) == 1
 
     cleanup:
     response?.close()
@@ -221,7 +245,8 @@ abstract class AppServerTest extends SmokeTest {
 
     assumeTrue(testRequestWebInfWebXml())
 
-    String url = "http://localhost:${target.getMappedPort(8080)}/app/WEB-INF/web.xml"
+    def port = target.getMappedPort(8080)
+    String url = "http://localhost:${ port}/app/WEB-INF/web.xml"
     def request = new Request.Builder().url(url).get().build()
 
     when:
@@ -242,7 +267,9 @@ abstract class AppServerTest extends SmokeTest {
     traces.countSpansByName(getSpanName('/app/WEB-INF/web.xml')) == 1
 
     and: "The span for the initial web request"
-    traces.countFilteredAttributes("http.url", url) == 1
+    traces.countFilteredAttributes("http.scheme", "http") == 1
+    traces.countFilteredAttributes("http.target", "/app/WEB-INF/web.xml") == 1
+    traces.countFilteredAttributes("http.host", "localhost:" + port) == 1
 
     cleanup:
     response?.close()
@@ -255,7 +282,8 @@ abstract class AppServerTest extends SmokeTest {
   def "#appServer test request with error JDK #jdk"(String appServer, String jdk) {
     assumeTrue(testException())
 
-    String url = "http://localhost:${target.getMappedPort(8080)}/app/exception"
+    def port = target.getMappedPort(8080)
+    String url = "http://localhost:${port}/app/exception"
     def request = new Request.Builder().url(url).get().build()
 
     when:
@@ -279,7 +307,9 @@ abstract class AppServerTest extends SmokeTest {
     traces.countFilteredEventAttributes('exception.message', 'This is expected') == 1
 
     and: "The span for the initial web request"
-    traces.countFilteredAttributes("http.url", url) == 1
+    traces.countFilteredAttributes("http.scheme", "http") == 1
+    traces.countFilteredAttributes("http.target", "/app/exception") == 1
+    traces.countFilteredAttributes("http.host", "localhost:" + port) == 1
 
     cleanup:
     response?.close()
@@ -295,7 +325,9 @@ abstract class AppServerTest extends SmokeTest {
       return
     }
 
-    String url = "http://localhost:${target.getMappedPort(8080)}/this-is-definitely-not-there-but-there-should-be-a-trace-nevertheless"
+
+    def port = target.getMappedPort(8080)
+    String url = "http://localhost:${port}/this-is-definitely-not-there-but-there-should-be-a-trace-nevertheless"
     def request = new Request.Builder().url(url).get().build()
 
     when:
@@ -316,7 +348,9 @@ abstract class AppServerTest extends SmokeTest {
     traces.countSpansByName(getSpanName('/this-is-definitely-not-there-but-there-should-be-a-trace-nevertheless')) == 1
 
     and: "The span for the initial web request"
-    traces.countFilteredAttributes("http.url", url) == 1
+    traces.countFilteredAttributes("http.scheme", "http") == 1
+    traces.countFilteredAttributes("http.target", "/this-is-definitely-not-there-but-there-should-be-a-trace-nevertheless") == 1
+    traces.countFilteredAttributes("http.host", "localhost:" + port) == 1
 
     cleanup:
     response?.close()
@@ -329,7 +363,8 @@ abstract class AppServerTest extends SmokeTest {
   def "#appServer async smoke test on JDK #jdk"(String appServer, String jdk) {
     assumeTrue(testAsyncSmoke())
 
-    String url = "http://localhost:${target.getMappedPort(8080)}/app/asyncgreeting"
+    def port = target.getMappedPort(8080)
+    String url = "http://localhost:${ port}/app/asyncgreeting"
     def request = new Request.Builder().url(url).get().build()
 
     when:
@@ -352,10 +387,15 @@ abstract class AppServerTest extends SmokeTest {
     traces.countSpansByName(getSpanName('/app/headers')) == 1
 
     and: "The span for the initial web request"
-    traces.countFilteredAttributes("http.url", url) == 1
+    traces.countFilteredAttributes("http.scheme", "http") == 2
+    traces.countFilteredAttributes("http.target", "/app/asyncgreeting") == 1
+    traces.countFilteredAttributes("http.host", "localhost:" + port) == 1
 
     and: "Client and server spans for the remote call"
-    traces.countFilteredAttributes("http.url", "http://localhost:8080/app/headers") == 2
+    // client span still has the http.url attribute
+    traces.countFilteredAttributes("http.url", "http://localhost:8080/app/headers") == 1
+    traces.countFilteredAttributes("http.target", "/app/headers") == 1
+    traces.countFilteredAttributes("http.host", "localhost:8080") == 1
 
     cleanup:
     response?.close()
