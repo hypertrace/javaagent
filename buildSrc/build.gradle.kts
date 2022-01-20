@@ -27,9 +27,10 @@ repositories {
 dependencies {
   implementation(gradleApi())
   implementation(localGroovy())
-  implementation("io.opentelemetry.javaagent:opentelemetry-muzzle:1.7.2-alpha")
-  implementation("io.opentelemetry.instrumentation.muzzle-generation:io.opentelemetry.instrumentation.muzzle-generation.gradle.plugin:0.8.0")
-  implementation("io.opentelemetry.instrumentation.muzzle-check:io.opentelemetry.instrumentation.muzzle-check.gradle.plugin:0.8.0")
+  val otelInstrumentationVersion = "1.9.2-alpha"
+  implementation("io.opentelemetry.javaagent:opentelemetry-muzzle:$otelInstrumentationVersion")
+  implementation("io.opentelemetry.instrumentation.muzzle-generation:io.opentelemetry.instrumentation.muzzle-generation.gradle.plugin:$otelInstrumentationVersion")
+  implementation("io.opentelemetry.instrumentation.muzzle-check:io.opentelemetry.instrumentation.muzzle-check.gradle.plugin:$otelInstrumentationVersion")
   implementation("com.github.jengelman.gradle.plugins:shadow:6.0.0")
   implementation("org.eclipse.aether", "aether-connector-basic", "1.1.0")
   implementation("org.eclipse.aether", "aether-transport-http", "1.1.0")
