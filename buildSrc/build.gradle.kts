@@ -1,7 +1,6 @@
 plugins {
   groovy
   `java-gradle-plugin`
-  `kotlin-dsl`
   id("com.diffplug.gradle.spotless") version "4.3.0"
 }
 
