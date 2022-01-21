@@ -19,13 +19,14 @@ package org.hypertrace.agent.testing;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.instrumentation.api.config.Config;
-import io.opentelemetry.javaagent.tooling.OpenTelemetryInstaller;
+import io.opentelemetry.javaagent.extension.AgentListener;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import java.lang.reflect.Field;
 
-public class TestOpenTelemetryInstaller extends OpenTelemetryInstaller {
+public class TestOpenTelemetryInstaller implements AgentListener {
 
   private final SpanProcessor spanProcessor;
 
@@ -34,7 +35,8 @@ public class TestOpenTelemetryInstaller extends OpenTelemetryInstaller {
   }
 
   @Override
-  public void beforeAgent(Config config) {
+  public void beforeAgent(Config config,
+      AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk) {
     OpenTelemetrySdk.builder()
         .setTracerProvider(SdkTracerProvider.builder().addSpanProcessor(spanProcessor).build())
         .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
@@ -58,7 +60,4 @@ public class TestOpenTelemetryInstaller extends OpenTelemetryInstaller {
       throw new AssertionError("Could not access agent classLoader", t);
     }
   }
-
-  @Override
-  public void afterAgent(Config config) {}
 }
