@@ -33,5 +33,6 @@ dependencies {
     testImplementation("io.undertow:undertow-servlet:2.0.0.Final")
     testRuntimeOnly(project(":instrumentation:servlet:servlet-3.0"))
     testRuntimeOnly(project(":instrumentation:undertow:undertow-servlet-1.4"))
+    testRuntimeOnly("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common-bootstrap:${versions["opentelemetry_java_agent"]}")
 }
 
