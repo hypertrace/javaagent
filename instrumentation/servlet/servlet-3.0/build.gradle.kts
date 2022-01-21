@@ -37,6 +37,7 @@ dependencies {
     compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:${versions["opentelemetry_java_agent"]}")
     compileOnly("javax.servlet:javax.servlet-api:3.1.0")
     testRuntimeOnly("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common-bootstrap:${versions["opentelemetry_java_agent"]}")
+    muzzleBootstrap("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common-bootstrap:${versions["opentelemetry_java_agent"]}")
 
     testImplementation(project(":instrumentation:servlet:servlet-rw"))
     testImplementation(testFixtures(project(":testing-common")) as ProjectDependency) {

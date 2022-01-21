@@ -4,10 +4,12 @@
  */
 
 
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import io.opentelemetry.javaagent.muzzle.matcher.MuzzleGradlePluginUtil
 import org.gradle.api.file.FileCollection
+import org.gradle.api.file.RegularFile
+import org.gradle.api.tasks.bundling.AbstractArchiveTask
 
-import java.lang.reflect.Method
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Predicate
 import java.util.regex.Pattern
@@ -72,6 +74,13 @@ class MuzzlePlugin implements Plugin<Project> {
     // compileMuzzle compiles all projects required to run muzzle validation.
     // Not adding group and description to keep this task from showing in `gradle tasks`.
     def compileMuzzle = project.task('compileMuzzle')
+    def muzzleBootstrap = project.configurations.create("muzzleBootstrap")
+    muzzleBootstrap.setCanBeConsumed(false)
+    muzzleBootstrap.setCanBeResolved(true)
+    def shadowMuzzleBootstrap = project.tasks.create("shadowMuzzleBootstrap", ShadowJar.class) {
+      configurations = [muzzleBootstrap]
+      archiveFileName.set("bootstrap-for-muzzle-check.jar")
+    }
     def muzzle = project.task('muzzle') {
       group = 'Muzzle'
       description = "Run instrumentation muzzle on compile time dependencies"
@@ -84,6 +93,7 @@ class MuzzlePlugin implements Plugin<Project> {
         }
         println "Muzzle executing for $project"
       }
+      dependsOn(shadowMuzzleBootstrap)
     }
     def printReferences = project.task('printMuzzleReferences') {
       group = 'Muzzle'
@@ -197,7 +207,7 @@ class MuzzlePlugin implements Plugin<Project> {
   /**
    * Create a classloader with dependencies for a single muzzle task.
    */
-  private static ClassLoader createClassLoaderForTask(Project project, Project bootstrapProject, String muzzleTaskName) {
+  private static ClassLoader createClassLoaderForTask(Project project, Project bootstrapProject, String muzzleTaskName, RegularFile shadowMuzzleArchiveFile) {
     List<URL> userUrls = new ArrayList<>()
 
     project.getLogger().info("Creating task classpath")
@@ -209,6 +219,9 @@ class MuzzlePlugin implements Plugin<Project> {
     for (File f : bootstrapProject.sourceSets.main.runtimeClasspath.getFiles()) {
       project.getLogger().info("-- Added to instrumentation bootstrap classpath: $f")
       userUrls.add(f.toURI().toURL())
+    }
+    if (shadowMuzzleArchiveFile != null) {
+      userUrls.add(shadowMuzzleArchiveFile.asFile.toURI().toURL())
     }
     return new URLClassLoader(userUrls.toArray(new URL[0]), ClassLoader.platformClassLoader)
   }
@@ -373,7 +386,12 @@ class MuzzlePlugin implements Plugin<Project> {
         ClassLoader instrumentationCL = createInstrumentationClassloader(instrumentationProject, toolingProject)
         def ccl = Thread.currentThread().contextClassLoader
         Thread.currentThread().contextClassLoader = instrumentationCL
-        ClassLoader userCL = createClassLoaderForTask(instrumentationProject, bootstrapProject, taskName)
+        def shadowMuzzleTask = project.tasks.findByName("shadowMuzzleBootstrap") as AbstractArchiveTask
+        RegularFile shadowMuzzleArchiveFile
+        if (shadowMuzzleTask != null) {
+          shadowMuzzleArchiveFile = shadowMuzzleTask.getArchiveFile().get()
+        }
+        ClassLoader userCL = createClassLoaderForTask(instrumentationProject, bootstrapProject, taskName, shadowMuzzleArchiveFile)
         try {
           MuzzleGradlePluginUtil.@Companion.assertInstrumentationMuzzled(instrumentationCL, userCL, muzzleDirective.assertPass)
         } finally {
