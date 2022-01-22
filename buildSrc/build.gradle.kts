@@ -40,10 +40,10 @@ dependencies {
   implementation("org.ow2.asm", "asm", "9.1")
   implementation("org.ow2.asm", "asm-tree", "9.1")
   implementation("org.apache.httpcomponents:httpclient:4.5.10")
-  implementation("net.bytebuddy:byte-buddy-gradle-plugin:1.11.22") {
+  implementation("net.bytebuddy:byte-buddy-gradle-plugin:1.12.6") {
     exclude(group = "net.bytebuddy", module = "byte-buddy")
   }
-  implementation("net.bytebuddy:byte-buddy-dep:1.11.22")
+  implementation("net.bytebuddy:byte-buddy-dep:1.12.6")
 
   testImplementation("org.spockframework", "spock-core", "1.3-groovy-2.5")
   testImplementation("org.codehaus.groovy", "groovy-all", "2.5.8")
