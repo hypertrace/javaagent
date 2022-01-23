@@ -22,9 +22,9 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.returns;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.undertow.common.RequestBodyCaptureMethod;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.servlet.spec.HttpServletRequestImpl;
@@ -67,8 +67,8 @@ public final class UndertowHttpServletRequestInstrumentation implements TypeInst
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void enter(@Advice.This final HttpServletRequestImpl httpServletRequestImpl) {
       final HttpServerExchange exchange = httpServletRequestImpl.getExchange();
-      InstrumentationContext.get(HttpServerExchange.class, RequestBodyCaptureMethod.class)
-          .put(exchange, RequestBodyCaptureMethod.SERVLET);
+      VirtualField.find(HttpServerExchange.class, RequestBodyCaptureMethod.class)
+          .set(exchange, RequestBodyCaptureMethod.SERVLET);
     }
   }
 }

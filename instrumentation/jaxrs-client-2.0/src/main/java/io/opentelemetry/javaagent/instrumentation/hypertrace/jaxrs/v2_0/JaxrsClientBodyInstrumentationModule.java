@@ -23,10 +23,10 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.returns;
 
 import com.google.auto.service.AutoService;
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collections;
@@ -83,8 +83,8 @@ public class JaxrsClientBodyInstrumentationModule extends InstrumentationModule 
       client.register(JaxrsClientBodyCaptureFilter.class, Integer.MIN_VALUE);
       client.register(
           new JaxrsClientEntityInterceptor(
-              InstrumentationContext.get(InputStream.class, SpanAndBuffer.class),
-              InstrumentationContext.get(OutputStream.class, BoundedByteArrayOutputStream.class)));
+              VirtualField.find(InputStream.class, SpanAndBuffer.class),
+              VirtualField.find(OutputStream.class, BoundedByteArrayOutputStream.class)));
     }
   }
 }

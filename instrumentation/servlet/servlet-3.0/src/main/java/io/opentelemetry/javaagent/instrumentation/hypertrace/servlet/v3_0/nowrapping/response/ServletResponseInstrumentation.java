@@ -22,10 +22,9 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.returns;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import javax.servlet.ServletOutputStream;
@@ -103,8 +102,8 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
         return;
       }
 
-      ContextStore<ServletOutputStream, BoundedByteArrayOutputStream> contextStore =
-          InstrumentationContext.get(ServletOutputStream.class, BoundedByteArrayOutputStream.class);
+      VirtualField<ServletOutputStream, BoundedByteArrayOutputStream> contextStore =
+          VirtualField.find(ServletOutputStream.class, BoundedByteArrayOutputStream.class);
       if (contextStore.get(servletOutputStream) != null) {
         // getOutputStream() can be called multiple times
         return;
@@ -119,11 +118,11 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
         String charsetStr = httpServletResponse.getCharacterEncoding();
         Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
         BoundedByteArrayOutputStream buffer = BoundedBuffersFactory.createStream(charset);
-        contextStore.put(servletOutputStream, buffer);
+        contextStore.set(servletOutputStream, buffer);
         SpanAndObjectPair spanAndObjectPair = new SpanAndObjectPair(null, null);
         spanAndObjectPair.setAssociatedObject(servletOutputStream);
-        InstrumentationContext.get(HttpServletResponse.class, SpanAndObjectPair.class)
-            .put(httpServletResponse, spanAndObjectPair);
+        VirtualField.find(HttpServletResponse.class, SpanAndObjectPair.class)
+            .set(httpServletResponse, spanAndObjectPair);
       }
     }
   }
@@ -163,8 +162,8 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
         return;
       }
 
-      ContextStore<PrintWriter, BoundedCharArrayWriter> contextStore =
-          InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class);
+      VirtualField<PrintWriter, BoundedCharArrayWriter> contextStore =
+          VirtualField.find(PrintWriter.class, BoundedCharArrayWriter.class);
       if (contextStore.get(printWriter) != null) {
         // getWriter() can be called multiple times
         return;
@@ -177,11 +176,11 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
           && ContentTypeUtils.shouldCapture(contentType)) {
 
         BoundedCharArrayWriter writer = BoundedBuffersFactory.createWriter();
-        contextStore.put(printWriter, writer);
+        contextStore.set(printWriter, writer);
         SpanAndObjectPair spanAndObjectPair = new SpanAndObjectPair(null, null);
         spanAndObjectPair.setAssociatedObject(printWriter);
-        InstrumentationContext.get(HttpServletResponse.class, SpanAndObjectPair.class)
-            .put(httpServletResponse, spanAndObjectPair);
+        VirtualField.find(HttpServletResponse.class, SpanAndObjectPair.class)
+            .set(httpServletResponse, spanAndObjectPair);
       }
     }
   }

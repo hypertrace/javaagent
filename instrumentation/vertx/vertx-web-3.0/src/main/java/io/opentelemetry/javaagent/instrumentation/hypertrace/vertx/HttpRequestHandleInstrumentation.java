@@ -22,9 +22,9 @@ import static net.bytebuddy.matcher.ElementMatchers.isMethod;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.vertx.client.Contexts;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpClientResponse;
@@ -61,8 +61,7 @@ public class HttpRequestHandleInstrumentation implements TypeInstrumentation {
     public static void handleResponseEnter(
         @Advice.This HttpClientRequest request, @Advice.Argument(0) HttpClientResponse response) {
 
-      Contexts contexts =
-          InstrumentationContext.get(HttpClientRequest.class, Contexts.class).get(request);
+      Contexts contexts = VirtualField.find(HttpClientRequest.class, Contexts.class).get(request);
       if (contexts == null) {
         return;
       }
@@ -86,7 +85,7 @@ public class HttpRequestHandleInstrumentation implements TypeInstrumentation {
       String contentType = response.getHeader("Content-Type");
       if (instrumentationConfig.httpBody().response()
           && ContentTypeUtils.shouldCapture(contentType)) {
-        InstrumentationContext.get(HttpClientResponse.class, Span.class).put(response, span);
+        VirtualField.find(HttpClientResponse.class, Span.class).set(response, span);
       }
     }
   }

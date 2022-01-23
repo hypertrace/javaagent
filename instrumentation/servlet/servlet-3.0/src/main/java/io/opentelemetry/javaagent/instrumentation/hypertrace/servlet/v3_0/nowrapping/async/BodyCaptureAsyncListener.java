@@ -17,9 +17,10 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.async;
 
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.instrumentation.servlet.ServletAsyncListener;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.Utils;
+import io.opentelemetry.javaagent.instrumentation.servlet.v3_0.Servlet3Singletons;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -44,27 +45,26 @@ public final class BodyCaptureAsyncListener implements ServletAsyncListener<Http
   private final AtomicBoolean responseHandled;
   private final Span span;
 
-  private final ContextStore<HttpServletResponse, SpanAndObjectPair> responseContextStore;
-  private final ContextStore<ServletOutputStream, BoundedByteArrayOutputStream> streamContextStore;
-  private final ContextStore<PrintWriter, BoundedCharArrayWriter> writerContextStore;
+  private final VirtualField<HttpServletResponse, SpanAndObjectPair> responseContextStore;
+  private final VirtualField<ServletOutputStream, BoundedByteArrayOutputStream> streamContextStore;
+  private final VirtualField<PrintWriter, BoundedCharArrayWriter> writerContextStore;
 
-  private final ContextStore<HttpServletRequest, SpanAndObjectPair> requestContextStore;
-  private final ContextStore<ServletInputStream, ByteBufferSpanPair> inputStreamContextStore;
-  private final ContextStore<BufferedReader, CharBufferSpanPair> readerContextStore;
+  private final VirtualField<HttpServletRequest, SpanAndObjectPair> requestContextStore;
+  private final VirtualField<ServletInputStream, ByteBufferSpanPair> inputStreamContextStore;
+  private final VirtualField<BufferedReader, CharBufferSpanPair> readerContextStore;
   private final HttpServletRequest request;
 
   public BodyCaptureAsyncListener(
       AtomicBoolean responseHandled,
-      Span span,
-      ContextStore<HttpServletResponse, SpanAndObjectPair> responseContextStore,
-      ContextStore<ServletOutputStream, BoundedByteArrayOutputStream> streamContextStore,
-      ContextStore<PrintWriter, BoundedCharArrayWriter> writerContextStore,
-      ContextStore<HttpServletRequest, SpanAndObjectPair> requestContextStore,
-      ContextStore<ServletInputStream, ByteBufferSpanPair> inputStreamContextStore,
-      ContextStore<BufferedReader, CharBufferSpanPair> readerContextStore,
+      VirtualField<HttpServletResponse, SpanAndObjectPair> responseContextStore,
+      VirtualField<ServletOutputStream, BoundedByteArrayOutputStream> streamContextStore,
+      VirtualField<PrintWriter, BoundedCharArrayWriter> writerContextStore,
+      VirtualField<HttpServletRequest, SpanAndObjectPair> requestContextStore,
+      VirtualField<ServletInputStream, ByteBufferSpanPair> inputStreamContextStore,
+      VirtualField<BufferedReader, CharBufferSpanPair> readerContextStore,
       HttpServletRequest request) {
     this.responseHandled = responseHandled;
-    this.span = span;
+    this.span = Span.fromContext(Servlet3Singletons.helper().getServerContext(request));
     this.responseContextStore = responseContextStore;
     this.streamContextStore = streamContextStore;
     this.writerContextStore = writerContextStore;

@@ -20,14 +20,16 @@ import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
+import io.opentelemetry.javaagent.tooling.muzzle.InstrumentationModuleMuzzle;
+import io.opentelemetry.javaagent.tooling.muzzle.VirtualFieldMappingsBuilder;
+import io.opentelemetry.javaagent.tooling.muzzle.references.ClassRef;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.bytebuddy.asm.Advice;
@@ -37,18 +39,28 @@ import org.hypertrace.agent.core.instrumentation.SpanAndBuffer;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 
 // SPI explicitly added in META-INF/services/...
-public class ContextAccessorInstrumentationModule extends InstrumentationModule {
+public class ContextAccessorInstrumentationModule extends InstrumentationModule
+    implements InstrumentationModuleMuzzle {
 
-  public ContextAccessorInstrumentationModule() {
-    super("test-context-accessor");
+  @Override
+  public Map<String, ClassRef> getMuzzleReferences() {
+    return Collections.emptyMap();
   }
 
   @Override
-  public Map<String, String> getMuzzleContextStoreClasses() {
-    Map<String, String> contextStore = new HashMap<>();
-    contextStore.put("java.io.InputStream", SpanAndBuffer.class.getName());
-    contextStore.put("java.io.OutputStream", BoundedByteArrayOutputStream.class.getName());
-    return contextStore;
+  public void registerMuzzleVirtualFields(VirtualFieldMappingsBuilder builder) {
+    builder
+        .register("java.io.InputStream", SpanAndBuffer.class.getName())
+        .register("java.io.OutputStream", BoundedByteArrayOutputStream.class.getName());
+  }
+
+  @Override
+  public List<String> getMuzzleHelperClassNames() {
+    return Collections.emptyList();
+  }
+
+  public ContextAccessorInstrumentationModule() {
+    super("test-context-accessor");
   }
 
   @Override
@@ -75,22 +87,23 @@ public class ContextAccessorInstrumentationModule extends InstrumentationModule 
   }
 
   static class AddToInputStreamContextAdvice {
+
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void enter(
         @Advice.Argument(0) InputStream inputStream,
         @Advice.Argument(1) SpanAndBuffer spanAndBuffer) {
-      InstrumentationContext.get(InputStream.class, SpanAndBuffer.class)
-          .put(inputStream, spanAndBuffer);
+      VirtualField.find(InputStream.class, SpanAndBuffer.class).set(inputStream, spanAndBuffer);
     }
   }
 
   static class AddToOutputStreamContextAdvice {
+
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void enter(
         @Advice.Argument(0) OutputStream outputStream,
         @Advice.Argument(1) BoundedByteArrayOutputStream buffer) {
-      InstrumentationContext.get(OutputStream.class, BoundedByteArrayOutputStream.class)
-          .put(outputStream, buffer);
+      VirtualField.find(OutputStream.class, BoundedByteArrayOutputStream.class)
+          .set(outputStream, buffer);
     }
   }
 }

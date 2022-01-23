@@ -22,7 +22,7 @@ muzzle {
 afterEvaluate{
     io.opentelemetry.instrumentation.gradle.bytebuddy.ByteBuddyPluginConfigurator(project,
             sourceSets.main.get(),
-            io.opentelemetry.javaagent.muzzle.generation.MuzzleCodeGenerationPlugin::class.java.name,
+            io.opentelemetry.javaagent.tooling.muzzle.generation.MuzzleCodeGenerationPlugin::class.java.name,
             project(":javaagent-tooling").configurations["instrumentationMuzzle"] + configurations.runtimeClasspath
     ).configure()
 }
@@ -30,8 +30,10 @@ afterEvaluate{
 val versions: Map<String, String> by extra
 
 dependencies {
-    implementation("io.opentelemetry.instrumentation:opentelemetry-servlet-3.0:${versions["opentelemetry_java_agent"]}")
+    implementation("io.opentelemetry.instrumentation:opentelemetry-servlet-common:${versions["opentelemetry_java_agent"]}")
+    implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0:${versions["opentelemetry_java_agent"]}") // Servlet3Accessor
     testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0:${versions["opentelemetry_java_agent"]}")
+    testImplementation("io.opentelemetry.javaagent:opentelemetry-muzzle:${versions["opentelemetry_java_agent"]}")
     compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:${versions["opentelemetry_java_agent"]}")
     compileOnly("javax.servlet:javax.servlet-api:3.1.0")
 

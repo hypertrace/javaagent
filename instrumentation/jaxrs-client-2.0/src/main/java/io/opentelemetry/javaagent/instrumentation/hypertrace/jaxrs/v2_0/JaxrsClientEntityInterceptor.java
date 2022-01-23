@@ -18,7 +18,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.jaxrs.v2_0;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -47,12 +47,12 @@ public class JaxrsClientEntityInterceptor implements ReaderInterceptor, WriterIn
   private static final InstrumentationConfig instrumentationConfig =
       InstrumentationConfig.ConfigProvider.get();
 
-  private final ContextStore<InputStream, SpanAndBuffer> inputStreamContextStore;
-  private final ContextStore<OutputStream, BoundedByteArrayOutputStream> outputStreamContextStore;
+  private final VirtualField<InputStream, SpanAndBuffer> inputStreamContextStore;
+  private final VirtualField<OutputStream, BoundedByteArrayOutputStream> outputStreamContextStore;
 
   public JaxrsClientEntityInterceptor(
-      ContextStore<InputStream, SpanAndBuffer> inputStreamContextStore,
-      ContextStore<OutputStream, BoundedByteArrayOutputStream> outputStreamContextStore) {
+      VirtualField<InputStream, SpanAndBuffer> inputStreamContextStore,
+      VirtualField<OutputStream, BoundedByteArrayOutputStream> outputStreamContextStore) {
     this.inputStreamContextStore = inputStreamContextStore;
     this.outputStreamContextStore = outputStreamContextStore;
   }
@@ -99,7 +99,7 @@ public class JaxrsClientEntityInterceptor implements ReaderInterceptor, WriterIn
       BoundedByteArrayOutputStream buffer =
           BoundedBuffersFactory.createStream(contentLength, charset);
 
-      inputStreamContextStore.put(
+      inputStreamContextStore.set(
           entityStream,
           new SpanAndBuffer(
               currentSpan, buffer, HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, charset));
@@ -146,12 +146,12 @@ public class JaxrsClientEntityInterceptor implements ReaderInterceptor, WriterIn
     BoundedByteArrayOutputStream buffer = BoundedBuffersFactory.createStream(charset);
     OutputStream entityStream = requestContext.getOutputStream();
     try {
-      outputStreamContextStore.put(entityStream, buffer);
+      outputStreamContextStore.set(entityStream, buffer);
       requestContext.proceed();
     } catch (Exception ex) {
       log.error("Failed to capture request body", ex);
     } finally {
-      outputStreamContextStore.put(entityStream, null);
+      outputStreamContextStore.set(entityStream, null);
       currentSpan.setAttribute(
           HypertraceSemanticAttributes.HTTP_REQUEST_BODY, buffer.toStringWithSuppliedCharset());
     }

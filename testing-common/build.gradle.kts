@@ -22,7 +22,17 @@ dependencies {
     testFixturesApi("com.squareup.okhttp3:okhttp:4.9.0")
     testFixturesApi("com.squareup.okhttp3:logging-interceptor:4.9.0")
     testFixturesImplementation("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:${versions["opentelemetry_java_agent"]}")
-    testFixturesImplementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${versions["opentelemetry_java_agent"]}")
+    testFixturesImplementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${versions["opentelemetry_java_agent"]}") {
+        constraints {
+            implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling-java9:1.7.2-alpha") {
+                attributes {
+                    // this transitive dependency creates classes compatible with Java 9 and up, but is only referenced in safe ways for
+                    // java 8 by the javaagent-tooling dependency
+                    attribute(Attribute.of("org.gradle.jvm.version", Integer::class.java), 9 as Integer)
+                }
+            }
+        }
+    }
     testFixturesImplementation("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:${versions["opentelemetry_java_agent"]}")
     testFixturesImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:${versions["opentelemetry_java_agent"]}")
     testFixturesImplementation("ch.qos.logback:logback-classic:1.2.3")

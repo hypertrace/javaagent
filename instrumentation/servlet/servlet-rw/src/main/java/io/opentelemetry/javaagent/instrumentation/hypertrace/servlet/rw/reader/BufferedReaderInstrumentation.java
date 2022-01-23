@@ -23,9 +23,9 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.io.BufferedReader;
 import java.io.IOException;
 import net.bytebuddy.asm.Advice;
@@ -70,7 +70,7 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static CharBufferSpanPair enter(@Advice.This BufferedReader thizz) {
       CharBufferSpanPair bufferSpanPair =
-          InstrumentationContext.get(BufferedReader.class, CharBufferSpanPair.class).get(thizz);
+          VirtualField.find(BufferedReader.class, CharBufferSpanPair.class).get(thizz);
       if (bufferSpanPair == null) {
         return null;
       }
@@ -104,7 +104,7 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static CharBufferSpanPair enter(@Advice.This BufferedReader thizz) {
       CharBufferSpanPair bufferSpanPair =
-          InstrumentationContext.get(BufferedReader.class, CharBufferSpanPair.class).get(thizz);
+          VirtualField.find(BufferedReader.class, CharBufferSpanPair.class).get(thizz);
       if (bufferSpanPair == null) {
         return null;
       }
@@ -138,7 +138,7 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static CharBufferSpanPair enter(@Advice.This BufferedReader thizz) {
       CharBufferSpanPair bufferSpanPair =
-          InstrumentationContext.get(BufferedReader.class, CharBufferSpanPair.class).get(thizz);
+          VirtualField.find(BufferedReader.class, CharBufferSpanPair.class).get(thizz);
       if (bufferSpanPair == null) {
         return null;
       }
@@ -174,7 +174,7 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static CharBufferSpanPair enter(@Advice.This BufferedReader thizz) {
       CharBufferSpanPair bufferSpanPair =
-          InstrumentationContext.get(BufferedReader.class, CharBufferSpanPair.class).get(thizz);
+          VirtualField.find(BufferedReader.class, CharBufferSpanPair.class).get(thizz);
       if (bufferSpanPair == null) {
         return null;
       }

@@ -29,7 +29,6 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.AttributeKeys;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.DataCaptureUtils;
-import io.opentelemetry.javaagent.instrumentation.netty.v4_0.server.NettyHttpServerTracer;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,7 +48,11 @@ public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapte
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) {
     Channel channel = ctx.channel();
-    Context context = NettyHttpServerTracer.tracer().getServerContext(channel);
+    Context context =
+        channel
+            .attr(
+                io.opentelemetry.javaagent.instrumentation.netty.v4_0.AttributeKeys.SERVER_CONTEXT)
+            .get();
     if (context == null) {
       ctx.fireChannelRead(msg);
       return;

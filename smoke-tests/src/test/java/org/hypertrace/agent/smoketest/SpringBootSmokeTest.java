@@ -173,8 +173,8 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
     Assertions.assertEquals(requestBody, requestBodyAttributes.get(0));
 
     ArrayList<ExportMetricsServiceRequest> metrics = new ArrayList<>(waitForMetrics());
-    Assertions.assertTrue(hasMetricNamed("spansSeenByExporter", metrics));
-    Assertions.assertTrue(hasMetricNamed("spansExportedByExporter", metrics));
+    Assertions.assertTrue(hasMetricNamed("otlp.exporter.seen", metrics));
+    Assertions.assertTrue(hasMetricNamed("otlp.exported.exported", metrics));
     Assertions.assertTrue(hasMetricNamed("processedSpans", metrics));
     Assertions.assertTrue(hasMetricNamed("queueSize", metrics));
     Assertions.assertTrue(hasMetricNamed("runtime.jvm.gc.count", metrics));

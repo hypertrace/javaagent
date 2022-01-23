@@ -25,10 +25,9 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
@@ -129,8 +128,8 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
           && ContentTypeUtils.shouldCapture(httpRequest.getContentType())) {
         // The HttpServletRequest instrumentation uses this to
         // enable the instrumentation
-        InstrumentationContext.get(HttpServletRequest.class, SpanAndObjectPair.class)
-            .put(
+        VirtualField.find(HttpServletRequest.class, SpanAndObjectPair.class)
+            .set(
                 httpRequest,
                 new SpanAndObjectPair(currentSpan, Collections.unmodifiableMap(headers)));
       }
@@ -167,20 +166,20 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
       }
 
       // response context to capture body and clear the context
-      ContextStore<HttpServletResponse, SpanAndObjectPair> responseContextStore =
-          InstrumentationContext.get(HttpServletResponse.class, SpanAndObjectPair.class);
-      ContextStore<ServletOutputStream, BoundedByteArrayOutputStream> outputStreamContextStore =
-          InstrumentationContext.get(ServletOutputStream.class, BoundedByteArrayOutputStream.class);
-      ContextStore<PrintWriter, BoundedCharArrayWriter> writerContextStore =
-          InstrumentationContext.get(PrintWriter.class, BoundedCharArrayWriter.class);
+      VirtualField<HttpServletResponse, SpanAndObjectPair> responseContextStore =
+          VirtualField.find(HttpServletResponse.class, SpanAndObjectPair.class);
+      VirtualField<ServletOutputStream, BoundedByteArrayOutputStream> outputStreamContextStore =
+          VirtualField.find(ServletOutputStream.class, BoundedByteArrayOutputStream.class);
+      VirtualField<PrintWriter, BoundedCharArrayWriter> writerContextStore =
+          VirtualField.find(PrintWriter.class, BoundedCharArrayWriter.class);
 
       // request context to clear body buffer
-      ContextStore<HttpServletRequest, SpanAndObjectPair> requestContextStore =
-          InstrumentationContext.get(HttpServletRequest.class, SpanAndObjectPair.class);
-      ContextStore<ServletInputStream, ByteBufferSpanPair> inputStreamContextStore =
-          InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class);
-      ContextStore<BufferedReader, CharBufferSpanPair> readerContextStore =
-          InstrumentationContext.get(BufferedReader.class, CharBufferSpanPair.class);
+      VirtualField<HttpServletRequest, SpanAndObjectPair> requestContextStore =
+          VirtualField.find(HttpServletRequest.class, SpanAndObjectPair.class);
+      VirtualField<ServletInputStream, ByteBufferSpanPair> inputStreamContextStore =
+          VirtualField.find(ServletInputStream.class, ByteBufferSpanPair.class);
+      VirtualField<BufferedReader, CharBufferSpanPair> readerContextStore =
+          VirtualField.find(BufferedReader.class, CharBufferSpanPair.class);
 
       if (!request.isAsyncStarted()) {
         if (instrumentationConfig.httpHeaders().response()) {

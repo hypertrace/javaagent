@@ -23,9 +23,9 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClientResponse;
@@ -58,12 +58,12 @@ public class HttpResponseInstrumentation implements TypeInstrumentation {
         @Advice.This HttpClientResponse response,
         @Advice.Argument(value = 0, readOnly = false) Handler<Buffer> handler) {
 
-      Span span = InstrumentationContext.get(HttpClientResponse.class, Span.class).get(response);
+      Span span = VirtualField.find(HttpClientResponse.class, Span.class).get(response);
       if (span == null) {
         // request not traced - e.g. wrong content type
         return;
       }
-      InstrumentationContext.get(HttpClientResponse.class, Span.class).put(response, null);
+      VirtualField.find(HttpClientResponse.class, Span.class).set(response, null);
 
       handler = new ResponseBodyWrappingHandler(handler, span);
     }

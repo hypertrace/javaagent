@@ -18,11 +18,13 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.rw.reader;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
+import io.opentelemetry.javaagent.tooling.muzzle.InstrumentationModuleMuzzle;
+import io.opentelemetry.javaagent.tooling.muzzle.VirtualFieldMappingsBuilder;
+import io.opentelemetry.javaagent.tooling.muzzle.references.ClassRef;
 import java.io.BufferedReader;
 import java.util.Collections;
 import java.util.List;
@@ -33,20 +35,31 @@ import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
 
 // SPI explicitly added in META-INF/services/...
-public class BufferedReaderContextAccessInstrumentationModule extends InstrumentationModule {
+public class BufferedReaderContextAccessInstrumentationModule extends InstrumentationModule
+    implements InstrumentationModuleMuzzle {
 
   public BufferedReaderContextAccessInstrumentationModule() {
     super("test-buffered-reader");
   }
 
   @Override
-  public Map<String, String> getMuzzleContextStoreClasses() {
-    return Collections.singletonMap("java.io.BufferedReader", CharBufferSpanPair.class.getName());
+  public List<TypeInstrumentation> typeInstrumentations() {
+    return Collections.singletonList(new BufferedReaderTriggerInstrumentation());
   }
 
   @Override
-  public List<TypeInstrumentation> typeInstrumentations() {
-    return Collections.singletonList(new BufferedReaderTriggerInstrumentation());
+  public Map<String, ClassRef> getMuzzleReferences() {
+    return Collections.emptyMap();
+  }
+
+  @Override
+  public void registerMuzzleVirtualFields(VirtualFieldMappingsBuilder builder) {
+    builder.register("java.io.BufferedReader", CharBufferSpanPair.class.getName());
+  }
+
+  @Override
+  public List<String> getMuzzleHelperClassNames() {
+    return Collections.emptyList();
   }
 
   static class BufferedReaderTriggerInstrumentation implements TypeInstrumentation {
@@ -65,13 +78,14 @@ public class BufferedReaderContextAccessInstrumentationModule extends Instrument
   }
 
   static class TestAdvice {
+
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void enter(
         @Advice.Argument(0) BufferedReader bufferedReader,
         @Advice.Argument(1) CharBufferSpanPair metadata) {
-      ContextStore<BufferedReader, CharBufferSpanPair> contextStore =
-          InstrumentationContext.get(BufferedReader.class, CharBufferSpanPair.class);
-      contextStore.put(bufferedReader, metadata);
+      VirtualField<BufferedReader, CharBufferSpanPair> contextStore =
+          VirtualField.find(BufferedReader.class, CharBufferSpanPair.class);
+      contextStore.set(bufferedReader, metadata);
     }
   }
 }

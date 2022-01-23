@@ -23,9 +23,9 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import java.io.IOException;
 import javax.servlet.ServletInputStream;
 import net.bytebuddy.asm.Advice;
@@ -90,7 +90,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
       ByteBufferSpanPair bufferSpanPair =
-          InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class).get(thizz);
+          VirtualField.find(ServletInputStream.class, ByteBufferSpanPair.class).get(thizz);
       if (bufferSpanPair == null) {
         return null;
       }
@@ -132,7 +132,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
       ByteBufferSpanPair bufferSpanPair =
-          InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class).get(thizz);
+          VirtualField.find(ServletInputStream.class, ByteBufferSpanPair.class).get(thizz);
       if (bufferSpanPair == null) {
         return null;
       }
@@ -176,7 +176,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
       ByteBufferSpanPair bufferSpanPair =
-          InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class).get(thizz);
+          VirtualField.find(ServletInputStream.class, ByteBufferSpanPair.class).get(thizz);
       if (bufferSpanPair == null) {
         return null;
       }
@@ -223,7 +223,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
       ByteBufferSpanPair bufferSpanPair =
-          InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class).get(thizz);
+          VirtualField.find(ServletInputStream.class, ByteBufferSpanPair.class).get(thizz);
       if (bufferSpanPair == null) {
         return null;
       }
@@ -263,7 +263,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
       ByteBufferSpanPair bufferSpanPair =
-          InstrumentationContext.get(ServletInputStream.class, ByteBufferSpanPair.class).get(thizz);
+          VirtualField.find(ServletInputStream.class, ByteBufferSpanPair.class).get(thizz);
       if (bufferSpanPair == null) {
         return null;
       }

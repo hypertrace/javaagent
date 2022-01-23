@@ -23,10 +23,9 @@ import static net.bytebuddy.matcher.ElementMatchers.returns;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v4_0.ApacheHttpClientObjectRegistry.SpanAndAttributeKey;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -99,8 +98,7 @@ public class HttpEntityInstrumentation implements TypeInstrumentation {
               BoundedBuffersFactory.createStream((int) contentSize, charset),
               clientSpan.attributeKey,
               charset);
-      InstrumentationContext.get(InputStream.class, SpanAndBuffer.class)
-          .put(inputStream, spanAndBuffer);
+      VirtualField.find(InputStream.class, SpanAndBuffer.class).set(inputStream, spanAndBuffer);
     }
   }
 
@@ -128,8 +126,8 @@ public class HttpEntityInstrumentation implements TypeInstrumentation {
       BoundedByteArrayOutputStream byteArrayOutputStream =
           BoundedBuffersFactory.createStream((int) contentSize, charset);
 
-      InstrumentationContext.get(OutputStream.class, BoundedByteArrayOutputStream.class)
-          .put(outputStream, byteArrayOutputStream);
+      VirtualField.find(OutputStream.class, BoundedByteArrayOutputStream.class)
+          .set(outputStream, byteArrayOutputStream);
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
@@ -142,10 +140,10 @@ public class HttpEntityInstrumentation implements TypeInstrumentation {
         return;
       }
 
-      ContextStore<OutputStream, BoundedByteArrayOutputStream> contextStore =
-          InstrumentationContext.get(OutputStream.class, BoundedByteArrayOutputStream.class);
+      VirtualField<OutputStream, BoundedByteArrayOutputStream> contextStore =
+          VirtualField.find(OutputStream.class, BoundedByteArrayOutputStream.class);
       BoundedByteArrayOutputStream bufferedOutStream = contextStore.get(outputStream);
-      contextStore.put(outputStream, null);
+      contextStore.set(outputStream, null);
       try {
         String requestBody = bufferedOutStream.toStringWithSuppliedCharset();
         spanAndAttributeKey.span.setAttribute(spanAndAttributeKey.attributeKey, requestBody);

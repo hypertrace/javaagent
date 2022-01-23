@@ -21,8 +21,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -71,7 +70,7 @@ public class InputStreamUtils {
   }
 
   public static SpanAndBuffer check(
-      InputStream inputStream, ContextStore<InputStream, SpanAndBuffer> contextStore) {
+      InputStream inputStream, VirtualField<InputStream, SpanAndBuffer> contextStore) {
     SpanAndBuffer spanAndBuffer = contextStore.get(inputStream);
     if (spanAndBuffer == null) {
       return null;
@@ -84,7 +83,7 @@ public class InputStreamUtils {
   public static void read(
       InputStream inputStream,
       SpanAndBuffer spanAndBuffer,
-      ContextStore<InputStream, SpanAndBuffer> contextStore,
+      VirtualField<InputStream, SpanAndBuffer> contextStore,
       int read) {
     if (read != -1) {
       spanAndBuffer.byteArrayBuffer.write((byte) read);
@@ -94,7 +93,7 @@ public class InputStreamUtils {
           spanAndBuffer.attributeKey,
           spanAndBuffer.byteArrayBuffer,
           spanAndBuffer.charset);
-      contextStore.put(inputStream, null);
+      contextStore.set(inputStream, null);
     }
   }
 
@@ -108,14 +107,14 @@ public class InputStreamUtils {
           spanAndBuffer.attributeKey,
           spanAndBuffer.byteArrayBuffer,
           spanAndBuffer.charset);
-      InstrumentationContext.get(InputStream.class, SpanAndBuffer.class).put(inputStream, null);
+      VirtualField.find(InputStream.class, SpanAndBuffer.class).set(inputStream, null);
     }
   }
 
   public static void read(
       InputStream inputStream,
       SpanAndBuffer spanAndBuffer,
-      ContextStore<InputStream, SpanAndBuffer> contextStore,
+      VirtualField<InputStream, SpanAndBuffer> contextStore,
       int read,
       byte[] b,
       int off,
@@ -128,24 +127,24 @@ public class InputStreamUtils {
           spanAndBuffer.attributeKey,
           spanAndBuffer.byteArrayBuffer,
           spanAndBuffer.charset);
-      contextStore.put(inputStream, null);
+      contextStore.set(inputStream, null);
     }
   }
 
   public static void readAll(
       InputStream inputStream,
       SpanAndBuffer spanAndBuffer,
-      ContextStore<InputStream, SpanAndBuffer> contextStore,
+      VirtualField<InputStream, SpanAndBuffer> contextStore,
       byte[] b)
       throws IOException {
     spanAndBuffer.byteArrayBuffer.write(b);
-    contextStore.put(inputStream, null);
+    contextStore.set(inputStream, null);
   }
 
   public static void readNBytes(
       InputStream inputStream,
       SpanAndBuffer spanAndBuffer,
-      ContextStore<InputStream, SpanAndBuffer> contextStore,
+      VirtualField<InputStream, SpanAndBuffer> contextStore,
       int read,
       byte[] b,
       int off,
@@ -156,7 +155,7 @@ public class InputStreamUtils {
           spanAndBuffer.attributeKey,
           spanAndBuffer.byteArrayBuffer,
           spanAndBuffer.charset);
-      contextStore.put(inputStream, null);
+      contextStore.set(inputStream, null);
     } else {
       spanAndBuffer.byteArrayBuffer.write(b, off, read);
     }

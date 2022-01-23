@@ -22,10 +22,9 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.returns;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
+import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.api.ContextStore;
-import io.opentelemetry.javaagent.instrumentation.api.InstrumentationContext;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.undertow.common.RequestBodyCaptureMethod;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.undertow.v1_4.utils.Utils;
 import io.undertow.server.HttpServerExchange;
@@ -55,7 +54,7 @@ public final class UndertowHttpServerExchangeInstrumentation implements TypeInst
 
   /**
    * Decorates {@link HttpServerExchange#getRequestChannel()} with instrumentation to store a {@link
-   * SpanAndBuffer} in the {@link InstrumentationContext}
+   * SpanAndBuffer} in the {@link VirtualField}
    */
   static final class GetRequestChannel_advice {
 
@@ -64,15 +63,14 @@ public final class UndertowHttpServerExchangeInstrumentation implements TypeInst
         @Advice.This final HttpServerExchange thizz,
         @Advice.Return final StreamSourceChannel returnedChannel) {
       final RequestBodyCaptureMethod requestBodyCaptureMethod =
-          InstrumentationContext.get(HttpServerExchange.class, RequestBodyCaptureMethod.class)
-              .get(thizz);
+          VirtualField.find(HttpServerExchange.class, RequestBodyCaptureMethod.class).get(thizz);
       if (RequestBodyCaptureMethod.SERVLET.equals(requestBodyCaptureMethod)) {
         // short circuit if we detect that we can capture the request body with servlet
         // instrumentation
         return;
       }
-      final ContextStore<StreamSourceChannel, SpanAndBuffer> contextStore =
-          InstrumentationContext.get(StreamSourceChannel.class, SpanAndBuffer.class);
+      final VirtualField<StreamSourceChannel, SpanAndBuffer> contextStore =
+          VirtualField.find(StreamSourceChannel.class, SpanAndBuffer.class);
       if (contextStore.get(returnedChannel) != null) {
         // HttpServerExchange.getRequestChannel only creates a new channel the first time it is
         // invoked.on subsequent invocations, we do not want to create a new buffer and put it in
