@@ -17,11 +17,7 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.struts;
 
 import com.opensymphony.xwork2.ActionSupport;
-import org.apache.struts2.convention.annotation.ParentPackage;
-import org.apache.struts2.convention.annotation.Result;
 
-@Result(type = "json")
-@ParentPackage("json-default")
 public class Struts2Action extends ActionSupport {
 
   private String jsonString = "{'balance':1000.21,'is_vip':true,'num':100,'name':'foo'}";

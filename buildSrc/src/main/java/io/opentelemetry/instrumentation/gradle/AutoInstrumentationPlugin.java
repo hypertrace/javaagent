@@ -57,7 +57,7 @@ public class AutoInstrumentationPlugin implements Plugin<Project> {
     dependencies.add("implementation", "org.slf4j:slf4j-api:1.7.30");
     dependencies.add("compileOnly", "com.google.auto.service:auto-service-annotations:1.0");
     dependencies.add("annotationProcessor", "com.google.auto.service:auto-service:1.0");
-    dependencies.add("implementation", "net.bytebuddy:byte-buddy:" + versions.get("byte_buddy"));
+    dependencies.add("implementation", "net.bytebuddy:byte-buddy-dep:" + versions.get("byte_buddy"));
     dependencies.add("implementation",
         "io.opentelemetry:opentelemetry-api:" + versions.get("opentelemetry"));
     dependencies.add("implementation",

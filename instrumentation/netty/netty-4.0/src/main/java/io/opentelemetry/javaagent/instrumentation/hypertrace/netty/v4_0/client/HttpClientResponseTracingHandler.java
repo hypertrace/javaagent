@@ -31,7 +31,7 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.api.tracer.HttpStatusConverter;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.AttributeKeys;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.DataCaptureUtils;
-import io.opentelemetry.javaagent.instrumentation.netty.v4_0.client.NettyHttpClientTracer;
+import io.opentelemetry.javaagent.instrumentation.netty.v4_0.client.NettyClientSingletons;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.nio.charset.Charset;
 import java.util.Map;
@@ -95,13 +95,14 @@ public class HttpClientResponseTracingHandler extends ChannelInboundHandlerAdapt
     try (Scope ignored = context.makeCurrent()) {
       ctx.fireChannelRead(msg);
     } catch (Throwable throwable) {
-      NettyHttpClientTracer.tracer().endExceptionally(context, throwable);
+      NettyClientSingletons.instrumenter().end(context, null, null, throwable);
       throw throwable;
     }
     if (msg instanceof HttpResponse) {
       HttpResponse httpResponse = (HttpResponse) msg;
       span.setAttribute(SemanticAttributes.HTTP_STATUS_CODE, httpResponse.getStatus().code());
-      span.setStatus(HttpStatusConverter.statusFromHttpStatus(httpResponse.getStatus().code()));
+      span.setStatus(
+          HttpStatusConverter.CLIENT.statusFromHttpStatus(httpResponse.getStatus().code()));
     }
     if (msg instanceof LastHttpContent) {
       span.end();
