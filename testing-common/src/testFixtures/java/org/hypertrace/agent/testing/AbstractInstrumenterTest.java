@@ -21,11 +21,11 @@ import ch.qos.logback.classic.Logger;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.javaagent.bootstrap.InstrumentationHolder;
-import io.opentelemetry.javaagent.extension.AgentListener;
 import io.opentelemetry.javaagent.tooling.AgentInstaller;
 import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
@@ -46,8 +46,6 @@ public abstract class AbstractInstrumenterTest {
 
   private static final org.slf4j.Logger log =
       LoggerFactory.getLogger(AbstractInstrumenterTest.class);
-
-  private static final AgentListener COMPONENT_INSTALLER;
 
   /**
    * For test runs, agent's global tracer will report to this list writer.
@@ -72,8 +70,6 @@ public abstract class AbstractInstrumenterTest {
     // TODO causes Caused by: java.lang.ClassCastException
     ((Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(Level.WARN);
     ((Logger) LoggerFactory.getLogger("io.opentelemetry")).setLevel(Level.DEBUG);
-
-    COMPONENT_INSTALLER = new TestOpenTelemetryInstaller(TEST_WRITER);
   }
 
   private static ClassFileTransformer classFileTransformer;
@@ -88,10 +84,30 @@ public abstract class AbstractInstrumenterTest {
 
   @BeforeAll
   public static void beforeAll() {
+    /*
+     * OpenTelemetry moved the initialization of some agent primitives to the OTEL class
+     * OpenTelemetryAgent which does not get used in the scope of these tests. To remove this
+     * workaround, we should adopt their testing pattern leveraging the agent-for-teseting artifact
+     * and the AgentInstrumentationExtension for JUnit.
+     */
+    TestAgentStarter testAgentStarter = new TestAgentStarter();
+    try {
+      Class<?> agentInitializerClass =
+          ClassLoader.getSystemClassLoader()
+              .loadClass("io.opentelemetry.javaagent.bootstrap.AgentInitializer");
+      Field agentClassLoaderField = agentInitializerClass.getDeclaredField("agentClassLoader");
+      agentClassLoaderField.setAccessible(true);
+      ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
+      agentClassLoaderField.set(null, systemClassLoader);
+      Field agentStarterField = agentInitializerClass.getDeclaredField("agentStarter");
+      agentStarterField.setAccessible(true);
+      agentStarterField.set(null, testAgentStarter);
+    } catch (Throwable t) {
+      throw new AssertionError("Could not access agent classLoader", t);
+    }
     if (classFileTransformer == null) {
       classFileTransformer =
-          AgentInstaller.installBytebuddyAgent(
-              INSTRUMENTATION, Collections.singleton(COMPONENT_INSTALLER));
+          AgentInstaller.installBytebuddyAgent(INSTRUMENTATION, Collections.emptyList());
     }
     if (TEST_TRACER == null) {
       TEST_TRACER = GlobalOpenTelemetry.getTracer("io.opentelemetry.auto");
