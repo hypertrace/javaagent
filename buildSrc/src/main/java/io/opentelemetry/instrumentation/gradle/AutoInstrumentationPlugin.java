@@ -54,7 +54,7 @@ public class AutoInstrumentationPlugin implements Plugin<Project> {
     @SuppressWarnings("unchecked") final Map<String, String> versions = Objects.requireNonNull(
         (Map<String, String>) project.getExtensions().getExtraProperties().get("versions"));
 
-    dependencies.add("implementation", "org.slf4j:slf4j-api:1.7.30");
+    dependencies.add("implementation", "org.slf4j:slf4j-api:" + versions.get("slf4j"));
     dependencies.add("compileOnly", "com.google.auto.service:auto-service-annotations:1.0");
     dependencies.add("annotationProcessor", "com.google.auto.service:auto-service:1.0");
     dependencies.add("implementation", "net.bytebuddy:byte-buddy-dep:" + versions.get("byte_buddy"));

@@ -27,7 +27,7 @@ repositories {
 dependencies {
   implementation(gradleApi())
   implementation(localGroovy())
-  val otelInstrumentationVersion = "1.10.0-alpha"
+  val otelInstrumentationVersion = "1.10.1-alpha"
   implementation("io.opentelemetry.javaagent:opentelemetry-muzzle:$otelInstrumentationVersion")
   implementation("io.opentelemetry.instrumentation.muzzle-generation:io.opentelemetry.instrumentation.muzzle-generation.gradle.plugin:$otelInstrumentationVersion")
   implementation("io.opentelemetry.instrumentation.muzzle-check:io.opentelemetry.instrumentation.muzzle-check.gradle.plugin:$otelInstrumentationVersion")
