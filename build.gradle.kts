@@ -15,6 +15,11 @@ allprojects {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 
+    tasks.compileJava {
+        options.compilerArgs.add("-Werror")
+    }
+
+
     tasks.withType<JavaCompile> {
         options.compilerArgs.add("-Xlint:unchecked")
         options.isDeprecation = true

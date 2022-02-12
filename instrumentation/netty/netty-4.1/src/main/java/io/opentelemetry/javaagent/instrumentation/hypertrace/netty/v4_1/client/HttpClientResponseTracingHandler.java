@@ -100,7 +100,7 @@ public class HttpClientResponseTracingHandler extends ChannelInboundHandlerAdapt
     }
     if (msg instanceof HttpResponse) {
       HttpResponse httpResponse = (HttpResponse) msg;
-      int code = httpResponse.getStatus().code();
+      int code = httpResponse.status().code();
       span.setAttribute(SemanticAttributes.HTTP_STATUS_CODE, code);
       span.setStatus(code >= 100 && code < 400 ? StatusCode.UNSET : StatusCode.ERROR);
     }
