@@ -17,15 +17,16 @@
 package org.hypertrace.agent.testing;
 
 import com.google.auto.service.AutoService;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.autoconfigure.spi.traces.SdkTracerProviderConfigurer;
-import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
+import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
+import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 
-@AutoService(SdkTracerProviderConfigurer.class)
-public final class TestSdkTracerProviderConfigurer implements SdkTracerProviderConfigurer {
+@AutoService(AutoConfigurationCustomizerProvider.class)
+public final class TestSdkTracerProviderConfigurer implements AutoConfigurationCustomizerProvider {
 
   @Override
-  public void configure(SdkTracerProviderBuilder tracerProviderBuilder, ConfigProperties config) {
-    tracerProviderBuilder.addSpanProcessor(AbstractInstrumenterTest.TEST_WRITER);
+  public void customize(AutoConfigurationCustomizer autoConfiguration) {
+    autoConfiguration.addTracerProviderCustomizer(
+        (sdkTracerProviderBuilder, configProperties) ->
+            sdkTracerProviderBuilder.addSpanProcessor(AbstractInstrumenterTest.TEST_WRITER));
   }
 }

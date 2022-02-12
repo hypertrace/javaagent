@@ -19,6 +19,7 @@ package org.hypertrace.agent.otel.extensions;
 import com.google.auto.service.AutoService;
 import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.javaagent.extension.AgentListener;
+import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.hypertrace.agent.config.v1.Config.AgentConfig;
@@ -29,7 +30,8 @@ import org.hypertrace.agent.otel.extensions.config.HypertraceConfig;
 public class FilterComponentInstaller implements AgentListener {
 
   @Override
-  public void beforeAgent(Config config) {
+  public void beforeAgent(
+      Config config, AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk) {
     AgentConfig agentConfig = HypertraceConfig.get();
     List<String> jarPaths =
         agentConfig.getJavaagent().getFilterJarPathsList().stream()
@@ -38,7 +40,4 @@ public class FilterComponentInstaller implements AgentListener {
     // resolves filter via service loader resolution
     FilterRegistry.initialize(jarPaths);
   }
-
-  @Override
-  public void afterAgent(Config config) {}
 }
