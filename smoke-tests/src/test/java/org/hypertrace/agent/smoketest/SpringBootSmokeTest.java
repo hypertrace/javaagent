@@ -175,12 +175,8 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
     ArrayList<ExportMetricsServiceRequest> metrics = new ArrayList<>(waitForMetrics());
     Assertions.assertTrue(hasMetricNamed("otlp.exporter.seen", metrics));
     Assertions.assertTrue(hasMetricNamed("otlp.exporter.exported", metrics));
-    /*
-    These metrics stopped being reported in OTEL SDK 1.10.0, due to a bug in the OpenTelemetry SDK
-    Autoconfigure project https://github.com/open-telemetry/opentelemetry-java/issues/4109
     Assertions.assertTrue(hasMetricNamed("processedSpans", metrics));
     Assertions.assertTrue(hasMetricNamed("queueSize", metrics));
-     */
     Assertions.assertTrue(hasMetricNamed("runtime.jvm.gc.count", metrics));
     Assertions.assertTrue(hasMetricNamed("runtime.jvm.gc.time", metrics));
     Assertions.assertTrue(hasMetricNamed("runtime.jvm.memory.pool", metrics));
