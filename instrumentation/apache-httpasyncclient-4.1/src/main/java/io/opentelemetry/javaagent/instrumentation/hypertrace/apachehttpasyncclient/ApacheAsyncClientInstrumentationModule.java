@@ -27,7 +27,6 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 import com.google.auto.service.AutoService;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.instrumentation.api.tracer.ClientSpan;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
@@ -173,7 +172,7 @@ public class ApacheAsyncClientInstrumentationModule extends InstrumentationModul
         Object getContextResult = getContext.invoke(wrappedFutureCallback);
         if (getContextResult instanceof Context) {
           Context context = (Context) getContextResult;
-          Span clientSpan = ClientSpan.fromContextOrNull(context);
+          Span clientSpan = Span.fromContextOrNull(context);
           bodyCaptureDelegatingCallback.clientContext = context;
           ApacheHttpClientUtils.traceRequest(clientSpan, request);
         }

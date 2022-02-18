@@ -26,9 +26,9 @@ import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.Attribute;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.instrumentation.api.instrumenter.http.HttpStatusConverter;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.AttributeKeys;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.DataCaptureUtils;
 import io.opentelemetry.javaagent.instrumentation.netty.v4_1.server.NettyServerSingletons;
@@ -99,8 +99,9 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
     }
     if (msg instanceof HttpResponse) {
       HttpResponse httpResponse = (HttpResponse) msg;
-      span.setAttribute(SemanticAttributes.HTTP_STATUS_CODE, httpResponse.status().code());
-      span.setStatus(HttpStatusConverter.SERVER.statusFromHttpStatus(httpResponse.status().code()));
+      int code = httpResponse.status().code();
+      span.setAttribute(SemanticAttributes.HTTP_STATUS_CODE, code);
+      span.setStatus(code >= 100 && code < 500 ? StatusCode.UNSET : StatusCode.ERROR);
     }
     if (msg instanceof LastHttpContent) {
       span.end();

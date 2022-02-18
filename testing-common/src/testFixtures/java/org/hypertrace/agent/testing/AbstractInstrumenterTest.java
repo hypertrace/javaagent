@@ -64,6 +64,7 @@ public abstract class AbstractInstrumenterTest {
     System.setProperty("otel.internal.failOnContextLeak", "true");
     System.setProperty("io.opentelemetry.javaagent.slf4j.simpleLogger.log.muzzleMatcher", "warn");
     System.setProperty("otel.traces.exporter", "none");
+    System.setProperty("otel.metrics.exporter", "none");
 
     INSTRUMENTATION = ByteBuddyAgent.install();
     InstrumentationHolder.setInstrumentation(INSTRUMENTATION);
