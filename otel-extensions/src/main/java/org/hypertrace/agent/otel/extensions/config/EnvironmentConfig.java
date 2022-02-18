@@ -137,11 +137,11 @@ public class EnvironmentConfig {
     String metricReporterAddress = getProperty(REPORTING_METRIC_ENDPOINT);
     if (metricReporterAddress != null) {
       builder.setMetricEndpoint(StringValue.newBuilder().setValue(metricReporterAddress).build());
-    } else if (TraceReporterType.OTLP.equals(builder.getTraceReporterType())
+    } else if (reporterAddress != null
+        && TraceReporterType.OTLP.equals(builder.getTraceReporterType())
         && builder.getMetricReporterType() == MetricReporterType.METRIC_REPORTER_TYPE_OTLP) {
       // If metric endpoint is not given, use the reporter endpoint if it is otlp
-      builder.setMetricEndpoint(
-          StringValue.newBuilder().setValue(builder.getEndpoint().getValue()).build());
+      builder.setMetricEndpoint(StringValue.newBuilder().setValue(reporterAddress).build());
     }
     String secure = getProperty(REPORTING_SECURE);
     if (secure != null) {
