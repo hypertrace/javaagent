@@ -221,4 +221,19 @@ public class HypertraceConfigTest {
     Assertions.assertEquals(
         expectedReportingEndpoint, agentConfig.getReporting().getMetricEndpoint().getValue());
   }
+
+  @Test
+  void nonDefaultMetricsEndpoint() throws IOException {
+    // GIVEN a config file with a non-default reporting endpoint
+    URL resource = getClass().getClassLoader().getResource("nonDefaultMetricsEndpoint.yaml");
+    // WHEN we load the config
+    AgentConfig agentConfig = HypertraceConfig.load(resource.getPath());
+    // VERIFY the trace reporting type is OTLP
+    Assertions.assertEquals(
+        TraceReporterType.OTLP, agentConfig.getReporting().getTraceReporterType());
+    Assertions.assertEquals(
+        "http://localhost:4317", agentConfig.getReporting().getEndpoint().getValue());
+    Assertions.assertEquals(
+        "http://example.com:4317", agentConfig.getReporting().getMetricEndpoint().getValue());
+  }
 }
