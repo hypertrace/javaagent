@@ -140,6 +140,9 @@ public class HypertraceConfig {
     if (!builder.hasEndpoint()) {
       builder.setEndpoint(StringValue.newBuilder().setValue(DEFAULT_REPORTING_ENDPOINT).build());
     }
+    if (builder.getTraceReporterType().equals(TraceReporterType.UNSPECIFIED)) {
+      builder.setTraceReporterType(TraceReporterType.OTLP);
+    }
     if (!builder.hasMetricEndpoint()) {
       if (TraceReporterType.OTLP.equals(builder.getTraceReporterType())) {
         // If trace reporter type is OTLP, use the same endpoint for metrics
@@ -148,9 +151,6 @@ public class HypertraceConfig {
         builder.setMetricEndpoint(
             StringValue.newBuilder().setValue(DEFAULT_REPORTING_ENDPOINT).build());
       }
-    }
-    if (builder.getTraceReporterType().equals(TraceReporterType.UNSPECIFIED)) {
-      builder.setTraceReporterType(TraceReporterType.OTLP);
     }
     if (builder
         .getMetricReporterType()
