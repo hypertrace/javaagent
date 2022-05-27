@@ -49,10 +49,7 @@ import org.hypertrace.agent.core.instrumentation.HypertraceCallDepthThreadLocalM
 import org.hypertrace.agent.core.instrumentation.HypertraceEvaluationException;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.SpanAndObjectPair;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
-import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
-import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
+import org.hypertrace.agent.core.instrumentation.buffer.*;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 import org.hypertrace.agent.filter.FilterRegistry;
 
@@ -180,6 +177,8 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
           VirtualField.find(ServletInputStream.class, ByteBufferSpanPair.class);
       VirtualField<BufferedReader, CharBufferSpanPair> readerContextStore =
           VirtualField.find(BufferedReader.class, CharBufferSpanPair.class);
+      VirtualField<HttpServletRequest, StringMapSpanPair> urlEncodedMapContextStore =
+          VirtualField.find(HttpServletRequest.class, StringMapSpanPair.class);
 
       if (!request.isAsyncStarted()) {
         if (instrumentationConfig.httpHeaders().response()) {
@@ -205,7 +204,11 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
         if (instrumentationConfig.httpBody().request()
             && ContentTypeUtils.shouldCapture(httpRequest.getContentType())) {
           Utils.resetRequestBodyBuffers(
-              httpRequest, requestContextStore, inputStreamContextStore, readerContextStore);
+              httpRequest,
+              requestContextStore,
+              inputStreamContextStore,
+              readerContextStore,
+              urlEncodedMapContextStore);
         }
       }
     }

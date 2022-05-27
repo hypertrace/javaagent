@@ -31,10 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.hypertrace.agent.core.config.InstrumentationConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.SpanAndObjectPair;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
-import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
-import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
+import org.hypertrace.agent.core.instrumentation.buffer.*;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 
 public final class BodyCaptureAsyncListener implements ServletAsyncListener<HttpServletResponse> {
@@ -52,6 +49,7 @@ public final class BodyCaptureAsyncListener implements ServletAsyncListener<Http
   private final VirtualField<HttpServletRequest, SpanAndObjectPair> requestContextStore;
   private final VirtualField<ServletInputStream, ByteBufferSpanPair> inputStreamContextStore;
   private final VirtualField<BufferedReader, CharBufferSpanPair> readerContextStore;
+  private final VirtualField<HttpServletRequest, StringMapSpanPair> urlEncodedMapContextStore;
   private final HttpServletRequest request;
 
   public BodyCaptureAsyncListener(
@@ -62,6 +60,7 @@ public final class BodyCaptureAsyncListener implements ServletAsyncListener<Http
       VirtualField<HttpServletRequest, SpanAndObjectPair> requestContextStore,
       VirtualField<ServletInputStream, ByteBufferSpanPair> inputStreamContextStore,
       VirtualField<BufferedReader, CharBufferSpanPair> readerContextStore,
+      VirtualField<HttpServletRequest, StringMapSpanPair> urlEncodedMapContextStore,
       HttpServletRequest request) {
     this.responseHandled = responseHandled;
     this.span = Span.fromContext(Servlet3Singletons.helper().getServerContext(request));
@@ -71,6 +70,7 @@ public final class BodyCaptureAsyncListener implements ServletAsyncListener<Http
     this.requestContextStore = requestContextStore;
     this.inputStreamContextStore = inputStreamContextStore;
     this.readerContextStore = readerContextStore;
+    this.urlEncodedMapContextStore = urlEncodedMapContextStore;
     this.request = request;
   }
 
@@ -115,7 +115,11 @@ public final class BodyCaptureAsyncListener implements ServletAsyncListener<Http
       if (instrumentationConfig.httpBody().request()
           && ContentTypeUtils.shouldCapture(servletRequest.getContentType())) {
         Utils.resetRequestBodyBuffers(
-            servletRequest, requestContextStore, inputStreamContextStore, readerContextStore);
+            servletRequest,
+            requestContextStore,
+            inputStreamContextStore,
+            readerContextStore,
+            urlEncodedMapContextStore);
       }
     }
   }

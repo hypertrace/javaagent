@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
 import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
+import org.hypertrace.agent.core.instrumentation.buffer.StringMapSpanPair;
 import org.hypertrace.agent.core.instrumentation.utils.ContentLengthUtils;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeCharsetUtils;
 import org.hypertrace.agent.filter.FilterRegistry;
@@ -60,5 +61,18 @@ public class Utils {
         BoundedBuffersFactory.createWriter(contentLength),
         filter::evaluateRequestBody,
         headers);
+  }
+
+  /**
+   * Create a StringMapSpanPair.
+   *
+   * @param stringMap
+   * @param span
+   * @param headers
+   * @return
+   */
+  public static StringMapSpanPair createStringMapSpanPair(
+      Map<String, String> stringMap, Span span, Map<String, String> headers) {
+    return new StringMapSpanPair(span, stringMap, headers);
   }
 }

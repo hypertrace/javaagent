@@ -16,6 +16,9 @@
 
 package org.hypertrace.agent.core.instrumentation.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class ContentTypeUtils {
 
   private ContentTypeUtils() {}
@@ -61,5 +64,13 @@ public class ContentTypeUtils {
       }
     }
     return null;
+  }
+
+  public static String convertToJSONString(Object obj) {
+    try {
+      return new ObjectMapper().writeValueAsString(obj);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

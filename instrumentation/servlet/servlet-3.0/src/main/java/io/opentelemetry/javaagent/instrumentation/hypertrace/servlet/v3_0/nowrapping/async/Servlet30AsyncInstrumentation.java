@@ -42,10 +42,7 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.core.instrumentation.HypertraceCallDepthThreadLocalMap;
 import org.hypertrace.agent.core.instrumentation.SpanAndObjectPair;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
-import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
-import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
+import org.hypertrace.agent.core.instrumentation.buffer.*;
 
 public final class Servlet30AsyncInstrumentation implements TypeInstrumentation {
 
@@ -97,6 +94,8 @@ public final class Servlet30AsyncInstrumentation implements TypeInstrumentation 
           VirtualField.find(ServletInputStream.class, ByteBufferSpanPair.class);
       VirtualField<BufferedReader, CharBufferSpanPair> readerContextStore =
           VirtualField.find(BufferedReader.class, CharBufferSpanPair.class);
+      VirtualField<HttpServletRequest, StringMapSpanPair> urlEncodedMapContextStore =
+          VirtualField.find(HttpServletRequest.class, StringMapSpanPair.class);
 
       if (servletRequest instanceof HttpServletRequest) {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
@@ -114,6 +113,7 @@ public final class Servlet30AsyncInstrumentation implements TypeInstrumentation 
                   requestContextStore,
                   inputStreamContextStore,
                   readerContextStore,
+                  urlEncodedMapContextStore,
                   request),
               helper.getAsyncListenerResponse(request));
           accessor.setRequestAttribute(request, HYPERTRACE_ASYNC_LISTENER_ATTRIBUTE, true);
