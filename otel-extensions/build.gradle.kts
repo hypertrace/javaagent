@@ -47,7 +47,7 @@ dependencies {
     api("com.google.protobuf:protobuf-java")
     api("com.google.protobuf:protobuf-java-util")
     // convert yaml to json, since java protobuf impl supports only json
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.12.6")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.3")
     // fix vulnerability
     constraints {
         api("com.google.code.gson:gson:2.8.9")
