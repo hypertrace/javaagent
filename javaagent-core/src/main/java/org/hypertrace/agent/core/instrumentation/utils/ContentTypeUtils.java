@@ -16,8 +16,7 @@
 
 package org.hypertrace.agent.core.instrumentation.utils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
 
 public class ContentTypeUtils {
 
@@ -66,11 +65,24 @@ public class ContentTypeUtils {
     return null;
   }
 
-  public static String convertToJSONString(Object obj) {
-    try {
-      return new ObjectMapper().writeValueAsString(obj);
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
+  public static String convertToJSONString(Map<?, ?> map) {
+    StringBuilder sb = new StringBuilder();
+
+    sb.append("{");
+    boolean needsComma = false;
+
+    for (Map.Entry<?, ?> nextEntry : map.entrySet()) {
+      String key = nextEntry.getKey().toString();
+      String value = nextEntry.getValue().toString();
+      if (needsComma) {
+        sb.append(",");
+      }
+
+      sb.append(String.format("\n    \"%s\": \"%s\"", key, value));
+      needsComma = true;
     }
+    sb.append("\n}\n");
+
+    return sb.toString();
   }
 }
