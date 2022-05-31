@@ -68,6 +68,7 @@ public class ContentTypeUtils {
 
   /**
    * Converts an arbitrary object into JSON format.
+   *
    * @param obj
    * @return
    */
