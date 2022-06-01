@@ -21,6 +21,7 @@ import io.opentelemetry.instrumentation.api.field.VirtualField;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.Map;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -28,10 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.SpanAndObjectPair;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
-import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
-import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
+import org.hypertrace.agent.core.instrumentation.buffer.*;
 
 public class Utils {
 
@@ -87,7 +85,8 @@ public class Utils {
       HttpServletRequest httpServletRequest,
       VirtualField<HttpServletRequest, SpanAndObjectPair> requestContextStore,
       VirtualField<ServletInputStream, ByteBufferSpanPair> streamContextStore,
-      VirtualField<BufferedReader, CharBufferSpanPair> bufferedReaderContextStore) {
+      VirtualField<BufferedReader, CharBufferSpanPair> bufferedReaderContextStore,
+      VirtualField<HttpServletRequest, StringMapSpanPair> urlEncodedMapContextStore) {
 
     SpanAndObjectPair requestStreamReaderHolder = requestContextStore.get(httpServletRequest);
     if (requestStreamReaderHolder == null) {
@@ -113,6 +112,12 @@ public class Utils {
       if (charBufferSpanPair != null) {
         charBufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
         bufferedReaderContextStore.set(bufferedReader, null);
+      }
+    } else if (requestStreamReaderHolder.getAssociatedObject() instanceof Map) {
+      StringMapSpanPair stringMapSpanPair = urlEncodedMapContextStore.get(httpServletRequest);
+      if (stringMapSpanPair != null) {
+        stringMapSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
+        urlEncodedMapContextStore.set(httpServletRequest, null);
       }
     }
   }
