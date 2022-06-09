@@ -154,61 +154,63 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
       HttpServletRequest httpRequest = (HttpServletRequest) request;
       InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
 
-      if (throwable instanceof HypertraceEvaluationException) {
-        httpResponse.setStatus(403);
-        // bytebuddy treats the reassignment of this variable to null as an instruction to suppress
-        // this exception, which is what we want
-        throwable = null;
-        return;
-      }
+      try {
+        // response context to capture body and clear the context
+        VirtualField<HttpServletResponse, SpanAndObjectPair> responseContextStore =
+            VirtualField.find(HttpServletResponse.class, SpanAndObjectPair.class);
+        VirtualField<ServletOutputStream, BoundedByteArrayOutputStream> outputStreamContextStore =
+            VirtualField.find(ServletOutputStream.class, BoundedByteArrayOutputStream.class);
+        VirtualField<PrintWriter, BoundedCharArrayWriter> writerContextStore =
+            VirtualField.find(PrintWriter.class, BoundedCharArrayWriter.class);
 
-      // response context to capture body and clear the context
-      VirtualField<HttpServletResponse, SpanAndObjectPair> responseContextStore =
-          VirtualField.find(HttpServletResponse.class, SpanAndObjectPair.class);
-      VirtualField<ServletOutputStream, BoundedByteArrayOutputStream> outputStreamContextStore =
-          VirtualField.find(ServletOutputStream.class, BoundedByteArrayOutputStream.class);
-      VirtualField<PrintWriter, BoundedCharArrayWriter> writerContextStore =
-          VirtualField.find(PrintWriter.class, BoundedCharArrayWriter.class);
+        // request context to clear body buffer
+        VirtualField<HttpServletRequest, SpanAndObjectPair> requestContextStore =
+            VirtualField.find(HttpServletRequest.class, SpanAndObjectPair.class);
+        VirtualField<ServletInputStream, ByteBufferSpanPair> inputStreamContextStore =
+            VirtualField.find(ServletInputStream.class, ByteBufferSpanPair.class);
+        VirtualField<BufferedReader, CharBufferSpanPair> readerContextStore =
+            VirtualField.find(BufferedReader.class, CharBufferSpanPair.class);
+        VirtualField<HttpServletRequest, StringMapSpanPair> urlEncodedMapContextStore =
+            VirtualField.find(HttpServletRequest.class, StringMapSpanPair.class);
 
-      // request context to clear body buffer
-      VirtualField<HttpServletRequest, SpanAndObjectPair> requestContextStore =
-          VirtualField.find(HttpServletRequest.class, SpanAndObjectPair.class);
-      VirtualField<ServletInputStream, ByteBufferSpanPair> inputStreamContextStore =
-          VirtualField.find(ServletInputStream.class, ByteBufferSpanPair.class);
-      VirtualField<BufferedReader, CharBufferSpanPair> readerContextStore =
-          VirtualField.find(BufferedReader.class, CharBufferSpanPair.class);
-      VirtualField<HttpServletRequest, StringMapSpanPair> urlEncodedMapContextStore =
-          VirtualField.find(HttpServletRequest.class, StringMapSpanPair.class);
+        if (!request.isAsyncStarted()) {
+          if (instrumentationConfig.httpHeaders().response()) {
+            for (String headerName : httpResponse.getHeaderNames()) {
+              String headerValue = httpResponse.getHeader(headerName);
+              currentSpan.setAttribute(
+                  HypertraceSemanticAttributes.httpResponseHeader(headerName), headerValue);
+            }
+          }
 
-      if (!request.isAsyncStarted()) {
-        if (instrumentationConfig.httpHeaders().response()) {
-          for (String headerName : httpResponse.getHeaderNames()) {
-            String headerValue = httpResponse.getHeader(headerName);
-            currentSpan.setAttribute(
-                HypertraceSemanticAttributes.httpResponseHeader(headerName), headerValue);
+          // capture response body
+          if (instrumentationConfig.httpBody().response()
+              && ContentTypeUtils.shouldCapture(httpResponse.getContentType())) {
+            Utils.captureResponseBody(
+                currentSpan,
+                httpResponse,
+                responseContextStore,
+                outputStreamContextStore,
+                writerContextStore);
+          }
+
+          // remove request body buffers from context stores, otherwise they might get reused
+          if (instrumentationConfig.httpBody().request()
+              && ContentTypeUtils.shouldCapture(httpRequest.getContentType())) {
+            Utils.resetRequestBodyBuffers(
+                httpRequest,
+                requestContextStore,
+                inputStreamContextStore,
+                readerContextStore,
+                urlEncodedMapContextStore);
           }
         }
-
-        // capture response body
-        if (instrumentationConfig.httpBody().response()
-            && ContentTypeUtils.shouldCapture(httpResponse.getContentType())) {
-          Utils.captureResponseBody(
-              currentSpan,
-              httpResponse,
-              responseContextStore,
-              outputStreamContextStore,
-              writerContextStore);
-        }
-
-        // remove request body buffers from context stores, otherwise they might get reused
-        if (instrumentationConfig.httpBody().request()
-            && ContentTypeUtils.shouldCapture(httpRequest.getContentType())) {
-          Utils.resetRequestBodyBuffers(
-              httpRequest,
-              requestContextStore,
-              inputStreamContextStore,
-              readerContextStore,
-              urlEncodedMapContextStore);
+      } finally {
+        if (throwable instanceof HypertraceEvaluationException) {
+          httpResponse.setStatus(403);
+          // bytebuddy treats the reassignment of this variable to null as an instruction to
+          // suppress
+          // this exception, which is what we want
+          throwable = null;
         }
       }
     }

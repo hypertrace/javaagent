@@ -95,7 +95,7 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
       if (read == -1) {
         bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
       } else {
-        bufferSpanPair.buffer.write(read);
+        bufferSpanPair.writeToBuffer((byte) read);
       }
     }
   }
@@ -129,7 +129,7 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
       if (read == -1) {
         bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
       } else {
-        bufferSpanPair.buffer.write(c, 0, read);
+        bufferSpanPair.writeToBuffer(c, 0, read);
       }
     }
   }
@@ -165,7 +165,7 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
       if (read == -1) {
         bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
       } else {
-        bufferSpanPair.buffer.write(c, off, read);
+        bufferSpanPair.writeToBuffer(c, off, read);
       }
     }
   }
@@ -198,7 +198,7 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
       if (line == null) {
         bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
       } else {
-        bufferSpanPair.buffer.write(line);
+        bufferSpanPair.writeLine(line);
       }
     }
   }

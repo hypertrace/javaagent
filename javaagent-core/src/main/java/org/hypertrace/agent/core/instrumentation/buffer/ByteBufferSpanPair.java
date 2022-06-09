@@ -18,6 +18,7 @@ package org.hypertrace.agent.core.instrumentation.buffer;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
 import java.util.Objects;
@@ -27,7 +28,7 @@ import org.hypertrace.agent.core.instrumentation.HypertraceEvaluationException;
 public class ByteBufferSpanPair {
 
   public final Span span;
-  public final BoundedByteArrayOutputStream buffer;
+  private final BoundedByteArrayOutputStream buffer;
   private final Map<String, String> headers;
   private boolean bufferCaptured;
   private final TriFunction<Span, String, Map<String, String>, Boolean> filter;
@@ -61,5 +62,20 @@ public class ByteBufferSpanPair {
     if (block) {
       throw new HypertraceEvaluationException();
     }
+  }
+
+  public void writeToBuffer(byte singleByte) {
+    bufferCaptured = false;
+    buffer.write(singleByte);
+  }
+
+  public void writeToBuffer(byte[] b, int offset, int len) {
+    bufferCaptured = false;
+    buffer.write(b, offset, len);
+  }
+
+  public void writeToBuffer(byte[] b) throws IOException {
+    bufferCaptured = false;
+    buffer.write(b);
   }
 }
