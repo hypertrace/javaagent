@@ -115,7 +115,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         if (read == -1) {
           bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
         } else {
-          bufferSpanPair.buffer.write((byte) read);
+          bufferSpanPair.writeToBuffer((byte) read);
         }
       } catch (Throwable t) {
         if (t instanceof HypertraceEvaluationException) {
@@ -161,7 +161,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         if (read == -1) {
           bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
         } else {
-          bufferSpanPair.buffer.write(b, 0, read);
+          bufferSpanPair.writeToBuffer(b, 0, read);
           if (thizz.available() == 0) {
             bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
           }
@@ -213,7 +213,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         if (read == -1) {
           bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
         } else {
-          bufferSpanPair.buffer.write(b, off, read);
+          bufferSpanPair.writeToBuffer(b, off, read);
           if (thizz.available() == 0) {
             bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
           }
@@ -255,8 +255,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         if (callDepth > 0) {
           return;
         }
-
-        bufferSpanPair.buffer.write(b);
+        bufferSpanPair.writeToBuffer(b);
         bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
       } catch (Throwable t) {
         if (t instanceof HypertraceEvaluationException) {
@@ -304,7 +303,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         if (read == -1) {
           bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
         } else {
-          bufferSpanPair.buffer.write(b, off, read);
+          bufferSpanPair.writeToBuffer(b, off, read);
           if (thizz.available() == 0) {
             bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
           }
