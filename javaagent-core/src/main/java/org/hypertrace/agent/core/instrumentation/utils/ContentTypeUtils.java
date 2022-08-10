@@ -39,6 +39,7 @@ public class ContentTypeUtils {
     contentType = contentType.toLowerCase();
     return contentType.contains("json")
         || contentType.contains("graphql")
+        || contentType.contains("xml")
         || contentType.contains("x-www-form-urlencoded");
   }
 
