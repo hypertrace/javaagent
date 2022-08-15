@@ -30,6 +30,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Supplier;
 import org.hypertrace.agent.config.v1.Config.AgentConfig;
 import org.hypertrace.agent.config.v1.Config.DataCapture;
 import org.hypertrace.agent.config.v1.Config.Message;
@@ -37,13 +43,33 @@ import org.hypertrace.agent.config.v1.Config.MetricReporterType;
 import org.hypertrace.agent.config.v1.Config.PropagationFormat;
 import org.hypertrace.agent.config.v1.Config.Reporting;
 import org.hypertrace.agent.config.v1.Config.TraceReporterType;
+import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** {@link HypertraceConfig} loads a yaml config from file. */
 public class HypertraceConfig {
 
+  // ---------------------------------------------------
+  //  Represents the default set of content types that can be
+  //  captured, if the content types are not specified in the config.
+  // ---------------------------------------------------
+  private static final List<StringValue> DEFAULT_CONTENT_TYPES = initDefaultContentTypes();
+
   private HypertraceConfig() {}
+
+  private static List<StringValue> initDefaultContentTypes() {
+    String[] defaultContentTypes = ContentTypeUtils.getDefaultContentTypes();
+
+    StringValue[] defaultContentTypeValues = new StringValue[defaultContentTypes.length];
+
+    for (int i = 0; i < defaultContentTypes.length; i++) {
+      defaultContentTypeValues[i] =
+          StringValue.newBuilder().setValue(defaultContentTypes[i]).build();
+    }
+
+    return Arrays.asList(defaultContentTypeValues);
+  }
 
   private static final Logger log = LoggerFactory.getLogger(HypertraceConfig.class);
 
@@ -169,6 +195,10 @@ public class HypertraceConfig {
       builder.setBodyMaxSizeBytes(
           Int32Value.newBuilder().setValue(DEFAULT_BODY_MAX_SIZE_BYTES).build());
     }
+
+    Collection<StringValue> contentTypeList =
+        applyListDefaults(builder.getAllowedContentTypesList(), () -> DEFAULT_CONTENT_TYPES);
+    builder.clearAllowedContentTypes().addAllAllowedContentTypes(contentTypeList);
     return builder;
   }
 
@@ -188,5 +218,28 @@ public class HypertraceConfig {
 
     ObjectMapper jsonWriter = new ObjectMapper();
     return jsonWriter.writeValueAsString(obj);
+  }
+
+  /**
+   * Creates a collection of objects consisting of the set of objects specified in the
+   * configuration, plus the default set of objects.
+   *
+   * @param originalList the set of objects specified in the configuration
+   * @param defaultSupplier a lambda which provides the default set of objects.
+   * @return a collection of objects, consisting of the union of originalList, with the list
+   *     provided by defaultSupplier
+   * @param <T>
+   */
+  private static <T> Collection<T> applyListDefaults(
+      List<T> originalList, Supplier<List<T>> defaultSupplier) {
+    Set<T> returnSet = new HashSet<>();
+
+    if (originalList != null) {
+      returnSet.addAll(originalList);
+    }
+
+    returnSet.addAll(defaultSupplier.get());
+
+    return returnSet;
   }
 }
