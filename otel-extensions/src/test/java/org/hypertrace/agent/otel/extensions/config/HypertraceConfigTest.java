@@ -23,6 +23,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import org.hypertrace.agent.config.v1.Config.AgentConfig;
 import org.hypertrace.agent.config.v1.Config.MetricReporterType;
 import org.hypertrace.agent.config.v1.Config.PropagationFormat;
@@ -34,6 +37,10 @@ import org.junitpioneer.jupiter.ClearSystemProperty;
 import org.junitpioneer.jupiter.SetEnvironmentVariable;
 
 public class HypertraceConfigTest {
+  private static final String[] EXPECTED_CONTENT_TYPES =
+      new String[] {"json", "graphql", "xml", "x-www-form-urlencoded"};
+
+  private static final String[] EXPECTED_CONTENT_TYPES_WITH_OVERRIDES = new String[] {"foo", "bar"};
 
   @Test
   public void defaultValues() throws IOException {
@@ -77,6 +84,8 @@ public class HypertraceConfigTest {
         true, agentConfig.getDataCapture().getRpcBody().getResponse().getValue());
     Assertions.assertTrue(agentConfig.hasJavaagent());
     Assertions.assertEquals(0, agentConfig.getJavaagent().getFilterJarPathsCount());
+
+    testAllowedContentTypes(agentConfig, EXPECTED_CONTENT_TYPES);
   }
 
   @Test
@@ -99,6 +108,20 @@ public class HypertraceConfigTest {
 
     agentConfig = HypertraceConfig.load(jsonFile.getAbsolutePath());
     assertConfig(agentConfig);
+  }
+
+  private void testAllowedContentTypes(AgentConfig agentConfig, String[] expectedTypes) {
+
+    List<StringValue> listOfContentTypes =
+        agentConfig.getDataCapture().getAllowedContentTypesList();
+    Assertions.assertEquals(expectedTypes.length, listOfContentTypes.size());
+    Set<StringValue> allowedContentTypes = new HashSet<>();
+    allowedContentTypes.addAll(listOfContentTypes);
+
+    for (String nextType : expectedTypes) {
+      StringValue sv = StringValue.newBuilder().setValue(nextType).build();
+      Assertions.assertTrue(allowedContentTypes.contains(sv));
+    }
   }
 
   private void assertConfig(AgentConfig agentConfig) {
@@ -238,5 +261,13 @@ public class HypertraceConfigTest {
     // VERIFY the metric reporting endpoint is the specified value
     Assertions.assertEquals(
         "http://example.com:4317", agentConfig.getReporting().getMetricEndpoint().getValue());
+  }
+
+  @Test
+  public void nonDefaultDataCaptureConfigTest() throws IOException {
+    URL resource = getClass().getClassLoader().getResource("nonDefaultDataCaptureConfig.yaml");
+    AgentConfig agentConfig = HypertraceConfig.load(resource.getPath());
+
+    testAllowedContentTypes(agentConfig, EXPECTED_CONTENT_TYPES_WITH_OVERRIDES);
   }
 }

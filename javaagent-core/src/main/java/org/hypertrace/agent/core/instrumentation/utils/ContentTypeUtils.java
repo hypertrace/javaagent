@@ -18,13 +18,71 @@ package org.hypertrace.agent.core.instrumentation.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hypertrace.agent.core.config.DataCaptureConfig;
 
 public class ContentTypeUtils {
+  private final String[] collectableContentTypes;
 
-  private ContentTypeUtils() {}
+  private static final String[] DEFAULT_CONTENT_TYPES =
+      new String[] {"json", "graphql", "xml", "x-www-form-urlencoded"};
+
+  public static String[] getDefaultContentTypes() {
+    return DEFAULT_CONTENT_TYPES;
+  }
+
+  /** Loads the set of collectable content types from the DataCaptureConfig. */
+  private ContentTypeUtils() {
+    super();
+
+    DataCaptureConfig dataCaptureConfig = DataCaptureConfig.ConfigProvider.get();
+
+    if (dataCaptureConfig == null) {
+      collectableContentTypes = DEFAULT_CONTENT_TYPES;
+    } else {
+      collectableContentTypes = dataCaptureConfig.getAllowedContentTypes();
+    }
+  }
 
   private static final String CHARSET_EQUALS = "charset=";
   private static final String SEPARATOR = ";";
+
+  private static volatile ContentTypeUtils instance;
+
+  private static ContentTypeUtils getInstance() {
+    if (instance == null) {
+      return getInstanceSync();
+    }
+    return instance;
+  }
+
+  private static synchronized ContentTypeUtils getInstanceSync() {
+    if (instance == null) {
+      instance = new ContentTypeUtils();
+    }
+
+    return instance;
+  }
+
+  /**
+   * Determines if the content type should be captured by the agent.
+   *
+   * @param contentType
+   * @return
+   */
+  private boolean shouldCapture_(String contentType) {
+    if (contentType == null) {
+      return false;
+    }
+    contentType = contentType.toLowerCase();
+
+    for (String nextValidContentType : collectableContentTypes) {
+      if (contentType.contains(nextValidContentType)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
 
   /**
    * Returns true if the request/response with this content type should be captured.
@@ -33,13 +91,7 @@ public class ContentTypeUtils {
    * @return whether body with this content type should be captured or not
    */
   public static boolean shouldCapture(String contentType) {
-    if (contentType == null) {
-      return false;
-    }
-    contentType = contentType.toLowerCase();
-    return contentType.contains("json")
-        || contentType.contains("graphql")
-        || contentType.contains("x-www-form-urlencoded");
+    return getInstance().shouldCapture_(contentType);
   }
 
   public static String parseCharset(String contentType) {
