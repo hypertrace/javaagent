@@ -40,8 +40,7 @@ public class HypertraceConfigTest {
   private static final String[] EXPECTED_CONTENT_TYPES =
       new String[] {"json", "graphql", "xml", "x-www-form-urlencoded"};
 
-  private static final String[] EXPECTED_CONTENT_TYPES_WITH_ADDITIONS =
-      new String[] {"json", "graphql", "xml", "x-www-form-urlencoded", "foo", "bar"};
+  private static final String[] EXPECTED_CONTENT_TYPES_WITH_OVERRIDES = new String[] {"foo", "bar"};
 
   @Test
   public void defaultValues() throws IOException {
@@ -269,6 +268,6 @@ public class HypertraceConfigTest {
     URL resource = getClass().getClassLoader().getResource("nonDefaultDataCaptureConfig.yaml");
     AgentConfig agentConfig = HypertraceConfig.load(resource.getPath());
 
-    testAllowedContentTypes(agentConfig, EXPECTED_CONTENT_TYPES_WITH_ADDITIONS);
+    testAllowedContentTypes(agentConfig, EXPECTED_CONTENT_TYPES_WITH_OVERRIDES);
   }
 }

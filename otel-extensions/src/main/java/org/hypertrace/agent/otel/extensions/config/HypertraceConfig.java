@@ -222,7 +222,8 @@ public class HypertraceConfig {
 
   /**
    * Creates a collection of objects consisting of the set of objects specified in the
-   * configuration, plus the default set of objects.
+   * configuration. If there are no objects in the configuration, the default set of objects is
+   * used.
    *
    * @param originalList the set of objects specified in the configuration
    * @param defaultSupplier a lambda which provides the default set of objects.
@@ -234,11 +235,11 @@ public class HypertraceConfig {
       List<T> originalList, Supplier<List<T>> defaultSupplier) {
     Set<T> returnSet = new HashSet<>();
 
-    if (originalList != null) {
+    if (originalList != null && originalList.size() > 0) {
       returnSet.addAll(originalList);
+    } else {
+      returnSet.addAll(defaultSupplier.get());
     }
-
-    returnSet.addAll(defaultSupplier.get());
 
     return returnSet;
   }
