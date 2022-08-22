@@ -44,4 +44,5 @@ dependencies {
     library("org.apache.httpcomponents:httpclient:4.0")
 
      testImplementation(testFixtures(project(":testing-common")))
+     testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_semconv"]}")
 }

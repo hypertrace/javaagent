@@ -108,6 +108,14 @@ public abstract class AbstractInstrumenterTest {
       throw new AssertionError("Could not access agent classLoader", t);
     }
     if (classFileTransformer == null) {
+      // ---------------------------------------------------------------------
+      //  Set the otel.instrumentation.internal-reflection.enabled property to
+      //  'false'.  This causes the OTEL agent to filter out virtual field
+      //  accessor interfaces when it is verifying that a class can be
+      //  transformed.  Some of our unit tests will fail if this property
+      //  is not set.
+      // ---------------------------------------------------------------------
+      System.setProperty("otel.instrumentation.internal-reflection.enabled", "false");
       classFileTransformer =
           AgentInstaller.installBytebuddyAgent(INSTRUMENTATION, Collections.emptyList());
     }

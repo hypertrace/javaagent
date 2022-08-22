@@ -36,6 +36,17 @@ dependencies {
     implementation("io.opentelemetry:opentelemetry-semconv:${versions["opentelemetry"]}-alpha")
     implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:${versions["opentelemetry_java_agent"]}")
     implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:${versions["opentelemetry_java_agent"]}")
+    implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${versions["opentelemetry_java_agent"]}") {
+        constraints {
+            implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling-java9:1.7.2-alpha") {
+                attributes {
+                    // this transitive dependency creates classes compatible with Java 9 and up, but is only referenced in safe ways for
+                    // java 8 by the javaagent-tooling dependency
+                    attribute(Attribute.of("org.gradle.jvm.version", Integer::class.java), 9 as Integer)
+                }
+            }
+        }
+    }
 
     implementation("org.slf4j:slf4j-api:${versions["slf4j"]}")
     compileOnly("com.google.auto.service:auto-service-annotations:1.0")
