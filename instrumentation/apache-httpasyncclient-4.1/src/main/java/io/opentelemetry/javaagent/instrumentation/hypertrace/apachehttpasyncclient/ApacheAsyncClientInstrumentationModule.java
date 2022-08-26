@@ -31,7 +31,6 @@ import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.apachehttpasyncclient.ApacheHttpAsyncClientInstrumentation.DelegatingRequestProducer;
 import io.opentelemetry.javaagent.instrumentation.apachehttpasyncclient.ApacheHttpAsyncClientInstrumentation.WrappedFutureCallback;
-
 import java.util.Collections;
 import java.util.List;
 import net.bytebuddy.asm.Advice;
@@ -108,6 +107,4 @@ public class ApacheAsyncClientInstrumentationModule extends InstrumentationModul
       }
     }
   }
-
-
 }
