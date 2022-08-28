@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 import okhttp3.MediaType;
@@ -91,7 +90,7 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
         new JarFile(agentPath)
             .getManifest()
             .getMainAttributes()
-            .get(Attributes.Name.IMPLEMENTATION_VERSION);
+            .get(OTEL_INSTRUMENTATION_VERSION_MANIFEST_PROP);
 
     Assertions.assertEquals(
         ResourceAttributes.CONTAINER_ID.getKey(),
