@@ -45,6 +45,11 @@ dependencies {
                     attribute(Attribute.of("org.gradle.jvm.version", Integer::class.java), 9 as Integer)
                 }
             }
+            implementation("org.jetbrains.kotlin:kotlin-stdlib:1.7.10") {
+                because(
+                    "SNYK error SNYK-JAVA-ORGJETBRAINSKOTLIN-2393744"
+                )
+            }
         }
     }
 
