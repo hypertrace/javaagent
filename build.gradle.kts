@@ -48,6 +48,7 @@ subprojects {
             "opentelemetry_java_agent_all" to "1.13.1",
             "opentelemetry_java_agent_jaxrs" to "1.11.1-alpha",
             "opentelemetry_java_agent_netty" to "1.13.1-alpha",
+            "opentelemetry_java_agent-tooling" to "1.13.1-alpha",
 
             "opentelemetry_gradle_plugin" to "1.16.0-alpha",
             "byte_buddy" to "1.12.10",

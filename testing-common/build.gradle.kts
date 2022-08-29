@@ -23,7 +23,7 @@ dependencies {
     testFixturesApi("com.squareup.okhttp3:logging-interceptor:4.9.0")
     testFixturesImplementation("io.opentelemetry:opentelemetry-exporter-logging:${versions["opentelemetry"]}")
     testFixturesImplementation("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:${versions["opentelemetry_java_agent"]}")
-    testFixturesImplementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${versions["opentelemetry_java_agent"]}") {
+    testFixturesImplementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${versions["opentelemetry_java_agent-tooling"]}") {
         constraints {
             implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling-java9:1.7.2-alpha") {
                 attributes {

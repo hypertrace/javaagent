@@ -178,7 +178,7 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
     Assertions.assertTrue(hasMetricNamed("queueSize", metrics));
     Assertions.assertTrue(hasMetricNamed("runtime.jvm.gc.count", metrics));
     Assertions.assertTrue(hasMetricNamed("runtime.jvm.gc.time", metrics));
-    Assertions.assertTrue(hasMetricNamed("runtime.jvm.memory.pool", metrics));
+    // Assertions.assertTrue(hasMetricNamed("runtime.jvm.memory.pool", metrics));
     Assertions.assertTrue(hasMetricNamed("runtime.jvm.memory.area", metrics));
   }
 
