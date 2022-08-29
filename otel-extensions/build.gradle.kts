@@ -45,11 +45,6 @@ dependencies {
                     attribute(Attribute.of("org.gradle.jvm.version", Integer::class.java), 9 as Integer)
                 }
             }
-            implementation("org.jetbrains.kotlin:kotlin-stdlib:1.7.10") {
-                because(
-                    "SNYK error SNYK-JAVA-ORGJETBRAINSKOTLIN-2393744"
-                )
-            }
         }
     }
 
@@ -63,13 +58,7 @@ dependencies {
     api("com.google.protobuf:protobuf-java")
     api("com.google.protobuf:protobuf-java-util")
     // convert yaml to json, since java protobuf impl supports only json
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.3") {
-        implementation("org.yaml:snakeyaml:1.31") {
-            because(
-                "SNYK error SNYK-JAVA-ORGYAML-2806360"
-            )
-        }
-    }
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.3")
     // fix vulnerability
     constraints {
         api("com.google.code.gson:gson:2.8.9")
