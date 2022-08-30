@@ -173,24 +173,6 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
 
     ArrayList<ExportMetricsServiceRequest> metrics = new ArrayList<>(waitForMetrics());
 
-    for (ExportMetricsServiceRequest req : metrics) {
-      req.getResourceMetricsList().stream()
-          .forEach(
-              resourceMetrics -> {
-                resourceMetrics.getInstrumentationLibraryMetricsList().stream()
-                    .forEach(
-                        instrumentationLibraryMetrics -> {
-                          instrumentationLibraryMetrics.getMetricsList().stream()
-                              .forEach(
-                                  metric_ ->
-                                      System.out.println(
-                                          String.format("metric name = %s", metric_.getName())));
-                        });
-              });
-    }
-
-    System.err.println(metrics.toString());
-
     Assertions.assertTrue(hasMetricNamed("otlp.exporter.seen", metrics));
     Assertions.assertTrue(hasMetricNamed("otlp.exporter.exported", metrics));
     Assertions.assertTrue(hasMetricNamed("processedSpans", metrics));
@@ -200,11 +182,11 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
     Assertions.assertTrue(hasMetricNamed("process.runtime.jvm.memory.usage", metrics));
     Assertions.assertTrue(hasMetricNamed("process.runtime.jvm.memory.init", metrics));
     Assertions.assertTrue(hasMetricNamed("process.runtime.jvm.memory.committed", metrics));
-    Assertions.assertTrue(hasMetricNamed("process.runtime.jvm.memory.limit", metrics));
 
-
-//    Assertions.assertTrue(hasMetricNamed("runtime.jvm.memory.pool", metrics));
-//    Assertions.assertTrue(hasMetricNamed("runtime.jvm.memory.area", metrics));
+    //    The following metrics are no longer produced by the OTEL Java agent (as of the 1.13.1
+    // release)
+    //    Assertions.assertTrue(hasMetricNamed("runtime.jvm.memory.pool", metrics));
+    //    Assertions.assertTrue(hasMetricNamed("runtime.jvm.memory.area", metrics));
   }
 
   @Test
