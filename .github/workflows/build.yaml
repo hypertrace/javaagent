@@ -85,7 +85,7 @@ jobs:
       - name: Setup snyk
         uses: snyk/actions/setup@0.3.0
       - name: Snyk test
-        run: snyk test -d --all-sub-projects --org=hypertrace --severity-threshold=low --configuration-matching="^runtimeClasspath$"
+        run: snyk test -d --all-sub-projects --org=hypertrace --severity-threshold=low --policy-path=.snyk --configuration-matching="^runtimeClasspath$"
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
           GRADLE_OPTS: -Dorg.gradle.workers.max=1
