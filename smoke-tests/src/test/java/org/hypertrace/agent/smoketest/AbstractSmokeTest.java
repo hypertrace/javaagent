@@ -27,6 +27,7 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.jar.Attributes;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -60,6 +61,11 @@ public abstract class AbstractSmokeTest {
   private static final String NETWORK_ALIAS_OTEL_MOCK_STORAGE = "backend";
   private static final String OTEL_EXPORTER_ENDPOINT =
       String.format("http://%s:4317", NETWORK_ALIAS_OTEL_COLLECTOR);
+
+  // note - with OTEL 1.13, the value of this manifest property is specified
+  // as the version in the InstrumentationLibrary class.
+  public static final Attributes.Name OTEL_INSTRUMENTATION_VERSION_MANIFEST_PROP =
+      new Attributes.Name("OpenTelemetry-Instrumentation-Version");
 
   public static final String OTEL_LIBRARY_VERSION_ATTRIBUTE = "otel.library.version";
   public static final String agentPath = getPropertyOrEnv("smoketest.javaagent.path");

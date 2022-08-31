@@ -27,8 +27,9 @@ import org.hypertrace.agent.otel.extensions.CgroupsReader;
 public class AddTagsSpanProcessor implements SpanProcessor {
 
   // initialize at startup because the processor is executed for every span.
-  private final String containerId;
+  private String containerId;
 
+  /** Note - the container id is not available using this technique if cgroup2 is installed. */
   public AddTagsSpanProcessor() {
     CgroupsReader cgroupsReader = new CgroupsReader();
     containerId = cgroupsReader.readContainerId();

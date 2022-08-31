@@ -33,11 +33,12 @@ val versions: Map<String, String> by extra
 
 dependencies {
     api(project(":instrumentation:java-streams"))
-    testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-client-2.0-common:${versions["opentelemetry_java_agent"]}")
+    testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-jaxrs-client-2.0-common:${versions["opentelemetry_java_agent_jaxrs"]}")
 
     compileOnly("javax.ws.rs:javax.ws.rs-api:2.0.1")
 
      testImplementation(testFixtures(project(":testing-common")))
     testImplementation("org.glassfish.jersey.core:jersey-client:2.27")
     testImplementation("org.glassfish.jersey.inject:jersey-hk2:2.27")
+    testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_semconv"]}")
 }

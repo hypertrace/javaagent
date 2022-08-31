@@ -55,6 +55,9 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
 
   private final boolean hasResponseBodySpan;
 
+  private FakeTransformer fakeTransformer;
+  private String transformedClassDirName;
+
   public AbstractHttpClientTest(boolean hasResponseBodySpan) {
     this.hasResponseBodySpan = hasResponseBodySpan;
   }
@@ -118,6 +121,25 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
     } else {
       Assertions.assertEquals(1, traces.get(0).size());
       assertRequestAndResponseBody(clientSpan, body, body);
+    }
+  }
+
+  /**
+   * For debugging unit tests, this function can be called to pass the class back through the OTEL
+   * Transformer, and write the resulting class bytes to an external file.
+   *
+   * @param className
+   */
+  private void writeTransformedClass(String className) {
+    if (fakeTransformer == null) {
+      transformedClassDirName = System.getenv("TRANSFORMED_CLASS_DIR");
+      if (transformedClassDirName != null && transformedClassDirName.length() > 0) {
+        fakeTransformer = new FakeTransformer();
+      }
+    }
+
+    if (fakeTransformer != null) {
+      fakeTransformer.writeTransformedClass(className, transformedClassDirName);
     }
   }
 

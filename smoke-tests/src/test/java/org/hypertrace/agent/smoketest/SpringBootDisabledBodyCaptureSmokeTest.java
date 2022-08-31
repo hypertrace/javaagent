@@ -20,7 +20,6 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 import okhttp3.Request;
@@ -76,7 +75,7 @@ public class SpringBootDisabledBodyCaptureSmokeTest extends AbstractSmokeTest {
         new JarFile(agentPath)
             .getManifest()
             .getMainAttributes()
-            .get(Attributes.Name.IMPLEMENTATION_VERSION);
+            .get(OTEL_INSTRUMENTATION_VERSION_MANIFEST_PROP);
 
     Assertions.assertEquals(1, countSpansByName(traces, "/greeting"));
     Assertions.assertEquals(1, countSpansByName(traces, "WebController.greeting"));

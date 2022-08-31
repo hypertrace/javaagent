@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 import okhttp3.MediaType;
@@ -91,7 +90,7 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
         new JarFile(agentPath)
             .getManifest()
             .getMainAttributes()
-            .get(Attributes.Name.IMPLEMENTATION_VERSION);
+            .get(OTEL_INSTRUMENTATION_VERSION_MANIFEST_PROP);
 
     Assertions.assertEquals(
         ResourceAttributes.CONTAINER_ID.getKey(),
@@ -173,14 +172,21 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
     Assertions.assertEquals(requestBody, requestBodyAttributes.get(0));
 
     ArrayList<ExportMetricsServiceRequest> metrics = new ArrayList<>(waitForMetrics());
+
     Assertions.assertTrue(hasMetricNamed("otlp.exporter.seen", metrics));
     Assertions.assertTrue(hasMetricNamed("otlp.exporter.exported", metrics));
     Assertions.assertTrue(hasMetricNamed("processedSpans", metrics));
     Assertions.assertTrue(hasMetricNamed("queueSize", metrics));
     Assertions.assertTrue(hasMetricNamed("runtime.jvm.gc.count", metrics));
     Assertions.assertTrue(hasMetricNamed("runtime.jvm.gc.time", metrics));
-    Assertions.assertTrue(hasMetricNamed("runtime.jvm.memory.pool", metrics));
-    Assertions.assertTrue(hasMetricNamed("runtime.jvm.memory.area", metrics));
+    Assertions.assertTrue(hasMetricNamed("process.runtime.jvm.memory.usage", metrics));
+    Assertions.assertTrue(hasMetricNamed("process.runtime.jvm.memory.init", metrics));
+    Assertions.assertTrue(hasMetricNamed("process.runtime.jvm.memory.committed", metrics));
+
+    //    The following metrics are no longer produced by the OTEL Java agent (as of the 1.13.1
+    // release)
+    //    Assertions.assertTrue(hasMetricNamed("runtime.jvm.memory.pool", metrics));
+    //    Assertions.assertTrue(hasMetricNamed("runtime.jvm.memory.area", metrics));
   }
 
   @Test
