@@ -1,5 +1,6 @@
 plugins {
     `java-library`
+    id("com.google.osdetector") version "1.7.0"
     id("net.bytebuddy.byte-buddy")
     id("io.opentelemetry.instrumentation.auto-instrumentation")
     muzzle
