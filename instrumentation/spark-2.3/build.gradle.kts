@@ -27,7 +27,6 @@ val versions: Map<String, String> by extra
 
 dependencies {
     api(project(":instrumentation:servlet:servlet-3.0"))
-    implementation(project(":instrumentation:utils"))
 
     testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-spark-2.3:${versions["opentelemetry_java_agent"]}")
     testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0:${versions["opentelemetry_java_agent"]}")

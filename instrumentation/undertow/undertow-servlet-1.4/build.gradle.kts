@@ -23,7 +23,6 @@ afterEvaluate{
 }
 
 dependencies {
-    implementation(project(":instrumentation:utils"))
     library("io.undertow:undertow-servlet:1.4.0.Final")
     implementation(project(":instrumentation:undertow:undertow-common"))
 }

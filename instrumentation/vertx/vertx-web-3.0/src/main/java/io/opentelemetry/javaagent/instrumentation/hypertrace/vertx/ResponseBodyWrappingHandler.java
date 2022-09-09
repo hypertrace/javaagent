@@ -20,7 +20,6 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.utils.SpanUtils;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
@@ -43,8 +42,6 @@ public class ResponseBodyWrappingHandler implements Handler<Buffer> {
     String responseBody = event.getString(0, event.length());
     if (span.isRecording()) {
       span.setAttribute(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, responseBody);
-      SpanUtils.setSpanAttributes(span);
-
     } else {
       tracer
           .spanBuilder(HypertraceSemanticAttributes.ADDITIONAL_DATA_SPAN_NAME)

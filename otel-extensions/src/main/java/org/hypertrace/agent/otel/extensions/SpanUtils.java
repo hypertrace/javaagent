@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.utils;
+package org.hypertrace.agent.otel.extensions;
 
 import io.opentelemetry.api.trace.Span;
 import java.util.Map;
@@ -24,9 +24,6 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Abstract class which contain static methods for adding hypertrace-specific attributes to a Span.
- */
 public abstract class SpanUtils {
 
   static final String AGENT_VERSION_ATTRIBUTE_KEY = "otel.extension.library.version";

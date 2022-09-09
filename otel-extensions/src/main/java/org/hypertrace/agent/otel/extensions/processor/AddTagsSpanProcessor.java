@@ -23,6 +23,7 @@ import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import org.hypertrace.agent.otel.extensions.CgroupsReader;
+import org.hypertrace.agent.otel.extensions.SpanUtils;
 
 public class AddTagsSpanProcessor implements SpanProcessor {
 
@@ -40,6 +41,8 @@ public class AddTagsSpanProcessor implements SpanProcessor {
     if (containerId != null && !containerId.isEmpty()) {
       span.setAttribute(ResourceAttributes.CONTAINER_ID, containerId);
     }
+
+    SpanUtils.setSpanAttributes(span);
   }
 
   @Override

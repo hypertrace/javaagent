@@ -22,7 +22,6 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.field.VirtualField;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.utils.SpanUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -65,7 +64,6 @@ public class InputStreamUtils {
     try {
       String body = buffer.toString(charset.name());
       InputStreamUtils.addAttribute(span, attributeKey, body);
-      SpanUtils.setSpanAttributes(span);
     } catch (UnsupportedEncodingException e) {
       log.error("Failed to parse encofing from charset {}", charset, e);
     }

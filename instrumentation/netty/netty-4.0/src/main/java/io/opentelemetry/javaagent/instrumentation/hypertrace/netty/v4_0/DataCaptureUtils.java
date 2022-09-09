@@ -24,7 +24,6 @@ import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.utils.SpanUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
@@ -39,7 +38,6 @@ public class DataCaptureUtils {
       AttributeKey<BoundedByteArrayOutputStream> attributeKey,
       Object httpContentOrBuffer) {
 
-    SpanUtils.setSpanAttributes(span);
     Attribute<BoundedByteArrayOutputStream> bufferAttr = channel.attr(attributeKey);
     BoundedByteArrayOutputStream buffer = bufferAttr.get();
     if (buffer == null) {

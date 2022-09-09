@@ -64,7 +64,6 @@ dependencies {
     testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-grpc-1.6:${versions["opentelemetry_java_agent"]}")
     implementation(project(":instrumentation:grpc-common"))
     implementation(project(":shaded-protobuf-java-util", "shadow"))
-    implementation(project(":instrumentation:utils"))
 
     compileOnly("io.grpc:grpc-core:${grpcVersion}")
     compileOnly("io.grpc:grpc-protobuf:${grpcVersion}") {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.utils;
+package org.hypertrace.agent.otel.extensions;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -28,7 +28,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+/** Unit tests for SpanUtils. */
 public class SpanUtilsTest {
+
+  /**
+   * We can't seem to create mocks using Mockito in this environment, so we create a concrete
+   * implementation of the Span interface, to serve as a mock.
+   */
   private static class MockSpan implements Span {
 
     private final Map<AttributeKey<String>, String> attributeMap = new HashMap<>();

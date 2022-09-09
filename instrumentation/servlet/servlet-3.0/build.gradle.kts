@@ -30,7 +30,6 @@ afterEvaluate{
 val versions: Map<String, String> by extra
 
 dependencies {
-    implementation(project(":instrumentation:utils"))
     implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common:${versions["opentelemetry_java_agent"]}")
     implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0:${versions["opentelemetry_java_agent"]}") // Servlet3Accessor
     testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0:${versions["opentelemetry_java_agent"]}")

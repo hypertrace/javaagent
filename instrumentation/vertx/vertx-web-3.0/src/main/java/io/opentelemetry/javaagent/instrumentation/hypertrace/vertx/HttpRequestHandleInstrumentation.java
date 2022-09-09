@@ -25,7 +25,6 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.utils.SpanUtils;
 import io.opentelemetry.javaagent.instrumentation.vertx.client.Contexts;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpClientResponse;
@@ -67,7 +66,6 @@ public class HttpRequestHandleInstrumentation implements TypeInstrumentation {
         return;
       }
       Span span = Span.fromContext(contexts.context);
-      SpanUtils.setSpanAttributes(span);
 
       InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
       if (instrumentationConfig.httpHeaders().request()) {
