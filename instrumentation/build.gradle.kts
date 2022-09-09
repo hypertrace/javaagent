@@ -4,6 +4,7 @@ plugins {
 }
 
 dependencies{
+    implementation(project(":instrumentation:utils"))
     implementation(project(":instrumentation:servlet:servlet-rw"))
     implementation(project(":instrumentation:servlet:servlet-3.0"))
     implementation(project(":instrumentation:spark-2.3"))

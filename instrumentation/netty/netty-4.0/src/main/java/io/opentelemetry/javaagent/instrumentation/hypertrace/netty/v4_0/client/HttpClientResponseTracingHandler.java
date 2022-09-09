@@ -31,6 +31,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.AttributeKeys;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.DataCaptureUtils;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.utils.SpanUtils;
 import io.opentelemetry.javaagent.instrumentation.netty.v4_0.client.NettyClientSingletons;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.nio.charset.Charset;
@@ -61,6 +62,7 @@ public class HttpClientResponseTracingHandler extends ChannelInboundHandlerAdapt
       return;
     }
     Span span = Span.fromContext(context);
+    SpanUtils.setSpanAttributes(span);
 
     if (msg instanceof HttpResponse) {
       HttpResponse httpResponse = (HttpResponse) msg;
@@ -104,6 +106,7 @@ public class HttpClientResponseTracingHandler extends ChannelInboundHandlerAdapt
       span.setAttribute(SemanticAttributes.HTTP_STATUS_CODE, code);
       span.setStatus(code >= 100 && code < 400 ? StatusCode.UNSET : StatusCode.ERROR);
     }
+    SpanUtils.setSpanAttributes(span);
     if (msg instanceof LastHttpContent) {
       span.end();
     }

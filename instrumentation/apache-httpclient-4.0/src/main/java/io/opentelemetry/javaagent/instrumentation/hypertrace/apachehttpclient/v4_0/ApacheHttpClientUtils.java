@@ -19,6 +19,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v4_0.ApacheHttpClientObjectRegistry.SpanAndAttributeKey;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.utils.SpanUtils;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
@@ -48,10 +49,12 @@ public class ApacheHttpClientUtils {
 
   public static void addResponseHeaders(Span span, HeaderIterator headerIterator) {
     addHeaders(span, headerIterator, HypertraceSemanticAttributes::httpResponseHeader);
+    SpanUtils.setSpanAttributes(span);
   }
 
   public static void addRequestHeaders(Span span, HeaderIterator headerIterator) {
     addHeaders(span, headerIterator, HypertraceSemanticAttributes::httpRequestHeader);
+    SpanUtils.setSpanAttributes(span);
   }
 
   private static void addHeaders(

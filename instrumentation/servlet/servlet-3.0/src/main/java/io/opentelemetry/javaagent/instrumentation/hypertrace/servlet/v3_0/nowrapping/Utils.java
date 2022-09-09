@@ -18,6 +18,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowra
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.instrumentation.api.field.VirtualField;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.utils.SpanUtils;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -36,6 +37,7 @@ public class Utils {
   private Utils() {}
 
   public static void addSessionId(Span span, HttpServletRequest httpRequest) {
+
     if (httpRequest.isRequestedSessionIdValid()) {
       HttpSession session = httpRequest.getSession();
       if (session != null && session.getId() != "") {
@@ -79,6 +81,7 @@ public class Utils {
         writerContextStore.set(printWriter, null);
       }
     }
+    SpanUtils.setSpanAttributes(span);
   }
 
   public static void resetRequestBodyBuffers(

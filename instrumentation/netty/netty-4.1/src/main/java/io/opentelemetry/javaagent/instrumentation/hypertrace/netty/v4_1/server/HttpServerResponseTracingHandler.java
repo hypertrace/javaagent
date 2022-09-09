@@ -31,6 +31,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.AttributeKeys;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.DataCaptureUtils;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.utils.SpanUtils;
 import io.opentelemetry.javaagent.instrumentation.netty.v4_1.server.NettyServerSingletons;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.nio.charset.Charset;
@@ -60,6 +61,7 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
       return;
     }
     Span span = Span.fromContext(context);
+    SpanUtils.setSpanAttributes(span);
 
     if (msg instanceof HttpResponse) {
       HttpResponse httpResponse = (HttpResponse) msg;

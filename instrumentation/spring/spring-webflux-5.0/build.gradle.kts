@@ -7,6 +7,7 @@ plugins {
 val versions: Map<String, String> by extra
 
 dependencies {
+    implementation(project(":instrumentation:utils"))
     testImplementation(testFixtures(project(":testing-common")))
     testImplementation(project(":instrumentation:netty:netty-4.1"))
     testImplementation("org.springframework:spring-webflux:5.0.0.RELEASE")

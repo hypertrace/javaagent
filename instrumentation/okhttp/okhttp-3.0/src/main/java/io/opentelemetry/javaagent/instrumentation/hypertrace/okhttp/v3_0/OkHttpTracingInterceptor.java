@@ -18,6 +18,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.okhttp.v3_0;
 
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.utils.SpanUtils;
 import java.io.IOException;
 import java.util.function.Function;
 import okhttp3.Headers;
@@ -47,6 +48,7 @@ public class OkHttpTracingInterceptor implements Interceptor {
     }
 
     Span span = Span.current();
+    SpanUtils.setSpanAttributes(span);
 
     Request request = chain.request();
     if (instrumentationConfig.httpHeaders().request()) {

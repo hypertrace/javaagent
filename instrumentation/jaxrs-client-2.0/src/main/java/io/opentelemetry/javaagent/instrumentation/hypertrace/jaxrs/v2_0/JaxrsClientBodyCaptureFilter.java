@@ -19,6 +19,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.jaxrs.v2_0;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.utils.SpanUtils;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -63,6 +64,7 @@ public class JaxrsClientBodyCaptureFilter implements ClientRequestFilter, Client
             currentSpan,
             HypertraceSemanticAttributes::httpRequestHeader,
             requestContext.getStringHeaders());
+        SpanUtils.setSpanAttributes(currentSpan);
       }
     } catch (Exception ex) {
       log.error("Exception while getting request headers", ex);
@@ -85,6 +87,7 @@ public class JaxrsClientBodyCaptureFilter implements ClientRequestFilter, Client
             currentSpan,
             HypertraceSemanticAttributes::httpResponseHeader,
             responseContext.getHeaders());
+        SpanUtils.setSpanAttributes(currentSpan);
       }
     } catch (Exception ex) {
       log.error("Exception while getting response headers", ex);

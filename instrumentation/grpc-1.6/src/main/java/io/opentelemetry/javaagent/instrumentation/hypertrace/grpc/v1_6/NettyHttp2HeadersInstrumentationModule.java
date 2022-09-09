@@ -30,6 +30,7 @@ import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.GrpcSemanticAttributes;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.utils.SpanUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -119,6 +120,8 @@ public class NettyHttp2HeadersInstrumentationModule extends InstrumentationModul
                 GrpcSemanticAttributes.addColon(GrpcSemanticAttributes.METHOD)),
             method.toString());
       }
+
+      SpanUtils.setSpanAttributes(currentSpan);
     }
   }
 

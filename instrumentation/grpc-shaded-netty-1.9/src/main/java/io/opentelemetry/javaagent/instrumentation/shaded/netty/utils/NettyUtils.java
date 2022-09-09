@@ -20,6 +20,7 @@ import io.grpc.Metadata;
 import io.grpc.netty.shaded.io.netty.handler.codec.http2.Http2Headers;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.GrpcSemanticAttributes;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.utils.SpanUtils;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 
 public class NettyUtils {
@@ -66,5 +67,6 @@ public class NettyUtils {
               GrpcSemanticAttributes.addColon(GrpcSemanticAttributes.METHOD)),
           method.toString());
     }
+    SpanUtils.setSpanAttributes(currentSpan);
   }
 }

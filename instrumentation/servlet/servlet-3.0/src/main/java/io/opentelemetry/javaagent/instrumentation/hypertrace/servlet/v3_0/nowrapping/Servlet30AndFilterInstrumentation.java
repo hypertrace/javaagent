@@ -29,6 +29,7 @@ import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.api.Java8BytecodeBridge;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.utils.SpanUtils;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.util.Collections;
@@ -203,6 +204,8 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
                 readerContextStore,
                 urlEncodedMapContextStore);
           }
+
+          SpanUtils.setSpanAttributes(currentSpan);
         }
       } finally {
         if (throwable instanceof HypertraceEvaluationException) {

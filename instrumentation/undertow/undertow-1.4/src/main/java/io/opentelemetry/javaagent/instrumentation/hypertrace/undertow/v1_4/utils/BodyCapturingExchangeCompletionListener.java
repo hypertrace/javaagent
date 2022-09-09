@@ -16,6 +16,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.undertow.v1_4.utils;
 
+import io.opentelemetry.javaagent.instrumentation.hypertrace.utils.SpanUtils;
 import io.undertow.server.ExchangeCompletionListener;
 import io.undertow.server.HttpServerExchange;
 import java.io.UnsupportedEncodingException;
@@ -45,6 +46,7 @@ public final class BodyCapturingExchangeCompletionListener implements ExchangeCo
       return;
     }
     spanAndBuffer.span.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, body);
+    SpanUtils.setSpanAttributes(spanAndBuffer.span);
     nextListener.proceed();
   }
 }

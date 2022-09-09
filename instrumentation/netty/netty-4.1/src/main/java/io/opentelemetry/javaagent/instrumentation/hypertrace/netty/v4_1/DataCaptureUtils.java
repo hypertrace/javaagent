@@ -25,6 +25,7 @@ import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.utils.SpanUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
@@ -64,6 +65,7 @@ public class DataCaptureUtils {
         // ignore charset was parsed before
       }
     }
+    SpanUtils.setSpanAttributes(span);
   }
 
   private static ByteBuf castToBuf(Object msg) {

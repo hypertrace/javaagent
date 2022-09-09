@@ -19,6 +19,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.jaxrs.v2_0;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.field.VirtualField;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.utils.SpanUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -154,6 +155,7 @@ public class JaxrsClientEntityInterceptor implements ReaderInterceptor, WriterIn
       outputStreamContextStore.set(entityStream, null);
       currentSpan.setAttribute(
           HypertraceSemanticAttributes.HTTP_REQUEST_BODY, buffer.toStringWithSuppliedCharset());
+      SpanUtils.setSpanAttributes(currentSpan);
     }
   }
 }

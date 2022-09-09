@@ -23,6 +23,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.GrpcSemanticAttributes;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.utils.SpanUtils;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -47,6 +48,7 @@ public class GrpcSpanDecorator {
         BoundedCharArrayWriter writer = BoundedBuffersFactory.createWriter();
         PRINTER.appendTo(mb, writer);
         span.setAttribute(key, writer.toString());
+        SpanUtils.setSpanAttributes(span);
       } catch (IOException e) {
         log.error("Failed to decode message to JSON", e);
       }
@@ -67,6 +69,7 @@ public class GrpcSpanDecorator {
         span.setAttribute(keySupplier.apply(key), stringValue);
       }
     }
+    SpanUtils.setSpanAttributes(span);
   }
 
   public static void addMetadataAttributes(Map<String, String> metadata, Span span) {

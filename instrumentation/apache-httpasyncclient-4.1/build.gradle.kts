@@ -30,6 +30,7 @@ dependencies {
     api(project(":instrumentation:java-streams"))
     api(project(":instrumentation:apache-httpclient-4.0"))
 
+    implementation(project(":instrumentation:utils"))
     implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-apache-httpasyncclient-4.1:${versions["opentelemetry_java_agent"]}")
     testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-apache-httpclient-4.0:${versions["opentelemetry_java_agent"]}")
     testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_semconv"]}")

@@ -22,6 +22,7 @@ afterEvaluate{
 val versions: Map<String, String> by extra
 
 dependencies {
+    implementation(project(":instrumentation:utils"))
      testImplementation(testFixtures(project(":testing-common")))
      testImplementation("io.opentelemetry.javaagent:opentelemetry-muzzle:${versions["opentelemetry_java_agent"]}")
 }

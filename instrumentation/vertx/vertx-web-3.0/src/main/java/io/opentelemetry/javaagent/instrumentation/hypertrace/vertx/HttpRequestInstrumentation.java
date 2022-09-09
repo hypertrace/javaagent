@@ -28,6 +28,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.utils.SpanUtils;
 import io.opentelemetry.javaagent.instrumentation.vertx.client.Contexts;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
@@ -98,6 +99,7 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
         return;
       }
       Span span = Span.fromContext(contexts.context);
+      SpanUtils.setSpanAttributes(span);
 
       BoundedCharArrayWriter buffer =
           VirtualField.find(MultiMap.class, BoundedCharArrayWriter.class).get(request.headers());
@@ -128,6 +130,7 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
         return;
       }
       Span span = Span.fromContext(contexts.context);
+      SpanUtils.setSpanAttributes(span);
 
       String contentType = request.headers().get("Content-Type");
       InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
@@ -166,6 +169,7 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
         return;
       }
       Span span = Span.fromContext(contexts.context);
+      SpanUtils.setSpanAttributes(span);
 
       String contentType = request.headers().get("Content-Type");
       InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
