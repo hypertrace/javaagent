@@ -88,5 +88,6 @@ dependencies {
 
      testImplementation(testFixtures(project(":testing-common")))
     testImplementation("org.asynchttpclient:async-http-client:2.0.9")
+    implementation(project(":instrumentation:utils"))
 }
 

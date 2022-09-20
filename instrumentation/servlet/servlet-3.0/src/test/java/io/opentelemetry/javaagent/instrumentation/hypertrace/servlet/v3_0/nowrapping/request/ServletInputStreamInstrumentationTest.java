@@ -25,7 +25,7 @@ import java.util.Map;
 import javax.servlet.ServletInputStream;
 import org.ServletStreamContextAccess;
 import org.TestServletInputStream;
-import org.hypertrace.agent.core.TriFunction;
+import org.hypertrace.agent.core.QuadFunction;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
@@ -48,7 +48,8 @@ public class ServletInputStreamInstrumentationTest extends AbstractInstrumenterT
     BoundedByteArrayOutputStream buffer =
         BoundedBuffersFactory.createStream(StandardCharsets.UTF_8);
     ByteBufferSpanPair bufferSpanPair =
-        new ByteBufferSpanPair(span, buffer, NOOP_FILTER, Collections.emptyMap());
+        new ByteBufferSpanPair(
+            span, buffer, NOOP_FILTER, Collections.emptyMap(), Collections.emptyMap());
     ServletStreamContextAccess.addToInputStreamContext(servletInputStream, bufferSpanPair);
 
     while (servletInputStream.read() != -1) {}
@@ -66,7 +67,8 @@ public class ServletInputStreamInstrumentationTest extends AbstractInstrumenterT
     BoundedByteArrayOutputStream buffer =
         BoundedBuffersFactory.createStream(StandardCharsets.UTF_8);
     ByteBufferSpanPair bufferSpanPair =
-        new ByteBufferSpanPair(span, buffer, NOOP_FILTER, Collections.emptyMap());
+        new ByteBufferSpanPair(
+            span, buffer, NOOP_FILTER, Collections.emptyMap(), Collections.emptyMap());
     ServletStreamContextAccess.addToInputStreamContext(servletInputStream, bufferSpanPair);
 
     while (servletInputStream.read() != -1) {}
@@ -84,13 +86,14 @@ public class ServletInputStreamInstrumentationTest extends AbstractInstrumenterT
     BoundedByteArrayOutputStream buffer =
         BoundedBuffersFactory.createStream(StandardCharsets.UTF_8);
     ByteBufferSpanPair bufferSpanPair =
-        new ByteBufferSpanPair(span, buffer, NOOP_FILTER, Collections.emptyMap());
+        new ByteBufferSpanPair(
+            span, buffer, NOOP_FILTER, Collections.emptyMap(), Collections.emptyMap());
     ServletStreamContextAccess.addToInputStreamContext(servletInputStream, bufferSpanPair);
 
     servletInputStream.read(new byte[BODY.length()]);
     Assertions.assertEquals(BODY.substring(2), buffer.toStringWithSuppliedCharset());
   }
 
-  private static final TriFunction<Span, String, Map<String, String>, Boolean> NOOP_FILTER =
-      (span, body, headers) -> false;
+  private static final QuadFunction<Span, String, Map<String, String>, Map<String, String>, Boolean>
+      NOOP_FILTER = (span, body, headers, missingAttrs) -> false;
 }

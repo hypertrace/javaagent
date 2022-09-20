@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
 import java.util.Objects;
-import org.hypertrace.agent.core.TriFunction;
+import org.hypertrace.agent.core.QuadFunction;
 import org.hypertrace.agent.core.instrumentation.HypertraceEvaluationException;
 
 public class ByteBufferSpanPair {
@@ -31,17 +31,21 @@ public class ByteBufferSpanPair {
   private final BoundedByteArrayOutputStream buffer;
   private final Map<String, String> headers;
   private boolean bufferCaptured;
-  private final TriFunction<Span, String, Map<String, String>, Boolean> filter;
+  private Map<String, String> possiblyMissingAttrs;
+  private final QuadFunction<Span, String, Map<String, String>, Map<String, String>, Boolean>
+      filter;
 
   public ByteBufferSpanPair(
       Span span,
       BoundedByteArrayOutputStream buffer,
-      TriFunction<Span, String, Map<String, String>, Boolean> filter,
-      Map<String, String> headers) {
+      QuadFunction<Span, String, Map<String, String>, Map<String, String>, Boolean> filter,
+      Map<String, String> headers,
+      Map<String, String> possiblyMissingAttrs) {
     this.span = span;
     this.buffer = buffer;
     this.filter = Objects.requireNonNull(filter);
     this.headers = headers;
+    this.possiblyMissingAttrs = possiblyMissingAttrs;
   }
 
   public void captureBody(AttributeKey<String> attributeKey) {
@@ -58,7 +62,7 @@ public class ByteBufferSpanPair {
     }
     span.setAttribute(attributeKey, requestBody);
     final boolean block;
-    block = filter.apply(span, requestBody, headers);
+    block = filter.apply(span, requestBody, headers, possiblyMissingAttrs);
     if (block) {
       throw new HypertraceEvaluationException();
     }

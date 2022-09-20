@@ -53,5 +53,6 @@ dependencies {
      testImplementation(testFixtures(project(":testing-common")))
     testImplementation("io.netty:netty-handler:4.1.0.Final")
     testImplementation("org.asynchttpclient:async-http-client:2.1.0")
+    implementation(project(":instrumentation:utils"))
 }
 

@@ -115,7 +115,11 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
         headers.put(attributeKey.getKey(), headerValue);
       }
 
-      if (FilterRegistry.getFilter().evaluateRequestHeaders(currentSpan, headers)) {
+      Map<String, String> possiblyMissingAttrs =
+          Utils.getPossiblyMissingSpanAttributes(httpRequest);
+
+      if (FilterRegistry.getFilter()
+          .evaluateRequestHeaders(currentSpan, headers, possiblyMissingAttrs)) {
         httpResponse.setStatus(403);
         // skip execution of the user code
         return true;

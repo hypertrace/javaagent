@@ -35,6 +35,19 @@ public interface Filter {
   boolean evaluateRequestHeaders(Span span, Map<String, String> headers);
 
   /**
+   * Evaluate the execution (includes extra attributes which might be missing from the span).
+   *
+   * @param span
+   * @param headers
+   * @param possiblyMissingSpanAttrs
+   * @return
+   */
+  default boolean evaluateRequestHeaders(
+      Span span, Map<String, String> headers, Map<String, String> possiblyMissingSpanAttrs) {
+    return evaluateRequestHeaders(span, headers);
+  }
+
+  /**
    * Evaluate the execution.
    *
    * @param span of the HTTP request associated with this body
@@ -43,4 +56,12 @@ public interface Filter {
    * @return filter result
    */
   boolean evaluateRequestBody(Span span, String body, Map<String, String> headers);
+
+  default boolean evaluateRequestBody(
+      Span span,
+      String body,
+      Map<String, String> headers,
+      Map<String, String> possiblyMissingSpanAttrs) {
+    return evaluateRequestBody(span, body, headers);
+  }
 }

@@ -46,4 +46,5 @@ dependencies {
     testImplementation("org.eclipse.jetty:jetty-server:8.1.22.v20160922")
     testImplementation("org.eclipse.jetty:jetty-servlet:8.1.22.v20160922")
     testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_semconv"]}")
+    implementation(project(":instrumentation:utils"))
 }

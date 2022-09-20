@@ -19,6 +19,7 @@ dependencies{
     implementation(project(":instrumentation:undertow:undertow-1.4"))
     implementation(project(":instrumentation:undertow:undertow-servlet-1.4"))
     implementation(project(":instrumentation:vertx:vertx-web-3.0"))
+    implementation(project(":instrumentation:utils"))
     implementation(project(":otel-extensions"))
 }
 
