@@ -205,12 +205,16 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
           }
         }
       } finally {
-        if (throwable instanceof HypertraceEvaluationException) {
-          httpResponse.setStatus(403);
-          // bytebuddy treats the reassignment of this variable to null as an instruction to
-          // suppress
-          // this exception, which is what we want
-          throwable = null;
+        Throwable tmp = throwable;
+        while (tmp != null) { // loop in case our exception is nested (eg. springframework)
+          if (tmp instanceof HypertraceEvaluationException) {
+            httpResponse.setStatus(403);
+            // bytebuddy treats the reassignment of this variable to null as an instruction to
+            // suppress this exception, which is what we want
+            throwable = null;
+            break;
+          }
+          tmp = tmp.getCause();
         }
       }
     }
