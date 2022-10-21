@@ -89,7 +89,8 @@ public class Servlet30InstrumentationTest extends AbstractInstrumenterTest {
     handler.addServlet(GetHello.class, "/hello");
     handler.addServlet(EchoStream_single_byte.class, "/echo_stream_single_byte");
     handler.addServlet(EchoStream_arr.class, "/echo_stream_arr");
-    handler.addFilter(WrapExceptionFilter.class, "/echo_stream_arr", EnumSet.of(DispatcherType.REQUEST));
+    handler.addFilter(
+        WrapExceptionFilter.class, "/echo_stream_arr", EnumSet.of(DispatcherType.REQUEST));
     handler.addServlet(EchoStream_arr_offset.class, "/echo_stream_arr_offset");
     handler.addServlet(EchoStream_readLine_print.class, "/echo_stream_readLine_print");
     handler.addServlet(EchoWriter_single_char.class, "/echo_writer_single_char");
@@ -328,11 +329,11 @@ public class Servlet30InstrumentationTest extends AbstractInstrumenterTest {
   public void blockBodyWrappedException() throws Exception {
     FormBody formBody = new FormBody.Builder().add("block", "true").build();
     Request request =
-            new Request.Builder()
-                    .url(String.format("http://localhost:%d/echo_stream_arr", serverPort))
-                    .post(formBody)
-                    .header(REQUEST_HEADER, REQUEST_HEADER_VALUE)
-                    .build();
+        new Request.Builder()
+            .url(String.format("http://localhost:%d/echo_stream_arr", serverPort))
+            .post(formBody)
+            .header(REQUEST_HEADER, REQUEST_HEADER_VALUE)
+            .build();
     try (Response response = httpClient.newCall(request).execute()) {
       Assertions.assertEquals(403, response.code());
     }
@@ -344,13 +345,13 @@ public class Servlet30InstrumentationTest extends AbstractInstrumenterTest {
     Assertions.assertEquals(1, spans.size());
     SpanData spanData = spans.get(0);
     Assertions.assertNull(
-            spanData
-                    .getAttributes()
-                    .get(HypertraceSemanticAttributes.httpResponseHeader(TestServlets.RESPONSE_HEADER)));
+        spanData
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpResponseHeader(TestServlets.RESPONSE_HEADER)));
     Assertions.assertEquals(
-            "block=true", spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+        "block=true", spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
     Assertions.assertNull(
-            spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
   }
 
   public void postJson(String url) throws Exception {
