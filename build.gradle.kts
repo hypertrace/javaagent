@@ -93,7 +93,7 @@ subprojects {
 
 dependencyCheck {
     format = org.owasp.dependencycheck.reporting.ReportGenerator.Format.valueOf("ALL")
-    suppressionFile = "owasp-suppressions.xml"
+//    suppressionFile = "owasp-suppressions.xml"
     scanConfigurations.add("runtimeClasspath")
     failBuildOnCVSS = 7.0F
 }
