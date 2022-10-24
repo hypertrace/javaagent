@@ -6,6 +6,7 @@ plugins {
     id("org.hypertrace.publish-maven-central-plugin") version "1.0.4" apply false
     id("org.hypertrace.ci-utils-plugin") version "0.3.0"
     id("org.gradle.test-retry") version "1.2.0" apply false
+    id("org.owasp.dependencycheck") version "7.1.1"
 }
 
 allprojects {
@@ -88,4 +89,11 @@ subprojects {
             }
         }
     }
+}
+
+dependencyCheck {
+    format = org.owasp.dependencycheck.reporting.ReportGenerator.Format.valueOf("ALL")
+//    suppressionFile = "owasp-suppressions.xml"
+    scanConfigurations.add("runtimeClasspath")
+    failBuildOnCVSS = 7.0F
 }
