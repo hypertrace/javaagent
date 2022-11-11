@@ -87,7 +87,11 @@ public class FilterRegistry {
         continue;
       }
       Filter filter = provider.create();
-      filters.add(filter);
+      if (filter == null) {
+        logger.warn(String.format("%s returned null filter.", provider.getClass().getSimpleName()));
+      } else {
+        filters.add(filter);
+      }
     }
     return new MultiFilter(filters);
   }
