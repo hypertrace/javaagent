@@ -43,11 +43,16 @@ public class Utils {
     if (contentLength < 0) {
       contentLength = ContentLengthUtils.DEFAULT;
     }
+    Map<String, String> possiblyMissingAttrs =
+        io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.Utils
+            .getPossiblyMissingSpanAttributes(httpServletRequest);
+
     return new ByteBufferSpanPair(
         span,
         BoundedBuffersFactory.createStream(contentLength, charset),
         filter::evaluateRequestBody,
-        headers);
+        headers,
+        possiblyMissingAttrs);
   }
 
   public static CharBufferSpanPair createRequestCharBufferSpanPair(
@@ -56,11 +61,15 @@ public class Utils {
     if (contentLength < 0) {
       contentLength = ContentLengthUtils.DEFAULT;
     }
+    Map<String, String> possiblyMissingAttrs =
+        io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.Utils
+            .getPossiblyMissingSpanAttributes(httpServletRequest);
     return new CharBufferSpanPair(
         span,
         BoundedBuffersFactory.createWriter(contentLength),
         filter::evaluateRequestBody,
-        headers);
+        headers,
+        possiblyMissingAttrs);
   }
 
   /**

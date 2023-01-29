@@ -28,6 +28,7 @@ import io.netty.util.ReferenceCountUtil;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.AttributeKeys;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.utils.SpanUtils;
 import java.util.Map;
 import org.hypertrace.agent.filter.FilterRegistry;
 
@@ -50,7 +51,12 @@ public class HttpServerBlockingRequestHandler extends ChannelInboundHandlerAdapt
     if (msg instanceof HttpRequest) {
       Attribute<Map<String, String>> headersAttr = channel.attr(AttributeKeys.REQUEST_HEADERS);
       Map<String, String> headers = headersAttr.getAndRemove();
-      if (headers != null && FilterRegistry.getFilter().evaluateRequestHeaders(span, headers)) {
+      Map<String, String> possiblyMissingAttrs =
+          SpanUtils.getPossiblyMissingSpanAttributesFromURI(((HttpRequest) msg).uri());
+
+      if (headers != null
+          && FilterRegistry.getFilter()
+              .evaluateRequestHeaders(span, headers, possiblyMissingAttrs)) {
         forbidden(ctx, (HttpRequest) msg);
         return;
       }

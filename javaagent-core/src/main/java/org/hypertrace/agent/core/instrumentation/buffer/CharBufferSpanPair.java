@@ -20,7 +20,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import java.io.IOException;
 import java.util.Map;
-import org.hypertrace.agent.core.TriFunction;
+import org.hypertrace.agent.core.QuadFunction;
 import org.hypertrace.agent.core.instrumentation.HypertraceEvaluationException;
 
 public class CharBufferSpanPair {
@@ -28,7 +28,8 @@ public class CharBufferSpanPair {
   public final Span span;
   public final Map<String, String> headers;
   private final BoundedCharArrayWriter buffer;
-  private final TriFunction<Span, String, Map<String, String>, Boolean> filter;
+  private final QuadFunction<Span, String, Map<String, String>, Map<String, String>, Boolean>
+      filter;
 
   /**
    * A flag to signalize that buffer has been added to span. For instance Jetty calls reader#read in
@@ -36,15 +37,19 @@ public class CharBufferSpanPair {
    */
   private boolean bufferCaptured;
 
+  private Map<String, String> possiblyMissingAttrs;
+
   public CharBufferSpanPair(
       Span span,
       BoundedCharArrayWriter buffer,
-      TriFunction<Span, String, Map<String, String>, Boolean> filter,
-      Map<String, String> headers) {
+      QuadFunction<Span, String, Map<String, String>, Map<String, String>, Boolean> filter,
+      Map<String, String> headers,
+      Map<String, String> possiblyMissingAttrs) {
     this.span = span;
     this.buffer = buffer;
     this.headers = headers;
     this.filter = filter;
+    this.possiblyMissingAttrs = possiblyMissingAttrs;
   }
 
   public void captureBody(AttributeKey<String> attributeKey) {
@@ -55,7 +60,7 @@ public class CharBufferSpanPair {
     String requestBody = buffer.toString();
     span.setAttribute(attributeKey, requestBody);
     final boolean block;
-    block = filter.apply(span, requestBody, headers);
+    block = filter.apply(span, requestBody, headers, possiblyMissingAttrs);
     if (block) {
       throw new HypertraceEvaluationException();
     }

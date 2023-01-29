@@ -18,6 +18,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowra
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.instrumentation.api.field.VirtualField;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.utils.SpanUtils;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -120,5 +121,15 @@ public class Utils {
         urlEncodedMapContextStore.set(httpServletRequest, null);
       }
     }
+  }
+
+  /**
+   * Creates a Map of those attributes that may be missing from the Span.
+   *
+   * @param request
+   * @return
+   */
+  public static Map<String, String> getPossiblyMissingSpanAttributes(HttpServletRequest request) {
+    return SpanUtils.getPossiblyMissingSpanAttributes(request);
   }
 }

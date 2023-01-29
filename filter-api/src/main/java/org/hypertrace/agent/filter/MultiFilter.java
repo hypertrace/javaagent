@@ -52,11 +52,52 @@ class MultiFilter implements Filter {
   }
 
   @Override
+  public boolean evaluateRequestHeaders(
+      Span span, Map<String, String> headers, Map<String, String> possiblyMissingSpanAttrs) {
+    boolean shouldBlock = false;
+    for (Filter filter : filters) {
+      try {
+        if (filter.evaluateRequestHeaders(span, headers, possiblyMissingSpanAttrs)) {
+          shouldBlock = true;
+        }
+      } catch (Throwable t) {
+        logger.warn(
+            "Throwable thrown while evaluating Request headers for filter {}",
+            filter.getClass().getName(),
+            t);
+      }
+    }
+    return shouldBlock;
+  }
+
+  @Override
   public boolean evaluateRequestBody(Span span, String body, Map<String, String> headers) {
     boolean shouldBlock = false;
     for (Filter filter : filters) {
       try {
         if (filter.evaluateRequestBody(span, body, headers)) {
+          shouldBlock = true;
+        }
+      } catch (Throwable t) {
+        logger.warn(
+            "Throwable thrown while evaluating Request body for filter {}",
+            filter.getClass().getName(),
+            t);
+      }
+    }
+    return shouldBlock;
+  }
+
+  @Override
+  public boolean evaluateRequestBody(
+      Span span,
+      String body,
+      Map<String, String> headers,
+      Map<String, String> possiblyMissingAttrs) {
+    boolean shouldBlock = false;
+    for (Filter filter : filters) {
+      try {
+        if (filter.evaluateRequestBody(span, body, headers, possiblyMissingAttrs)) {
           shouldBlock = true;
         }
       } catch (Throwable t) {
