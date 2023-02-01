@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v2_2.nowrapping;
 
-public class Servlet30InstrumentationName {
+public class Servlet2InstrumentationName {
   public static final String PRIMARY = "servlet";
   public static final String[] OTHER = {
-    "servlet-3", "ht", "servlet-ht", "servlet-3-ht", "servlet-3-no-wrapping", "servlet-no-wrapping"
+    "servlet-2", "ht", "servlet-ht", "servlet-2-ht", "servlet-2-no-wrapping", "servlet-no-wrapping"
   };
 }

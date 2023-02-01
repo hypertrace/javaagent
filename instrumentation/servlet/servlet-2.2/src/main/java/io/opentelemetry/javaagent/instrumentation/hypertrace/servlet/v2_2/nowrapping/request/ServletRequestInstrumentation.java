@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.request;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v2_2.nowrapping.request;
 
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasSuperType;
 import static net.bytebuddy.matcher.ElementMatchers.*;
@@ -72,17 +72,20 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static SpanAndObjectPair enter(@Advice.This ServletRequest servletRequest) {
+      System.out.println("start Enter javax.servlet.ServletRequest.getInputStream");
       HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
       // span is added in servlet/filter instrumentation if data capture is enabled
       SpanAndObjectPair requestBufferWrapper =
           VirtualField.find(HttpServletRequest.class, SpanAndObjectPair.class)
               .get(httpServletRequest);
       if (requestBufferWrapper == null) {
+        System.out.println("end1 Enter javax.servlet.ServletRequest.getInputStream");
         return null;
       }
 
       // the getReader method might call getInputStream
       HypertraceCallDepthThreadLocalMap.incrementCallDepth(ServletRequest.class);
+      System.out.println("end Enter javax.servlet.ServletRequest.getInputStream");
       return requestBufferWrapper;
     }
 
@@ -92,17 +95,20 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
         @Advice.Return ServletInputStream servletInputStream,
         @Advice.Thrown Throwable throwable,
         @Advice.Enter SpanAndObjectPair spanAndObjectPair) {
-
+      System.out.println("start Exit javax.servlet.ServletRequest.getInputStream");
       if (spanAndObjectPair == null) {
+        System.out.println("end1 Exit javax.servlet.ServletRequest.getInputStream");
         return;
       }
 
       int callDepth = HypertraceCallDepthThreadLocalMap.decrementCallDepth(ServletRequest.class);
       if (callDepth > 0) {
+        System.out.println("end2 Exit javax.servlet.ServletRequest.getInputStream");
         return;
       }
 
       if (!(servletRequest instanceof HttpServletRequest) || throwable != null) {
+        System.out.println("end3 Exit javax.servlet.ServletRequest.getInputStream");
         return;
       }
       HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
@@ -111,6 +117,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
           VirtualField.find(ServletInputStream.class, ByteBufferSpanPair.class);
       if (contextStore.get(servletInputStream) != null) {
         // getInputStream() can be called multiple times
+        System.out.println("end4 Exit javax.servlet.ServletRequest.getInputStream");
         return;
       }
 
@@ -119,6 +126,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
               httpServletRequest, spanAndObjectPair.getSpan(), spanAndObjectPair.getHeaders());
       contextStore.set(servletInputStream, bufferSpanPair);
       spanAndObjectPair.setAssociatedObject(servletInputStream);
+      System.out.println("end Exit javax.servlet.ServletRequest.getInputStream");
     }
   }
 
@@ -127,15 +135,18 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static SpanAndObjectPair enter(@Advice.This ServletRequest servletRequest) {
+      System.out.println("start Enter javax.servlet.ServletRequest.getReader");
       HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
       SpanAndObjectPair spanAndObjectPair =
           VirtualField.find(HttpServletRequest.class, SpanAndObjectPair.class)
               .get(httpServletRequest);
       if (spanAndObjectPair == null) {
+        System.out.println("end1 Enter javax.servlet.ServletRequest.getReader");
         return null;
       }
 
       HypertraceCallDepthThreadLocalMap.incrementCallDepth(ServletRequest.class);
+      System.out.println("end Enter javax.servlet.ServletRequest.getReader");
       return spanAndObjectPair;
     }
 
@@ -145,17 +156,20 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
         @Advice.Return BufferedReader reader,
         @Advice.Thrown Throwable throwable,
         @Advice.Enter SpanAndObjectPair spanAndObjectPair) {
-
+      System.out.println("start Exit javax.servlet.ServletRequest.getReader");
       if (spanAndObjectPair == null) {
+        System.out.println("end1 Exit javax.servlet.ServletRequest.getReader");
         return;
       }
 
       int callDepth = HypertraceCallDepthThreadLocalMap.decrementCallDepth(ServletRequest.class);
       if (callDepth > 0) {
+        System.out.println("end2 Exit javax.servlet.ServletRequest.getReader");
         return;
       }
 
       if (!(servletRequest instanceof HttpServletRequest) || throwable != null) {
+        System.out.println("end3 Exit javax.servlet.ServletRequest.getReader");
         return;
       }
       HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
@@ -164,6 +178,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
           VirtualField.find(BufferedReader.class, CharBufferSpanPair.class);
       if (contextStore.get(reader) != null) {
         // getReader() can be called multiple times
+        System.out.println("end4 Exit javax.servlet.ServletRequest.getReader");
         return;
       }
 
@@ -172,6 +187,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
               httpServletRequest, spanAndObjectPair.getSpan(), spanAndObjectPair.getHeaders());
       contextStore.set(reader, bufferSpanPair);
       spanAndObjectPair.setAssociatedObject(reader);
+      System.out.println("end Exit javax.servlet.ServletRequest.getReader");
     }
   }
 
@@ -188,15 +204,18 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
      */
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static SpanAndObjectPair enter(@Advice.This ServletRequest servletRequest) {
+      System.out.println("start Enter javax.servlet.ServletRequest.getParameter");
       HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
       SpanAndObjectPair spanAndObjectPair =
           VirtualField.find(HttpServletRequest.class, SpanAndObjectPair.class)
               .get(httpServletRequest);
       if (spanAndObjectPair == null) {
+        System.out.println("end1 Enter javax.servlet.ServletRequest.getParameter");
         return null;
       }
 
       HypertraceCallDepthThreadLocalMap.incrementCallDepth(ServletRequest.class);
+      System.out.println("end Enter javax.servlet.ServletRequest.getParameter");
       return spanAndObjectPair;
     }
 
@@ -217,20 +236,25 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
         @Advice.Argument(0) String paramName,
         @Advice.Thrown Throwable throwable,
         @Advice.Enter SpanAndObjectPair spanAndObjectPair) {
+      System.out.println("start Exit javax.servlet.ServletRequest.getParameter");
       if (spanAndObjectPair == null) {
+        System.out.println("end1 Exit javax.servlet.ServletRequest.getParameter");
         return;
       }
 
       int callDepth = HypertraceCallDepthThreadLocalMap.decrementCallDepth(ServletRequest.class);
       if (callDepth > 0) {
+        System.out.println("end2 Exit javax.servlet.ServletRequest.getParameter");
         return;
       }
 
       if (returnValue == null) {
+        System.out.println("end3 Exit javax.servlet.ServletRequest.getParameter");
         return;
       }
 
       if (!(servletRequest instanceof HttpServletRequest) || throwable != null) {
+        System.out.println("end4 Exit javax.servlet.ServletRequest.getParameter");
         return;
       }
       HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
@@ -254,6 +278,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
 
       stringMap.put(paramName, returnValue);
       spanAndObjectPair.setAssociatedObject(stringMap);
+      System.out.println("end Exit javax.servlet.ServletRequest.getParameter");
     }
   }
 }

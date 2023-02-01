@@ -63,6 +63,7 @@ public final class Servlet30AsyncInstrumentation implements TypeInstrumentation 
         Servlet30AsyncInstrumentation.class.getName() + "$StartAsyncAdvice");
   }
 
+  @SuppressWarnings("unused")
   static final class StartAsyncAdvice {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)

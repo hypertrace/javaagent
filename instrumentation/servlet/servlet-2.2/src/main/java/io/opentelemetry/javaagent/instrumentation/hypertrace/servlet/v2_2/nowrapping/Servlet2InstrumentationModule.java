@@ -14,25 +14,24 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v2_2.nowrapping;
 
 import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.async.Servlet30AsyncInstrumentation;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.request.ServletInputStreamInstrumentation;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.request.ServletRequestInstrumentation;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.response.ServletOutputStreamInstrumentation;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.response.ServletResponseInstrumentation;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v2_2.nowrapping.request.ServletInputStreamInstrumentation;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v2_2.nowrapping.request.ServletRequestInstrumentation;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v2_2.nowrapping.response.ServletOutputStreamInstrumentation;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v2_2.nowrapping.response.ServletResponseInstrumentation;
 import java.util.Arrays;
 import java.util.List;
 
 @SuppressWarnings("unused")
 @AutoService(InstrumentationModule.class)
-public class Servlet30InstrumentationModule extends InstrumentationModule {
+public class Servlet2InstrumentationModule extends InstrumentationModule {
 
-  public Servlet30InstrumentationModule() {
-    super(Servlet30InstrumentationName.PRIMARY, Servlet30InstrumentationName.OTHER);
+  public Servlet2InstrumentationModule() {
+    super(Servlet2InstrumentationName.PRIMARY, Servlet2InstrumentationName.OTHER);
   }
 
   @Override
@@ -43,11 +42,10 @@ public class Servlet30InstrumentationModule extends InstrumentationModule {
   @Override
   public List<TypeInstrumentation> typeInstrumentations() {
     return Arrays.asList(
-        new Servlet30AndFilterInstrumentation(),
+        new Servlet2AndFilterInstrumentation(),
         new ServletRequestInstrumentation(),
         new ServletInputStreamInstrumentation(),
         new ServletResponseInstrumentation(),
-        new ServletOutputStreamInstrumentation(),
-        new Servlet30AsyncInstrumentation());
+        new ServletOutputStreamInstrumentation());
   }
 }

@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v2_2.nowrapping;
 
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasClassesNamed;
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasSuperType;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
-import static net.bytebuddy.matcher.ElementMatchers.namedOneOf;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
 import io.opentelemetry.api.common.AttributeKey;
@@ -53,27 +52,26 @@ import org.hypertrace.agent.core.instrumentation.buffer.*;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 import org.hypertrace.agent.filter.FilterRegistry;
 
-public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
+public class Servlet2AndFilterInstrumentation implements TypeInstrumentation {
 
   @Override
   public ElementMatcher<ClassLoader> classLoaderOptimization() {
-    // TODO: reconcile with OTEL, it uses "javax.servlet.Servlet" instead
-    return hasClassesNamed("javax.servlet.Filter");
+    return hasClassesNamed("javax.servlet.Servlet");
   }
 
   @Override
   public ElementMatcher<TypeDescription> typeMatcher() {
-    return hasSuperType(namedOneOf("javax.servlet.Filter", "javax.servlet.Servlet"));
+    return hasSuperType(named("javax.servlet.Servlet"));
   }
 
   @Override
   public void transform(TypeTransformer transformer) {
     transformer.applyAdviceToMethod(
-        namedOneOf("doFilter", "service")
+        named("service")
             .and(takesArgument(0, named("javax.servlet.ServletRequest")))
             .and(takesArgument(1, named("javax.servlet.ServletResponse")))
             .and(isPublic()),
-        Servlet30AndFilterInstrumentation.class.getName() + "$ServletAdvice");
+        Servlet2AndFilterInstrumentation.class.getName() + "$ServletAdvice");
   }
 
   @SuppressWarnings("unused")
@@ -84,13 +82,15 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
         @Advice.Argument(value = 0) ServletRequest request,
         @Advice.Argument(value = 1) ServletResponse response,
         @Advice.Local("currentSpan") Span currentSpan) {
-
+      System.out.println("start Enter javax.servlet.Servlet.service");
       int callDepth =
-          HypertraceCallDepthThreadLocalMap.incrementCallDepth(Servlet30InstrumentationName.class);
+          HypertraceCallDepthThreadLocalMap.incrementCallDepth(Servlet2InstrumentationName.class);
       if (callDepth > 0) {
+        System.out.println("end1 Enter javax.servlet.Servlet.service");
         return false;
       }
       if (!(request instanceof HttpServletRequest) || !(response instanceof HttpServletResponse)) {
+        System.out.println("end2 Enter javax.servlet.Servlet.service");
         return false;
       }
 
@@ -103,10 +103,15 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
       Utils.addSessionId(currentSpan, httpRequest);
 
       // set request headers
-      Enumeration<String> headerNames = httpRequest.getHeaderNames();
+      Enumeration<?> headerNames = httpRequest.getHeaderNames();
       Map<String, String> headers = new HashMap<>();
       while (headerNames.hasMoreElements()) {
-        String headerName = headerNames.nextElement();
+        String headerName;
+        try {
+          headerName = (String) headerNames.nextElement();
+        } catch (Exception e) {
+          continue;
+        }
         String headerValue = httpRequest.getHeader(headerName);
         AttributeKey<String> attributeKey =
             HypertraceSemanticAttributes.httpRequestHeader(headerName);
@@ -120,6 +125,7 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
       if (FilterRegistry.getFilter().evaluateRequestHeaders(currentSpan, headers)) {
         httpResponse.setStatus(403);
         // skip execution of the user code
+        System.out.println("end3 Enter javax.servlet.Servlet.service");
         return true;
       }
 
@@ -132,6 +138,7 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
                 httpRequest,
                 new SpanAndObjectPair(currentSpan, Collections.unmodifiableMap(headers)));
       }
+      System.out.println("end Enter javax.servlet.Servlet.service");
       return false;
     }
 
@@ -141,14 +148,17 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
         @Advice.Argument(1) ServletResponse response,
         @Advice.Thrown(readOnly = false) Throwable throwable,
         @Advice.Local("currentSpan") Span currentSpan) {
+      System.out.println("start Exit javax.servlet.Servlet.service");
       int callDepth =
-          HypertraceCallDepthThreadLocalMap.decrementCallDepth(Servlet30InstrumentationName.class);
+          HypertraceCallDepthThreadLocalMap.decrementCallDepth(Servlet2InstrumentationName.class);
       if (callDepth > 0) {
+        System.out.println("end1 Exit javax.servlet.Servlet.service");
         return;
       }
       // we are in the most outermost level of Servlet instrumentation
 
       if (!(request instanceof HttpServletRequest) || !(response instanceof HttpServletResponse)) {
+        System.out.println("end2 Exit javax.servlet.Servlet.service");
         return;
       }
 
@@ -175,36 +185,27 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
         VirtualField<HttpServletRequest, StringMapSpanPair> urlEncodedMapContextStore =
             VirtualField.find(HttpServletRequest.class, StringMapSpanPair.class);
 
-        if (!request.isAsyncStarted()) {
-          if (instrumentationConfig.httpHeaders().response()) {
-            for (String headerName : httpResponse.getHeaderNames()) {
-              String headerValue = httpResponse.getHeader(headerName);
-              currentSpan.setAttribute(
-                  HypertraceSemanticAttributes.httpResponseHeader(headerName), headerValue);
-            }
-          }
+        // capture response body
+        // TODO: capture response headers
+        // TODO: capture body based on response content type
+        if (instrumentationConfig.httpBody().response()) {
+          Utils.captureResponseBody(
+              currentSpan,
+              httpResponse,
+              responseContextStore,
+              outputStreamContextStore,
+              writerContextStore);
+        }
 
-          // capture response body
-          if (instrumentationConfig.httpBody().response()
-              && ContentTypeUtils.shouldCapture(httpResponse.getContentType())) {
-            Utils.captureResponseBody(
-                currentSpan,
-                httpResponse,
-                responseContextStore,
-                outputStreamContextStore,
-                writerContextStore);
-          }
-
-          // remove request body buffers from context stores, otherwise they might get reused
-          if (instrumentationConfig.httpBody().request()
-              && ContentTypeUtils.shouldCapture(httpRequest.getContentType())) {
-            Utils.resetRequestBodyBuffers(
-                httpRequest,
-                requestContextStore,
-                inputStreamContextStore,
-                readerContextStore,
-                urlEncodedMapContextStore);
-          }
+        // remove request body buffers from context stores, otherwise they might get reused
+        if (instrumentationConfig.httpBody().request()
+            && ContentTypeUtils.shouldCapture(httpRequest.getContentType())) {
+          Utils.resetRequestBodyBuffers(
+              httpRequest,
+              requestContextStore,
+              inputStreamContextStore,
+              readerContextStore,
+              urlEncodedMapContextStore);
         }
       } finally {
         Throwable tmp = throwable;
@@ -219,6 +220,7 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
           tmp = tmp.getCause();
         }
       }
+      System.out.println("end Exit javax.servlet.Servlet.service");
     }
   }
 }

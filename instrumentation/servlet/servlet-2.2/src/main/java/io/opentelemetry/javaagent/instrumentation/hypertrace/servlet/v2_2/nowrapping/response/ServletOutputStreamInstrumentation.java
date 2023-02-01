@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.response;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v2_2.nowrapping.response;
 
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasSuperType;
 import static net.bytebuddy.matcher.ElementMatchers.is;
@@ -83,27 +83,33 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static BoundedByteArrayOutputStream enter(
         @Advice.This ServletOutputStream thizz, @Advice.Argument(0) int b) {
+      System.out.println("start Enter javax.servlet.ServletOutputStream.write");
       BoundedByteArrayOutputStream buffer =
           VirtualField.find(ServletOutputStream.class, BoundedByteArrayOutputStream.class)
               .get(thizz);
       if (buffer == null) {
+        System.out.println("end1 Enter javax.servlet.ServletOutputStream.write");
         return null;
       }
       int callDepth =
           HypertraceCallDepthThreadLocalMap.incrementCallDepth(ServletOutputStream.class);
       if (callDepth > 0) {
+        System.out.println("end2 Enter javax.servlet.ServletOutputStream.write");
         return buffer;
       }
 
       buffer.write(b);
+      System.out.println("end Enter javax.servlet.ServletOutputStream.write");
       return buffer;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(@Advice.Enter BoundedByteArrayOutputStream buffer) {
+      System.out.println("start Exit javax.servlet.ServletOutputStream.write");
       if (buffer != null) {
         HypertraceCallDepthThreadLocalMap.decrementCallDepth(ServletOutputStream.class);
       }
+      System.out.println("end Exit javax.servlet.ServletOutputStream.write");
     }
   }
 
@@ -113,28 +119,34 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static BoundedByteArrayOutputStream enter(
         @Advice.This ServletOutputStream thizz, @Advice.Argument(0) byte[] b) throws IOException {
+      System.out.println("start Enter javax.servlet.ServletOutputStream.writeByteArr");
 
       BoundedByteArrayOutputStream buffer =
           VirtualField.find(ServletOutputStream.class, BoundedByteArrayOutputStream.class)
               .get(thizz);
       if (buffer == null) {
+        System.out.println("end1 Enter javax.servlet.ServletOutputStream.writeByteArr");
         return null;
       }
       int callDepth =
           HypertraceCallDepthThreadLocalMap.incrementCallDepth(ServletOutputStream.class);
       if (callDepth > 0) {
+        System.out.println("end2 Enter javax.servlet.ServletOutputStream.writeByteArr");
         return buffer;
       }
 
       buffer.write(b);
+      System.out.println("end Enter javax.servlet.ServletOutputStream.writeByteArr");
       return buffer;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(@Advice.Enter BoundedByteArrayOutputStream buffer) {
+      System.out.println("start Exit javax.servlet.ServletOutputStream.writeByteArr");
       if (buffer != null) {
         HypertraceCallDepthThreadLocalMap.decrementCallDepth(ServletOutputStream.class);
       }
+      System.out.println("end Exit javax.servlet.ServletOutputStream.writeByteArr");
     }
   }
 
@@ -147,28 +159,34 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
         @Advice.Argument(0) byte[] b,
         @Advice.Argument(1) int off,
         @Advice.Argument(2) int len) {
+      System.out.println("start Enter javax.servlet.ServletOutputStream.writeByteArrOffset");
 
       BoundedByteArrayOutputStream buffer =
           VirtualField.find(ServletOutputStream.class, BoundedByteArrayOutputStream.class)
               .get(thizz);
       if (buffer == null) {
+        System.out.println("end1 Enter javax.servlet.ServletOutputStream.writeByteArrOffset");
         return null;
       }
       int callDepth =
           HypertraceCallDepthThreadLocalMap.incrementCallDepth(ServletOutputStream.class);
       if (callDepth > 0) {
+        System.out.println("end2 Enter javax.servlet.ServletOutputStream.writeByteArrOffset");
         return buffer;
       }
 
       buffer.write(b, off, len);
+      System.out.println("end Enter javax.servlet.ServletOutputStream.writeByteArrOffset");
       return buffer;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(@Advice.Enter BoundedByteArrayOutputStream buffer) {
+      System.out.println("start Exit javax.servlet.ServletOutputStream.writeByteArrOffset");
       if (buffer != null) {
         HypertraceCallDepthThreadLocalMap.decrementCallDepth(ServletOutputStream.class);
       }
+      System.out.println("end Exit javax.servlet.ServletOutputStream.writeByteArrOffset");
     }
   }
 
@@ -178,29 +196,35 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static BoundedByteArrayOutputStream enter(
         @Advice.This ServletOutputStream thizz, @Advice.Argument(0) String s) throws IOException {
+      System.out.println("start Enter javax.servlet.ServletOutputStream.print");
 
       BoundedByteArrayOutputStream buffer =
           VirtualField.find(ServletOutputStream.class, BoundedByteArrayOutputStream.class)
               .get(thizz);
       if (buffer == null) {
+        System.out.println("end1 Enter javax.servlet.ServletOutputStream.print");
         return null;
       }
       int callDepth =
           HypertraceCallDepthThreadLocalMap.incrementCallDepth(ServletOutputStream.class);
       if (callDepth > 0) {
+        System.out.println("end2 Enter javax.servlet.ServletOutputStream.print");
         return buffer;
       }
 
       String bodyPart = s == null ? "null" : s;
       buffer.write(bodyPart.getBytes());
+      System.out.println("end Enter javax.servlet.ServletOutputStream.print");
       return buffer;
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit(@Advice.Enter BoundedByteArrayOutputStream buffer) {
+      System.out.println("start Exit javax.servlet.ServletOutputStream.print");
       if (buffer != null) {
         HypertraceCallDepthThreadLocalMap.decrementCallDepth(ServletOutputStream.class);
       }
+      System.out.println("end Exit javax.servlet.ServletOutputStream.print");
     }
   }
 }

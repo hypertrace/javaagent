@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.request;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v2_2.nowrapping.request;
 
 import io.opentelemetry.api.trace.Span;
 import java.nio.charset.Charset;

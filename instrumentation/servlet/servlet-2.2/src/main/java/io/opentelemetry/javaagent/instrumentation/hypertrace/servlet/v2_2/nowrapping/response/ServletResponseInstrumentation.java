@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.response;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v2_2.nowrapping.response;
 
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasSuperType;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
@@ -30,7 +30,6 @@ import java.nio.charset.Charset;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
@@ -41,7 +40,6 @@ import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeCharsetUtils;
-import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 
 public class ServletResponseInstrumentation implements TypeInstrumentation {
 
@@ -68,7 +66,10 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static HttpServletResponse enter(@Advice.This ServletResponse servletResponse) {
+      System.out.println("start Enter javax.servlet.ServletResponse.getOutputStream");
+
       if (!(servletResponse instanceof HttpServletResponse)) {
+        System.out.println("end1 Enter javax.servlet.ServletResponse.getOutputStream");
         return null;
       }
       // ignore wrappers, the filter/servlet instrumentation gets the captured body from context
@@ -76,12 +77,9 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
       // by using response as a key and the filter/servlet instrumentation runs early when wrappers
       // are not used.
       HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
-      if (httpServletResponse instanceof HttpServletResponseWrapper) {
-        return null;
-      }
-
       // the getReader method might call getInputStream
       HypertraceCallDepthThreadLocalMap.incrementCallDepth(ServletResponse.class);
+      System.out.println("end Enter javax.servlet.ServletResponse.getOutputStream");
       return httpServletResponse;
     }
 
@@ -90,16 +88,20 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
         @Advice.Enter HttpServletResponse httpServletResponse,
         @Advice.Thrown Throwable throwable,
         @Advice.Return ServletOutputStream servletOutputStream) {
+      System.out.println("start Exit javax.servlet.ServletResponse.getOutputStream");
 
       if (httpServletResponse == null) {
+        System.out.println("end1 Exit javax.servlet.ServletResponse.getOutputStream");
         return;
       }
 
       int callDepth = HypertraceCallDepthThreadLocalMap.decrementCallDepth(ServletResponse.class);
       if (callDepth > 0) {
+        System.out.println("end2 Exit javax.servlet.ServletResponse.getOutputStream");
         return;
       }
       if (throwable != null) {
+        System.out.println("end3 Exit javax.servlet.ServletResponse.getOutputStream");
         return;
       }
 
@@ -107,15 +109,14 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
           VirtualField.find(ServletOutputStream.class, BoundedByteArrayOutputStream.class);
       if (contextStore.get(servletOutputStream) != null) {
         // getOutputStream() can be called multiple times
+        System.out.println("end4 Exit javax.servlet.ServletResponse.getOutputStream");
         return;
       }
 
       // do not capture if data capture is disabled or not supported content type
       InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
-      String contentType = httpServletResponse.getContentType();
-      if (instrumentationConfig.httpBody().response()
-          && ContentTypeUtils.shouldCapture(contentType)) {
-
+      // TODO: check response contentType before capturing response body
+      if (instrumentationConfig.httpBody().response()) {
         String charsetStr = httpServletResponse.getCharacterEncoding();
         Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
         BoundedByteArrayOutputStream buffer = BoundedBuffersFactory.createStream(charset);
@@ -125,6 +126,7 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
         VirtualField.find(HttpServletResponse.class, SpanAndObjectPair.class)
             .set(httpServletResponse, spanAndObjectPair);
       }
+      System.out.println("end Exit javax.servlet.ServletResponse.getOutputStream");
     }
   }
 
@@ -133,16 +135,16 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static HttpServletResponse enter(@Advice.This ServletResponse servletResponse) {
+      System.out.println("start Enter javax.servlet.ServletResponse.getWriter");
+
       if (!(servletResponse instanceof HttpServletResponse)) {
+        System.out.println("end1 Enter javax.servlet.ServletResponse.getWriter");
         return null;
       }
       HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
-      if (httpServletResponse instanceof HttpServletResponseWrapper) {
-        return null;
-      }
-
       // the getWriter method might call getInputStream
       HypertraceCallDepthThreadLocalMap.incrementCallDepth(ServletResponse.class);
+      System.out.println("end Enter javax.servlet.ServletResponse.getWriter");
       return httpServletResponse;
     }
 
@@ -151,16 +153,19 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
         @Advice.Enter HttpServletResponse httpServletResponse,
         @Advice.Thrown Throwable throwable,
         @Advice.Return PrintWriter printWriter) {
-
+      System.out.println("start Exit javax.servlet.ServletResponse.getWriter");
       if (httpServletResponse == null) {
+        System.out.println("end1 Exit javax.servlet.ServletResponse.getWriter");
         return;
       }
 
       int callDepth = HypertraceCallDepthThreadLocalMap.decrementCallDepth(ServletResponse.class);
       if (callDepth > 0) {
+        System.out.println("end2 Exit javax.servlet.ServletResponse.getWriter");
         return;
       }
       if (throwable != null) {
+        System.out.println("end3 Exit javax.servlet.ServletResponse.getWriter");
         return;
       }
 
@@ -168,15 +173,14 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
           VirtualField.find(PrintWriter.class, BoundedCharArrayWriter.class);
       if (contextStore.get(printWriter) != null) {
         // getWriter() can be called multiple times
+        System.out.println("end4 Exit javax.servlet.ServletResponse.getWriter");
         return;
       }
 
       // do not capture if data capture is disabled or not supported content type
       InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
-      String contentType = httpServletResponse.getContentType();
-      if (instrumentationConfig.httpBody().response()
-          && ContentTypeUtils.shouldCapture(contentType)) {
-
+      // TODO: check response contentType before capturing the response body
+      if (instrumentationConfig.httpBody().response()) {
         BoundedCharArrayWriter writer = BoundedBuffersFactory.createWriter();
         contextStore.set(printWriter, writer);
         SpanAndObjectPair spanAndObjectPair = new SpanAndObjectPair(null, null);
@@ -184,6 +188,7 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
         VirtualField.find(HttpServletResponse.class, SpanAndObjectPair.class)
             .set(httpServletResponse, spanAndObjectPair);
       }
+      System.out.println("end Exit javax.servlet.ServletResponse.getWriter");
     }
   }
 }
