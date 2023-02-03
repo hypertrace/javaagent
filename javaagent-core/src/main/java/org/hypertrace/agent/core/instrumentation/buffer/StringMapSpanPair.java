@@ -41,7 +41,7 @@ public class StringMapSpanPair {
   /**
    * Return a JSON string representing the contents of the x-www-form-urlencoded body.
    *
-   * @param attributeKey
+   * @param attributeKey attributeKey
    */
   public void captureBody(AttributeKey<String> attributeKey) {
     if (!mapCaptured) {

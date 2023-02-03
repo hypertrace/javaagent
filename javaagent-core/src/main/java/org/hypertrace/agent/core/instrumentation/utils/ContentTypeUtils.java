@@ -64,10 +64,8 @@ public class ContentTypeUtils {
   }
 
   /**
-   * Determines if the content type should be captured by the agent.
-   *
-   * @param contentType
-   * @return
+   * @param contentType content type to be checked
+   * @return true if the content type should be captured by the agent.
    */
   private boolean shouldCapture_(String contentType) {
     if (contentType == null) {
@@ -121,8 +119,8 @@ public class ContentTypeUtils {
   /**
    * Converts an arbitrary object into JSON format.
    *
-   * @param obj
-   * @return
+   * @param obj an arbitrary object
+   * @return a string representation of the obj in JSON format
    */
   public static String convertToJSONString(Object obj) {
     try {

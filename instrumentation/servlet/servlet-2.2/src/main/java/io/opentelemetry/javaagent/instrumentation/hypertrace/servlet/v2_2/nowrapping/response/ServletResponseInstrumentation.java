@@ -17,10 +17,7 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v2_2.nowrapping.response;
 
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasSuperType;
-import static net.bytebuddy.matcher.ElementMatchers.isPublic;
-import static net.bytebuddy.matcher.ElementMatchers.named;
-import static net.bytebuddy.matcher.ElementMatchers.returns;
-import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
+import static net.bytebuddy.matcher.ElementMatchers.*;
 
 import io.opentelemetry.instrumentation.api.field.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
@@ -73,9 +70,8 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
         return null;
       }
       // ignore wrappers, the filter/servlet instrumentation gets the captured body from context
-      // store
-      // by using response as a key and the filter/servlet instrumentation runs early when wrappers
-      // are not used.
+      // store by using response as a key and the filter/servlet instrumentation runs early when
+      // wrappers are not used.
       HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
       // the getReader method might call getInputStream
       HypertraceCallDepthThreadLocalMap.incrementCallDepth(ServletResponse.class);
@@ -115,7 +111,7 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
 
       // do not capture if data capture is disabled or not supported content type
       InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
-      // TODO: check response contentType before capturing response body
+      // TODO: capture body based on response content type
       if (instrumentationConfig.httpBody().response()) {
         String charsetStr = httpServletResponse.getCharacterEncoding();
         Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
@@ -179,7 +175,7 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
 
       // do not capture if data capture is disabled or not supported content type
       InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
-      // TODO: check response contentType before capturing the response body
+      // TODO: capture body based on response content type
       if (instrumentationConfig.httpBody().response()) {
         BoundedCharArrayWriter writer = BoundedBuffersFactory.createWriter();
         contextStore.set(printWriter, writer);
