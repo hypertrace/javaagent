@@ -171,5 +171,39 @@ public abstract class AbstractNetty41ServerInstrumentationTest extends AbstractI
         spanData
             .getAttributes()
             .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_BODY)));
+
+    RequestBody requestBody = blockedRequestBody(true, 3000, 75);
+    Request request2 =
+        new Request.Builder()
+            .url(String.format("http://localhost:%d/post", port))
+            .header(REQUEST_HEADER_NAME, REQUEST_HEADER_VALUE)
+            .post(requestBody)
+            .build();
+
+    try (Response response = httpClient.newCall(request2).execute()) {
+      Assertions.assertEquals(403, response.code());
+      Assertions.assertTrue(response.body().string().isEmpty());
+    }
+
+    List<List<SpanData>> traces2 = TEST_WRITER.getTraces();
+    TEST_WRITER.waitForTraces(2);
+    Assertions.assertEquals(2, traces2.size());
+    List<SpanData> trace2 = traces2.get(1);
+    Assertions.assertEquals(1, trace2.size());
+    SpanData spanData2 = trace2.get(0);
+
+    Assertions.assertEquals(
+        REQUEST_HEADER_VALUE,
+        spanData2
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
+    Assertions.assertNull(
+        spanData2
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_HEADER_NAME)));
+    Assertions.assertNull(
+        spanData2
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_BODY)));
   }
 }

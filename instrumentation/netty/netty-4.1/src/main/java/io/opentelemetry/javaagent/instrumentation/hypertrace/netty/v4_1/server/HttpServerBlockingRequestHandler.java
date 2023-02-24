@@ -21,6 +21,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.Attribute;
@@ -28,6 +29,7 @@ import io.netty.util.ReferenceCountUtil;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.AttributeKeys;
+import io.opentelemetry.javaagent.instrumentation.netty.common.HttpRequestAndChannel;
 import java.util.Map;
 import org.hypertrace.agent.filter.FilterRegistry;
 
@@ -52,6 +54,14 @@ public class HttpServerBlockingRequestHandler extends ChannelInboundHandlerAdapt
       Map<String, String> headers = headersAttr.getAndRemove();
       if (headers != null && FilterRegistry.getFilter().evaluateRequestHeaders(span, headers)) {
         forbidden(ctx, (HttpRequest) msg);
+        return;
+      }
+    }
+    if (msg instanceof HttpContent) {
+      if (FilterRegistry.getFilter().evaluateRequestBody(span, null, null)) {
+        Attribute<?> requestAttr = channel.attr(AttributeKeys.REQUEST);
+        HttpRequest req = ((HttpRequestAndChannel) (requestAttr.get())).request();
+        forbidden(ctx, req);
         return;
       }
     }
