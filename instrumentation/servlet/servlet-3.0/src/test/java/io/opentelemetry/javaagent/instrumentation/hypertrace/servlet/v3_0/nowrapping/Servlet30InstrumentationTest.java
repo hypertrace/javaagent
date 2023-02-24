@@ -27,9 +27,10 @@ import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrap
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoWriter_single_char;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.GetHello;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
-import javax.servlet.DispatcherType;
+import javax.servlet.*;
 import okhttp3.FormBody;
 import okhttp3.MediaType;
 import okhttp3.Request;
@@ -38,6 +39,7 @@ import okhttp3.Response;
 import org.WrappingFilter;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.hypertrace.agent.core.instrumentation.HypertraceEvaluationException;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.junit.jupiter.api.AfterAll;
@@ -53,6 +55,31 @@ public class Servlet30InstrumentationTest extends AbstractInstrumenterTest {
   private static Server server = new Server(0);
   private static int serverPort;
 
+  /*
+   * Filter that mimics the spring framework. It will catch and wrap our blocking exception
+   */
+  public static class WrapExceptionFilter implements Filter {
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+        throws IOException, ServletException {
+      System.out.print("hello from filter");
+      try {
+        chain.doFilter(request, response);
+      } catch (Throwable t) {
+        if (t instanceof HypertraceEvaluationException) {
+          throw new RuntimeException("wrapped exception", t);
+        }
+        throw t;
+      }
+    }
+
+    @Override
+    public void init(FilterConfig arg0) throws ServletException {}
+
+    @Override
+    public void destroy() {}
+  }
+
   @BeforeAll
   public static void startServer() throws Exception {
     ServletContextHandler handler = new ServletContextHandler();
@@ -62,6 +89,8 @@ public class Servlet30InstrumentationTest extends AbstractInstrumenterTest {
     handler.addServlet(GetHello.class, "/hello");
     handler.addServlet(EchoStream_single_byte.class, "/echo_stream_single_byte");
     handler.addServlet(EchoStream_arr.class, "/echo_stream_arr");
+    handler.addFilter(
+        WrapExceptionFilter.class, "/echo_stream_arr", EnumSet.of(DispatcherType.REQUEST));
     handler.addServlet(EchoStream_arr_offset.class, "/echo_stream_arr_offset");
     handler.addServlet(EchoStream_readLine_print.class, "/echo_stream_readLine_print");
     handler.addServlet(EchoWriter_single_char.class, "/echo_writer_single_char");
@@ -273,6 +302,35 @@ public class Servlet30InstrumentationTest extends AbstractInstrumenterTest {
     Request request =
         new Request.Builder()
             .url(String.format("http://localhost:%d/echo_stream_single_byte", serverPort))
+            .post(formBody)
+            .header(REQUEST_HEADER, REQUEST_HEADER_VALUE)
+            .build();
+    try (Response response = httpClient.newCall(request).execute()) {
+      Assertions.assertEquals(403, response.code());
+    }
+
+    TEST_WRITER.waitForTraces(1);
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    Assertions.assertEquals(1, traces.size());
+    List<SpanData> spans = traces.get(0);
+    Assertions.assertEquals(1, spans.size());
+    SpanData spanData = spans.get(0);
+    Assertions.assertNull(
+        spanData
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpResponseHeader(TestServlets.RESPONSE_HEADER)));
+    Assertions.assertEquals(
+        "block=true", spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+    Assertions.assertNull(
+        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+  }
+
+  @Test
+  public void blockBodyWrappedException() throws Exception {
+    FormBody formBody = new FormBody.Builder().add("block", "true").build();
+    Request request =
+        new Request.Builder()
+            .url(String.format("http://localhost:%d/echo_stream_arr", serverPort))
             .post(formBody)
             .header(REQUEST_HEADER, REQUEST_HEADER_VALUE)
             .build();

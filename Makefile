@@ -46,3 +46,7 @@ clean:
 .PHONY: init-submodules
 init-submodules:
 	git submodule update --init
+
+.PHONY: dependency-check
+dependency-check:
+	./gradlew dependencyCheckAggregate 
