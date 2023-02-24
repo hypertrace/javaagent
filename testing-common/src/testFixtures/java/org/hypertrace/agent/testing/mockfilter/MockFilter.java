@@ -16,8 +16,11 @@
 
 package org.hypertrace.agent.testing.mockfilter;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import java.util.Map;
+
+import io.opentelemetry.sdk.trace.ReadableSpan;
 import org.hypertrace.agent.filter.api.Filter;
 
 /** Mock filter, blocks execution if an attribute with "mockblock" key is present. */
@@ -37,6 +40,13 @@ class MockFilter implements Filter {
 
   @Override
   public boolean evaluateRequestBody(Span span, String body, Map<String, String> headers) {
-    return body.contains("block=true");
+    if (body != null && body.contains("block=true")) {
+      return true;
+    }
+    if (span instanceof ReadableSpan) {
+      String spanReqBody = ((ReadableSpan)span).getAttribute(AttributeKey.stringKey("http.request.body"));
+      return spanReqBody != null && spanReqBody.contains("block=true");
+    }
+    return false;
   }
 }

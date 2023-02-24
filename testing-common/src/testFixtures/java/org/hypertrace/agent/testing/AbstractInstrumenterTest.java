@@ -155,4 +155,31 @@ public abstract class AbstractInstrumenterTest {
       }
     };
   }
+
+  public static RequestBody blockedRequestBody(
+          final boolean chunked, final long size, final int writeSize) {
+    final byte[] buffer = new byte[writeSize];
+    Arrays.fill(buffer, (byte) 'x');
+
+    return new RequestBody() {
+      @Override
+      public MediaType contentType() {
+        return MediaType.get("application/json; charset=utf-8");
+      }
+
+      @Override
+      public long contentLength() throws IOException {
+        return chunked ? -1L : size;
+      }
+
+      @Override
+      public void writeTo(BufferedSink sink) throws IOException {
+        sink.write("{\"block=true\":\"".getBytes());
+        for (int count = 0; count < size; count += writeSize) {
+          sink.write(buffer, 0, (int) Math.min(size - count, writeSize));
+        }
+        sink.write("\"}".getBytes());
+      }
+    };
+  }
 }
