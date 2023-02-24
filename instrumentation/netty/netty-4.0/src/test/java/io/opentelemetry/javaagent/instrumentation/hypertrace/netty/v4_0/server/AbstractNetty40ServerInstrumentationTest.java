@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
-
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -175,11 +174,11 @@ public abstract class AbstractNetty40ServerInstrumentationTest extends AbstractI
 
     RequestBody requestBody = blockedRequestBody(true, 3000, 75);
     Request request2 =
-            new Request.Builder()
-                    .url(String.format("http://localhost:%d/post", port))
-                    .header(REQUEST_HEADER_NAME, REQUEST_HEADER_VALUE)
-                    .post(requestBody)
-                    .build();
+        new Request.Builder()
+            .url(String.format("http://localhost:%d/post", port))
+            .header(REQUEST_HEADER_NAME, REQUEST_HEADER_VALUE)
+            .post(requestBody)
+            .build();
 
     try (Response response = httpClient.newCall(request2).execute()) {
       Assertions.assertEquals(403, response.code());
@@ -194,17 +193,17 @@ public abstract class AbstractNetty40ServerInstrumentationTest extends AbstractI
     SpanData spanData2 = trace2.get(0);
 
     Assertions.assertEquals(
-            REQUEST_HEADER_VALUE,
-            spanData2
-                    .getAttributes()
-                    .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
+        REQUEST_HEADER_VALUE,
+        spanData2
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
     Assertions.assertNull(
-            spanData2
-                    .getAttributes()
-                    .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_HEADER_NAME)));
+        spanData2
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_HEADER_NAME)));
     Assertions.assertNull(
-            spanData2
-                    .getAttributes()
-                    .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_BODY)));
+        spanData2
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_BODY)));
   }
 }

@@ -33,6 +33,6 @@ public class AttributeKeys {
       AttributeKey.valueOf(AttributeKeys.class, "request-headers");
 
   public static final AttributeKey<?> REQUEST =
-          AttributeKey.valueOf(
-                  "io.opentelemetry.javaagent.instrumentation.netty.v4_1.server.NettyServerSingletons#http-server-request");
+      AttributeKey.valueOf(
+          "io.opentelemetry.javaagent.instrumentation.netty.v4_1.server.NettyServerSingletons#http-server-request");
 }

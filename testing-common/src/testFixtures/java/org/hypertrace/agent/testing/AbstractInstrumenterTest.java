@@ -157,7 +157,7 @@ public abstract class AbstractInstrumenterTest {
   }
 
   public static RequestBody blockedRequestBody(
-          final boolean chunked, final long size, final int writeSize) {
+      final boolean chunked, final long size, final int writeSize) {
     final byte[] buffer = new byte[writeSize];
     Arrays.fill(buffer, (byte) 'x');
 
