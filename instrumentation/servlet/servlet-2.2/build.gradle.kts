@@ -16,7 +16,7 @@ muzzle {
     fail {
         group = "javax.servlet"
         module = "javax.servlet-api"
-        versions = "[3.0,)"
+        versions = "(,)"
     }
 }
 
@@ -33,7 +33,6 @@ val versions: Map<String, String> by extra
 
 dependencies {
     implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common:${versions["opentelemetry_java_agent"]}")
-    implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-2.2:${versions["opentelemetry_java_agent"]}") // Servlet2Accessor
     compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:${versions["opentelemetry_java_agent"]}")
     testRuntimeOnly("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common-bootstrap:${versions["opentelemetry_java_agent"]}")
     muzzleBootstrap("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common-bootstrap:${versions["opentelemetry_java_agent"]}")

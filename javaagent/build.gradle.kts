@@ -13,6 +13,7 @@ dependencies {
     // https://dl.bintray.com/open-telemetry/maven/
     implementation("io.opentelemetry.javaagent", "opentelemetry-javaagent", version = "${versions["opentelemetry_java_agent_all"]}")
     implementation(project(":filter-api"))
+    implementation("io.opentelemetry:opentelemetry-sdk-trace:1.13.0")
 }
 
 base.archivesBaseName = "hypertrace-agent"

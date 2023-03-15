@@ -54,12 +54,12 @@ include("instrumentation:micronaut-1.0")
 findProject(":instrumentation:micronaut-1.0")?.name = "micronaut-1.0"
 include("instrumentation:micronaut-3.0")
 findProject(":instrumentation:micronaut-3.0")?.name = "micronaut-3.0"
+include("instrumentation:servlet:servlet-2.2")
+findProject(":instrumentation:servlet:servlet-2.2")?.name = "servlet-2.2"
 include("instrumentation:servlet:servlet-3.0")
 findProject(":instrumentation:servlet:servlet-3.0")?.name = "servlet-3.0"
 include("instrumentation:servlet:servlet-rw")
 findProject(":instrumentation:servlet:servlet-rw")?.name = "servlet-rw"
-include("instrumentation:servlet:servlet-2.2")
-findProject(":instrumentation:servlet:servlet-2.2")?.name = "servlet-2.2"
 include("instrumentation:struts-2.3")
 findProject(":instrumentation:struts-2.3")?.name = "struts-2.3"
 include("instrumentation:undertow:undertow-common")

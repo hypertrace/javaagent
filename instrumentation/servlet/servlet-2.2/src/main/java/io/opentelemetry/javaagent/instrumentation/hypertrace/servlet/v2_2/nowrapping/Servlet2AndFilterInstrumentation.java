@@ -20,6 +20,7 @@ import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.
 import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasSuperType;
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.namedOneOf;
 import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 
 import io.opentelemetry.api.common.AttributeKey;
@@ -53,7 +54,6 @@ import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 import org.hypertrace.agent.filter.FilterRegistry;
 
 public class Servlet2AndFilterInstrumentation implements TypeInstrumentation {
-
   @Override
   public ElementMatcher<ClassLoader> classLoaderOptimization() {
     return hasClassesNamed("javax.servlet.Servlet");
@@ -61,13 +61,14 @@ public class Servlet2AndFilterInstrumentation implements TypeInstrumentation {
 
   @Override
   public ElementMatcher<TypeDescription> typeMatcher() {
-    return hasSuperType(named("javax.servlet.Servlet"));
+    return hasSuperType(namedOneOf("javax.servlet.Filter", "javax.servlet.Servlet"));
   }
 
   @Override
   public void transform(TypeTransformer transformer) {
+    // print version with Implmentation Version
     transformer.applyAdviceToMethod(
-        named("service")
+        namedOneOf("doFilter", "service")
             .and(takesArgument(0, named("javax.servlet.ServletRequest")))
             .and(takesArgument(1, named("javax.servlet.ServletResponse")))
             .and(isPublic()),

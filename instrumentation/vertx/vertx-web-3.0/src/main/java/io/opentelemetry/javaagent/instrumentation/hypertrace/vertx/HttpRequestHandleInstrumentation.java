@@ -60,9 +60,11 @@ public class HttpRequestHandleInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void handleResponseEnter(
         @Advice.This HttpClientRequest request, @Advice.Argument(0) HttpClientResponse response) {
+      System.out.println("start Enter io.vertx.core.http.HttpClientRequest.handleResponse");
 
       Contexts contexts = VirtualField.find(HttpClientRequest.class, Contexts.class).get(request);
       if (contexts == null) {
+        System.out.println("end1 Enter io.vertx.core.http.HttpClientRequest.handleResponse");
         return;
       }
       Span span = Span.fromContext(contexts.context);
@@ -87,6 +89,7 @@ public class HttpRequestHandleInstrumentation implements TypeInstrumentation {
           && ContentTypeUtils.shouldCapture(contentType)) {
         VirtualField.find(HttpClientResponse.class, Span.class).set(response, span);
       }
+      System.out.println("end Enter io.vertx.core.http.HttpClientRequest.handleResponse");
     }
   }
 }

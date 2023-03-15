@@ -52,6 +52,8 @@ public class HypertraceSemanticAttributes {
 
   public static final AttributeKey<String> HTTP_REQUEST_SESSION_ID =
       AttributeKey.stringKey("http.request.session_id");
+  public static final AttributeKey<String> HTTP_RESPONSE_CONTENT_TYPE =
+      AttributeKey.stringKey("http.response.header.content-type");
 
   public static final AttributeKey<String> RPC_REQUEST_BODY =
       AttributeKey.stringKey("rpc.request.body");

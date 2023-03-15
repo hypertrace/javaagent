@@ -36,7 +36,7 @@ public class Servlet2InstrumentationModule extends InstrumentationModule {
 
   @Override
   public int order() {
-    return 1;
+    return -1;
   }
 
   @Override
