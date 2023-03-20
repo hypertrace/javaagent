@@ -83,15 +83,12 @@ public class Servlet2AndFilterInstrumentation implements TypeInstrumentation {
         @Advice.Argument(value = 0) ServletRequest request,
         @Advice.Argument(value = 1) ServletResponse response,
         @Advice.Local("currentSpan") Span currentSpan) {
-      System.out.println("start Enter javax.servlet.Servlet.service");
       int callDepth =
           HypertraceCallDepthThreadLocalMap.incrementCallDepth(Servlet2InstrumentationName.class);
       if (callDepth > 0) {
-        System.out.println("end1 Enter javax.servlet.Servlet.service");
         return false;
       }
       if (!(request instanceof HttpServletRequest) || !(response instanceof HttpServletResponse)) {
-        System.out.println("end2 Enter javax.servlet.Servlet.service");
         return false;
       }
 
@@ -126,7 +123,6 @@ public class Servlet2AndFilterInstrumentation implements TypeInstrumentation {
       if (FilterRegistry.getFilter().evaluateRequestHeaders(currentSpan, headers)) {
         httpResponse.setStatus(403);
         // skip execution of the user code
-        System.out.println("end3 Enter javax.servlet.Servlet.service");
         return true;
       }
 
@@ -139,7 +135,6 @@ public class Servlet2AndFilterInstrumentation implements TypeInstrumentation {
                 httpRequest,
                 new SpanAndObjectPair(currentSpan, Collections.unmodifiableMap(headers)));
       }
-      System.out.println("end Enter javax.servlet.Servlet.service");
       return false;
     }
 
@@ -149,17 +144,14 @@ public class Servlet2AndFilterInstrumentation implements TypeInstrumentation {
         @Advice.Argument(1) ServletResponse response,
         @Advice.Thrown(readOnly = false) Throwable throwable,
         @Advice.Local("currentSpan") Span currentSpan) {
-      System.out.println("start Exit javax.servlet.Servlet.service");
       int callDepth =
           HypertraceCallDepthThreadLocalMap.decrementCallDepth(Servlet2InstrumentationName.class);
       if (callDepth > 0) {
-        System.out.println("end1 Exit javax.servlet.Servlet.service");
         return;
       }
       // we are in the most outermost level of Servlet instrumentation
 
       if (!(request instanceof HttpServletRequest) || !(response instanceof HttpServletResponse)) {
-        System.out.println("end2 Exit javax.servlet.Servlet.service");
         return;
       }
 
@@ -188,7 +180,7 @@ public class Servlet2AndFilterInstrumentation implements TypeInstrumentation {
 
         // capture response body
         // TODO: capture response headers
-        // TODO: capture body based on response content type
+        // FIXME: capture body based on response content type
         if (instrumentationConfig.httpBody().response()) {
           Utils.captureResponseBody(
               currentSpan,
@@ -221,7 +213,6 @@ public class Servlet2AndFilterInstrumentation implements TypeInstrumentation {
           tmp = tmp.getCause();
         }
       }
-      System.out.println("end Exit javax.servlet.Servlet.service");
     }
   }
 }

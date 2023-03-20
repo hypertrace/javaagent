@@ -87,16 +87,13 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
   public static class EndRequestAdvice {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void enter(@Advice.This HttpClientRequest request) {
-      System.out.println("start Enter io.vertx.core.http.HttpClientRequest.EndRequestAdvice");
       int callDepth = HypertraceCallDepthThreadLocalMap.incrementCallDepth(HttpClientRequest.class);
       if (callDepth > 0) {
-        System.out.println("end1 Enter io.vertx.core.http.HttpClientRequest.EndRequestAdvice");
         return;
       }
 
       Contexts contexts = VirtualField.find(HttpClientRequest.class, Contexts.class).get(request);
       if (contexts == null) {
-        System.out.println("end2 Enter io.vertx.core.http.HttpClientRequest.EndRequestAdvice");
         return;
       }
       Span span = Span.fromContext(contexts.context);
@@ -106,12 +103,10 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
       if (buffer != null) {
         span.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, buffer.toString());
       }
-      System.out.println("end Enter io.vertx.core.http.HttpClientRequest.EndRequestAdvice");
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit() {
-      System.out.println("start/end Exit io.vertx.core.http.HttpClientRequest.EndRequestAdvice");
       HypertraceCallDepthThreadLocalMap.decrementCallDepth(HttpClientRequest.class);
     }
   }
@@ -121,19 +116,13 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
     public static void enter(
         @Advice.This HttpClientRequest request, @Advice.Argument(0) String chunk)
         throws IOException {
-      System.out.println(
-          "start Enter io.vertx.core.http.HttpClientRequest.EndRequestAdvice_string");
       int callDepth = HypertraceCallDepthThreadLocalMap.incrementCallDepth(HttpClientRequest.class);
       if (callDepth > 0) {
-        System.out.println(
-            "end1 Enter io.vertx.core.http.HttpClientRequest.EndRequestAdvice_string");
         return;
       }
 
       Contexts contexts = VirtualField.find(HttpClientRequest.class, Contexts.class).get(request);
       if (contexts == null) {
-        System.out.println(
-            "end2 Enter io.vertx.core.http.HttpClientRequest.EndRequestAdvice_string");
         return;
       }
       Span span = Span.fromContext(contexts.context);
@@ -151,13 +140,10 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
           span.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, buffer.toString());
         }
       }
-      System.out.println("end Enter io.vertx.core.http.HttpClientRequest.EndRequestAdvice_string");
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit() {
-      System.out.println(
-          "start/end Exit io.vertx.core.http.HttpClientRequest.EndRequestAdvice_string");
       HypertraceCallDepthThreadLocalMap.decrementCallDepth(HttpClientRequest.class);
     }
   }
@@ -167,20 +153,14 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
     public static void enter(
         @Advice.This HttpClientRequest request, @Advice.Argument(0) Buffer chunk)
         throws IOException {
-      System.out.println(
-          "start Enter io.vertx.core.http.HttpClientRequest.EndRequestAdvice_buffer");
 
       int callDepth = HypertraceCallDepthThreadLocalMap.incrementCallDepth(HttpClientRequest.class);
       if (callDepth > 0) {
-        System.out.println(
-            "end1 Enter io.vertx.core.http.HttpClientRequest.EndRequestAdvice_buffer");
         return;
       }
 
       Contexts contexts = VirtualField.find(HttpClientRequest.class, Contexts.class).get(request);
       if (contexts == null) {
-        System.out.println(
-            "end2 Enter io.vertx.core.http.HttpClientRequest.EndRequestAdvice_buffer");
         return;
       }
       Span span = Span.fromContext(contexts.context);
@@ -201,13 +181,10 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
           span.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, buffer.toString());
         }
       }
-      System.out.println("end Enter io.vertx.core.http.HttpClientRequest.EndRequestAdvice_buffer");
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit() {
-      System.out.println(
-          "start/end Exit io.vertx.core.http.HttpClientRequest.EndRequestAdvice_buffer");
       HypertraceCallDepthThreadLocalMap.decrementCallDepth(HttpClientRequest.class);
     }
   }
@@ -217,13 +194,9 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
     public static void enter(
         @Advice.This HttpClientRequest request, @Advice.Argument(0) String chunk)
         throws IOException {
-      System.out.println(
-          "start Enter io.vertx.core.http.HttpClientRequest.WriteRequestAdvice_string");
 
       int callDepth = HypertraceCallDepthThreadLocalMap.incrementCallDepth(HttpClientRequest.class);
       if (callDepth > 0) {
-        System.out.println(
-            "end1 Enter io.vertx.core.http.HttpClientRequest.WriteRequestAdvice_string");
         return;
       }
 
@@ -241,14 +214,10 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
         }
         buffer.write(chunk);
       }
-      System.out.println(
-          "end Enter io.vertx.core.http.HttpClientRequest.WriteRequestAdvice_string");
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit() {
-      System.out.println(
-          "start/end Exit io.vertx.core.http.HttpClientRequest.WriteRequestAdvice_string");
       HypertraceCallDepthThreadLocalMap.decrementCallDepth(HttpClientRequest.class);
     }
   }
@@ -258,13 +227,9 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
     public static void enter(
         @Advice.This HttpClientRequest request, @Advice.Argument(0) Buffer chunk)
         throws IOException {
-      System.out.println(
-          "start Enter io.vertx.core.http.HttpClientRequest.WriteRequestAdvice_buffer");
 
       int callDepth = HypertraceCallDepthThreadLocalMap.incrementCallDepth(HttpClientRequest.class);
       if (callDepth > 0) {
-        System.out.println(
-            "end1 Enter io.vertx.core.http.HttpClientRequest.WriteRequestAdvice_buffer");
         return;
       }
 
@@ -282,14 +247,10 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
         }
         buffer.write(chunk.toString(StandardCharsets.UTF_8.name()));
       }
-      System.out.println(
-          "end Enter io.vertx.core.http.HttpClientRequest.WriteRequestAdvice_buffer");
     }
 
     @Advice.OnMethodExit(suppress = Throwable.class, onThrowable = Throwable.class)
     public static void exit() {
-      System.out.println(
-          "start/end Exit io.vertx.core.http.HttpClientRequest.WriteRequestAdvice_buffer");
       HypertraceCallDepthThreadLocalMap.decrementCallDepth(HttpClientRequest.class);
     }
   }

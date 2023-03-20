@@ -91,32 +91,26 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
-      System.out.println("start Enter javax.servlet.ServletInputStream.ReadNoArgs");
       ByteBufferSpanPair bufferSpanPair =
           VirtualField.find(ServletInputStream.class, ByteBufferSpanPair.class).get(thizz);
       if (bufferSpanPair == null) {
-        System.out.println("end1 Enter javax.servlet.ServletInputStream.ReadNoArgs");
         return null;
       }
 
       HypertraceCallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
-      System.out.println("end Enter javax.servlet.ServletInputStream.ReadNoArgs");
       return bufferSpanPair;
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void exit(
         @Advice.Return int read, @Advice.Enter ByteBufferSpanPair bufferSpanPair) {
-      System.out.println("start Exit javax.servlet.ServletInputStream.ReadNoArgs");
       try {
         if (bufferSpanPair == null) {
-          System.out.println("end1 Exit javax.servlet.ServletInputStream.ReadNoArgs");
           return;
         }
         int callDepth =
             HypertraceCallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
         if (callDepth > 0) {
-          System.out.println("end2 Exit javax.servlet.ServletInputStream.ReadNoArgs");
           return;
         }
 
@@ -132,7 +126,6 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
           // ignore
         }
       }
-      System.out.println("end Exit javax.servlet.ServletInputStream.ReadNoArgs");
     }
   }
 
@@ -141,16 +134,13 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
-      System.out.println("start Enter javax.servlet.ServletInputStream.ReadByteArray");
       ByteBufferSpanPair bufferSpanPair =
           VirtualField.find(ServletInputStream.class, ByteBufferSpanPair.class).get(thizz);
       if (bufferSpanPair == null) {
-        System.out.println("end1 Enter javax.servlet.ServletInputStream.ReadByteArray");
         return null;
       }
 
       HypertraceCallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
-      System.out.println("end Enter javax.servlet.ServletInputStream.ReadByteArray");
       return bufferSpanPair;
     }
 
@@ -161,16 +151,13 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         @Advice.Argument(0) byte[] b,
         @Advice.Enter ByteBufferSpanPair bufferSpanPair)
         throws Throwable {
-      System.out.println("start Exit javax.servlet.ServletInputStream.ReadByteArray");
       try {
         if (bufferSpanPair == null) {
-          System.out.println("end1 Exit javax.servlet.ServletInputStream.ReadByteArray");
           return;
         }
         int callDepth =
             HypertraceCallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
         if (callDepth > 0) {
-          System.out.println("end2 Exit javax.servlet.ServletInputStream.ReadByteArray");
           return;
         }
 
@@ -189,7 +176,6 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
           // ignore
         }
       }
-      System.out.println("end Exit javax.servlet.ServletInputStream.ReadByteArray");
     }
   }
 
@@ -198,16 +184,13 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
-      System.out.println("start Enter javax.servlet.ServletInputStream.ReadByteArrayOffset");
       ByteBufferSpanPair bufferSpanPair =
           VirtualField.find(ServletInputStream.class, ByteBufferSpanPair.class).get(thizz);
       if (bufferSpanPair == null) {
-        System.out.println("end1 Enter javax.servlet.ServletInputStream.ReadByteArrayOffset");
         return null;
       }
 
       HypertraceCallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
-      System.out.println("end Enter javax.servlet.ServletInputStream.ReadByteArrayOffset");
       return bufferSpanPair;
     }
 
@@ -220,17 +203,14 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         @Advice.Argument(2) int len,
         @Advice.Enter ByteBufferSpanPair bufferSpanPair)
         throws Throwable {
-      System.out.println("start Exit javax.servlet.ServletInputStream.ReadByteArrayOffset");
       try {
 
         if (bufferSpanPair == null) {
-          System.out.println("end1 Exit javax.servlet.ServletInputStream.ReadByteArrayOffset");
           return;
         }
         int callDepth =
             HypertraceCallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
         if (callDepth > 0) {
-          System.out.println("end2 Exit javax.servlet.ServletInputStream.ReadByteArrayOffset");
           return;
         }
 
@@ -249,7 +229,6 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
           // ignore
         }
       }
-      System.out.println("end Exit javax.servlet.ServletInputStream.ReadByteArrayOffset");
     }
   }
 
@@ -258,16 +237,13 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
-      System.out.println("start Enter javax.servlet.ServletInputStream.ReadAllBytes");
       ByteBufferSpanPair bufferSpanPair =
           VirtualField.find(ServletInputStream.class, ByteBufferSpanPair.class).get(thizz);
       if (bufferSpanPair == null) {
-        System.out.println("end1 Enter javax.servlet.ServletInputStream.ReadAllBytes");
         return null;
       }
 
       HypertraceCallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
-      System.out.println("end Enter javax.servlet.ServletInputStream.ReadAllBytes");
       return bufferSpanPair;
     }
 
@@ -275,16 +251,13 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
     public static void exit(
         @Advice.Return byte[] b, @Advice.Enter ByteBufferSpanPair bufferSpanPair)
         throws IOException {
-      System.out.println("start Exit javax.servlet.ServletInputStream.ReadAllBytes");
       try {
         if (bufferSpanPair == null) {
-          System.out.println("end1 Exit javax.servlet.ServletInputStream.ReadAllBytes");
           return;
         }
         int callDepth =
             HypertraceCallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
         if (callDepth > 0) {
-          System.out.println("end2 Exit javax.servlet.ServletInputStream.ReadAllBytes");
           return;
         }
         bufferSpanPair.writeToBuffer(b);
@@ -296,7 +269,6 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
           // ignore
         }
       }
-      System.out.println("end Exit javax.servlet.ServletInputStream.ReadAllBytes");
     }
   }
 
@@ -305,16 +277,13 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
-      System.out.println("start Enter javax.servlet.ServletInputStream.ReadNBytes");
       ByteBufferSpanPair bufferSpanPair =
           VirtualField.find(ServletInputStream.class, ByteBufferSpanPair.class).get(thizz);
       if (bufferSpanPair == null) {
-        System.out.println("end1 Enter javax.servlet.ServletInputStream.ReadNBytes");
         return null;
       }
 
       HypertraceCallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
-      System.out.println("end Enter javax.servlet.ServletInputStream.ReadNBytes");
       return bufferSpanPair;
     }
 
@@ -326,16 +295,13 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         @Advice.Argument(1) int off,
         @Advice.Enter ByteBufferSpanPair bufferSpanPair)
         throws Throwable {
-      System.out.println("start Exit javax.servlet.ServletInputStream.ReadNBytes");
       try {
         if (bufferSpanPair == null) {
-          System.out.println("end1 Exit javax.servlet.ServletInputStream.ReadNBytes");
           return;
         }
         int callDepth =
             HypertraceCallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
         if (callDepth > 0) {
-          System.out.println("end2 Exit javax.servlet.ServletInputStream.ReadNBytes");
           return;
         }
 
@@ -354,7 +320,6 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
           // ignore
         }
       }
-      System.out.println("end Exit javax.servlet.ServletInputStream.ReadNBytes");
     }
   }
 }

@@ -57,18 +57,15 @@ public class HttpResponseInstrumentation implements TypeInstrumentation {
     public static void handleResponseEnter(
         @Advice.This HttpClientResponse response,
         @Advice.Argument(value = 0, readOnly = false) Handler<Buffer> handler) {
-      System.out.println("start Enter io.vertx.core.http.HttpClientResponse.bodyHandler");
 
       Span span = VirtualField.find(HttpClientResponse.class, Span.class).get(response);
       if (span == null) {
         // request not traced - e.g. wrong content type
-        System.out.println("end1 Enter io.vertx.core.http.HttpClientResponse.bodyHandler");
         return;
       }
       VirtualField.find(HttpClientResponse.class, Span.class).set(response, null);
 
       handler = new ResponseBodyWrappingHandler(handler, span);
-      System.out.println("end Enter io.vertx.core.http.HttpClientResponse.bodyHandler");
     }
   }
 }
