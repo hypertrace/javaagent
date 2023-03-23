@@ -9,14 +9,12 @@ muzzle {
     pass {
         group = "javax.servlet"
         module = "servlet-api"
-        versions = "[2.2, 3.0)"
-        assertInverse = true
+        versions = "[2.2,3.0)"
     }
-
     fail {
         group = "javax.servlet"
         module = "javax.servlet-api"
-        versions = "[3.0,)"
+        versions = "(,)"
     }
 }
 
@@ -33,8 +31,19 @@ val versions: Map<String, String> by extra
 
 dependencies {
     implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common:${versions["opentelemetry_java_agent"]}")
+    implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-2.2:${versions["opentelemetry_java_agent"]}") // Servlet2Accessor
+    testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-2.2:${versions["opentelemetry_java_agent"]}")
+    testImplementation("io.opentelemetry.javaagent:opentelemetry-muzzle:${versions["opentelemetry_java_agent"]}")
     compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:${versions["opentelemetry_java_agent"]}")
+    compileOnly("javax.servlet:servlet-api:2.2")
     testRuntimeOnly("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common-bootstrap:${versions["opentelemetry_java_agent"]}")
     muzzleBootstrap("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common-bootstrap:${versions["opentelemetry_java_agent"]}")
-    compileOnly("javax.servlet:servlet-api:2.2")
+
+    testImplementation(project(":instrumentation:servlet:servlet-rw"))
+    testImplementation(testFixtures(project(":testing-common")) as ProjectDependency) {
+        exclude(group = "org.eclipse.jetty", module = "jetty-server")
+    }
+    testImplementation("org.eclipse.jetty:jetty-server:8.1.22.v20160922")
+    testImplementation("org.eclipse.jetty:jetty-servlet:8.1.22.v20160922")
+    testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_semconv"]}")
 }

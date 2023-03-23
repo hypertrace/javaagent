@@ -66,10 +66,10 @@ public class Utils {
   /**
    * Create a StringMapSpanPair with provided values.
    *
-   * @param stringMap the stringMap instance
+   * @param stringMap a map of key-value pairs of x-www-form-urlencoded content-type body
    * @param span the span instance
-   * @param headers the headers instance
-   * @return a StringMapSpanPair created with values of the above instances
+   * @param headers map of headers
+   * @return a StringMapSpanPair instance created with values of the above instances
    */
   public static StringMapSpanPair createStringMapSpanPair(
       Map<String, String> stringMap, Span span, Map<String, String> headers) {

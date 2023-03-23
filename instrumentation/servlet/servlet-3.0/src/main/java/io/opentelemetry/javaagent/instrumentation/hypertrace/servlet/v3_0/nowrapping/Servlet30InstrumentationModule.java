@@ -16,6 +16,8 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping;
 
+import static io.opentelemetry.javaagent.extension.matcher.AgentElementMatchers.hasClassesNamed;
+
 import com.google.auto.service.AutoService;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
@@ -26,6 +28,7 @@ import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrap
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.response.ServletResponseInstrumentation;
 import java.util.Arrays;
 import java.util.List;
+import net.bytebuddy.matcher.ElementMatcher;
 
 @SuppressWarnings("unused")
 @AutoService(InstrumentationModule.class)
@@ -38,6 +41,11 @@ public class Servlet30InstrumentationModule extends InstrumentationModule {
   @Override
   public int order() {
     return 1;
+  }
+
+  @Override
+  public ElementMatcher.Junction<ClassLoader> classLoaderMatcher() {
+    return hasClassesNamed("javax.servlet.HttpConstraintElement");
   }
 
   @Override
