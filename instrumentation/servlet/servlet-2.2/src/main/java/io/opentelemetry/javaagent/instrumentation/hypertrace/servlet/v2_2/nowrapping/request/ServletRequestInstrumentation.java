@@ -53,10 +53,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
             .and(isPublic()),
         ServletRequestInstrumentation.class.getName() + "$ServletRequest_getInputStream_advice");
     transformer.applyAdviceToMethod(
-        named("getReader")
-            .and(takesArguments(0))
-            //            .and(returns(BufferedReader.class))
-            .and(isPublic()),
+        named("getReader").and(takesArguments(0)).and(isPublic()),
         ServletRequestInstrumentation.class.getName() + "$ServletRequest_getReader_advice");
     transformer.applyAdviceToMethod(
         named("getParameter")

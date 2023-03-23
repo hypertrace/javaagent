@@ -39,9 +39,9 @@ public class StringMapSpanPair {
   }
 
   /**
-   * Return a JSON string representing the contents of the x-www-form-urlencoded body.
+   * Capture the contents of the x-www-form-urlencoded body in the span with provided attributeKey.
    *
-   * @param attributeKey attributeKey
+   * @param attributeKey the attributeKey to store contents of the captured body in the span
    */
   public void captureBody(AttributeKey<String> attributeKey) {
     if (!mapCaptured) {

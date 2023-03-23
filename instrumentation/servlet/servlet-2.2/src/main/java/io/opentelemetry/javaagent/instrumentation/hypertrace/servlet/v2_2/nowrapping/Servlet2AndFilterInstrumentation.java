@@ -66,7 +66,6 @@ public class Servlet2AndFilterInstrumentation implements TypeInstrumentation {
 
   @Override
   public void transform(TypeTransformer transformer) {
-    // print version with Implmentation Version
     transformer.applyAdviceToMethod(
         namedOneOf("doFilter", "service")
             .and(takesArgument(0, named("javax.servlet.ServletRequest")))
@@ -79,17 +78,17 @@ public class Servlet2AndFilterInstrumentation implements TypeInstrumentation {
   public static class ServletAdvice {
 
     @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = Advice.OnNonDefaultValue.class)
-    public static boolean start(
+    public static void start(
         @Advice.Argument(value = 0) ServletRequest request,
         @Advice.Argument(value = 1) ServletResponse response,
         @Advice.Local("currentSpan") Span currentSpan) {
       int callDepth =
           HypertraceCallDepthThreadLocalMap.incrementCallDepth(Servlet2InstrumentationName.class);
       if (callDepth > 0) {
-        return false;
+        return;
       }
       if (!(request instanceof HttpServletRequest) || !(response instanceof HttpServletResponse)) {
-        return false;
+        return;
       }
 
       HttpServletRequest httpRequest = (HttpServletRequest) request;
@@ -123,7 +122,7 @@ public class Servlet2AndFilterInstrumentation implements TypeInstrumentation {
       if (FilterRegistry.getFilter().evaluateRequestHeaders(currentSpan, headers)) {
         httpResponse.setStatus(403);
         // skip execution of the user code
-        return true;
+        return;
       }
 
       if (instrumentationConfig.httpBody().request()
@@ -135,7 +134,7 @@ public class Servlet2AndFilterInstrumentation implements TypeInstrumentation {
                 httpRequest,
                 new SpanAndObjectPair(currentSpan, Collections.unmodifiableMap(headers)));
       }
-      return false;
+      return;
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
@@ -179,7 +178,6 @@ public class Servlet2AndFilterInstrumentation implements TypeInstrumentation {
             VirtualField.find(HttpServletRequest.class, StringMapSpanPair.class);
 
         // capture response body
-        // TODO: capture response headers
         // FIXME: capture body based on response content type
         if (instrumentationConfig.httpBody().response()) {
           Utils.captureResponseBody(

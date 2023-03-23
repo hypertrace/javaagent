@@ -68,7 +68,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
     // TODO: readNBytes(int len) is not transformed
     transformer.applyAdviceToMethod(
         named("readNBytes")
-            .and(takesArguments(0))
+            .and(takesArguments(3))
             .and(takesArgument(0, is(byte[].class)))
             .and(takesArgument(1, is(int.class)))
             .and(takesArgument(2, is(int.class)))

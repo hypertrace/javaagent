@@ -53,10 +53,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
             .and(isPublic()),
         ServletRequestInstrumentation.class.getName() + "$ServletRequest_getInputStream_advice");
     transformer.applyAdviceToMethod(
-        named("getReader")
-            .and(takesArguments(0))
-            //            .and(returns(BufferedReader.class))
-            .and(isPublic()),
+        named("getReader").and(takesArguments(0)).and(isPublic()),
         ServletRequestInstrumentation.class.getName() + "$ServletRequest_getReader_advice");
     transformer.applyAdviceToMethod(
         named("getParameter")
@@ -182,7 +179,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
     /**
      * Instrumentation template for ServletRequest.getParameter() entry point.
      *
-     * @param servletRequest servletRequest
+     * @param servletRequest the ServletRequest instance
      * @return a (possibly null) SpanAndObjectPair, which will be passed to the method exit
      *     instrumentation
      */

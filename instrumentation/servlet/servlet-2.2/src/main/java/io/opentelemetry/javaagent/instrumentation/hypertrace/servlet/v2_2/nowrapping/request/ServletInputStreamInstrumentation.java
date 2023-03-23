@@ -65,15 +65,20 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
     transformer.applyAdviceToMethod(
         named("readAllBytes").and(takesArguments(0)).and(isPublic()),
         ServletInputStreamInstrumentation.class.getName() + "$InputStream_ReadAllBytes");
-    // TODO: readNBytes(int len) is not transformed
     transformer.applyAdviceToMethod(
         named("readNBytes")
-            .and(takesArguments(0))
+            .and(takesArguments(3))
             .and(takesArgument(0, is(byte[].class)))
             .and(takesArgument(1, is(int.class)))
             .and(takesArgument(2, is(int.class)))
             .and(isPublic()),
         ServletInputStreamInstrumentation.class.getName() + "$InputStream_ReadNBytes");
+    transformer.applyAdviceToMethod(
+        named("readNBytes")
+            .and(takesArguments(1))
+            .and(takesArgument(0, is(int.class)))
+            .and(isPublic()),
+        ServletInputStreamInstrumentation.class.getName() + "$InputStream_ReadNBytesLength");
 
     // ServletInputStream methods
     transformer.applyAdviceToMethod(
@@ -312,6 +317,50 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
           if (thizz.available() == 0) {
             bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
           }
+        }
+      } catch (Throwable t) {
+        if (t instanceof HypertraceEvaluationException) {
+          throw t;
+        } else {
+          // ignore
+        }
+      }
+    }
+  }
+
+  @SuppressWarnings("unused")
+  public static class InputStream_ReadNBytesLength {
+
+    @Advice.OnMethodEnter(suppress = Throwable.class)
+    public static ByteBufferSpanPair enter(@Advice.This ServletInputStream thizz) {
+      ByteBufferSpanPair bufferSpanPair =
+          VirtualField.find(ServletInputStream.class, ByteBufferSpanPair.class).get(thizz);
+      if (bufferSpanPair == null) {
+        return null;
+      }
+
+      HypertraceCallDepthThreadLocalMap.incrementCallDepth(ServletInputStream.class);
+      return bufferSpanPair;
+    }
+
+    @Advice.OnMethodExit(onThrowable = Throwable.class)
+    public static void exit(
+        @Advice.This ServletInputStream thizz,
+        @Advice.Return byte[] b,
+        @Advice.Enter ByteBufferSpanPair bufferSpanPair)
+        throws IOException {
+      try {
+        if (bufferSpanPair == null) {
+          return;
+        }
+        int callDepth =
+            HypertraceCallDepthThreadLocalMap.decrementCallDepth(ServletInputStream.class);
+        if (callDepth > 0) {
+          return;
+        }
+        bufferSpanPair.writeToBuffer(b);
+        if (thizz.available() == 0) {
+          bufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
         }
       } catch (Throwable t) {
         if (t instanceof HypertraceEvaluationException) {

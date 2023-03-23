@@ -16,7 +16,7 @@ muzzle {
     fail {
         group = "javax.servlet"
         module = "javax.servlet-api"
-        versions = "(,)"
+        versions = "[3.0,)"
     }
 }
 
@@ -37,12 +37,4 @@ dependencies {
     testRuntimeOnly("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common-bootstrap:${versions["opentelemetry_java_agent"]}")
     muzzleBootstrap("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common-bootstrap:${versions["opentelemetry_java_agent"]}")
     compileOnly("javax.servlet:servlet-api:2.2")
-
-//    testInstrumentation(project(":instrumentation:servlet:servlet-3.0:javaagent"))
-//
-//    testLibrary("org.eclipse.jetty:jetty-server:7.0.0.v20091005")
-//    testLibrary("org.eclipse.jetty:jetty-servlet:7.0.0.v20091005")
-//
-//    latestDepTestLibrary("org.eclipse.jetty:jetty-server:7.+") // see servlet-3.0 module
-//    latestDepTestLibrary("org.eclipse.jetty:jetty-servlet:7.+") // see servlet-3.0 module
 }

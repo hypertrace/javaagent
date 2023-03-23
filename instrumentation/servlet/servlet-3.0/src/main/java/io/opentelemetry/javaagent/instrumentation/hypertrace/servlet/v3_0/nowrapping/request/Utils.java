@@ -64,12 +64,12 @@ public class Utils {
   }
 
   /**
-   * Create a StringMapSpanPair.
+   * Create a StringMapSpanPair with provided values.
    *
-   * @param stringMap stringMap
-   * @param span span
-   * @param headers headers
-   * @return StringMapSpanPair
+   * @param stringMap the stringMap instance
+   * @param span the span instance
+   * @param headers the headers instance
+   * @return a StringMapSpanPair created with values of the above instances
    */
   public static StringMapSpanPair createStringMapSpanPair(
       Map<String, String> stringMap, Span span, Map<String, String> headers) {

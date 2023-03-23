@@ -69,9 +69,6 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
             .and(takesArgument(2, is(int.class)))
             .and(isPublic()),
         ServletOutputStreamInstrumentation.class.getName() + "$OutputStream_writeByteArrOffset");
-
-    // close() is not instrumented due to some issue with Tomcat
-    // refer the comment in servlet-3.0 code
   }
 
   @SuppressWarnings("unused")
