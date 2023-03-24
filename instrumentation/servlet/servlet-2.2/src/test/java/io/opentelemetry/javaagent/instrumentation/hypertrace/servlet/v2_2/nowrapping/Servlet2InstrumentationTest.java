@@ -16,9 +16,10 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v2_2.nowrapping;
 
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v2_2.nowrapping.TestServlets.*;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import okhttp3.*;
+import org.WrappingFilter;
+import org.eclipse.jetty.server.DispatcherType;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.hypertrace.agent.core.instrumentation.HypertraceEvaluationException;
@@ -31,7 +32,6 @@ import org.junit.jupiter.api.Test;
 
 import javax.servlet.*;
 import java.io.IOException;
-import java.util.EnumSet;
 import java.util.List;
 
 public class Servlet2InstrumentationTest extends AbstractInstrumenterTest {
@@ -45,11 +45,11 @@ public class Servlet2InstrumentationTest extends AbstractInstrumenterTest {
   /*
    * Filter that mimics the spring framework. It will catch and wrap our blocking exception
    */
-  public static class WrapExceptionFilter implements Servlet {
+  public static class WrapExceptionFilter implements Filter {
     @Override
-    public void service(ServletRequest request, ServletResponse response)
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
         throws ServletException, IOException {
-      System.out.print("hello from service");
+      System.out.print("hello from filter");
       try {
         chain.doFilter(request, response);
       } catch (Throwable t) {
@@ -71,14 +71,16 @@ public class Servlet2InstrumentationTest extends AbstractInstrumenterTest {
   public static void startServer() throws Exception {
     ServletContextHandler handler = new ServletContextHandler();
 
-    handler.addServlet(GetHello.class, "/hello");
-    handler.addServlet(EchoStream_single_byte.class, "/echo_stream_single_byte");
-    handler.addServlet(EchoStream_arr.class, "/echo_stream_arr");
+    handler.addFilter(WrappingFilter.class, "/*", DispatcherType.REQUEST.ordinal());
+
+    handler.addServlet(TestServlets.GetHello.class, "/hello");
+    handler.addServlet(TestServlets.EchoStream_single_byte.class, "/echo_stream_single_byte");
+    handler.addServlet(TestServlets.EchoStream_arr.class, "/echo_stream_arr");
     handler.addFilter(
-        WrapExceptionFilter.class, "/echo_stream_arr", EnumSet.of(DispatcherType.REQUEST));
-    handler.addServlet(EchoStream_arr_offset.class, "/echo_stream_arr_offset");
-    handler.addServlet(EchoStream_readLine_print.class, "/echo_stream_readLine_print");
-    handler.addServlet(EchoWriter_single_char.class, "/echo_writer_single_char");
+        WrapExceptionFilter.class, "/echo_stream_arr", DispatcherType.REQUEST.ordinal());
+    handler.addServlet(TestServlets.EchoStream_arr_offset.class, "/echo_stream_arr_offset");
+    handler.addServlet(TestServlets.EchoStream_readLine_print.class, "/echo_stream_readLine_print");
+    handler.addServlet(TestServlets.EchoWriter_single_char.class, "/echo_writer_single_char");
     handler.addServlet(TestServlets.EchoWriter_arr.class, "/echo_writer_arr");
     handler.addServlet(TestServlets.EchoWriter_arr_offset.class, "/echo_writer_arr_offset");
     handler.addServlet(TestServlets.EchoWriter_readLine_write.class, "/echo_writer_readLine_write");
@@ -88,8 +90,10 @@ public class Servlet2InstrumentationTest extends AbstractInstrumenterTest {
     handler.addServlet(
         TestServlets.EchoWriter_readLine_print_arr.class, "/echo_writer_readLine_print_arr");
     handler.addServlet(TestServlets.Forward_to_post.class, "/forward_to_echo");
-    handler.addServlet(EchoStream_read_large_array.class, "/echo_stream_read_large_array");
-    handler.addServlet(EchoReader_read_large_array.class, "/echo_reader_read_large_array");
+    handler.addServlet(
+        TestServlets.EchoStream_read_large_array.class, "/echo_stream_read_large_array");
+    handler.addServlet(
+        TestServlets.EchoReader_read_large_array.class, "/echo_reader_read_large_array");
     server.setHandler(handler);
     server.start();
     serverPort = server.getConnectors()[0].getLocalPort();

@@ -43,7 +43,7 @@ dependencies {
     testImplementation(testFixtures(project(":testing-common")) as ProjectDependency) {
         exclude(group = "org.eclipse.jetty", module = "jetty-server")
     }
-    testImplementation("org.eclipse.jetty:jetty-server:8.1.22.v20160922")
-    testImplementation("org.eclipse.jetty:jetty-servlet:8.1.22.v20160922")
+    testImplementation("org.eclipse.jetty:jetty-server:7.0.0.v20091005")
+    testImplementation("org.eclipse.jetty:jetty-servlet:7.0.0.v20091005")
     testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_semconv"]}")
 }
