@@ -35,7 +35,7 @@ dependencies {
         }
     }
     testFixturesImplementation("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:${versions["opentelemetry_java_agent"]}")
-    testFixturesImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:${versions["opentelemetry_java_agent"]}")
+    testFixturesImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:${versions["opentelemetry"]}")
     testFixturesImplementation("ch.qos.logback:logback-classic:1.2.3")
     testFixturesImplementation("org.slf4j:log4j-over-slf4j:${versions["slf4j"]}")
     testFixturesImplementation("org.slf4j:jcl-over-slf4j:${versions["slf4j"]}")

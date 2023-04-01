@@ -31,7 +31,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.AttributeKeys;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.DataCaptureUtils;
-import io.opentelemetry.javaagent.instrumentation.netty.v4_1.server.NettyServerSingletons;
+import io.opentelemetry.javaagent.instrumentation.netty.v4_1.NettyServerSingletons;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.nio.charset.Charset;
 import java.util.Map;
@@ -52,8 +52,7 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise prm) {
     Context context =
         ctx.channel()
-            .attr(
-                io.opentelemetry.javaagent.instrumentation.netty.v4_1.AttributeKeys.SERVER_CONTEXT)
+            .attr(io.opentelemetry.instrumentation.netty.v4_1.internal.AttributeKeys.SERVER_CONTEXT)
             .get();
     if (context == null) {
       ctx.write(msg, prm);

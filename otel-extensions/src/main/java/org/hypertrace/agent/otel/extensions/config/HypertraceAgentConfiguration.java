@@ -18,7 +18,8 @@ package org.hypertrace.agent.otel.extensions.config;
 
 import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
-import io.opentelemetry.javaagent.extension.config.ConfigPropertySource;
+import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
+import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,8 +31,8 @@ import org.hypertrace.agent.config.v1.Config.TraceReporterType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@AutoService(ConfigPropertySource.class)
-public class HypertraceAgentConfiguration implements ConfigPropertySource {
+@AutoService(AutoConfigurationCustomizerProvider.class)
+public class HypertraceAgentConfiguration implements AutoConfigurationCustomizerProvider {
 
   private static final Logger log = LoggerFactory.getLogger(HypertraceAgentConfiguration.class);
 
@@ -53,7 +54,6 @@ public class HypertraceAgentConfiguration implements ConfigPropertySource {
   private static final String OTEL_ENABLED = "otel.javaagent.enabled";
   private static final String OTEL_OTLP_CERT = "otel.exporter.otlp.certificate";
 
-  @Override
   public Map<String, String> getProperties() {
     AgentConfig agentConfig = HypertraceConfig.get();
 
@@ -108,5 +108,10 @@ public class HypertraceAgentConfiguration implements ConfigPropertySource {
     return propagationFormats.stream()
         .map(v -> v.name().toLowerCase())
         .collect(Collectors.joining(","));
+  }
+
+  @Override
+  public void customize(AutoConfigurationCustomizer autoConfigurationCustomizer) {
+    autoConfigurationCustomizer.addPropertiesSupplier(this::getProperties);
   }
 }

@@ -17,16 +17,17 @@
 package org.hypertrace.agent.otel.extensions;
 
 import com.google.auto.service.AutoService;
-import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.javaagent.extension.ignore.IgnoredTypesBuilder;
 import io.opentelemetry.javaagent.extension.ignore.IgnoredTypesConfigurer;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 
 @AutoService(IgnoredTypesConfigurer.class)
 public class HypertraceGlobalIgnoreMatcher implements IgnoredTypesConfigurer {
 
   @Override
-  public void configure(Config config, IgnoredTypesBuilder builder) {
-    builder
+  public void configure(
+      IgnoredTypesBuilder ignoredTypesBuilder, ConfigProperties configProperties) {
+    ignoredTypesBuilder
         // ignored profiler classes
         .ignoreClass("com.yourkit")
         // allowed java io classes

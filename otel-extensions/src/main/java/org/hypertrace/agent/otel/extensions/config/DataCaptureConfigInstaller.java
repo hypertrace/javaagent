@@ -15,20 +15,20 @@
  */
 
 package org.hypertrace.agent.otel.extensions.config;
-
-import com.google.auto.service.AutoService;
-import io.opentelemetry.instrumentation.api.config.Config;
-import io.opentelemetry.javaagent.extension.AgentListener;
-import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
-import org.hypertrace.agent.core.config.DataCaptureConfig.ConfigProvider;
-
-/** An AgentListener implementation that initializes the DataCaptureConfig.ConfigProvider. */
-@AutoService(AgentListener.class)
-public class DataCaptureConfigInstaller implements AgentListener {
-
-  @Override
-  public void beforeAgent(
-      Config config, AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk) {
-    ConfigProvider.get();
-  }
-}
+//
+// import com.google.auto.service.AutoService;
+// import io.opentelemetry.javaagent.extension.AgentListener;
+// import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
+// import org.hypertrace.agent.core.config.DataCaptureConfig.ConfigProvider;
+//
+/// ** An AgentListener implementation that initializes the DataCaptureConfig.ConfigProvider. */
+// @AutoService(AgentListener.class)
+// public class DataCaptureConfigInstaller implements AgentListener {
+//
+//  static {
+//    ConfigProvider.get();
+//  }
+//
+//  @Override
+//  public void afterAgent(AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk) {}
+// }

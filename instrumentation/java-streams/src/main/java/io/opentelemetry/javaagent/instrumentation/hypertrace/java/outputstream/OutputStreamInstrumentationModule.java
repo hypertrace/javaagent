@@ -24,7 +24,7 @@ import static net.bytebuddy.matcher.ElementMatchers.takesArgument;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import com.google.auto.service.AutoService;
-import io.opentelemetry.instrumentation.api.field.VirtualField;
+import io.opentelemetry.instrumentation.api.util.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
@@ -40,10 +40,10 @@ import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputSt
 
 /**
  * {@link OutputStream} instrumentation. The type matcher applies to all implementations. However
- * only streams that are in the {@link io.opentelemetry.instrumentation.api.field.VirtualField} are
+ * only streams that are in the {@link io.opentelemetry.instrumentation.api.util.VirtualField} are
  * instrumented, otherwise the instrumentation is noop.
  *
- * <p>If the stream is in the {@link io.opentelemetry.instrumentation.api.field.VirtualField} then
+ * <p>If the stream is in the {@link io.opentelemetry.instrumentation.api.util.VirtualField} then
  * arguments to write methods are also passed to the buffered stream (value) from the map. The
  * buffered stream is then used by other instrumentations to capture body.
  */
