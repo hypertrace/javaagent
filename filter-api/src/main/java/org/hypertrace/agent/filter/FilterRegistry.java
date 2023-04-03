@@ -23,8 +23,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ServiceLoader;
+import org.hypertrace.agent.otel.extensions.config.HypertraceConfig;
 import org.hypertrace.agent.filter.api.Filter;
 import org.hypertrace.agent.filter.spi.FilterProvider;
+import org.hypertrace.agent.filter.spi.FilterProviderConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,12 +83,16 @@ public class FilterRegistry {
     ClassLoader cl = loadJars(jarPaths);
     ServiceLoader<FilterProvider> providers = ServiceLoader.load(FilterProvider.class, cl);
     List<Filter> filters = new ArrayList<>();
+
+    String serviceName = HypertraceConfig.get().getServiceName();
+    FilterProviderConfig providerConfig;
+    providerConfig.setServiceName(serviceName);
     for (FilterProvider provider : providers) {
       String disabled = getProperty(getProviderDisabledPropertyName(provider.getClass()));
       if ("true".equalsIgnoreCase(disabled)) {
         continue;
       }
-      Filter filter = provider.create();
+      Filter filter = provider.create(providerConfig);
       if (filter == null) {
         logger.warn(String.format("%s returned null filter.", provider.getClass().getSimpleName()));
       } else {
