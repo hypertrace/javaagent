@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ServiceLoader;
-import org.hypertrace.agent.otel.extensions.config.HypertraceConfig;
 import org.hypertrace.agent.filter.api.Filter;
 import org.hypertrace.agent.filter.spi.FilterProvider;
 import org.hypertrace.agent.filter.spi.FilterProviderConfig;
