@@ -24,7 +24,6 @@ import io.opentelemetry.javaagent.bootstrap.AgentInitializer;
 import io.opentelemetry.javaagent.bootstrap.InstrumentationHolder;
 import io.opentelemetry.javaagent.tooling.AgentInstaller;
 import java.io.IOException;
-import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -74,8 +73,7 @@ public abstract class AbstractInstrumenterTest {
     ((Logger) LoggerFactory.getLogger("io.opentelemetry")).setLevel(Level.DEBUG);
   }
 
-  private static ClassFileTransformer classFileTransformer;
-
+  private static boolean INSTRUMENTED = false;
   private static final int DEFAULT_TIMEOUT_SECONDS = 30;
   protected OkHttpClient httpClient =
       new OkHttpClient.Builder()
@@ -107,16 +105,19 @@ public abstract class AbstractInstrumenterTest {
     } catch (Throwable t) {
       throw new AssertionError("Could not access agent classLoader", t);
     }
-    // ---------------------------------------------------------------------
-    //  Set the otel.instrumentation.internal-reflection.enabled property to
-    //  'false'.  This causes the OTEL agent to filter out virtual field
-    //  accessor interfaces when it is verifying that a class can be
-    //  transformed.  Some of our unit tests will fail if this property
-    //  is not set.
-    // ---------------------------------------------------------------------
-    System.setProperty("otel.instrumentation.internal-reflection.enabled", "false");
-    AgentInstaller.installBytebuddyAgent(
-        INSTRUMENTATION, AgentInitializer.getExtensionsClassLoader());
+    if (!INSTRUMENTED) {
+      // ---------------------------------------------------------------------
+      //  Set the otel.instrumentation.internal-reflection.enabled property to
+      //  'false'.  This causes the OTEL agent to filter out virtual field
+      //  accessor interfaces when it is verifying that a class can be
+      //  transformed.  Some of our unit tests will fail if this property
+      //  is not set.
+      // ---------------------------------------------------------------------
+      System.setProperty("otel.instrumentation.internal-reflection.enabled", "false");
+      AgentInstaller.installBytebuddyAgent(
+          INSTRUMENTATION, AgentInitializer.getExtensionsClassLoader());
+      INSTRUMENTED = true;
+    }
     if (TEST_TRACER == null) {
       TEST_TRACER = GlobalOpenTelemetry.getTracer("io.opentelemetry.auto");
     }

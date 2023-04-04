@@ -38,7 +38,7 @@ dependencies {
     implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:${versions["opentelemetry"]}")
     implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${versions["opentelemetry_java_agent-tooling"]}") {
         constraints {
-            implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling-java9:1.7.2-alpha") {
+            implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling-java9:${versions["opentelemetry_java_agent-tooling"]}") {
                 attributes {
                     // this transitive dependency creates classes compatible with Java 9 and up, but is only referenced in safe ways for
                     // java 8 by the javaagent-tooling dependency

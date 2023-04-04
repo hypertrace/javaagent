@@ -37,7 +37,7 @@ dependencies {
 
     compileOnly("javax.ws.rs:javax.ws.rs-api:2.0.1")
 
-     testImplementation(testFixtures(project(":testing-common")))
+    testImplementation(testFixtures(project(":testing-common")))
     testImplementation("org.glassfish.jersey.core:jersey-client:2.27")
     testImplementation("org.glassfish.jersey.inject:jersey-hk2:2.27")
     testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_semconv"]}")
