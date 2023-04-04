@@ -16,11 +16,10 @@
 
 package org.hypertrace.agent.filter.spi;
 
-/**
- * {@link FilterProviderConfig} for {@link FilterProvider}.
- */
+/** {@link FilterProviderConfig} for {@link FilterProvider}. */
 public class FilterProviderConfig {
   public FilterProviderConfig() {}
+
   private String serviceName = "";
 
   public String getServiceName() {
