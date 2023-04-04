@@ -21,7 +21,7 @@ package org.hypertrace.agent.filter.spi;
  */
 public class FilterProviderConfig {
   public FilterProviderConfig() {}
-  private String serviceName;
+  private String serviceName = "";
 
   public String getServiceName() {
     return serviceName;
