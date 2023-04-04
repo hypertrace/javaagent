@@ -19,12 +19,13 @@ package org.hypertrace.agent.testing.mockfilter;
 import com.google.auto.service.AutoService;
 import org.hypertrace.agent.filter.api.Filter;
 import org.hypertrace.agent.filter.spi.FilterProvider;
+import org.hypertrace.agent.filter.spi.FilterProviderConfig;
 
 @AutoService(FilterProvider.class)
 public class MockFilterProvider implements FilterProvider {
 
   @Override
-  public Filter create() {
+  public Filter create(FilterProviderConfig config) {
     return new MockFilter();
   }
 }
