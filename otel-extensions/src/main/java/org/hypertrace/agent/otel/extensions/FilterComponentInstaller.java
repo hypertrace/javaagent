@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.hypertrace.agent.config.v1.Config.AgentConfig;
 import org.hypertrace.agent.filter.FilterRegistry;
+import org.hypertrace.agent.filter.spi.FilterProviderConfig;
 import org.hypertrace.agent.otel.extensions.config.HypertraceConfig;
 
 @AutoService(AgentListener.class)
@@ -32,12 +33,15 @@ public class FilterComponentInstaller implements AgentListener {
   @Override
   public void beforeAgent(
       Config config, AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk) {
+    FilterProviderConfig providerConfig = new FilterProviderConfig();
     AgentConfig agentConfig = HypertraceConfig.get();
+    String serviceName = agentConfig.getServiceName().getValue();
+    providerConfig.setServiceName(serviceName);
     List<String> jarPaths =
         agentConfig.getJavaagent().getFilterJarPathsList().stream()
             .map(r -> r.getValue())
             .collect(Collectors.toList());
     // resolves filter via service loader resolution
-    FilterRegistry.initialize(jarPaths);
+    FilterRegistry.initialize(providerConfig, jarPaths);
   }
 }
