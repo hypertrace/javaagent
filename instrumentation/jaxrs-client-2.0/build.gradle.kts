@@ -15,9 +15,9 @@ muzzle {
         // We want to support the dropwizard clients too.
         group = "io.dropwizard"
         module = "dropwizard-client"
-        versions = "[0.8.0,)"
-        // TODO this is set in OTEL
-//        assertInverse = true
+        versions = "[0.8.0,4.0.0)"
+        assertInverse = false
+        skipVersions.add("4.0.0")
     }
 }
 
