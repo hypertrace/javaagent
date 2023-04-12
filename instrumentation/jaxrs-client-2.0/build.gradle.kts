@@ -17,7 +17,6 @@ muzzle {
         module = "dropwizard-client"
         versions = "[0.8.0,4.0.0)"
         assertInverse = false
-        skipVersions.add("4.0.0")
     }
 }
 
