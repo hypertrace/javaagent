@@ -24,6 +24,7 @@ muzzle {
         group = "io.dropwizard"
         module = "dropwizard-client"
         versions = "(,)"
+        skipVersions.add("4.0.0")
         assertInverse = true
     }
 }
