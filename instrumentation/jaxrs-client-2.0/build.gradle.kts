@@ -15,7 +15,7 @@ muzzle {
         // We want to support the dropwizard clients too.
         group = "io.dropwizard"
         module = "dropwizard-client"
-        versions = "[0.8.0,4.0.0)"
+        versions = "[0.8.0,3.0.0)"
         assertInverse = false
     }
 }
