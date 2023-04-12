@@ -39,8 +39,8 @@ public interface DataCaptureConfig {
      *
      * @return
      */
-    private static DataCaptureConfig load() {
-      ServiceLoader<DataCaptureConfig> configs = ServiceLoader.load(DataCaptureConfig.class);
+    private static DataCaptureConfig load(ClassLoader cl) {
+      ServiceLoader<DataCaptureConfig> configs = ServiceLoader.load(DataCaptureConfig.class, cl);
       Iterator<DataCaptureConfig> iterator = configs.iterator();
       if (!iterator.hasNext()) {
         logger.error("Failed to load data capture config");
@@ -52,11 +52,22 @@ public interface DataCaptureConfig {
     /**
      * @return an implementation of the DataCaptureConfig interface, or null if one cannot be found
      */
+    public static DataCaptureConfig get(ClassLoader cl) {
+      if (dataCaptureConfig == null) {
+        synchronized (ConfigProvider.class) {
+          if (dataCaptureConfig == null) {
+            dataCaptureConfig = load(cl);
+          }
+        }
+      }
+      return dataCaptureConfig;
+    }
+
     public static DataCaptureConfig get() {
       if (dataCaptureConfig == null) {
         synchronized (ConfigProvider.class) {
           if (dataCaptureConfig == null) {
-            dataCaptureConfig = load();
+            dataCaptureConfig = load(Thread.currentThread().getContextClassLoader());
           }
         }
       }

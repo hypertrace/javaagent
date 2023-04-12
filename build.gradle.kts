@@ -54,7 +54,7 @@ subprojects {
 
             "opentelemetry_gradle_plugin" to "1.24.0-alpha",
             "byte_buddy" to "1.12.10",
-                "slf4j" to "1.7.32"
+                "slf4j" to "2.0.7"
     ))
 
     apply<JavaPlugin>()

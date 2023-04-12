@@ -53,7 +53,7 @@ public class FilterRegistry {
       synchronized (FilterRegistry.class) {
         if (filter == null) {
           try {
-            filter = load(Collections.emptyList());
+            filter = load(Collections.emptyList(), Thread.currentThread().getContextClassLoader());
           } catch (Throwable t) {
             logger.error("Throwable thrown while loading filter jars", t);
           }
@@ -69,17 +69,17 @@ public class FilterRegistry {
    *
    * @param jarPaths paths to filter jar files.
    */
-  public static void initialize(List<String> jarPaths) {
+  public static void initialize(List<String> jarPaths, ClassLoader cl) {
     try {
-      filter = load(jarPaths);
+      filter = load(jarPaths, cl);
     } catch (Throwable t) {
       logger.error("Throwable thrown while loading filter jars", t);
     }
   }
 
-  private static Filter load(List<String> jarPaths) {
-    ClassLoader cl = loadJars(jarPaths);
-    ServiceLoader<FilterProvider> providers = ServiceLoader.load(FilterProvider.class, cl);
+  private static Filter load(List<String> jarPaths, ClassLoader cl) {
+    ClassLoader newCl = loadJars(jarPaths, cl);
+    ServiceLoader<FilterProvider> providers = ServiceLoader.load(FilterProvider.class, newCl);
     List<Filter> filters = new ArrayList<>();
     for (FilterProvider provider : providers) {
       String disabled = getProperty(getProviderDisabledPropertyName(provider.getClass()));
@@ -96,7 +96,7 @@ public class FilterRegistry {
     return new MultiFilter(filters);
   }
 
-  private static ClassLoader loadJars(List<String> jarPaths) {
+  private static ClassLoader loadJars(List<String> jarPaths, ClassLoader cl) {
     URL[] urls = new URL[jarPaths.size()];
     int i = 0;
     for (String jarPath : jarPaths) {
@@ -108,7 +108,7 @@ public class FilterRegistry {
         logger.warn(String.format("Malformed URL exception for jar on path: %s", jarPath), e);
       }
     }
-    return new URLClassLoader(urls, Thread.currentThread().getContextClassLoader());
+    return new URLClassLoader(urls, cl);
   }
 
   public static String getProviderDisabledPropertyName(Class<?> clazz) {

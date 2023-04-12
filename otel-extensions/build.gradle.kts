@@ -46,6 +46,7 @@ dependencies {
                 }
             }
         }
+        exclude("io.opentelemetry.javaagent", "opentelemetry-javaagent-bootstrap")
     }
 
     implementation("org.slf4j:slf4j-api:${versions["slf4j"]}")
