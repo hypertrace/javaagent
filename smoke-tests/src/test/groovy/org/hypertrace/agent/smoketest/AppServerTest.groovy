@@ -82,8 +82,8 @@ abstract class AppServerTest extends SmokeTest {
     traces.countSpansByKind(Span.SpanKind.SPAN_KIND_SERVER) == 2
 
     and: "Expected span names"
-    traces.countSpansByName(getSpanName('/app/greeting')) == 1
-    traces.countSpansByName(getSpanName('/app/headers')) == 1
+    traces.countSpansByName("GET " + getSpanName('/app/greeting')) == 1
+    traces.countSpansByName("GET " + getSpanName('/app/headers')) == 1
 
     and: "The span for the initial web request"
     traces.countFilteredAttributes("http.scheme", "http") == 2
@@ -131,8 +131,8 @@ abstract class AppServerTest extends SmokeTest {
     traces.countSpansByKind(Span.SpanKind.SPAN_KIND_SERVER) == 2
 
     and: "Expected span names"
-    traces.countSpansByName(getSpanName('/app/echo')) == 1
-    traces.countSpansByName(getSpanName('/app/headers')) == 1
+    traces.countSpansByName("POST " + getSpanName('/app/echo')) == 1
+    traces.countSpansByName("POST " + getSpanName('/app/headers')) == 1
 
     and: "The span for the initial web request"
     traces.countFilteredAttributes("http.scheme", "http") == 2
@@ -186,7 +186,7 @@ abstract class AppServerTest extends SmokeTest {
     traces.countSpansByKind(Span.SpanKind.SPAN_KIND_SERVER) == 1
 
     and: "Expected span names"
-    traces.countSpansByName(getSpanName('/app/hello.txt')) == 1
+    traces.countSpansByName("GET " + getSpanName('/app/hello.txt')) == 1
 
     and: "The span for the initial web request"
     traces.countFilteredAttributes("http.scheme", "http") == 1
@@ -221,7 +221,7 @@ abstract class AppServerTest extends SmokeTest {
     traces.countSpansByKind(Span.SpanKind.SPAN_KIND_SERVER) == 1
 
     and: "Expected span names"
-    traces.countSpansByName(getSpanName('/app/file-that-does-not-exist')) == 1
+    traces.countSpansByName("GET " + getSpanName('/app/file-that-does-not-exist')) == 1
 
     and: "The span for the initial web request"
     traces.countFilteredAttributes("http.scheme", "http") == 1
@@ -264,7 +264,7 @@ abstract class AppServerTest extends SmokeTest {
     traces.countSpansByKind(Span.SpanKind.SPAN_KIND_SERVER) == 1
 
     and: "Expected span names"
-    traces.countSpansByName(getSpanName('/app/WEB-INF/web.xml')) == 1
+    traces.countSpansByName("GET " + getSpanName('/app/WEB-INF/web.xml')) == 1
 
     and: "The span for the initial web request"
     traces.countFilteredAttributes("http.scheme", "http") == 1
@@ -301,7 +301,7 @@ abstract class AppServerTest extends SmokeTest {
     traces.countSpansByKind(Span.SpanKind.SPAN_KIND_SERVER) == 1
 
     and: "Expected span names"
-    traces.countSpansByName(getSpanName('/app/exception')) == 1
+    traces.countSpansByName("GET " + getSpanName('/app/exception')) == 1
 
     and: "There is one exception"
     traces.countFilteredEventAttributes('exception.message', 'This is expected') == 1
@@ -345,7 +345,7 @@ abstract class AppServerTest extends SmokeTest {
     traces.countSpansByKind(Span.SpanKind.SPAN_KIND_SERVER) == 1
 
     and: "Expected span names"
-    traces.countSpansByName(getSpanName('/this-is-definitely-not-there-but-there-should-be-a-trace-nevertheless')) == 1
+    traces.countSpansByName("GET " + getSpanName('/this-is-definitely-not-there-but-there-should-be-a-trace-nevertheless')) == 1
 
     and: "The span for the initial web request"
     traces.countFilteredAttributes("http.scheme", "http") == 1
@@ -383,8 +383,8 @@ abstract class AppServerTest extends SmokeTest {
     traces.countSpansByKind(Span.SpanKind.SPAN_KIND_SERVER) == 2
 
     and: "Expected span names"
-    traces.countSpansByName(getSpanName('/app/asyncgreeting')) == 1
-    traces.countSpansByName(getSpanName('/app/headers')) == 1
+    traces.countSpansByName("GET " + getSpanName('/app/asyncgreeting')) == 1
+    traces.countSpansByName("GET " + getSpanName('/app/headers')) == 1
 
     and: "The span for the initial web request"
     traces.countFilteredAttributes("http.scheme", "http") == 2

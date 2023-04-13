@@ -89,7 +89,7 @@ class MuzzlePlugin implements Plugin<Project> {
           project.getLogger().info('No muzzle pass directives configured. Asserting pass against instrumentation compile-time dependencies')
           ClassLoader userCL = createCompileDepsClassLoader(project, bootstrapProject)
           ClassLoader instrumentationCL = createInstrumentationClassloader(project, toolingProject)
-          MuzzleGradlePluginUtil.@Companion.assertInstrumentationMuzzled(instrumentationCL, userCL, true)
+          MuzzleGradlePluginUtil.@Companion.assertInstrumentationMuzzled(instrumentationCL, userCL, muzzleDirective.excludedInstrumentationNames, true)
         }
         println "Muzzle executing for $project"
       }
@@ -276,6 +276,7 @@ class MuzzlePlugin implements Plugin<Project> {
       inverseDirective.versions = version
       inverseDirective.assertPass = !muzzleDirective.assertPass
       inverseDirectives.add(inverseDirective)
+      inverseDirective.excludedInstrumentationNames.addAll(muzzleDirective.excludedInstrumentationNames)
     }
 
     return inverseDirectives
@@ -393,7 +394,7 @@ class MuzzlePlugin implements Plugin<Project> {
         }
         ClassLoader userCL = createClassLoaderForTask(instrumentationProject, bootstrapProject, taskName, shadowMuzzleArchiveFile)
         try {
-          MuzzleGradlePluginUtil.@Companion.assertInstrumentationMuzzled(instrumentationCL, userCL, muzzleDirective.assertPass)
+          MuzzleGradlePluginUtil.@Companion.assertInstrumentationMuzzled(instrumentationCL, userCL, muzzleDirective.excludedInstrumentationNames, muzzleDirective.assertPass)
         } finally {
           Thread.currentThread().contextClassLoader = ccl
         }
@@ -457,6 +458,7 @@ class MuzzleDirective {
   String versions
   Set<String> skipVersions = new HashSet<>()
   List<String> additionalDependencies = new ArrayList<>()
+  Set<String> excludedInstrumentationNames = new HashSet<>()
   boolean assertPass
   boolean assertInverse = false
   boolean coreJdk = false
@@ -472,6 +474,10 @@ class MuzzleDirective {
    */
   void extraDependency(String compileString) {
     additionalDependencies.add(compileString)
+  }
+
+  void excludeInstrumentationName(String excludedInstName) {
+    excludedInstrumentationNames.add(excludedInstName)
   }
 
   /**
