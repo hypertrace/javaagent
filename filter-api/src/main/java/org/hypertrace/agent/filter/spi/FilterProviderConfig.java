@@ -16,20 +16,17 @@
 
 package org.hypertrace.agent.filter.spi;
 
-import org.hypertrace.agent.filter.api.Filter;
+/** {@link FilterProviderConfig} for {@link FilterProvider}. */
+public class FilterProviderConfig {
+  public FilterProviderConfig() {}
 
-/**
- * {@link FilterProvider} creates {@link Filter}.
- *
- * <p>The implementation is discovered via Java service loader API - each implementation has to be
- * registered in {@code META-INF/services/}.
- */
-public interface FilterProvider {
+  private String serviceName = "";
 
-  /**
-   * Create filter instance.
-   *
-   * @return a filter instance.
-   */
-  Filter create(FilterProviderConfig config);
+  public String getServiceName() {
+    return serviceName;
+  }
+
+  public void setServiceName(String serviceName) {
+    this.serviceName = serviceName;
+  }
 }

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.ServiceLoader;
 import org.hypertrace.agent.filter.api.Filter;
 import org.hypertrace.agent.filter.spi.FilterProvider;
+import org.hypertrace.agent.filter.spi.FilterProviderConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +54,12 @@ public class FilterRegistry {
       synchronized (FilterRegistry.class) {
         if (filter == null) {
           try {
-            filter = load(Collections.emptyList(), Thread.currentThread().getContextClassLoader());
+            FilterProviderConfig providerConfig = new FilterProviderConfig();
+            filter =
+                load(
+                    providerConfig,
+                    Collections.emptyList(),
+                    Thread.currentThread().getContextClassLoader());
           } catch (Throwable t) {
             logger.error("Throwable thrown while loading filter jars", t);
           }
@@ -67,26 +73,30 @@ public class FilterRegistry {
    * Initializes the registry by loading the filters. This method should be called only once at
    * javaagent startup.
    *
+   * @param providerConfig config needed by the filter (Eg. service name)
    * @param jarPaths paths to filter jar files.
    */
-  public static void initialize(List<String> jarPaths, ClassLoader cl) {
+  public static void initialize(
+      FilterProviderConfig providerConfig, List<String> jarPaths, ClassLoader cl) {
     try {
-      filter = load(jarPaths, cl);
+      filter = load(providerConfig, jarPaths, cl);
     } catch (Throwable t) {
       logger.error("Throwable thrown while loading filter jars", t);
     }
   }
 
-  private static Filter load(List<String> jarPaths, ClassLoader cl) {
+  private static Filter load(
+      FilterProviderConfig providerConfig, List<String> jarPaths, ClassLoader cl) {
     ClassLoader newCl = loadJars(jarPaths, cl);
     ServiceLoader<FilterProvider> providers = ServiceLoader.load(FilterProvider.class, newCl);
     List<Filter> filters = new ArrayList<>();
+
     for (FilterProvider provider : providers) {
       String disabled = getProperty(getProviderDisabledPropertyName(provider.getClass()));
       if ("true".equalsIgnoreCase(disabled)) {
         continue;
       }
-      Filter filter = provider.create();
+      Filter filter = provider.create(providerConfig);
       if (filter == null) {
         logger.warn(String.format("%s returned null filter.", provider.getClass().getSimpleName()));
       } else {

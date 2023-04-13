@@ -16,15 +16,15 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.jaxrs.v2_0;
 
- import java.util.Map;
- import javax.ws.rs.client.Client;
- import javax.ws.rs.client.ClientBuilder;
- import javax.ws.rs.client.Entity;
- import javax.ws.rs.client.Invocation;
- import javax.ws.rs.core.MediaType;
- import org.hypertrace.agent.testing.AbstractHttpClientTest;
+import java.util.Map;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
+import javax.ws.rs.core.MediaType;
+import org.hypertrace.agent.testing.AbstractHttpClientTest;
 
- public class JaxrsClientBodyInstrumentationTest extends AbstractHttpClientTest {
+public class JaxrsClientBodyInstrumentationTest extends AbstractHttpClientTest {
 
   private static final Client client = ClientBuilder.newClient();
 
@@ -62,7 +62,6 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.jaxrs.v2_0;
     String responseBody = response.readEntity(String.class);
 
     return new Response(
-        responseBody == null || responseBody.isEmpty() ? null : responseBody,
- response.getStatus());
+        responseBody == null || responseBody.isEmpty() ? null : responseBody, response.getStatus());
   }
- }
+}

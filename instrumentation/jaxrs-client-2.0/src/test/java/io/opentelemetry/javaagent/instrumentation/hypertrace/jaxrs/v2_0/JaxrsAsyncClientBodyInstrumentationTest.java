@@ -16,24 +16,24 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.jaxrs.v2_0;
 
- import java.io.IOException;
- import java.io.OutputStream;
- import java.lang.annotation.Annotation;
- import java.lang.reflect.Type;
- import java.util.Map;
- import java.util.concurrent.ExecutionException;
- import java.util.concurrent.Future;
- import javax.ws.rs.WebApplicationException;
- import javax.ws.rs.client.Client;
- import javax.ws.rs.client.ClientBuilder;
- import javax.ws.rs.client.Entity;
- import javax.ws.rs.client.Invocation;
- import javax.ws.rs.core.MediaType;
- import javax.ws.rs.core.MultivaluedMap;
- import javax.ws.rs.ext.MessageBodyWriter;
- import org.hypertrace.agent.testing.AbstractHttpClientTest;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.ext.MessageBodyWriter;
+import org.hypertrace.agent.testing.AbstractHttpClientTest;
 
- public class JaxrsAsyncClientBodyInstrumentationTest extends AbstractHttpClientTest {
+public class JaxrsAsyncClientBodyInstrumentationTest extends AbstractHttpClientTest {
 
   public JaxrsAsyncClientBodyInstrumentationTest() {
     super(true);
@@ -81,8 +81,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.jaxrs.v2_0;
     String responseBody = response.readEntity(String.class);
 
     return new Response(
-        responseBody == null || responseBody.isEmpty() ? null : responseBody,
- response.getStatus());
+        responseBody == null || responseBody.isEmpty() ? null : responseBody, response.getStatus());
   }
 
   public static class MyDto {
@@ -110,4 +109,4 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.jaxrs.v2_0;
       return true;
     }
   }
- }
+}
