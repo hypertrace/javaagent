@@ -40,16 +40,11 @@ subprojects {
     extra.set("versions", mapOf(
             // when updating these values, some values must also be updated in buildSrc as this map
             // cannot be accessed there
-            // version 1.11.1-alpha is specified for opentelemetry_java_agent_jaxrs
-            // because jaxrs-client-2.0 instrumentation was removed from opentelemetry after this version
-            // because it didn't add any value in instrumentation, since they have
-            // http-url-connection and apache-httpclient instrumentations that already create the client spans
             "opentelemetry" to "1.24.0",
             "opentelemetry_semconv" to "1.24.0-alpha",
             "opentelemetry_proto" to "0.11.0-alpha",
             "opentelemetry_java_agent" to "1.24.0-alpha",
             "opentelemetry_java_agent_all" to "1.24.0",
-            "opentelemetry_java_agent_jaxrs" to "1.11.1-alpha",
             "opentelemetry_java_agent-tooling" to "1.24.0-alpha",
 
             "opentelemetry_gradle_plugin" to "1.24.0-alpha",
