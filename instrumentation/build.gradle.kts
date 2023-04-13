@@ -33,7 +33,7 @@ tasks {
             exclude("io/opentelemetry/context/**")
             exclude(dependency("io.opentelemetry:opentelemetry-api"))
             exclude("io/opentelemetry/instrumentation/api/**")
-//            // exclude bootstrap part of javaagent-extension-api
+            // exclude bootstrap part of javaagent-extension-api
             exclude("io/opentelemetry/javaagent/bootstrap/**")
         }
 
