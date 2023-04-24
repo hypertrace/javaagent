@@ -88,13 +88,17 @@ abstract class AppServerTest extends SmokeTest {
     and: "The span for the initial web request"
     traces.countFilteredAttributes("http.scheme", "http") == 2
     traces.countFilteredAttributes("http.target", "/app/greeting") == 1
-    traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.host.port", port, "int").count() == 1
+    traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.host.port", port, "int").count() == 1 ||
+            traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.sock.host.port", port, "int").count() == 1
+
 
     and: "Client and server spans for the remote call"
     // client span still has the http.url attribute
     traces.countFilteredAttributes("http.url", "http://localhost:8080/app/headers") == 1
     traces.countFilteredAttributes("http.target", "/app/headers") == 1
-    traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.host.port", port, "int").count() == 1
+    traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.host.port", port, "int").count() == 1 ||
+            traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.sock.host.port", port, "int").count() == 1
+
 
     cleanup:
     response?.close()
@@ -136,13 +140,17 @@ abstract class AppServerTest extends SmokeTest {
     and: "The span for the initial web request"
     traces.countFilteredAttributes("http.scheme", "http") == 2
     traces.countFilteredAttributes("http.target", "/app/echo") == 1
-    traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.host.port", port, "int").count() == 1
+    traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.host.port", port, "int").count() == 1 ||
+            traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.sock.host.port", port, "int").count() == 1
+
 
     and: "Client and server spans for the remote call"
     // client span still has the http.url attribute
     traces.countFilteredAttributes("http.url", "http://localhost:8080/app/headers") == 1
     traces.countFilteredAttributes("http.target", "/app/headers") == 1
-    traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.host.port", port, "int").count() == 1
+    traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.host.port", port, "int").count() == 1 ||
+            traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.sock.host.port", port, "int").count() == 1
+
 
     and: "response body attribute should be present"
     traces.countFilteredAttributes("http.response.body") == 1
@@ -190,7 +198,9 @@ abstract class AppServerTest extends SmokeTest {
     and: "The span for the initial web request"
     traces.countFilteredAttributes("http.scheme", "http") == 1
     traces.countFilteredAttributes("http.target", "/app/hello.txt") == 1
-    traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.host.port", port, "int").count() == 1
+    traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.host.port", port, "int").count() == 1 ||
+            traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.sock.host.port", port, "int").count() == 1
+
 
     cleanup:
     response?.close()
@@ -225,7 +235,9 @@ abstract class AppServerTest extends SmokeTest {
     and: "The span for the initial web request"
     traces.countFilteredAttributes("http.scheme", "http") == 1
     traces.countFilteredAttributes("http.target", "/app/file-that-does-not-exist") == 1
-    traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.host.port", port, "int").count() == 1
+    traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.host.port", port, "int").count() == 1 ||
+            traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.sock.host.port", port, "int").count() == 1
+
 
     cleanup:
     response?.close()
@@ -268,7 +280,9 @@ abstract class AppServerTest extends SmokeTest {
     and: "The span for the initial web request"
     traces.countFilteredAttributes("http.scheme", "http") == 1
     traces.countFilteredAttributes("http.target", "/app/WEB-INF/web.xml") == 1
-    traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.host.port", port, "int").count() == 1
+    traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.host.port", port, "int").count() == 1 ||
+            traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.sock.host.port", port, "int").count() == 1
+
 
     cleanup:
     response?.close()
@@ -308,7 +322,9 @@ abstract class AppServerTest extends SmokeTest {
     and: "The span for the initial web request"
     traces.countFilteredAttributes("http.scheme", "http") == 1
     traces.countFilteredAttributes("http.target", "/app/exception") == 1
-    traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.host.port", port, "int").count() == 1
+    traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.host.port", port, "int").count() == 1 ||
+            traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.sock.host.port", port, "int").count() == 1
+
 
     cleanup:
     response?.close()
@@ -389,7 +405,9 @@ abstract class AppServerTest extends SmokeTest {
     and: "The span for the initial web request"
     traces.countFilteredAttributes("http.scheme", "http") == 2
     traces.countFilteredAttributes("http.target", "/app/asyncgreeting") == 1
-    traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.host.port", port, "int").count() == 1
+    traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.host.port", port, "int").count() == 1 ||
+            traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.sock.host.port", port, "int").count() == 1
+
 
     and: "Client and server spans for the remote call"
     // client span still has the http.url attribute
