@@ -31,7 +31,7 @@ class LibertySmokeTest extends AppServerTest {
     switch (path) {
       case "/app/hello.txt":
       case "/app/file-that-does-not-exist":
-        return "/app/*"
+        return "GET /app/*"
     }
     return super.getSpanName(path)
   }
