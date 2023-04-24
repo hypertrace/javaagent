@@ -31,8 +31,8 @@ class GrpcSmokeTest extends SmokeTest {
     Collection<ExportTraceServiceRequest> traces = waitForTraces()
 
     then:
-    countSpansByName(traces, 'POST opentelemetry.proto.collector.trace.v1.TraceService/Export') == 1
-    countSpansByName(traces, 'GET TestService.withSpan') == 1
+    countSpansByName(traces, 'opentelemetry.proto.collector.trace.v1.TraceService/Export') == 1
+    countSpansByName(traces, 'TestService.withSpan') == 1
 
     cleanup:
     stopTarget()
