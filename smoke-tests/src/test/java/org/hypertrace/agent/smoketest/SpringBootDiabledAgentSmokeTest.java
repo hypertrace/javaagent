@@ -17,6 +17,9 @@
 package org.hypertrace.agent.smoketest;
 
 import java.io.IOException;
+import java.util.Collection;
+
+import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.awaitility.core.ConditionTimeoutException;
@@ -41,7 +44,9 @@ public class SpringBootDiabledAgentSmokeTest extends AbstractSmokeTest {
   @BeforeEach
   void beforeEach() {
     app = createAppUnderTest(8);
+    // TODO: use this to disable ht-javaagent
     app.addEnv("HT_ENABLED", "false");
+    app.addEnv("OTEL_JAVAAGENT_ENABLED","false");
     app.withCopyFileToContainer(
         MountableFile.forClasspathResource("/ht-config-all-disabled.yaml"),
         "/etc/ht-config-all-disabled.yaml");
