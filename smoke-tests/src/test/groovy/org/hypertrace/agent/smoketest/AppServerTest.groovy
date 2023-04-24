@@ -82,8 +82,8 @@ abstract class AppServerTest extends SmokeTest {
     traces.countSpansByKind(Span.SpanKind.SPAN_KIND_SERVER) == 2
 
     and: "Expected span names"
-    traces.countSpansByName("GET " + getSpanName('/app/greeting')) == 1
-    traces.countSpansByName("GET " + getSpanName('/app/headers')) == 1
+    traces.countSpansByName(getSpanName('/app/greeting')) == 1
+    traces.countSpansByName(getSpanName('/app/headers')) == 1
 
     and: "The span for the initial web request"
     traces.countFilteredAttributes("http.scheme", "http") == 2
@@ -130,8 +130,8 @@ abstract class AppServerTest extends SmokeTest {
     traces.countSpansByKind(Span.SpanKind.SPAN_KIND_SERVER) == 2
 
     and: "Expected span names"
-    traces.countSpansByName("POST " + getSpanName('/app/echo')) == 1
-    traces.countSpansByName("GET " + getSpanName('/app/headers')) == 1
+    traces.countSpansByName(getSpanName('/app/echo')) == 1
+    traces.countSpansByName(getSpanName('/app/headers')) == 1
 
     and: "The span for the initial web request"
     traces.countFilteredAttributes("http.scheme", "http") == 2
@@ -185,7 +185,7 @@ abstract class AppServerTest extends SmokeTest {
     traces.countSpansByKind(Span.SpanKind.SPAN_KIND_SERVER) == 1
 
     and: "Expected span names"
-    traces.countSpansByName("GET " + getSpanName('/app/hello.txt')) == 1
+    traces.countSpansByName(getSpanName('/app/hello.txt')) == 1
 
     and: "The span for the initial web request"
     traces.countFilteredAttributes("http.scheme", "http") == 1
@@ -220,7 +220,7 @@ abstract class AppServerTest extends SmokeTest {
     traces.countSpansByKind(Span.SpanKind.SPAN_KIND_SERVER) == 1
 
     and: "Expected span names"
-    traces.countSpansByName("GET " + getSpanName('/app/file-that-does-not-exist')) == 1
+    traces.countSpansByName(getSpanName('/app/file-that-does-not-exist')) == 1
 
     and: "The span for the initial web request"
     traces.countFilteredAttributes("http.scheme", "http") == 1
@@ -300,7 +300,7 @@ abstract class AppServerTest extends SmokeTest {
     traces.countSpansByKind(Span.SpanKind.SPAN_KIND_SERVER) == 1
 
     and: "Expected span names"
-    traces.countSpansByName("GET " + getSpanName('/app/exception')) == 1
+    traces.countSpansByName(getSpanName('/app/exception')) == 1
 
     and: "There is one exception"
     traces.countFilteredEventAttributes('exception.message', 'This is expected') == 1
@@ -349,7 +349,8 @@ abstract class AppServerTest extends SmokeTest {
     and: "The span for the initial web request"
     traces.countFilteredAttributes("http.scheme", "http") == 1
     traces.countFilteredAttributes("http.target", "/this-is-definitely-not-there-but-there-should-be-a-trace-nevertheless") == 1
-    traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.host.port", port, "int").count() == 1
+    traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.host.port", 8080, "int").count() == 1 ||
+            traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.sock.host.port", 8080, "int").count() == 1
 
     cleanup:
     response?.close()
@@ -382,8 +383,8 @@ abstract class AppServerTest extends SmokeTest {
     traces.countSpansByKind(Span.SpanKind.SPAN_KIND_SERVER) == 2
 
     and: "Expected span names"
-    traces.countSpansByName("GET " + getSpanName('/app/asyncgreeting')) == 1
-    traces.countSpansByName("GET " + getSpanName('/app/headers')) == 1
+    traces.countSpansByName(getSpanName('/app/asyncgreeting')) == 1
+    traces.countSpansByName(getSpanName('/app/headers')) == 1
 
     and: "The span for the initial web request"
     traces.countFilteredAttributes("http.scheme", "http") == 2
@@ -410,11 +411,12 @@ abstract class AppServerTest extends SmokeTest {
       case "/app/headers":
       case "/app/exception":
       case "/app/asyncgreeting":
+        return "GET " + path
       case "/app/echo":
-        return path
+        return "POST " + path
       case "/app/hello.txt":
       case "/app/file-that-does-not-exist":
-        return "/app/*"
+        return "GET " + "/app/*"
     }
     return "GET"
   }
