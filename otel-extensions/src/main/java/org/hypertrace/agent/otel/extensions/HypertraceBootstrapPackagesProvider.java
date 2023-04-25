@@ -17,15 +17,16 @@
 package org.hypertrace.agent.otel.extensions;
 
 import com.google.auto.service.AutoService;
-import io.opentelemetry.instrumentation.api.config.Config;
 import io.opentelemetry.javaagent.tooling.bootstrap.BootstrapPackagesBuilder;
 import io.opentelemetry.javaagent.tooling.bootstrap.BootstrapPackagesConfigurer;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 
 @AutoService(BootstrapPackagesConfigurer.class)
 public class HypertraceBootstrapPackagesProvider implements BootstrapPackagesConfigurer {
 
   @Override
-  public void configure(Config config, BootstrapPackagesBuilder builder) {
-    builder.add("org.hypertrace.agent");
+  public void configure(
+      BootstrapPackagesBuilder bootstrapPackagesBuilder, ConfigProperties configProperties) {
+    bootstrapPackagesBuilder.add("org.hypertrace.agent");
   }
 }

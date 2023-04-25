@@ -7,7 +7,7 @@ val versions: Map<String, String> by extra
 
 dependencies {
     api("io.opentelemetry:opentelemetry-api:${versions["opentelemetry"]}")
-    api("io.opentelemetry.javaagent:opentelemetry-javaagent-instrumentation-api:${versions["opentelemetry_java_agent"]}")
+    api("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:${versions["opentelemetry"]}")
     implementation("org.slf4j:slf4j-api:${versions["slf4j"]}")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.3") {
         constraints {

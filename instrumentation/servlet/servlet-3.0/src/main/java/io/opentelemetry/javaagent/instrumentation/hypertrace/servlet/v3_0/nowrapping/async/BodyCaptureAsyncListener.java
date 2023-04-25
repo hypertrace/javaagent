@@ -17,7 +17,7 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.async;
 
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.instrumentation.api.field.VirtualField;
+import io.opentelemetry.instrumentation.api.util.VirtualField;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.Utils;
 import io.opentelemetry.javaagent.instrumentation.servlet.ServletAsyncListener;
 import io.opentelemetry.javaagent.instrumentation.servlet.v3_0.Servlet3Singletons;

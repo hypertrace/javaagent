@@ -26,8 +26,15 @@ tasks {
     // Keep in sync with https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/f893ca540b72a895fbf18c14d2df8d1cabaf2c7f/instrumentation/instrumentation.gradle#L51
     shadowJar {
         dependencies{
-            // exclude core, it lives in the bootstrap classloader
+            // exclude packages that live in the bootstrap classloader
             exclude(project(":javaagent-core"))
+            exclude(project(":filter-api"))
+            exclude("io/opentelemetry/semconv/**")
+            exclude("io/opentelemetry/context/**")
+            exclude(dependency("io.opentelemetry:opentelemetry-api"))
+            exclude("io/opentelemetry/instrumentation/api/**")
+            // exclude bootstrap part of javaagent-extension-api
+            exclude("io/opentelemetry/javaagent/bootstrap/**")
         }
 
         mergeServiceFiles()

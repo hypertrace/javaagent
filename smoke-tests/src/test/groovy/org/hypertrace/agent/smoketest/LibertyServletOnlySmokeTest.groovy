@@ -20,7 +20,7 @@ class LibertyServletOnlySmokeTest extends LibertySmokeTest {
     switch (path) {
       case "/app/hello.txt":
       case "/app/file-that-does-not-exist":
-        return "HTTP GET"
+        return "GET"
     }
     return super.getSpanName(path)
   }

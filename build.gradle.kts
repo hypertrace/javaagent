@@ -40,20 +40,16 @@ subprojects {
     extra.set("versions", mapOf(
             // when updating these values, some values must also be updated in buildSrc as this map
             // cannot be accessed there
-            // 7/23/22  version 1.11.1-alpha is specified for opentelemetry_java_agent_jaxrs
-            // gradle can't seem to load a more current version than that
-            "opentelemetry" to "1.13.0",
-            "opentelemetry_semconv" to "1.13.0-alpha",
+            "opentelemetry" to "1.24.0",
+            "opentelemetry_semconv" to "1.24.0-alpha",
             "opentelemetry_proto" to "0.11.0-alpha",
-            "opentelemetry_java_agent" to "1.13.1-alpha",
-            "opentelemetry_java_agent_all" to "1.13.1",
-            "opentelemetry_java_agent_jaxrs" to "1.11.1-alpha",
-            "opentelemetry_java_agent_netty" to "1.13.1-alpha",
-            "opentelemetry_java_agent-tooling" to "1.13.1-alpha",
+            "opentelemetry_java_agent" to "1.24.0-alpha",
+            "opentelemetry_java_agent_all" to "1.24.0",
+            "opentelemetry_java_agent-tooling" to "1.24.0-alpha",
 
-            "opentelemetry_gradle_plugin" to "1.16.0-alpha",
+            "opentelemetry_gradle_plugin" to "1.24.0-alpha",
             "byte_buddy" to "1.12.10",
-                "slf4j" to "1.7.32"
+                "slf4j" to "2.0.7"
     ))
 
     apply<JavaPlugin>()

@@ -121,7 +121,7 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
             .getValue()
             .getStringValue());
 
-    Assertions.assertEquals(1, countSpansByName(traces, "/echo"));
+    Assertions.assertEquals(1, countSpansByName(traces, "POST /echo"));
     Assertions.assertEquals(1, countSpansByName(traces, "WebController.echo"));
     Assertions.assertTrue(
         getInstrumentationLibSpanStream(traces)
@@ -177,16 +177,12 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
     Assertions.assertTrue(hasMetricNamed("otlp.exporter.exported", metrics));
     Assertions.assertTrue(hasMetricNamed("processedSpans", metrics));
     Assertions.assertTrue(hasMetricNamed("queueSize", metrics));
-    Assertions.assertTrue(hasMetricNamed("runtime.jvm.gc.count", metrics));
-    Assertions.assertTrue(hasMetricNamed("runtime.jvm.gc.time", metrics));
+    Assertions.assertTrue(hasMetricNamed("http.server.request.size", metrics));
+    Assertions.assertTrue(hasMetricNamed("http.server.response.size", metrics));
+    Assertions.assertTrue(hasMetricNamed("http.server.duration", metrics));
     Assertions.assertTrue(hasMetricNamed("process.runtime.jvm.memory.usage", metrics));
     Assertions.assertTrue(hasMetricNamed("process.runtime.jvm.memory.init", metrics));
     Assertions.assertTrue(hasMetricNamed("process.runtime.jvm.memory.committed", metrics));
-
-    //    The following metrics are no longer produced by the OTEL Java agent (as of the 1.13.1
-    // release)
-    //    Assertions.assertTrue(hasMetricNamed("runtime.jvm.memory.pool", metrics));
-    //    Assertions.assertTrue(hasMetricNamed("runtime.jvm.memory.area", metrics));
   }
 
   @Test

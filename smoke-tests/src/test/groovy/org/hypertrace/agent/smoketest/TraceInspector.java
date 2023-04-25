@@ -69,6 +69,18 @@ public class TraceInspector {
         .count();
   }
 
+  public Stream<Span> filterSpansByAttributes(
+      Stream<Span> spans, String attributeName, Object attributeValue, String valueType) {
+    return spans.filter(
+        s ->
+            s.getAttributesList().stream()
+                .anyMatch(
+                    a ->
+                        a.getKey().equals(attributeName) && valueType.equals("int")
+                            ? a.getValue().getIntValue() == (int) attributeValue
+                            : a.getValue().getStringValue().equals(attributeValue)));
+  }
+
   public long countFilteredAttributes(String attributeName) {
     return getSpanStream()
         .flatMap(s -> s.getAttributesList().stream())

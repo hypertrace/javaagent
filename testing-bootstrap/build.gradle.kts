@@ -12,12 +12,11 @@ val versions: Map<String, String> by extra
 dependencies {
     api("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:${versions["opentelemetry_java_agent"]}")
     api("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:${versions["opentelemetry_java_agent"]}")
-    api("io.opentelemetry.javaagent:opentelemetry-javaagent-instrumentation-api:${versions["opentelemetry_java_agent"]}")
-    api("io.opentelemetry.instrumentation:opentelemetry-instrumentation-appender-api-internal:${versions["opentelemetry_java_agent"]}")
+    api("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:${versions["opentelemetry"]}")
     implementation(project(":javaagent-core"))
     implementation(project(":filter-api"))
 
-    implementation("ch.qos.logback:logback-classic:1.2.7")
+    implementation("ch.qos.logback:logback-classic:1.4.6")
     implementation("org.slf4j:slf4j-api:${versions["slf4j"]}")
 }
 

@@ -20,14 +20,13 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.javaagent.bootstrap.AgentInitializer;
 import io.opentelemetry.javaagent.bootstrap.InstrumentationHolder;
 import io.opentelemetry.javaagent.tooling.AgentInstaller;
 import java.io.IOException;
-import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Field;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import net.bytebuddy.agent.ByteBuddyAgent;
 import okhttp3.MediaType;
@@ -74,8 +73,7 @@ public abstract class AbstractInstrumenterTest {
     ((Logger) LoggerFactory.getLogger("io.opentelemetry")).setLevel(Level.DEBUG);
   }
 
-  private static ClassFileTransformer classFileTransformer;
-
+  private static boolean INSTRUMENTED = false;
   private static final int DEFAULT_TIMEOUT_SECONDS = 30;
   protected OkHttpClient httpClient =
       new OkHttpClient.Builder()
@@ -107,7 +105,7 @@ public abstract class AbstractInstrumenterTest {
     } catch (Throwable t) {
       throw new AssertionError("Could not access agent classLoader", t);
     }
-    if (classFileTransformer == null) {
+    if (!INSTRUMENTED) {
       // ---------------------------------------------------------------------
       //  Set the otel.instrumentation.internal-reflection.enabled property to
       //  'false'.  This causes the OTEL agent to filter out virtual field
@@ -116,8 +114,9 @@ public abstract class AbstractInstrumenterTest {
       //  is not set.
       // ---------------------------------------------------------------------
       System.setProperty("otel.instrumentation.internal-reflection.enabled", "false");
-      classFileTransformer =
-          AgentInstaller.installBytebuddyAgent(INSTRUMENTATION, Collections.emptyList());
+      AgentInstaller.installBytebuddyAgent(
+          INSTRUMENTATION, AgentInitializer.getExtensionsClassLoader());
+      INSTRUMENTED = true;
     }
     if (TEST_TRACER == null) {
       TEST_TRACER = GlobalOpenTelemetry.getTracer("io.opentelemetry.auto");

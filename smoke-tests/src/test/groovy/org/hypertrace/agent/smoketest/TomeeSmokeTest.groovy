@@ -34,7 +34,7 @@ class TomeeSmokeTest extends AppServerTest {
   protected String getSpanName(String path) {
     switch (path) {
       case "/this-is-definitely-not-there-but-there-should-be-a-trace-nevertheless":
-        return "/*"
+        return "GET /*"
     }
     return super.getSpanName(path)
   }

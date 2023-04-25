@@ -40,6 +40,7 @@ import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.server.H
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.server.HttpServerRequestTracingHandler;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.server.HttpServerResponseTracingHandler;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.server.HttpServerTracingHandler;
+import io.opentelemetry.javaagent.instrumentation.netty.v4_1.NettyClientSingletons;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
@@ -102,7 +103,7 @@ public class NettyChannelPipelineInstrumentation implements TypeInstrumentation 
           // replace OTEL response handler because it closes request span before body (especially
           // chunked) is captured
           pipeline.replace(
-              io.opentelemetry.javaagent.instrumentation.netty.v4_1.server.HttpServerTracingHandler
+              io.opentelemetry.instrumentation.netty.v4_1.internal.server.HttpServerTracingHandler
                   .class
                   .getName(),
               HttpServerTracingHandler.class.getName(),
@@ -110,11 +111,11 @@ public class NettyChannelPipelineInstrumentation implements TypeInstrumentation 
 
           pipeline.addBefore(
               HttpServerTracingHandler.class.getName(),
-              io.opentelemetry.javaagent.instrumentation.netty.v4_1.server
+              io.opentelemetry.instrumentation.netty.v4_1.internal.server
                   .HttpServerRequestTracingHandler.class
                   .getName(),
-              new io.opentelemetry.javaagent.instrumentation.netty.v4_1.server
-                  .HttpServerRequestTracingHandler());
+              new io.opentelemetry.instrumentation.netty.v4_1.internal.server
+                  .HttpServerRequestTracingHandler(NettyClientSingletons.instrumenter()));
 
           pipeline.addLast(
               HttpServerBlockingRequestHandler.class.getName(),
@@ -125,7 +126,7 @@ public class NettyChannelPipelineInstrumentation implements TypeInstrumentation 
               new HttpServerRequestTracingHandler());
         } else if (handler instanceof HttpResponseEncoder) {
           pipeline.replace(
-              io.opentelemetry.javaagent.instrumentation.netty.v4_1.server
+              io.opentelemetry.instrumentation.netty.v4_1.internal.server
                   .HttpServerResponseTracingHandler.class
                   .getName(),
               HttpServerResponseTracingHandler.class.getName(),
@@ -137,7 +138,7 @@ public class NettyChannelPipelineInstrumentation implements TypeInstrumentation 
         //         Client pipeline handlers
         if (handler instanceof HttpClientCodec) {
           pipeline.replace(
-              io.opentelemetry.javaagent.instrumentation.netty.v4_1.client.HttpClientTracingHandler
+              io.opentelemetry.instrumentation.netty.v4_1.internal.client.HttpClientTracingHandler
                   .class
                   .getName(),
               HttpClientTracingHandler.class.getName(),
@@ -146,18 +147,18 @@ public class NettyChannelPipelineInstrumentation implements TypeInstrumentation 
           // add OTEL request handler to start spans
           pipeline.addAfter(
               HttpClientTracingHandler.class.getName(),
-              io.opentelemetry.javaagent.instrumentation.netty.v4_1.client.HttpClientTracingHandler
+              io.opentelemetry.instrumentation.netty.v4_1.internal.client.HttpClientTracingHandler
                   .class
                   .getName(),
-              new io.opentelemetry.javaagent.instrumentation.netty.v4_1.client
-                  .HttpClientRequestTracingHandler());
+              new io.opentelemetry.instrumentation.netty.v4_1.internal.client
+                  .HttpClientRequestTracingHandler(NettyClientSingletons.instrumenter()));
         } else if (handler instanceof HttpRequestEncoder) {
           pipeline.addLast(
               HttpClientRequestTracingHandler.class.getName(),
               new HttpClientRequestTracingHandler());
         } else if (handler instanceof HttpResponseDecoder) {
           pipeline.replace(
-              io.opentelemetry.javaagent.instrumentation.netty.v4_1.client
+              io.opentelemetry.instrumentation.netty.v4_1.internal.client
                   .HttpClientResponseTracingHandler.class
                   .getName(),
               HttpClientResponseTracingHandler.class.getName(),

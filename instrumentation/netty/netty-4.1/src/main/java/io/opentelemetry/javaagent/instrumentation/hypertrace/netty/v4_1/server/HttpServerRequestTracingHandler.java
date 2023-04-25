@@ -50,8 +50,7 @@ public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapte
     Channel channel = ctx.channel();
     Context context =
         channel
-            .attr(
-                io.opentelemetry.javaagent.instrumentation.netty.v4_1.AttributeKeys.SERVER_CONTEXT)
+            .attr(io.opentelemetry.instrumentation.netty.v4_1.internal.AttributeKeys.SERVER_CONTEXT)
             .get();
     if (context == null) {
       ctx.fireChannelRead(msg);

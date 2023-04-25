@@ -65,8 +65,8 @@ public class JaxrsAsyncClientBodyInstrumentationTest extends AbstractHttpClientT
   @Override
   public Response doGetRequest(String uri, Map<String, String> headers)
       throws ExecutionException, InterruptedException {
-    ClientBuilder clientBuilder = ClientBuilder.newBuilder();
-    Client client = clientBuilder.build();
+
+    Client client = ClientBuilder.newClient();
 
     Invocation.Builder builder = client.target(uri).request();
 

@@ -64,11 +64,11 @@ public class AutoInstrumentationPlugin implements Plugin<Project> {
         "io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:" + versions
             .get("opentelemetry_java_agent"));
     dependencies.add("implementation",
-        "io.opentelemetry.javaagent:opentelemetry-javaagent-instrumentation-api:" + versions
-            .get("opentelemetry_java_agent"));
+        "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:" + versions
+            .get("opentelemetry"));
     dependencies.add("implementation",
         "io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:" + versions
-            .get("opentelemetry_java_agent"));
+            .get("opentelemetry"));
 
     dependencies.add("implementation", dependencies.project(Map.of("path", ":javaagent-core")));
     dependencies.add("implementation", dependencies.project(Map.of("path", ":filter-api")));

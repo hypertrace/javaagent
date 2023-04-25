@@ -16,10 +16,7 @@
 
 package org.hypertrace.agent.core.instrumentation;
 
-/**
- * Copy of the upstream {@link io.opentelemetry.javaagent.instrumentation.api.CallDepth} because we
- * need access to the package-private reset method.
- */
+/** Copy of the upstream CallDepth because we need access to the package-private reset method. */
 public class CallDepth {
 
   private int depth;

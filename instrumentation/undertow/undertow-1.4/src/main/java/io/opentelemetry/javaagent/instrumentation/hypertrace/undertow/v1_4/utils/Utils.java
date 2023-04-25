@@ -17,7 +17,7 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.undertow.v1_4.utils;
 
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.instrumentation.api.field.VirtualField;
+import io.opentelemetry.instrumentation.api.util.VirtualField;
 import io.opentelemetry.javaagent.instrumentation.undertow.UndertowSingletons;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;

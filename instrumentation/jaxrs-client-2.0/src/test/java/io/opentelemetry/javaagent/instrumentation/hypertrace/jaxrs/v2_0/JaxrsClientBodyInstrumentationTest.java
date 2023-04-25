@@ -26,7 +26,7 @@ import org.hypertrace.agent.testing.AbstractHttpClientTest;
 
 public class JaxrsClientBodyInstrumentationTest extends AbstractHttpClientTest {
 
-  private static final Client client = ClientBuilder.newBuilder().build();
+  private static final Client client = ClientBuilder.newClient();
 
   public JaxrsClientBodyInstrumentationTest() {
     super(true);

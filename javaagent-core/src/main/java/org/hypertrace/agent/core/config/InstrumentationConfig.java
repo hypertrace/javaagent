@@ -75,9 +75,9 @@ public interface InstrumentationConfig {
       }
     }
 
-    private static InstrumentationConfig load() {
+    private static InstrumentationConfig load(ClassLoader cl) {
       ServiceLoader<InstrumentationConfig> configs =
-          ServiceLoader.load(InstrumentationConfig.class);
+          ServiceLoader.load(InstrumentationConfig.class, cl);
       Iterator<InstrumentationConfig> iterator = configs.iterator();
       if (!iterator.hasNext()) {
         logger.error("Failed to load instrumentation config");
@@ -86,11 +86,22 @@ public interface InstrumentationConfig {
       return iterator.next();
     }
 
+    public static InstrumentationConfig get(ClassLoader cl) {
+      if (instrumentationConfig == null) {
+        synchronized (ConfigProvider.class) {
+          if (instrumentationConfig == null) {
+            instrumentationConfig = load(cl);
+          }
+        }
+      }
+      return instrumentationConfig;
+    }
+
     public static InstrumentationConfig get() {
       if (instrumentationConfig == null) {
         synchronized (ConfigProvider.class) {
           if (instrumentationConfig == null) {
-            instrumentationConfig = load();
+            instrumentationConfig = load(Thread.currentThread().getContextClassLoader());
           }
         }
       }

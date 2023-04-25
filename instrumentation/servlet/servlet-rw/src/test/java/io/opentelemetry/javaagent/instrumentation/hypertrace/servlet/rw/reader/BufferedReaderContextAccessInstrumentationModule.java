@@ -18,7 +18,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.rw.reader;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
-import io.opentelemetry.instrumentation.api.field.VirtualField;
+import io.opentelemetry.instrumentation.api.util.VirtualField;
 import io.opentelemetry.javaagent.extension.instrumentation.InstrumentationModule;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;

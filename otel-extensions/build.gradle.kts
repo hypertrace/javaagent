@@ -31,14 +31,14 @@ dependencies {
 
     compileOnly("io.opentelemetry:opentelemetry-sdk:${versions["opentelemetry"]}")
     compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${versions["opentelemetry"]}-alpha")
-    compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi:${versions["opentelemetry"]}-alpha")
+    compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi:${versions["opentelemetry"]}")
 
     implementation("io.opentelemetry:opentelemetry-semconv:${versions["opentelemetry"]}-alpha")
     implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:${versions["opentelemetry_java_agent"]}")
-    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:${versions["opentelemetry_java_agent"]}")
+    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:${versions["opentelemetry"]}")
     implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${versions["opentelemetry_java_agent-tooling"]}") {
         constraints {
-            implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling-java9:1.7.2-alpha") {
+            implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling-java9:${versions["opentelemetry_java_agent-tooling"]}") {
                 attributes {
                     // this transitive dependency creates classes compatible with Java 9 and up, but is only referenced in safe ways for
                     // java 8 by the javaagent-tooling dependency
@@ -46,6 +46,7 @@ dependencies {
                 }
             }
         }
+        exclude("io.opentelemetry.javaagent", "opentelemetry-javaagent-bootstrap")
     }
 
     implementation("org.slf4j:slf4j-api:${versions["slf4j"]}")

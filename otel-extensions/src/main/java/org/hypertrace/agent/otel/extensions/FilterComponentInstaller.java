@@ -17,8 +17,8 @@
 package org.hypertrace.agent.otel.extensions;
 
 import com.google.auto.service.AutoService;
-import io.opentelemetry.instrumentation.api.config.Config;
-import io.opentelemetry.javaagent.extension.AgentListener;
+import com.google.protobuf.StringValue;
+import io.opentelemetry.javaagent.tooling.BeforeAgentListener;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,21 +27,20 @@ import org.hypertrace.agent.filter.FilterRegistry;
 import org.hypertrace.agent.filter.spi.FilterProviderConfig;
 import org.hypertrace.agent.otel.extensions.config.HypertraceConfig;
 
-@AutoService(AgentListener.class)
-public class FilterComponentInstaller implements AgentListener {
+@AutoService(BeforeAgentListener.class)
+public class FilterComponentInstaller implements BeforeAgentListener {
 
   @Override
-  public void beforeAgent(
-      Config config, AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk) {
+  public void beforeAgent(AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk) {
     FilterProviderConfig providerConfig = new FilterProviderConfig();
     AgentConfig agentConfig = HypertraceConfig.get();
     String serviceName = agentConfig.getServiceName().getValue();
     providerConfig.setServiceName(serviceName);
     List<String> jarPaths =
         agentConfig.getJavaagent().getFilterJarPathsList().stream()
-            .map(r -> r.getValue())
+            .map(StringValue::getValue)
             .collect(Collectors.toList());
     // resolves filter via service loader resolution
-    FilterRegistry.initialize(providerConfig, jarPaths);
+    FilterRegistry.initialize(providerConfig, jarPaths, getClass().getClassLoader());
   }
 }
