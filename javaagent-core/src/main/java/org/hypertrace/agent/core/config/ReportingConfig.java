@@ -33,8 +33,8 @@ public interface ReportingConfig {
 
     private static volatile ReportingConfig reportingConfig;
 
-    private static ReportingConfig load() {
-      ServiceLoader<ReportingConfig> configs = ServiceLoader.load(ReportingConfig.class);
+    private static ReportingConfig load(ClassLoader cl) {
+      ServiceLoader<ReportingConfig> configs = ServiceLoader.load(ReportingConfig.class, cl);
       Iterator<ReportingConfig> iterator = configs.iterator();
       if (!iterator.hasNext()) {
         logger.error("Failed to load reporting config");
@@ -43,11 +43,22 @@ public interface ReportingConfig {
       return iterator.next();
     }
 
+    public static ReportingConfig get(ClassLoader cl) {
+      if (reportingConfig == null) {
+        synchronized (ConfigProvider.class) {
+          if (reportingConfig == null) {
+            reportingConfig = load(cl);
+          }
+        }
+      }
+      return reportingConfig;
+    }
+
     public static ReportingConfig get() {
       if (reportingConfig == null) {
         synchronized (ConfigProvider.class) {
           if (reportingConfig == null) {
-            reportingConfig = load();
+            reportingConfig = load(Thread.currentThread().getContextClassLoader());
           }
         }
       }
