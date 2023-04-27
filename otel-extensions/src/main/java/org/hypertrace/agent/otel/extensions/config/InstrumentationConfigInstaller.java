@@ -28,4 +28,10 @@ public class InstrumentationConfigInstaller implements BeforeAgentListener {
   public void beforeAgent(AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk) {
     ConfigProvider.get(getClass().getClassLoader());
   }
+
+  @Override
+  public int order() {
+    // Configs should be loaded before FilterComponents because filters use configs
+    return 0;
+  }
 }

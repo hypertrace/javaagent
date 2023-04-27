@@ -43,4 +43,10 @@ public class FilterComponentInstaller implements BeforeAgentListener {
     // resolves filter via service loader resolution
     FilterRegistry.initialize(providerConfig, jarPaths, getClass().getClassLoader());
   }
+
+  @Override
+  public int order() {
+    // Configs should be loaded before FilterComponents because filters use configs
+    return 1;
+  }
 }
