@@ -103,7 +103,9 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
       span.setStatus(code >= 100 && code < 500 ? StatusCode.UNSET : StatusCode.ERROR);
     }
     if (msg instanceof LastHttpContent) {
-      ctx.channel().attr(io.opentelemetry.instrumentation.netty.v4_1.internal.AttributeKeys.SERVER_CONTEXT).set(null);
+      ctx.channel()
+          .attr(io.opentelemetry.instrumentation.netty.v4_1.internal.AttributeKeys.SERVER_CONTEXT)
+          .set(null);
       ctx.channel().attr(AttributeKeys.REQUEST).set(null);
       span.end();
     }
