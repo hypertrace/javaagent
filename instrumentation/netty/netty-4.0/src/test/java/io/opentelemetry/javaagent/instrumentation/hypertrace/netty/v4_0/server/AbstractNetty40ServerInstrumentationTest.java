@@ -206,4 +206,96 @@ public abstract class AbstractNetty40ServerInstrumentationTest extends AbstractI
             .getAttributes()
             .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_BODY)));
   }
+
+  @Test
+  public void connectionKeepAlive() throws IOException, TimeoutException, InterruptedException {
+    Request request =
+        new Request.Builder()
+            .url(String.format("http://localhost:%d/post", port))
+            .header(REQUEST_HEADER_NAME, REQUEST_HEADER_VALUE)
+            .header("first", "1st")
+            .header("connection", "keep-alive")
+            .get()
+            .build();
+
+    try (Response response = httpClient.newCall(request).execute()) {
+      Assertions.assertEquals(200, response.code());
+      Assertions.assertEquals(RESPONSE_BODY, response.body().string());
+    }
+
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    TEST_WRITER.waitForTraces(1);
+    Assertions.assertEquals(1, traces.size());
+    List<SpanData> trace = traces.get(0);
+    Assertions.assertEquals(1, trace.size());
+    SpanData spanData = trace.get(0);
+
+    Assertions.assertEquals(
+        REQUEST_HEADER_VALUE,
+        spanData
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
+    Assertions.assertEquals(
+        "1st",
+        spanData.getAttributes().get(HypertraceSemanticAttributes.httpRequestHeader("first")));
+    Assertions.assertEquals(
+        "keep-alive",
+        spanData.getAttributes().get(HypertraceSemanticAttributes.httpRequestHeader("connection")));
+    Assertions.assertEquals(
+        RESPONSE_HEADER_VALUE,
+        spanData
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_HEADER_NAME)));
+    Assertions.assertNull(
+        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+    Assertions.assertEquals(
+        RESPONSE_BODY,
+        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+
+    RequestBody requestBody = blockedRequestBody(true, 3000, 75);
+    Request request2 =
+        new Request.Builder()
+            .url(String.format("http://localhost:%d/post", port))
+            .header(REQUEST_HEADER_NAME, "REQUEST_HEADER_VALUE")
+            .header("second", "2nd")
+            .header("connection", "keep-alive")
+            .post(requestBody)
+            .build();
+
+    try (Response response = httpClient.newCall(request2).execute()) {
+      Assertions.assertEquals(403, response.code());
+      Assertions.assertTrue(response.body().string().isEmpty());
+    }
+
+    List<List<SpanData>> traces2 = TEST_WRITER.getTraces();
+    TEST_WRITER.waitForTraces(2);
+    Assertions.assertEquals(2, traces2.size());
+    List<SpanData> trace2 = traces2.get(1);
+    Assertions.assertEquals(1, trace2.size());
+    SpanData spanData2 = trace2.get(0);
+
+    Assertions.assertEquals(
+        "REQUEST_HEADER_VALUE",
+        spanData2
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
+    Assertions.assertEquals(
+        "2nd",
+        spanData2.getAttributes().get(HypertraceSemanticAttributes.httpRequestHeader("second")));
+    Assertions.assertEquals(
+        "keep-alive",
+        spanData2
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpRequestHeader("connection")));
+    Assertions.assertNull(
+        spanData2.getAttributes().get(HypertraceSemanticAttributes.httpRequestHeader("first")));
+    Assertions.assertNull(
+        spanData2
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_HEADER_NAME)));
+    Assertions.assertNull(
+        spanData2
+            .getAttributes()
+            .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_BODY)));
+  }
 }

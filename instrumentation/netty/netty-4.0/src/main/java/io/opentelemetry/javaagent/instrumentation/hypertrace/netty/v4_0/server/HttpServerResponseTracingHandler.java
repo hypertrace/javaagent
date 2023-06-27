@@ -104,6 +104,14 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
       span.setStatus(code >= 100 && code < 500 ? StatusCode.UNSET : StatusCode.ERROR);
     }
     if (msg instanceof LastHttpContent) {
+      // When we end the span, we should set the server context and request attr to null so that
+      // for the next request a new context and request is made and stored in channel.
+      // Else, when using a Connection: keep-alive header, the same server context and request attr
+      // is used in the subsequent requests.
+      ctx.channel()
+          .attr(io.opentelemetry.javaagent.instrumentation.netty.v4_0.AttributeKeys.SERVER_CONTEXT)
+          .set(null);
+      ctx.channel().attr(AttributeKeys.REQUEST).set(null);
       span.end();
     }
   }
