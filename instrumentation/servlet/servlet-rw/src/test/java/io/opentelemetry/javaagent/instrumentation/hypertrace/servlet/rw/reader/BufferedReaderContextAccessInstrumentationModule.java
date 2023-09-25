@@ -39,7 +39,7 @@ public class BufferedReaderContextAccessInstrumentationModule extends Instrument
     implements InstrumentationModuleMuzzle {
 
   public BufferedReaderContextAccessInstrumentationModule() {
-    super("test-buffered-reader");
+    super("test-buffered-reader", "ht");
   }
 
   @Override

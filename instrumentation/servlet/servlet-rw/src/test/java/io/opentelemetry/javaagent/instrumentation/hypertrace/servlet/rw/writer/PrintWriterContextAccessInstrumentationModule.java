@@ -41,7 +41,7 @@ public class PrintWriterContextAccessInstrumentationModule extends Instrumentati
     implements InstrumentationModuleMuzzle {
 
   public PrintWriterContextAccessInstrumentationModule() {
-    super("test-print-writer");
+    super("test-print-writer", "ht");
   }
 
   @Override

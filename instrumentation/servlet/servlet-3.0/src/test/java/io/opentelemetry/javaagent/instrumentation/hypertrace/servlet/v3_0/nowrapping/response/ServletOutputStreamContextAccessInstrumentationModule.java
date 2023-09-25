@@ -40,7 +40,7 @@ public class ServletOutputStreamContextAccessInstrumentationModule extends Instr
     implements InstrumentationModuleMuzzle {
 
   public ServletOutputStreamContextAccessInstrumentationModule() {
-    super("test-servlet-output-stream");
+    super("test-servlet-output-stream", "ht");
   }
 
   @Override

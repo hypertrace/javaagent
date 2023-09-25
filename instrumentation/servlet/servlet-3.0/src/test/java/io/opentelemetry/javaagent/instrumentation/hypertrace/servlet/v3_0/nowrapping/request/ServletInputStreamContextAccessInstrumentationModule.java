@@ -41,7 +41,7 @@ public class ServletInputStreamContextAccessInstrumentationModule extends Instru
     implements InstrumentationModuleMuzzle {
 
   public ServletInputStreamContextAccessInstrumentationModule() {
-    super("test-servlet-input-stream");
+    super("test-servlet-input-stream", "ht");
   }
 
   @Override
