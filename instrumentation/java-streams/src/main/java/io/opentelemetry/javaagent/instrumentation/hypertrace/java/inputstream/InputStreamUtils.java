@@ -19,6 +19,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.java.inputstream;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.util.VirtualField;
@@ -26,6 +27,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import org.hypertrace.agent.core.instrumentation.HypertraceCallDepthThreadLocalMap;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
@@ -50,12 +53,34 @@ public class InputStreamUtils {
     if (span.isRecording()) {
       span.setAttribute(attributeKey, value);
     } else {
-      TRACER
-          .spanBuilder(HypertraceSemanticAttributes.ADDITIONAL_DATA_SPAN_NAME)
-          .setParent(Context.root().with(span))
-          .setAttribute(attributeKey, value)
-          .startSpan()
-          .end();
+      SpanBuilder spanBuilder =
+          TRACER
+              .spanBuilder(HypertraceSemanticAttributes.ADDITIONAL_DATA_SPAN_NAME)
+              .setParent(Context.root().with(span))
+              .setAttribute(attributeKey, value);
+
+      // Also add content type if present
+      if (span.getClass().getName().equals("io.opentelemetry.sdk.trace.SdkSpan")) {
+        try {
+          Method getAttribute =
+              span.getClass().getDeclaredMethod("getAttribute", AttributeKey.class);
+          getAttribute.setAccessible(true);
+          Object reqContentType =
+              getAttribute.invoke(span, AttributeKey.stringKey("http.request.header.content-type"));
+          if (reqContentType != null) {
+            spanBuilder.setAttribute("http.request.header.content-type", (String) reqContentType);
+          }
+          Object resContentType =
+              getAttribute.invoke(
+                  span, AttributeKey.stringKey("http.response.header.content-type"));
+          if (resContentType != null) {
+            spanBuilder.setAttribute("http.response.header.content-type", (String) resContentType);
+          }
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+          // ignore and continue
+        }
+      }
+      spanBuilder.startSpan().end();
     }
   }
 
