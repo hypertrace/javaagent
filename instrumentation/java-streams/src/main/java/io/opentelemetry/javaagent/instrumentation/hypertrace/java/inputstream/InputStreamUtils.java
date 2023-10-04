@@ -45,6 +45,21 @@ public class InputStreamUtils {
   private static final Tracer TRACER =
       GlobalOpenTelemetry.get().getTracer("org.hypertrace.java.inputstream");
 
+  private static Method getAttribute = null;
+
+  static {
+    try {
+      getAttribute = Class.forName("io.opentelemetry.sdk.trace.SdkSpan").getDeclaredMethod("getAttribute", AttributeKey.class);
+    } catch (NoSuchMethodException e) {
+      log.error("getAttribute method not found in SdkSpan class", e);
+    } catch (ClassNotFoundException e) {
+      log.error("SdkSpan class not found", e);
+    }
+    if (getAttribute != null) {
+      getAttribute.setAccessible(true);
+    }
+  }
+
   /**
    * Adds an attribute to span. If the span is ended it adds the attributed to a newly created
    * child.
@@ -60,24 +75,22 @@ public class InputStreamUtils {
               .setAttribute(attributeKey, value);
 
       // Also add content type if present
-      if (span.getClass().getName().equals("io.opentelemetry.sdk.trace.SdkSpan")) {
+      if (getAttribute != null && span.getClass().getName().equals("io.opentelemetry.sdk.trace.SdkSpan")) {
         try {
-          Method getAttribute =
-              span.getClass().getDeclaredMethod("getAttribute", AttributeKey.class);
-          getAttribute.setAccessible(true);
           Object reqContentType =
-              getAttribute.invoke(span, AttributeKey.stringKey("http.request.header.content-type"));
+              getAttribute.invoke(span, HypertraceSemanticAttributes.HTTP_REQUEST_HEADER_CONTENT_TYPE);
           if (reqContentType != null) {
             spanBuilder.setAttribute("http.request.header.content-type", (String) reqContentType);
           }
           Object resContentType =
               getAttribute.invoke(
-                  span, AttributeKey.stringKey("http.response.header.content-type"));
+                  span, HypertraceSemanticAttributes.HTTP_RESPONSE_HEADER_CONTENT_TYPE);
           if (resContentType != null) {
             spanBuilder.setAttribute("http.response.header.content-type", (String) resContentType);
           }
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+        } catch (IllegalAccessException | InvocationTargetException e) {
           // ignore and continue
+          log.debug("Could not invoke getAttribute on SdkSpan", e);
         }
       }
       spanBuilder.startSpan().end();
