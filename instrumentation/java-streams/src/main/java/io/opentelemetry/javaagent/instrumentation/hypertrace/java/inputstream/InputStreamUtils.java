@@ -49,7 +49,9 @@ public class InputStreamUtils {
 
   static {
     try {
-      getAttribute = Class.forName("io.opentelemetry.sdk.trace.SdkSpan").getDeclaredMethod("getAttribute", AttributeKey.class);
+      getAttribute =
+          Class.forName("io.opentelemetry.sdk.trace.SdkSpan")
+              .getDeclaredMethod("getAttribute", AttributeKey.class);
     } catch (NoSuchMethodException e) {
       log.error("getAttribute method not found in SdkSpan class", e);
     } catch (ClassNotFoundException e) {
@@ -75,10 +77,12 @@ public class InputStreamUtils {
               .setAttribute(attributeKey, value);
 
       // Also add content type if present
-      if (getAttribute != null && span.getClass().getName().equals("io.opentelemetry.sdk.trace.SdkSpan")) {
+      if (getAttribute != null
+          && span.getClass().getName().equals("io.opentelemetry.sdk.trace.SdkSpan")) {
         try {
           Object reqContentType =
-              getAttribute.invoke(span, HypertraceSemanticAttributes.HTTP_REQUEST_HEADER_CONTENT_TYPE);
+              getAttribute.invoke(
+                  span, HypertraceSemanticAttributes.HTTP_REQUEST_HEADER_CONTENT_TYPE);
           if (reqContentType != null) {
             spanBuilder.setAttribute("http.request.header.content-type", (String) reqContentType);
           }

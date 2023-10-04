@@ -41,7 +41,9 @@ public class ResponseBodyWrappingHandler implements Handler<Buffer> {
 
   static {
     try {
-      getAttribute = Class.forName("io.opentelemetry.sdk.trace.SdkSpan").getDeclaredMethod("getAttribute", AttributeKey.class);
+      getAttribute =
+          Class.forName("io.opentelemetry.sdk.trace.SdkSpan")
+              .getDeclaredMethod("getAttribute", AttributeKey.class);
     } catch (NoSuchMethodException e) {
       log.error("getAttribute method not found in SdkSpan class", e);
     } catch (ClassNotFoundException e) {
@@ -73,7 +75,8 @@ public class ResponseBodyWrappingHandler implements Handler<Buffer> {
               .setAttribute(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, responseBody);
 
       // Also add content type if present
-      if (getAttribute != null && span.getClass().getName().equals("io.opentelemetry.sdk.trace.SdkSpan")) {
+      if (getAttribute != null
+          && span.getClass().getName().equals("io.opentelemetry.sdk.trace.SdkSpan")) {
         try {
           Object resContentType =
               getAttribute.invoke(
