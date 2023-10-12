@@ -25,8 +25,7 @@ import org.slf4j.LoggerFactory;
 
 public class CgroupsReader {
 
-  private static final Logger log =
-      LoggerFactory.getLogger(HypertraceResourceProvider.class.getName());
+  private static final Logger log = LoggerFactory.getLogger(CgroupsReader.class.getName());
 
   private static final String DEFAULT_CGROUPS_PATH = "/proc/self/cgroup";
   private static final int CONTAINER_ID_LENGTH = 64;
