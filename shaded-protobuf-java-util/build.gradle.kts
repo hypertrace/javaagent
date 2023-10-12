@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    implementation("com.google.protobuf:protobuf-java-util:3.4.0") {
+    implementation("com.google.protobuf:protobuf-java-util:3.19.6") {
         exclude("com.google.protobuf", "protobuf-java")
         exclude("com.google.guava", "guava")
     }
