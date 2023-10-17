@@ -60,7 +60,7 @@ public class ContextAccessorInstrumentationModule extends InstrumentationModule
   }
 
   public ContextAccessorInstrumentationModule() {
-    super("test-context-accessor");
+    super("test-context-accessor", "ht");
   }
 
   @Override
