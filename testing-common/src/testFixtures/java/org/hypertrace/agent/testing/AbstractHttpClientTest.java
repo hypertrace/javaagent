@@ -16,6 +16,7 @@
 
 package org.hypertrace.agent.testing;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -118,6 +119,10 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
       Assertions.assertEquals(2, traces.get(0).size());
       SpanData responseBodySpan = traces.get(0).get(1);
       assertBodies(clientSpan, responseBodySpan, body, body);
+      Assertions.assertNotNull(
+          responseBodySpan
+              .getAttributes()
+              .get(AttributeKey.stringKey("http.response.header.content-type")));
     } else {
       Assertions.assertEquals(1, traces.get(0).size());
       assertRequestAndResponseBody(clientSpan, body, body);

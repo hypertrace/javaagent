@@ -19,6 +19,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.java.inputstream;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.util.VirtualField;
@@ -26,6 +27,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import org.hypertrace.agent.core.instrumentation.HypertraceCallDepthThreadLocalMap;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
@@ -42,6 +45,23 @@ public class InputStreamUtils {
   private static final Tracer TRACER =
       GlobalOpenTelemetry.get().getTracer("org.hypertrace.java.inputstream");
 
+  private static Method getAttribute = null;
+
+  static {
+    try {
+      getAttribute =
+          Class.forName("io.opentelemetry.sdk.trace.SdkSpan")
+              .getDeclaredMethod("getAttribute", AttributeKey.class);
+    } catch (NoSuchMethodException e) {
+      log.error("getAttribute method not found in SdkSpan class", e);
+    } catch (ClassNotFoundException e) {
+      log.error("SdkSpan class not found", e);
+    }
+    if (getAttribute != null) {
+      getAttribute.setAccessible(true);
+    }
+  }
+
   /**
    * Adds an attribute to span. If the span is ended it adds the attributed to a newly created
    * child.
@@ -50,12 +70,34 @@ public class InputStreamUtils {
     if (span.isRecording()) {
       span.setAttribute(attributeKey, value);
     } else {
-      TRACER
-          .spanBuilder(HypertraceSemanticAttributes.ADDITIONAL_DATA_SPAN_NAME)
-          .setParent(Context.root().with(span))
-          .setAttribute(attributeKey, value)
-          .startSpan()
-          .end();
+      SpanBuilder spanBuilder =
+          TRACER
+              .spanBuilder(HypertraceSemanticAttributes.ADDITIONAL_DATA_SPAN_NAME)
+              .setParent(Context.root().with(span))
+              .setAttribute(attributeKey, value);
+
+      // Also add content type if present
+      if (getAttribute != null
+          && span.getClass().getName().equals("io.opentelemetry.sdk.trace.SdkSpan")) {
+        try {
+          Object reqContentType =
+              getAttribute.invoke(
+                  span, HypertraceSemanticAttributes.HTTP_REQUEST_HEADER_CONTENT_TYPE);
+          if (reqContentType != null) {
+            spanBuilder.setAttribute("http.request.header.content-type", (String) reqContentType);
+          }
+          Object resContentType =
+              getAttribute.invoke(
+                  span, HypertraceSemanticAttributes.HTTP_RESPONSE_HEADER_CONTENT_TYPE);
+          if (resContentType != null) {
+            spanBuilder.setAttribute("http.response.header.content-type", (String) resContentType);
+          }
+        } catch (IllegalAccessException | InvocationTargetException e) {
+          // ignore and continue
+          log.debug("Could not invoke getAttribute on SdkSpan", e);
+        }
+      }
+      spanBuilder.startSpan().end();
     }
   }
 

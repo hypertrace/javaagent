@@ -111,4 +111,51 @@ public class InputStreamInstrumentationModuleTest extends AbstractInstrumenterTe
     SpanData spanData = trace.get(0);
     Assertions.assertEquals(expected, spanData.getAttributes().get(ATTRIBUTE_KEY));
   }
+
+  @Test
+  public void readAfterSpanEnd() {
+
+    InputStream inputStream = new ByteArrayInputStream(STR.getBytes());
+
+    Span span =
+        TEST_TRACER
+            .spanBuilder("test-span")
+            .setAttribute("http.request.header.content-type", "application/json")
+            .setAttribute("http.response.header.content-type", "application/xml")
+            .startSpan();
+
+    Runnable read =
+        () -> {
+          while (true) {
+            try {
+              if (inputStream.read(new byte[10], 0, 10) == -1) break;
+              span.end();
+            } catch (IOException e) {
+              e.printStackTrace();
+            }
+            ;
+          }
+        };
+
+    BoundedByteArrayOutputStream buffer =
+        BoundedBuffersFactory.createStream(StandardCharsets.ISO_8859_1);
+    ContextAccessor.addToInputStreamContext(
+        inputStream, new SpanAndBuffer(span, buffer, ATTRIBUTE_KEY, StandardCharsets.ISO_8859_1));
+
+    read.run();
+
+    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    Assertions.assertEquals(1, traces.size());
+
+    List<SpanData> trace = traces.get(0);
+    Assertions.assertEquals(2, trace.size());
+    SpanData spanData = trace.get(1);
+    Assertions.assertEquals(STR, spanData.getAttributes().get(ATTRIBUTE_KEY));
+    Assertions.assertEquals(
+        "application/json",
+        spanData.getAttributes().get(AttributeKey.stringKey("http.request.header.content-type")));
+    Assertions.assertEquals(
+        "application/xml",
+        spanData.getAttributes().get(AttributeKey.stringKey("http.response.header.content-type")));
+  }
 }

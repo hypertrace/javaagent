@@ -17,17 +17,42 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.vertx;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ResponseBodyWrappingHandler implements Handler<Buffer> {
 
   private static final Tracer tracer =
       GlobalOpenTelemetry.getTracer("io.opentelemetry.javaagent.vertx-core-3.0");
+
+  private static final Logger log = LoggerFactory.getLogger(ResponseBodyWrappingHandler.class);
+
+  private static Method getAttribute = null;
+
+  static {
+    try {
+      getAttribute =
+          Class.forName("io.opentelemetry.sdk.trace.SdkSpan")
+              .getDeclaredMethod("getAttribute", AttributeKey.class);
+    } catch (NoSuchMethodException e) {
+      log.error("getAttribute method not found in SdkSpan class", e);
+    } catch (ClassNotFoundException e) {
+      log.error("SdkSpan class not found", e);
+    }
+    if (getAttribute != null) {
+      getAttribute.setAccessible(true);
+    }
+  }
 
   private final Handler<Buffer> wrapped;
   private final Span span;
@@ -43,12 +68,29 @@ public class ResponseBodyWrappingHandler implements Handler<Buffer> {
     if (span.isRecording()) {
       span.setAttribute(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, responseBody);
     } else {
-      tracer
-          .spanBuilder(HypertraceSemanticAttributes.ADDITIONAL_DATA_SPAN_NAME)
-          .setParent(Context.root().with(span))
-          .setAttribute(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, responseBody)
-          .startSpan()
-          .end();
+      SpanBuilder spanBuilder =
+          tracer
+              .spanBuilder(HypertraceSemanticAttributes.ADDITIONAL_DATA_SPAN_NAME)
+              .setParent(Context.root().with(span))
+              .setAttribute(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, responseBody);
+
+      // Also add content type if present
+      if (getAttribute != null
+          && span.getClass().getName().equals("io.opentelemetry.sdk.trace.SdkSpan")) {
+        try {
+          Object resContentType =
+              getAttribute.invoke(
+                  span, HypertraceSemanticAttributes.HTTP_RESPONSE_HEADER_CONTENT_TYPE);
+          if (resContentType != null) {
+            spanBuilder.setAttribute("http.response.header.content-type", (String) resContentType);
+          }
+        } catch (IllegalAccessException | InvocationTargetException e) {
+          // ignore and continue
+          log.debug("Could not invoke getAttribute on SdkSpan", e);
+        }
+      }
+
+      spanBuilder.startSpan().end();
     }
 
     wrapped.handle(event);
