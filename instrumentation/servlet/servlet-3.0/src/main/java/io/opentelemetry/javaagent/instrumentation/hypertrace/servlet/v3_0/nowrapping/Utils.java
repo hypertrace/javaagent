@@ -22,6 +22,7 @@ import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
+import java.util.Objects;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -38,7 +39,7 @@ public class Utils {
   public static void addSessionId(Span span, HttpServletRequest httpRequest) {
     if (httpRequest.isRequestedSessionIdValid()) {
       HttpSession session = httpRequest.getSession();
-      if (session != null && session.getId() != "") {
+      if (session != null && !Objects.equals(session.getId(), "")) {
         span.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_SESSION_ID, session.getId());
       }
     }
@@ -100,8 +101,7 @@ public class Utils {
       ByteBufferSpanPair byteBufferSpanPair = streamContextStore.get(servletInputStream);
       if (byteBufferSpanPair != null) {
         // capture body explicitly e.g. Jackson does not call ServletInputStream$read() until -1 is
-        // returned
-        // it does not even call ServletInputStream#available()
+        // returned. It does not even call ServletInputStream#available()
         byteBufferSpanPair.captureBody(HypertraceSemanticAttributes.HTTP_REQUEST_BODY);
         streamContextStore.set(servletInputStream, null);
       }

@@ -57,6 +57,7 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
 
   @Override
   public ElementMatcher<ClassLoader> classLoaderOptimization() {
+    // TODO: reconcile with OTEL, it uses "javax.servlet.Servlet" instead
     return hasClassesNamed("javax.servlet.Filter");
   }
 
@@ -75,6 +76,7 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
         Servlet30AndFilterInstrumentation.class.getName() + "$ServletAdvice");
   }
 
+  @SuppressWarnings("unused")
   public static class ServletAdvice {
 
     @Advice.OnMethodEnter(suppress = Throwable.class, skipOn = Advice.OnNonDefaultValue.class)

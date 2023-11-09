@@ -77,6 +77,7 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
     //        ServletOutputStreamInstrumentation.class.getName() + "$OutputStream_close");
   }
 
+  @SuppressWarnings("unused")
   static class OutputStream_write {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
@@ -106,6 +107,7 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
     }
   }
 
+  @SuppressWarnings("unused")
   static class OutputStream_writeByteArr {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
@@ -136,12 +138,13 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
     }
   }
 
+  @SuppressWarnings("unused")
   static class OutputStream_writeByteArrOffset {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static BoundedByteArrayOutputStream enter(
         @Advice.This ServletOutputStream thizz,
-        @Advice.Argument(0) byte b[],
+        @Advice.Argument(0) byte[] b,
         @Advice.Argument(1) int off,
         @Advice.Argument(2) int len) {
 
@@ -169,6 +172,7 @@ public class ServletOutputStreamInstrumentation implements TypeInstrumentation {
     }
   }
 
+  @SuppressWarnings("unused")
   static class ServletOutputStream_print {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)

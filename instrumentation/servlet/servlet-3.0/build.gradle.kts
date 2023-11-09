@@ -9,7 +9,8 @@ muzzle {
     pass {
         group = "javax.servlet"
         module = "javax.servlet-api"
-        versions = "[3.0.0,)"
+        versions = "[3.0,)"
+        assertInverse = true
     }
     // fail on all old servlet-api. This groupId was changed in 3.x to javax.servlet-api
     fail {
