@@ -59,7 +59,7 @@ dependencies {
     api("com.google.protobuf:protobuf-java")
     api("com.google.protobuf:protobuf-java-util")
     // convert yaml to json, since java protobuf impl supports only json
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.4.1") {
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.16.0") {
         constraints {
             implementation("org.yaml:snakeyaml:2.0") {
                 because(
