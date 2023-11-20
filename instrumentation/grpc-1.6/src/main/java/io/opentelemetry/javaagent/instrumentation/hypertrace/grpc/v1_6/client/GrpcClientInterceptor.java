@@ -30,22 +30,31 @@ import io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.v1_6.GrpcInstr
 import io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.v1_6.GrpcSpanDecorator;
 import org.hypertrace.agent.core.config.InstrumentationConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GrpcClientInterceptor implements ClientInterceptor {
+
+  private static final Logger log = LoggerFactory.getLogger(GrpcClientInterceptor.class);
 
   @Override
   public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
       MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
 
-    InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
-    if (!instrumentationConfig.isInstrumentationEnabled(
-        GrpcInstrumentationName.PRIMARY, GrpcInstrumentationName.OTHER)) {
+    try {
+      InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
+      if (!instrumentationConfig.isInstrumentationEnabled(
+          GrpcInstrumentationName.PRIMARY, GrpcInstrumentationName.OTHER)) {
+        return next.newCall(method, callOptions);
+      }
+
+      Span currentSpan = Span.current();
+      ClientCall<ReqT, RespT> clientCall = next.newCall(method, callOptions);
+      return new GrpcClientInterceptor.TracingClientCall<>(clientCall, currentSpan);
+    } catch (Throwable t) {
+      log.debug("exception thrown while intercepting grpc client call", t);
       return next.newCall(method, callOptions);
     }
-
-    Span currentSpan = Span.current();
-    ClientCall<ReqT, RespT> clientCall = next.newCall(method, callOptions);
-    return new GrpcClientInterceptor.TracingClientCall<>(clientCall, currentSpan);
   }
 
   static final class TracingClientCall<ReqT, RespT>
@@ -62,10 +71,14 @@ public class GrpcClientInterceptor implements ClientInterceptor {
     public void start(Listener<RespT> responseListener, Metadata headers) {
       super.start(new TracingClientCallListener<>(responseListener, span), headers);
 
-      InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
-      if (instrumentationConfig.rpcMetadata().request()) {
-        GrpcSpanDecorator.addMetadataAttributes(
-            headers, span, HypertraceSemanticAttributes::rpcRequestMetadata);
+      try {
+        InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
+        if (instrumentationConfig.rpcMetadata().request()) {
+          GrpcSpanDecorator.addMetadataAttributes(
+              headers, span, HypertraceSemanticAttributes::rpcRequestMetadata);
+        }
+      } catch (Throwable t) {
+        log.debug("exception thrown while capturing grpc client request metadata", t);
       }
     }
 
@@ -73,10 +86,14 @@ public class GrpcClientInterceptor implements ClientInterceptor {
     public void sendMessage(ReqT message) {
       super.sendMessage(message);
 
-      InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
-      if (instrumentationConfig.rpcBody().request()) {
-        GrpcSpanDecorator.addMessageAttribute(
-            message, span, HypertraceSemanticAttributes.RPC_REQUEST_BODY);
+      try {
+        InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
+        if (instrumentationConfig.rpcBody().request()) {
+          GrpcSpanDecorator.addMessageAttribute(
+              message, span, HypertraceSemanticAttributes.RPC_REQUEST_BODY);
+        }
+      } catch (Throwable t) {
+        log.debug("exception thrown while capturing grpc client request body", t);
       }
     }
   }
@@ -94,10 +111,14 @@ public class GrpcClientInterceptor implements ClientInterceptor {
     public void onMessage(RespT message) {
       delegate().onMessage(message);
 
-      InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
-      if (instrumentationConfig.rpcBody().response()) {
-        GrpcSpanDecorator.addMessageAttribute(
-            message, span, HypertraceSemanticAttributes.RPC_RESPONSE_BODY);
+      try {
+        InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
+        if (instrumentationConfig.rpcBody().response()) {
+          GrpcSpanDecorator.addMessageAttribute(
+              message, span, HypertraceSemanticAttributes.RPC_RESPONSE_BODY);
+        }
+      } catch (Throwable t) {
+        log.debug("exception thrown while capturing grpc client response body", t);
       }
     }
 
@@ -105,10 +126,14 @@ public class GrpcClientInterceptor implements ClientInterceptor {
     public void onHeaders(Metadata headers) {
       super.onHeaders(headers);
 
-      InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
-      if (instrumentationConfig.rpcMetadata().response()) {
-        GrpcSpanDecorator.addMetadataAttributes(
-            headers, span, HypertraceSemanticAttributes::rpcResponseMetadata);
+      try {
+        InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
+        if (instrumentationConfig.rpcMetadata().response()) {
+          GrpcSpanDecorator.addMetadataAttributes(
+              headers, span, HypertraceSemanticAttributes::rpcResponseMetadata);
+        }
+      } catch (Throwable t) {
+        log.debug("exception thrown while capturing grpc client response metadata", t);
       }
     }
   }
