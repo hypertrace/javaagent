@@ -61,7 +61,7 @@ dependencies {
     // convert yaml to json, since java protobuf impl supports only json
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.4") {
         constraints {
-            implementation("org.yaml:snakeyaml:2.0") {
+            implementation("org.yaml:snakeyaml:1.31") {
                 because(
                     "SNYK error SNYK-JAVA-ORGYAML-2806360"
                 )

@@ -11,7 +11,7 @@ dependencies {
     implementation("org.slf4j:slf4j-api:${versions["slf4j"]}")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.4") {
         constraints {
-            implementation("org.yaml:snakeyaml:2.0") {
+            implementation("org.yaml:snakeyaml:1.31") {
                 because(
                     "SNYK error SNYK-JAVA-ORGYAML-2806360"
                 )
