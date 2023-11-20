@@ -31,37 +31,47 @@ import java.util.Map;
 import org.hypertrace.agent.core.config.InstrumentationConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.filter.FilterRegistry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GrpcServerInterceptor implements ServerInterceptor {
+
+  private static final Logger log = LoggerFactory.getLogger(GrpcServerInterceptor.class);
 
   @Override
   public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
       ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
 
-    InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
-    if (!instrumentationConfig.isInstrumentationEnabled(
-        GrpcInstrumentationName.PRIMARY, GrpcInstrumentationName.OTHER)) {
+    try {
+      InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
+      if (!instrumentationConfig.isInstrumentationEnabled(
+          GrpcInstrumentationName.PRIMARY, GrpcInstrumentationName.OTHER)) {
+        return next.startCall(call, headers);
+      }
+
+      Span currentSpan = Span.current();
+
+      Map<String, String> mapHeaders = GrpcSpanDecorator.metadataToMap(headers);
+
+      if (instrumentationConfig.rpcMetadata().request()) {
+        GrpcSpanDecorator.addMetadataAttributes(mapHeaders, currentSpan);
+      }
+
+      boolean block = FilterRegistry.getFilter().evaluateRequestHeaders(currentSpan, mapHeaders);
+      if (block) {
+        call.close(Status.PERMISSION_DENIED, new Metadata());
+        @SuppressWarnings("unchecked")
+        ServerCall.Listener<ReqT> noop = NoopServerCallListener.INSTANCE;
+        return noop;
+      }
+
+      Listener<ReqT> serverCall =
+          next.startCall(new TracingServerCall<>(call, currentSpan), headers);
+      return new TracingServerCallListener<>(serverCall, currentSpan);
+    } catch (Throwable t) {
+      log.debug("exception thrown during intercepting server call", t);
       return next.startCall(call, headers);
     }
-
-    Span currentSpan = Span.current();
-
-    Map<String, String> mapHeaders = GrpcSpanDecorator.metadataToMap(headers);
-
-    if (instrumentationConfig.rpcMetadata().request()) {
-      GrpcSpanDecorator.addMetadataAttributes(mapHeaders, currentSpan);
-    }
-
-    boolean block = FilterRegistry.getFilter().evaluateRequestHeaders(currentSpan, mapHeaders);
-    if (block) {
-      call.close(Status.PERMISSION_DENIED, new Metadata());
-      @SuppressWarnings("unchecked")
-      ServerCall.Listener<ReqT> noop = NoopServerCallListener.INSTANCE;
-      return noop;
-    }
-
-    Listener<ReqT> serverCall = next.startCall(new TracingServerCall<>(call, currentSpan), headers);
-    return new TracingServerCallListener<>(serverCall, currentSpan);
   }
 
   static final class TracingServerCall<ReqT, RespT>
@@ -78,10 +88,14 @@ public class GrpcServerInterceptor implements ServerInterceptor {
     public void sendMessage(RespT message) {
       super.sendMessage(message);
 
-      InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
-      if (instrumentationConfig.rpcBody().response()) {
-        GrpcSpanDecorator.addMessageAttribute(
-            message, span, HypertraceSemanticAttributes.RPC_RESPONSE_BODY);
+      try {
+        InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
+        if (instrumentationConfig.rpcBody().response()) {
+          GrpcSpanDecorator.addMessageAttribute(
+              message, span, HypertraceSemanticAttributes.RPC_RESPONSE_BODY);
+        }
+      } catch (Throwable t) {
+        log.debug("exception thrown while capturing grpc server response body", t);
       }
     }
 
@@ -89,10 +103,14 @@ public class GrpcServerInterceptor implements ServerInterceptor {
     public void sendHeaders(Metadata headers) {
       super.sendHeaders(headers);
 
-      InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
-      if (instrumentationConfig.rpcMetadata().response()) {
-        GrpcSpanDecorator.addMetadataAttributes(
-            headers, span, HypertraceSemanticAttributes::rpcResponseMetadata);
+      try {
+        InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
+        if (instrumentationConfig.rpcMetadata().response()) {
+          GrpcSpanDecorator.addMetadataAttributes(
+              headers, span, HypertraceSemanticAttributes::rpcResponseMetadata);
+        }
+      } catch (Throwable t) {
+        log.debug("exception thrown while capturing grpc server response headers", t);
       }
     }
   }
@@ -111,10 +129,14 @@ public class GrpcServerInterceptor implements ServerInterceptor {
     public void onMessage(ReqT message) {
       delegate().onMessage(message);
 
-      InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
-      if (instrumentationConfig.rpcBody().request()) {
-        GrpcSpanDecorator.addMessageAttribute(
-            message, span, HypertraceSemanticAttributes.RPC_REQUEST_BODY);
+      try {
+        InstrumentationConfig instrumentationConfig = InstrumentationConfig.ConfigProvider.get();
+        if (instrumentationConfig.rpcBody().request()) {
+          GrpcSpanDecorator.addMessageAttribute(
+              message, span, HypertraceSemanticAttributes.RPC_REQUEST_BODY);
+        }
+      } catch (Throwable t) {
+        log.debug("exception thrown while capturing grpc server request body", t);
       }
     }
   }
