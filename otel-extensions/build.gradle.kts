@@ -7,7 +7,7 @@ plugins {
 }
 
 
-val protobufVersion = "3.16.1"
+val protobufVersion = "3.19.6"
 
 protobuf {
     protoc {
@@ -59,7 +59,7 @@ dependencies {
     api("com.google.protobuf:protobuf-java")
     api("com.google.protobuf:protobuf-java-util")
     // convert yaml to json, since java protobuf impl supports only json
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.3") {
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.4") {
         constraints {
             implementation("org.yaml:snakeyaml:1.31") {
                 because(

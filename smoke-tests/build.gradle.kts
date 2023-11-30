@@ -24,7 +24,7 @@ dependencies{
     testImplementation("com.google.protobuf:protobuf-java-util:3.15.8")
     testImplementation("org.spockframework:spock-core:1.3-groovy-2.5")
     testImplementation("info.solidsoft.spock:spock-global-unroll:0.5.1")
-    testImplementation("com.fasterxml.jackson.core:jackson-databind:2.11.2")
+    testImplementation("com.fasterxml.jackson.core:jackson-databind:2.13.4")
     testImplementation("org.codehaus.groovy:groovy-all:2.5.11")
     testImplementation("io.opentelemetry:opentelemetry-semconv:${versions["opentelemetry"]}-alpha")
 }
