@@ -9,11 +9,21 @@ plugins {
     id("org.owasp.dependencycheck") version "7.1.1"
 }
 
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
 allprojects {
     apply(plugin="java-library")
     java {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    repositories {
+        mavenCentral()
     }
 
     tasks.compileJava {
