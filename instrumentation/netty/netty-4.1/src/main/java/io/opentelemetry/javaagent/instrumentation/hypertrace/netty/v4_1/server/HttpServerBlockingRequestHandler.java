@@ -68,6 +68,7 @@ public class HttpServerBlockingRequestHandler extends ChannelInboundHandlerAdapt
   }
 
   static void forbidden(ChannelHandlerContext ctx, HttpRequest request) {
+    // TODO
     DefaultFullHttpResponse blockResponse =
         new DefaultFullHttpResponse(request.protocolVersion(), HttpResponseStatus.FORBIDDEN);
     blockResponse.headers().add("Content-Length", "0");

@@ -116,6 +116,12 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
       }
 
       if (FilterRegistry.getFilter().evaluateRequestHeaders(currentSpan, headers)) {
+        // TODO
+        // String responseToClient= "<tdcp><cmd><ack cmd=”Init”><panelistid>3849303</panelistid></ack></cmd></tdcp>";
+        //
+        //httpServletResponse.setStatus(HttpServletResponse.SC_OK);
+        //httpServletResponse.getWriter().write(responseToClient);
+        //httpServletResponse.getWriter().flush();
         httpResponse.setStatus(403);
         // skip execution of the user code
         return true;
@@ -208,6 +214,12 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
         Throwable tmp = throwable;
         while (tmp != null) { // loop in case our exception is nested (eg. springframework)
           if (tmp instanceof HypertraceEvaluationException) {
+            // TODO
+            //String responseToClient= "<tdcp><cmd><ack cmd=”Init”><panelistid>3849303</panelistid></ack></cmd></tdcp>";
+            //
+            //httpServletResponse.setStatus(HttpServletResponse.SC_OK);
+            //httpServletResponse.getWriter().write(responseToClient);
+            //httpServletResponse.getWriter().flush();
             httpResponse.setStatus(403);
             // bytebuddy treats the reassignment of this variable to null as an instruction to
             // suppress this exception, which is what we want
