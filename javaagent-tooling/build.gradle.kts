@@ -18,7 +18,9 @@ repositories {
 dependencies {
     instrumentationMuzzle("io.opentelemetry.javaagent:opentelemetry-muzzle:${versions["opentelemetry_java_agent"]}")
     api("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:${versions["opentelemetry"]}")
-    instrumentationMuzzle("io.opentelemetry.instrumentation:gradle-plugins:${versions["opentelemetry_gradle_plugin"]}")
+    instrumentationMuzzle("io.opentelemetry.instrumentation:gradle-plugins:${versions["opentelemetry_gradle_plugin"]}") {
+        exclude(group = "gradle.plugin.com.github.johnrengelman", module = "shadow")
+    }
     instrumentationMuzzle("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:${versions["opentelemetry_java_agent"]}")
     instrumentationMuzzle("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:${versions["opentelemetry_java_agent"]}")
     instrumentationMuzzle("net.bytebuddy:byte-buddy-dep:1.12.6")

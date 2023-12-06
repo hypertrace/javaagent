@@ -3,7 +3,7 @@ import org.hypertrace.gradle.publishing.License.APACHE_2_0;
 plugins {
     `java-library`
     id("com.diffplug.spotless") version "5.2.0" apply false
-    id("org.hypertrace.publish-maven-central-plugin") version "1.0.4" apply false
+    id("org.hypertrace.publish-maven-central-plugin") version "1.0.5" apply false
     id("org.hypertrace.ci-utils-plugin") version "0.3.0"
     id("org.gradle.test-retry") version "1.2.0" apply false
     id("org.owasp.dependencycheck") version "7.1.1"
@@ -26,10 +26,25 @@ allprojects {
         mavenCentral()
     }
 
+    configurations {
+        all {
+            exclude(group = "asm", module = "asm")
+            exclude(group = "asm", module = "asm-commons")
+            exclude(group = "asm", module = "asm-tree")
+            exclude(group = "gradle.plugin.com.github.johnrengelman", module = "shadow")
+        }
+    }
+
+//    configurations.compile.get().dependencies.remove(dependencies.gradleApi())
+//    dependencies { compileOnly(gradleApi()) }
+
     tasks.compileJava {
         options.compilerArgs.add("-Werror")
     }
 
+    tasks.withType<Jar> {
+        duplicatesStrategy = DuplicatesStrategy.FAIL
+    }
 
     tasks.withType<JavaCompile> {
         options.compilerArgs.add("-Xlint:unchecked")
@@ -68,7 +83,6 @@ subprojects {
 
     repositories {
         mavenCentral()
-        jcenter()
         maven {
             url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
         }
