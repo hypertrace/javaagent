@@ -17,6 +17,7 @@ configurations.testRuntimeClasspath {
 dependencies {
     testImplementation(testFixtures(project(":testing-common")))
     testImplementation(project(":instrumentation:netty:netty-4.1"))
+    testImplementation(files(project(":instrumentation:netty:netty-4.1").dependencyProject.sourceSets.main.map { it.output }))
     testImplementation("org.springframework:spring-webflux:5.0.0.RELEASE")
     testImplementation("io.projectreactor.ipc:reactor-netty:0.7.0.RELEASE")
 

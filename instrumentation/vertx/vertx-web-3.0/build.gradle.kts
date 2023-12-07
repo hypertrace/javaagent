@@ -4,12 +4,13 @@ plugins {
     id("io.opentelemetry.instrumentation.auto-instrumentation")
     muzzle
 }
+evaluationDependsOn(":javaagent-tooling")
 
 afterEvaluate{
     io.opentelemetry.instrumentation.gradle.bytebuddy.ByteBuddyPluginConfigurator(project,
             sourceSets.main.get(),
             io.opentelemetry.javaagent.tooling.muzzle.generation.MuzzleCodeGenerationPlugin::class.java.name,
-            project(":javaagent-tooling").configurations["instrumentationMuzzle"] + configurations.runtimeClasspath
+            files(project(":javaagent-tooling").configurations["instrumentationMuzzle"], configurations.runtimeClasspath)
     ).configure()
 }
 
@@ -33,6 +34,7 @@ dependencies {
 
     testImplementation(testFixtures(project(":testing-common")))
     testImplementation(project(":instrumentation:netty:netty-4.0"))
+    testImplementation(files(project(":instrumentation:netty:netty-4.0").dependencyProject.sourceSets.main.map { it.output }))
 
     testImplementation("io.netty:netty-codec-http:${nettyVersion}") {
         version {

@@ -5,6 +5,8 @@ plugins {
     muzzle
 }
 
+evaluationDependsOn(":javaagent-tooling")
+
 muzzle {
     pass {
         coreJdk()
@@ -15,7 +17,7 @@ afterEvaluate{
     io.opentelemetry.instrumentation.gradle.bytebuddy.ByteBuddyPluginConfigurator(project,
             sourceSets.main.get(),
             io.opentelemetry.javaagent.tooling.muzzle.generation.MuzzleCodeGenerationPlugin::class.java.name,
-            project(":javaagent-tooling").configurations["instrumentationMuzzle"] + configurations.runtimeClasspath
+        files(project(":javaagent-tooling").configurations["instrumentationMuzzle"], configurations.runtimeClasspath)
     ).configure()
 }
 

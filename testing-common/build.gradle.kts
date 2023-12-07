@@ -4,10 +4,6 @@ plugins {
     id("net.bytebuddy.byte-buddy")
 }
 
-configurations {
-    implementation.get().extendsFrom(project(":").configurations["testDependencies"])
-}
-
 val versions: Map<String, String> by extra
 
 dependencies {

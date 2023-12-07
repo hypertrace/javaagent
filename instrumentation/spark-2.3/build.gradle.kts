@@ -5,6 +5,7 @@ plugins {
     id("io.opentelemetry.instrumentation.auto-instrumentation")
     muzzle
 }
+evaluationDependsOn(":javaagent-tooling")
 
 // building against 2.3 and testing against 2.4 because JettyHandler is available since 2.4 only
 muzzle {
@@ -19,7 +20,7 @@ afterEvaluate{
     io.opentelemetry.instrumentation.gradle.bytebuddy.ByteBuddyPluginConfigurator(project,
             sourceSets.main.get(),
             io.opentelemetry.javaagent.tooling.muzzle.generation.MuzzleCodeGenerationPlugin::class.java.name,
-            project(":javaagent-tooling").configurations["instrumentationMuzzle"] + configurations.runtimeClasspath
+        files(project(":javaagent-tooling").configurations["instrumentationMuzzle"], configurations.runtimeClasspath)
     ).configure()
 }
 
@@ -34,6 +35,7 @@ dependencies {
     compileOnly("com.sparkjava:spark-core:2.3")
 
     testImplementation(project(":instrumentation:servlet:servlet-rw"))
+    testImplementation(files(project(":instrumentation:servlet:servlet-rw").dependencyProject.sourceSets.main.map { it.output }))
     testImplementation(testFixtures(project(":testing-common")))
     testImplementation("com.sparkjava:spark-core:2.3")
     testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_semconv"]}")

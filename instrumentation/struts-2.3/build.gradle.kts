@@ -7,7 +7,9 @@ val versions: Map<String, String> by extra
 
 dependencies {
     testImplementation(project(":instrumentation:servlet:servlet-rw"))
+    testImplementation(files(project(":instrumentation:servlet:servlet-rw").dependencyProject.sourceSets.main.map { it.output }))
     testImplementation(project(":instrumentation:servlet:servlet-3.0"))
+    testImplementation(files(project(":instrumentation:servlet:servlet-3.0").dependencyProject.sourceSets.main.map { it.output }))
     testImplementation(testFixtures(project(":testing-common")) as ProjectDependency) {
         exclude(group = "org.eclipse.jetty", module = "jetty-server")
     }
