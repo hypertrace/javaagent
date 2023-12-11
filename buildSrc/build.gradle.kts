@@ -26,35 +26,15 @@ repositories {
 
 tasks {
   processResources {
-    /*
-    Make Jar build fail on duplicate files
-
-    By default Gradle Jar task can put multiple files with the same name
-    into a Jar. This may lead to confusion. For example if auto-service
-    annotation processing creates files with same name in `scala` and
-    `java` directory this would result in Jar having two files with the
-    same name in it. Which in turn would result in only one of those
-    files being actually considered when that Jar is used leading to very
-    confusing failures.
-
-    Instead we should 'fail early' and avoid building such Jars.
-    */
     duplicatesStrategy = DuplicatesStrategy.WARN
   }
 }
-
-//java {
-//  sourceCompatibility = JavaVersion.VERSION_1_8
-//  targetCompatibility = JavaVersion.VERSION_1_8
-//}
 
 configurations {
   all {
     exclude(group = "asm", module = "asm")
   }
 }
-
-//configurations.compile.get().dependencies.remove(dependencies.gradleApi())
 
 dependencies {
   compileOnly(gradleApi())
