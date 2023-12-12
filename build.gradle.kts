@@ -28,21 +28,8 @@ subprojects {
       }
     }
 
-    configurations {
-      all {
-        exclude(group = "asm", module = "asm")
-        exclude(group = "asm", module = "asm-commons")
-        exclude(group = "asm", module = "asm-tree")
-        exclude(group = "gradle.plugin.com.github.johnrengelman", module = "shadow")
-      }
-    }
-
     tasks.named<JavaCompile>("compileJava") {
       options.compilerArgs.add("-Werror")
-    }
-
-    tasks.withType<Jar> {
-      duplicatesStrategy = DuplicatesStrategy.FAIL
     }
 
     tasks.withType<JavaCompile> {

@@ -30,26 +30,14 @@ tasks {
   }
 }
 
-configurations {
-  all {
-    exclude(group = "asm", module = "asm")
-  }
-}
-
 dependencies {
   compileOnly(gradleApi())
   implementation(localGroovy())
   val otelInstrumentationVersion = "1.24.0-alpha"
   implementation("io.opentelemetry.javaagent:opentelemetry-muzzle:$otelInstrumentationVersion")
-  implementation("io.opentelemetry.instrumentation.muzzle-generation:io.opentelemetry.instrumentation.muzzle-generation.gradle.plugin:$otelInstrumentationVersion") {
-    exclude(group = "gradle.plugin.com.github.johnrengelman", module = "shadow")
-  }
-  implementation("io.opentelemetry.instrumentation.muzzle-check:io.opentelemetry.instrumentation.muzzle-check.gradle.plugin:$otelInstrumentationVersion") {
-    exclude(group = "gradle.plugin.com.github.johnrengelman", module = "shadow")
-  }
-  implementation("com.github.johnrengelman", "shadow","8.1.1"){
-    exclude(group = "asm", module = "asm")
-  }
+  implementation("io.opentelemetry.instrumentation.muzzle-generation:io.opentelemetry.instrumentation.muzzle-generation.gradle.plugin:$otelInstrumentationVersion")
+  implementation("io.opentelemetry.instrumentation.muzzle-check:io.opentelemetry.instrumentation.muzzle-check.gradle.plugin:$otelInstrumentationVersion")
+  implementation("com.github.johnrengelman", "shadow","8.1.1")
   implementation("org.eclipse.aether", "aether-connector-basic", "1.1.0")
   implementation("org.eclipse.aether", "aether-transport-http", "1.1.0")
   implementation("org.apache.maven", "maven-aether-provider", "3.3.9")
