@@ -4,6 +4,7 @@ plugins {
     id("io.opentelemetry.instrumentation.auto-instrumentation")
     muzzle
 }
+evaluationDependsOn(":javaagent-tooling")
 
 muzzle {
     pass {
@@ -24,7 +25,7 @@ afterEvaluate{
     io.opentelemetry.instrumentation.gradle.bytebuddy.ByteBuddyPluginConfigurator(project,
             sourceSets.main.get(),
             io.opentelemetry.javaagent.tooling.muzzle.generation.MuzzleCodeGenerationPlugin::class.java.name,
-            project(":javaagent-tooling").configurations["instrumentationMuzzle"] + configurations.runtimeClasspath
+        files(project(":javaagent-tooling").configurations["instrumentationMuzzle"], configurations.runtimeClasspath)
     ).configure()
 }
 
@@ -42,6 +43,7 @@ dependencies {
     testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_semconv"]}")
 
     testImplementation(project(":instrumentation:apache-httpclient-4.0"))
+    testImplementation(files(project(":instrumentation:apache-httpclient-4.0").dependencyProject.sourceSets.main.map { it.output }))
     testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-apache-httpclient-4.0:${versions["opentelemetry_java_agent"]}")
     testImplementation("org.jboss.resteasy:resteasy-client:3.0.5.Final")
     // ^ This version has timeouts https://issues.redhat.com/browse/RESTEASY-975

@@ -4,6 +4,7 @@ plugins {
     id("io.opentelemetry.instrumentation.auto-instrumentation")
     muzzle
 }
+evaluationDependsOn(":javaagent-tooling")
 
 muzzle {
     // TODO this check fails, but it passes in OTEL https://github.com/hypertrace/javaagent/issues/144
@@ -32,7 +33,7 @@ afterEvaluate{
     io.opentelemetry.instrumentation.gradle.bytebuddy.ByteBuddyPluginConfigurator(project,
             sourceSets.main.get(),
             io.opentelemetry.javaagent.tooling.muzzle.generation.MuzzleCodeGenerationPlugin::class.java.name,
-            project(":javaagent-tooling").configurations["instrumentationMuzzle"] + configurations.runtimeClasspath
+        files(project(":javaagent-tooling").configurations["instrumentationMuzzle"], configurations.runtimeClasspath)
     ).configure()
 }
 

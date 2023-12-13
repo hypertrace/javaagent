@@ -1,13 +1,14 @@
-import com.google.protobuf.gradle.*
+import com.google.protobuf.gradle.id
 
 plugins {
     `java-library`
     idea
-    id("com.google.protobuf") version "0.8.13"
+    id("com.google.protobuf") version "0.9.4"
     id("net.bytebuddy.byte-buddy")
     id("io.opentelemetry.instrumentation.auto-instrumentation")
     muzzle
 }
+evaluationDependsOn(":javaagent-tooling")
 
 muzzle {
     pass {
@@ -24,7 +25,7 @@ afterEvaluate{
     io.opentelemetry.instrumentation.gradle.bytebuddy.ByteBuddyPluginConfigurator(project,
             sourceSets.main.get(),
             io.opentelemetry.javaagent.tooling.muzzle.generation.MuzzleCodeGenerationPlugin::class.java.name,
-    project(":javaagent-tooling").configurations["instrumentationMuzzle"] + configurations.runtimeClasspath
+    files(project(":javaagent-tooling").configurations["instrumentationMuzzle"], configurations.runtimeClasspath)
     ).configure()
 }
 
@@ -37,23 +38,22 @@ idea {
 val testGrpcVersion = "1.30.0"
 
 protobuf {
-    protoc {
-        // The artifact spec for the Protobuf Compiler
-        artifact = "com.google.protobuf:protoc:3.3.0"
+  protoc {
+    // The artifact spec for the Protobuf Compiler
+    artifact = "com.google.protobuf:protoc:3.3.0"
+  }
+  plugins {
+    id("grpc") {
+      artifact = "io.grpc:protoc-gen-grpc-java:1.6.0"
     }
-    plugins {
-        id("grpc") {
-            artifact = "io.grpc:protoc-gen-grpc-java:1.6.0"
-        }
+  }
+  generateProtoTasks {
+    all().configureEach {
+      plugins {
+        id("grpc")
+      }
     }
-    generateProtoTasks {
-        all().forEach { task ->
-            task.plugins {
-                id("grpc") {
-                }
-            }
-        }
-    }
+  }
 }
 
 val versions: Map<String, String> by extra
@@ -75,7 +75,8 @@ dependencies {
     implementation("javax.annotation:javax.annotation-api:1.3.2")
 
     testImplementation(testFixtures(project(":testing-common")))
-    testImplementation(project(":instrumentation:grpc-shaded-netty-1.9"))
+
+    testImplementation(files(project(":instrumentation:grpc-shaded-netty-1.9").artifacts))
 
     testImplementation("io.grpc:grpc-core:${grpcVersion}") {
         version {
@@ -99,11 +100,15 @@ dependencies {
     }
 }
 
+fun computeSourceSetNameForVersion(input: String): String {
+  return "test_${input.replace(".","")}"
+}
+
 val grpcVersions = listOf(grpcVersion, "1.30.0")
 
 sourceSets {
     for (version in grpcVersions) {
-        create("test_$version") {
+        create(computeSourceSetNameForVersion(version)) {
             dependencies {
                 implementationConfigurationName("io.grpc:grpc-core:$version")
             }
@@ -112,10 +117,10 @@ sourceSets {
 }
 
 tasks.compileTestJava {
-    this.classpath += sourceSets.named("test_$grpcVersion").get().output
+    this.classpath += sourceSets.named(computeSourceSetNameForVersion(grpcVersion)).get().output
 }
 tasks.test {
-    classpath += sourceSets.named("test_$grpcVersion").get().output
+    classpath += sourceSets.named(computeSourceSetNameForVersion(grpcVersion)).get().output
 }
 
 for (version in listOf("1.30.0")) {
@@ -136,7 +141,7 @@ for (version in listOf("1.30.0")) {
     }
     val versionedTest = task<Test>("test_${version}") {
         group = "verification"
-        classpath = versionedConfiguration + sourceSets.main.get().output + sourceSets.test.get().output + sourceSets.named("test_$version").get().output
+        classpath = versionedConfiguration + sourceSets.main.get().output + sourceSets.test.get().output + sourceSets.named(computeSourceSetNameForVersion(version)).get().output
         useJUnitPlatform()
     }
     tasks.check { dependsOn(versionedTest) }

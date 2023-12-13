@@ -4,6 +4,7 @@ plugins {
     id("io.opentelemetry.instrumentation.auto-instrumentation")
     muzzle
 }
+evaluationDependsOn(":javaagent-tooling")
 
 muzzle {
     pass {
@@ -23,7 +24,7 @@ afterEvaluate{
     io.opentelemetry.instrumentation.gradle.bytebuddy.ByteBuddyPluginConfigurator(project,
             sourceSets.main.get(),
             io.opentelemetry.javaagent.tooling.muzzle.generation.MuzzleCodeGenerationPlugin::class.java.name,
-            project(":javaagent-tooling").configurations["instrumentationMuzzle"] + configurations.runtimeClasspath
+        files(project(":javaagent-tooling").configurations["instrumentationMuzzle"], configurations.runtimeClasspath)
     ).configure()
 }
 
@@ -40,6 +41,7 @@ dependencies {
     muzzleBootstrap("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common-bootstrap:${versions["opentelemetry_java_agent"]}")
 
     testImplementation(project(":instrumentation:servlet:servlet-rw"))
+    testImplementation(files(project(":instrumentation:servlet:servlet-rw").dependencyProject.sourceSets.main.map { it.output }))
     testImplementation(testFixtures(project(":testing-common")) as ProjectDependency) {
         exclude(group = "org.eclipse.jetty", module = "jetty-server")
     }

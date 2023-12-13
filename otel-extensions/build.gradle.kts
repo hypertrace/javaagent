@@ -3,7 +3,7 @@ import com.google.protobuf.gradle.*
 plugins {
     `java-library`
     idea
-    id("com.google.protobuf") version "0.8.13"
+    id("com.google.protobuf") version "0.9.4"
 }
 
 
@@ -59,15 +59,7 @@ dependencies {
     api("com.google.protobuf:protobuf-java")
     api("com.google.protobuf:protobuf-java-util")
     // convert yaml to json, since java protobuf impl supports only json
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.4") {
-        constraints {
-            implementation("org.yaml:snakeyaml:1.31") {
-                because(
-                    "SNYK error SNYK-JAVA-ORGYAML-2806360"
-                )
-            }
-        }
-    }
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.16.0")
     // fix vulnerability
     constraints {
         api("com.google.code.gson:gson:2.8.9")
