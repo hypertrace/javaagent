@@ -20,6 +20,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import java.util.Map;
+import org.hypertrace.agent.core.filter.FilterResult;
 import org.hypertrace.agent.filter.api.Filter;
 
 /** Mock filter, blocks execution if an attribute with "mockblock" key is present. */
@@ -28,25 +29,26 @@ class MockFilter implements Filter {
   MockFilter() {}
 
   @Override
-  public boolean evaluateRequestHeaders(Span span, Map<String, String> headers) {
+  public FilterResult evaluateRequestHeaders(Span span, Map<String, String> headers) {
     if (headers.containsKey("http.request.header.mockblock")
         || headers.containsKey("rpc.request.metadata.mockblock")) {
       span.setAttribute("hypertrace.mock.filter.result", "true");
-      return true;
+      return new FilterResult(true, 403, "Hypertrace Blocked Request");
     }
-    return false;
+    return new FilterResult(false, 403, "Hypertrace Blocked Request");
   }
 
   @Override
-  public boolean evaluateRequestBody(Span span, String body, Map<String, String> headers) {
+  public FilterResult evaluateRequestBody(Span span, String body, Map<String, String> headers) {
     if (body != null && body.contains("block=true")) {
-      return true;
+      return new FilterResult(true, 403, "Hypertrace Blocked Request");
     }
     if (span instanceof ReadableSpan) {
       String spanReqBody =
           ((ReadableSpan) span).getAttribute(AttributeKey.stringKey("http.request.body"));
-      return spanReqBody != null && spanReqBody.contains("block=true");
+      boolean shouldBlock = spanReqBody != null && spanReqBody.contains("block=true");
+      return new FilterResult(shouldBlock, 403, "Hypertrace Blocked Request");
     }
-    return false;
+    return new FilterResult(false, 403, "Hypertrace Blocked Request");
   }
 }

@@ -29,6 +29,7 @@ import io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.v1_6.GrpcInstr
 import io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.v1_6.GrpcSpanDecorator;
 import java.util.Map;
 import org.hypertrace.agent.core.config.InstrumentationConfig;
+import org.hypertrace.agent.core.filter.FilterResult;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.filter.FilterRegistry;
 import org.slf4j.Logger;
@@ -57,10 +58,13 @@ public class GrpcServerInterceptor implements ServerInterceptor {
         GrpcSpanDecorator.addMetadataAttributes(mapHeaders, currentSpan);
       }
 
-      boolean block = FilterRegistry.getFilter().evaluateRequestHeaders(currentSpan, mapHeaders);
-      if (block) {
-        // TODO Status.PERMISSION_DENIED.withDescription("")
-        call.close(Status.PERMISSION_DENIED, new Metadata());
+      FilterResult filterResult =
+          FilterRegistry.getFilter().evaluateRequestHeaders(currentSpan, mapHeaders);
+      if (filterResult.shouldBlock()) {
+        // TODO: map http codes with grpc codes. filterResult.getBlockingStatusCode()
+        call.close(
+            Status.PERMISSION_DENIED.withDescription(filterResult.getBlockingMsg()),
+            new Metadata());
         @SuppressWarnings("unchecked")
         ServerCall.Listener<ReqT> noop = NoopServerCallListener.INSTANCE;
         return noop;

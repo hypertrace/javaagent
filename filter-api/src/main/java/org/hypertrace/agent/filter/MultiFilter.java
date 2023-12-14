@@ -19,6 +19,7 @@ package org.hypertrace.agent.filter;
 import io.opentelemetry.api.trace.Span;
 import java.util.List;
 import java.util.Map;
+import org.hypertrace.agent.core.filter.FilterResult;
 import org.hypertrace.agent.filter.api.Filter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,12 +35,12 @@ class MultiFilter implements Filter {
   }
 
   @Override
-  public boolean evaluateRequestHeaders(Span span, Map<String, String> headers) {
-    boolean shouldBlock = false;
+  public FilterResult evaluateRequestHeaders(Span span, Map<String, String> headers) {
     for (Filter filter : filters) {
       try {
-        if (filter.evaluateRequestHeaders(span, headers)) {
-          shouldBlock = true;
+        FilterResult filterResult = filter.evaluateRequestHeaders(span, headers);
+        if (filterResult.shouldBlock()) {
+          return filterResult;
         }
       } catch (Throwable t) {
         logger.warn(
@@ -48,16 +49,16 @@ class MultiFilter implements Filter {
             t);
       }
     }
-    return shouldBlock;
+    return new FilterResult(false, 403, "Hypertrace Blocked Request");
   }
 
   @Override
-  public boolean evaluateRequestBody(Span span, String body, Map<String, String> headers) {
-    boolean shouldBlock = false;
+  public FilterResult evaluateRequestBody(Span span, String body, Map<String, String> headers) {
     for (Filter filter : filters) {
       try {
-        if (filter.evaluateRequestBody(span, body, headers)) {
-          shouldBlock = true;
+        FilterResult filterResult = filter.evaluateRequestBody(span, body, headers);
+        if (filterResult.shouldBlock()) {
+          return filterResult;
         }
       } catch (Throwable t) {
         logger.warn(
@@ -66,6 +67,6 @@ class MultiFilter implements Filter {
             t);
       }
     }
-    return shouldBlock;
+    return new FilterResult(false, 403, "Hypertrace Blocked Request");
   }
 }

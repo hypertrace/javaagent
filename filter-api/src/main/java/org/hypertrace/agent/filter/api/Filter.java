@@ -18,6 +18,7 @@ package org.hypertrace.agent.filter.api;
 
 import io.opentelemetry.api.trace.Span;
 import java.util.Map;
+import org.hypertrace.agent.core.filter.FilterResult;
 import org.hypertrace.agent.filter.FilterRegistry;
 
 /**
@@ -32,7 +33,7 @@ public interface Filter {
    * @param headers are used for blocking evaluation.
    * @return filter result
    */
-  boolean evaluateRequestHeaders(Span span, Map<String, String> headers);
+  FilterResult evaluateRequestHeaders(Span span, Map<String, String> headers);
 
   /**
    * Evaluate the execution.
@@ -42,5 +43,5 @@ public interface Filter {
    * @param headers of the request associated with this body
    * @return filter result
    */
-  boolean evaluateRequestBody(Span span, String body, Map<String, String> headers);
+  FilterResult evaluateRequestBody(Span span, String body, Map<String, String> headers);
 }
