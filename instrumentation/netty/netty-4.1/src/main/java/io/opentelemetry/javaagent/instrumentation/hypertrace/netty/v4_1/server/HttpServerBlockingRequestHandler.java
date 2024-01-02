@@ -16,6 +16,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.server;
 
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -30,6 +31,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.netty.v4.common.HttpRequestAndChannel;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.AttributeKeys;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import org.hypertrace.agent.core.filter.FilterResult;
 import org.hypertrace.agent.filter.FilterRegistry;
@@ -78,8 +80,11 @@ public class HttpServerBlockingRequestHandler extends ChannelInboundHandlerAdapt
         new DefaultFullHttpResponse(
             request.protocolVersion(),
             new HttpResponseStatus(
-                filterResult.getBlockingStatusCode(), filterResult.getBlockingMsg()));
-    blockResponse.headers().add("Content-Length", "0");
+                filterResult.getBlockingStatusCode(), HttpResponseStatus.FORBIDDEN.reasonPhrase()),
+            Unpooled.copiedBuffer(filterResult.getBlockingMsg().getBytes(StandardCharsets.UTF_8)));
+    blockResponse
+        .headers()
+        .add("Content-Length", String.valueOf(filterResult.getBlockingMsg().length()));
     ReferenceCountUtil.release(request);
     ctx.writeAndFlush(blockResponse).addListener(ChannelFutureListener.CLOSE);
   }
