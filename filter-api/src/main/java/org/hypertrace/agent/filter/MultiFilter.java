@@ -49,7 +49,7 @@ class MultiFilter implements Filter {
             t);
       }
     }
-    return new FilterResult(false, 403, "Hypertrace Blocked Request");
+    return new FilterResult(false, 0, "");
   }
 
   @Override
@@ -67,6 +67,6 @@ class MultiFilter implements Filter {
             t);
       }
     }
-    return new FilterResult(false, 403, "Hypertrace Blocked Request");
+    return new FilterResult(false, 0, "");
   }
 }

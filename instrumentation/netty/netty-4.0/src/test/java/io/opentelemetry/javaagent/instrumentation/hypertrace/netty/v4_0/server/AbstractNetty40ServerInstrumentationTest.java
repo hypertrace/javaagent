@@ -260,7 +260,7 @@ public abstract class AbstractNetty40ServerInstrumentationTest extends AbstractI
 
     try (Response response = httpClient.newCall(request2).execute()) {
       Assertions.assertEquals(403, response.code());
-      Assertions.assertTrue(response.body().string().isEmpty());
+      Assertions.assertEquals("Hypertrace Blocked Request", response.body().string());
     }
 
     List<List<SpanData>> traces2 = TEST_WRITER.getTraces();
