@@ -159,7 +159,7 @@ public class GrpcInstrumentationTest extends AbstractInstrumenterTest {
     try {
       Response response = blockingStub.sayHello(REQUEST);
     } catch (StatusRuntimeException ex) {
-      Assertions.assertEquals(Status.PERMISSION_DENIED, ex.getStatus());
+      Assertions.assertEquals(Status.PERMISSION_DENIED.getCode(), ex.getStatus().getCode());
     }
 
     TEST_WRITER.waitForSpans(2);

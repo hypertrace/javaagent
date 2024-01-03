@@ -30,6 +30,7 @@ import io.opentelemetry.javaagent.bootstrap.Java8BytecodeBridge;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeInstrumentation;
 import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -45,6 +46,7 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import org.hypertrace.agent.core.config.InstrumentationConfig;
+import org.hypertrace.agent.core.filter.FilterResult;
 import org.hypertrace.agent.core.instrumentation.HypertraceCallDepthThreadLocalMap;
 import org.hypertrace.agent.core.instrumentation.HypertraceEvaluationException;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
@@ -115,8 +117,14 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
         headers.put(attributeKey.getKey(), headerValue);
       }
 
-      if (FilterRegistry.getFilter().evaluateRequestHeaders(currentSpan, headers)) {
-        httpResponse.setStatus(403);
+      FilterResult filterResult =
+          FilterRegistry.getFilter().evaluateRequestHeaders(currentSpan, headers);
+      if (filterResult.shouldBlock()) {
+        try {
+          httpResponse.getWriter().write(filterResult.getBlockingMsg());
+        } catch (IOException ignored) {
+        }
+        httpResponse.setStatus(filterResult.getBlockingStatusCode());
         // skip execution of the user code
         return true;
       }
@@ -208,7 +216,12 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
         Throwable tmp = throwable;
         while (tmp != null) { // loop in case our exception is nested (eg. springframework)
           if (tmp instanceof HypertraceEvaluationException) {
-            httpResponse.setStatus(403);
+            FilterResult filterResult = ((HypertraceEvaluationException) tmp).getFilterResult();
+            try {
+              httpResponse.getWriter().write(filterResult.getBlockingMsg());
+            } catch (IOException ignored) {
+            }
+            httpResponse.setStatus(filterResult.getBlockingStatusCode());
             // bytebuddy treats the reassignment of this variable to null as an instruction to
             // suppress this exception, which is what we want
             throwable = null;

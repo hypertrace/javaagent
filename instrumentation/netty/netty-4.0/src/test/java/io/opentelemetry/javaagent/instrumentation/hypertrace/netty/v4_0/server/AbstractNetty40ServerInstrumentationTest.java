@@ -148,7 +148,7 @@ public abstract class AbstractNetty40ServerInstrumentationTest extends AbstractI
 
     try (Response response = httpClient.newCall(request).execute()) {
       Assertions.assertEquals(403, response.code());
-      Assertions.assertTrue(response.body().string().isEmpty());
+      Assertions.assertEquals("Hypertrace Blocked Request", response.body().string());
     }
 
     List<List<SpanData>> traces = TEST_WRITER.getTraces();
@@ -168,9 +168,7 @@ public abstract class AbstractNetty40ServerInstrumentationTest extends AbstractI
             .getAttributes()
             .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_HEADER_NAME)));
     Assertions.assertNull(
-        spanData
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_BODY)));
+        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
 
     RequestBody requestBody = blockedRequestBody(true, 3000, 75);
     Request request2 =
@@ -182,7 +180,7 @@ public abstract class AbstractNetty40ServerInstrumentationTest extends AbstractI
 
     try (Response response = httpClient.newCall(request2).execute()) {
       Assertions.assertEquals(403, response.code());
-      Assertions.assertTrue(response.body().string().isEmpty());
+      Assertions.assertEquals("Hypertrace Blocked Request", response.body().string());
     }
 
     List<List<SpanData>> traces2 = TEST_WRITER.getTraces();
@@ -202,9 +200,7 @@ public abstract class AbstractNetty40ServerInstrumentationTest extends AbstractI
             .getAttributes()
             .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_HEADER_NAME)));
     Assertions.assertNull(
-        spanData2
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_BODY)));
+        spanData2.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
   }
 
   @Test
@@ -264,7 +260,7 @@ public abstract class AbstractNetty40ServerInstrumentationTest extends AbstractI
 
     try (Response response = httpClient.newCall(request2).execute()) {
       Assertions.assertEquals(403, response.code());
-      Assertions.assertTrue(response.body().string().isEmpty());
+      Assertions.assertEquals("Hypertrace Blocked Request", response.body().string());
     }
 
     List<List<SpanData>> traces2 = TEST_WRITER.getTraces();

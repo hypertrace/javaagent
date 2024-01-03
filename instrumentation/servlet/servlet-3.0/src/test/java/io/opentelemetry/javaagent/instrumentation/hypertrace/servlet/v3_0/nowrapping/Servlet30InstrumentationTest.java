@@ -278,6 +278,7 @@ public class Servlet30InstrumentationTest extends AbstractInstrumenterTest {
             .build();
     try (Response response = httpClient.newCall(request).execute()) {
       Assertions.assertEquals(403, response.code());
+      Assertions.assertEquals("Hypertrace Blocked Request", response.body().string());
     }
 
     TEST_WRITER.waitForTraces(1);
@@ -307,6 +308,7 @@ public class Servlet30InstrumentationTest extends AbstractInstrumenterTest {
             .build();
     try (Response response = httpClient.newCall(request).execute()) {
       Assertions.assertEquals(403, response.code());
+      Assertions.assertEquals("Hypertrace Blocked Request", response.body().string());
     }
 
     TEST_WRITER.waitForTraces(1);
@@ -336,6 +338,7 @@ public class Servlet30InstrumentationTest extends AbstractInstrumenterTest {
             .build();
     try (Response response = httpClient.newCall(request).execute()) {
       Assertions.assertEquals(403, response.code());
+      Assertions.assertEquals("Hypertrace Blocked Request", response.body().string());
     }
 
     TEST_WRITER.waitForTraces(1);

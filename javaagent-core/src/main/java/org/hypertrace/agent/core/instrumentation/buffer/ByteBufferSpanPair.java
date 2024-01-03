@@ -23,6 +23,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Map;
 import java.util.Objects;
 import org.hypertrace.agent.core.TriFunction;
+import org.hypertrace.agent.core.filter.FilterResult;
 import org.hypertrace.agent.core.instrumentation.HypertraceEvaluationException;
 
 public class ByteBufferSpanPair {
@@ -31,12 +32,12 @@ public class ByteBufferSpanPair {
   private final BoundedByteArrayOutputStream buffer;
   private final Map<String, String> headers;
   private boolean bufferCaptured;
-  private final TriFunction<Span, String, Map<String, String>, Boolean> filter;
+  private final TriFunction<Span, String, Map<String, String>, FilterResult> filter;
 
   public ByteBufferSpanPair(
       Span span,
       BoundedByteArrayOutputStream buffer,
-      TriFunction<Span, String, Map<String, String>, Boolean> filter,
+      TriFunction<Span, String, Map<String, String>, FilterResult> filter,
       Map<String, String> headers) {
     this.span = span;
     this.buffer = buffer;
@@ -57,10 +58,10 @@ public class ByteBufferSpanPair {
       // ignore charset has been parsed before
     }
     span.setAttribute(attributeKey, requestBody);
-    final boolean block;
-    block = filter.apply(span, requestBody, headers);
-    if (block) {
-      throw new HypertraceEvaluationException();
+    final FilterResult filterResult;
+    filterResult = filter.apply(span, requestBody, headers);
+    if (filterResult.shouldBlock()) {
+      throw new HypertraceEvaluationException(filterResult);
     }
   }
 

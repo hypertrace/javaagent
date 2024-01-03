@@ -16,6 +16,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.server;
 
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -30,7 +31,9 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.netty.v4.common.HttpRequestAndChannel;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.AttributeKeys;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import org.hypertrace.agent.core.filter.FilterResult;
 import org.hypertrace.agent.filter.FilterRegistry;
 
 public class HttpServerBlockingRequestHandler extends ChannelInboundHandlerAdapter {
@@ -51,26 +54,37 @@ public class HttpServerBlockingRequestHandler extends ChannelInboundHandlerAdapt
     if (msg instanceof HttpRequest) {
       Attribute<Map<String, String>> headersAttr = channel.attr(AttributeKeys.REQUEST_HEADERS);
       Map<String, String> headers = headersAttr.getAndRemove();
-      if (headers != null && FilterRegistry.getFilter().evaluateRequestHeaders(span, headers)) {
-        forbidden(ctx, (HttpRequest) msg);
-        return;
+      if (headers != null) {
+        FilterResult filterResult =
+            FilterRegistry.getFilter().evaluateRequestHeaders(span, headers);
+        if (filterResult.shouldBlock()) {
+          forbidden(ctx, (HttpRequest) msg, filterResult);
+          return;
+        }
       }
     }
     if (msg instanceof HttpContent) {
-      if (FilterRegistry.getFilter().evaluateRequestBody(span, null, null)) {
+      FilterResult filterResult = FilterRegistry.getFilter().evaluateRequestBody(span, null, null);
+      if (filterResult.shouldBlock()) {
         Attribute<?> requestAttr = channel.attr(AttributeKeys.REQUEST);
         HttpRequest req = ((HttpRequestAndChannel) (requestAttr.get())).request();
-        forbidden(ctx, req);
+        forbidden(ctx, req, filterResult);
         return;
       }
     }
     ctx.fireChannelRead(msg);
   }
 
-  static void forbidden(ChannelHandlerContext ctx, HttpRequest request) {
+  static void forbidden(ChannelHandlerContext ctx, HttpRequest request, FilterResult filterResult) {
     DefaultFullHttpResponse blockResponse =
-        new DefaultFullHttpResponse(request.protocolVersion(), HttpResponseStatus.FORBIDDEN);
-    blockResponse.headers().add("Content-Length", "0");
+        new DefaultFullHttpResponse(
+            request.protocolVersion(),
+            new HttpResponseStatus(
+                filterResult.getBlockingStatusCode(), HttpResponseStatus.FORBIDDEN.reasonPhrase()),
+            Unpooled.copiedBuffer(filterResult.getBlockingMsg().getBytes(StandardCharsets.UTF_8)));
+    blockResponse
+        .headers()
+        .add("Content-Length", String.valueOf(filterResult.getBlockingMsg().length()));
     ReferenceCountUtil.release(request);
     ctx.writeAndFlush(blockResponse).addListener(ChannelFutureListener.CLOSE);
   }

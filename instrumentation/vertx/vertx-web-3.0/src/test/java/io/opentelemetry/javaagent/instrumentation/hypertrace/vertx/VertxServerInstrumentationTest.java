@@ -144,7 +144,7 @@ class VertxServerInstrumentationTest extends AbstractInstrumenterTest {
 
     try (Response response = httpClient.newCall(request).execute()) {
       Assertions.assertEquals(403, response.code());
-      Assertions.assertTrue(response.body().string().isEmpty());
+      Assertions.assertEquals("Hypertrace Blocked Request", response.body().string());
     }
 
     List<List<SpanData>> traces = TEST_WRITER.getTraces();

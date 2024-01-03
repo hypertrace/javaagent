@@ -21,6 +21,7 @@ import io.opentelemetry.api.trace.Span;
 import java.io.IOException;
 import java.util.Map;
 import org.hypertrace.agent.core.TriFunction;
+import org.hypertrace.agent.core.filter.FilterResult;
 import org.hypertrace.agent.core.instrumentation.HypertraceEvaluationException;
 
 public class CharBufferSpanPair {
@@ -28,7 +29,7 @@ public class CharBufferSpanPair {
   public final Span span;
   public final Map<String, String> headers;
   private final BoundedCharArrayWriter buffer;
-  private final TriFunction<Span, String, Map<String, String>, Boolean> filter;
+  private final TriFunction<Span, String, Map<String, String>, FilterResult> filter;
 
   /**
    * A flag to signalize that buffer has been added to span. For instance Jetty calls reader#read in
@@ -39,7 +40,7 @@ public class CharBufferSpanPair {
   public CharBufferSpanPair(
       Span span,
       BoundedCharArrayWriter buffer,
-      TriFunction<Span, String, Map<String, String>, Boolean> filter,
+      TriFunction<Span, String, Map<String, String>, FilterResult> filter,
       Map<String, String> headers) {
     this.span = span;
     this.buffer = buffer;
@@ -54,10 +55,10 @@ public class CharBufferSpanPair {
     bufferCaptured = true;
     String requestBody = buffer.toString();
     span.setAttribute(attributeKey, requestBody);
-    final boolean block;
-    block = filter.apply(span, requestBody, headers);
-    if (block) {
-      throw new HypertraceEvaluationException();
+    final FilterResult filterResult;
+    filterResult = filter.apply(span, requestBody, headers);
+    if (filterResult.shouldBlock()) {
+      throw new HypertraceEvaluationException(filterResult);
     }
   }
 

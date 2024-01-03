@@ -25,6 +25,7 @@ import java.util.Map;
 import org.BufferedReaderPrintWriterContextAccess;
 import org.TestBufferedReader;
 import org.hypertrace.agent.core.TriFunction;
+import org.hypertrace.agent.core.filter.FilterResult;
 import org.hypertrace.agent.core.instrumentation.buffer.*;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.junit.jupiter.api.Assertions;
@@ -34,8 +35,8 @@ public class BufferedReaderInstrumentationTest extends AbstractInstrumenterTest 
 
   private static final String TEST_SPAN_NAME = "foo";
   private static final String BODY = "boobar";
-  private static final TriFunction<Span, String, Map<String, String>, Boolean> NOOP_FILTER =
-      (span, s, stringStringMap) -> false;
+  private static final TriFunction<Span, String, Map<String, String>, FilterResult> NOOP_FILTER =
+      (span, s, stringStringMap) -> new FilterResult(false, 0, "");
 
   @Test
   public void read() throws IOException {

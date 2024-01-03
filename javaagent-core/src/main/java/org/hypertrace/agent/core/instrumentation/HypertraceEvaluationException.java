@@ -16,6 +16,8 @@
 
 package org.hypertrace.agent.core.instrumentation;
 
+import org.hypertrace.agent.core.filter.FilterResult;
+
 /**
  * A custom exception used to terminate the handling of a request thread after the initial
  * opportunity for middleware to look at the contents of an HTTP request and determine if it should
@@ -34,7 +36,14 @@ public final class HypertraceEvaluationException extends RuntimeException {
   private static final String DEFAULT_MESSAGE =
       "A filter implementation determined that this request should be blocked";
 
-  public HypertraceEvaluationException() {
+  private final FilterResult filterResult;
+
+  public HypertraceEvaluationException(FilterResult filterResult) {
     super(DEFAULT_MESSAGE);
+    this.filterResult = filterResult;
+  }
+
+  public FilterResult getFilterResult() {
+    return filterResult;
   }
 }

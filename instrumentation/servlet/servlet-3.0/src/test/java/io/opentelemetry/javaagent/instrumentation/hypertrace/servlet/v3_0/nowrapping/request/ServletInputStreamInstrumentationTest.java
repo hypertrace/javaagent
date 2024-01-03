@@ -26,6 +26,7 @@ import javax.servlet.ServletInputStream;
 import org.ServletStreamContextAccess;
 import org.TestServletInputStream;
 import org.hypertrace.agent.core.TriFunction;
+import org.hypertrace.agent.core.filter.FilterResult;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 import org.hypertrace.agent.core.instrumentation.buffer.ByteBufferSpanPair;
@@ -91,6 +92,6 @@ public class ServletInputStreamInstrumentationTest extends AbstractInstrumenterT
     Assertions.assertEquals(BODY.substring(2), buffer.toStringWithSuppliedCharset());
   }
 
-  private static final TriFunction<Span, String, Map<String, String>, Boolean> NOOP_FILTER =
-      (span, body, headers) -> false;
+  private static final TriFunction<Span, String, Map<String, String>, FilterResult> NOOP_FILTER =
+      (span, body, headers) -> new FilterResult(false, 0, "");
 }
