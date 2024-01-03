@@ -61,12 +61,9 @@ public class GrpcServerInterceptor implements ServerInterceptor {
       FilterResult filterResult =
           FilterRegistry.getFilter().evaluateRequestHeaders(currentSpan, mapHeaders);
       if (filterResult.shouldBlock()) {
-        // We cannot send custom message in grpc calls, so added the Status message as the blocking
-        // message
+        // We cannot send custom message in grpc calls
         // TODO: map http codes with grpc codes. filterResult.getBlockingStatusCode()
-        call.close(
-            Status.PERMISSION_DENIED.withDescription(filterResult.getBlockingMsg()),
-            new Metadata());
+        call.close(Status.PERMISSION_DENIED, new Metadata());
         @SuppressWarnings("unchecked")
         ServerCall.Listener<ReqT> noop = NoopServerCallListener.INSTANCE;
         return noop;
