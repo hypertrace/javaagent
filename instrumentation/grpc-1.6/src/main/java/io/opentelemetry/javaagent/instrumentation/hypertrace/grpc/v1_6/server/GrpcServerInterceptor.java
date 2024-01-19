@@ -61,9 +61,9 @@ public class GrpcServerInterceptor implements ServerInterceptor {
       FilterResult filterResult =
           FilterRegistry.getFilter().evaluateRequestHeaders(currentSpan, mapHeaders);
       if (filterResult.shouldBlock()) {
+        // map http codes with grpc codes
         // We cannot send custom message in grpc calls
-        // TODO: map http codes with grpc codes. filterResult.getBlockingStatusCode()
-        call.close(Status.PERMISSION_DENIED, new Metadata());
+        call.close(mapHttpToGrpcStatus(filterResult.getBlockingStatusCode()), new Metadata());
         @SuppressWarnings("unchecked")
         ServerCall.Listener<ReqT> noop = NoopServerCallListener.INSTANCE;
         return noop;
@@ -75,6 +75,32 @@ public class GrpcServerInterceptor implements ServerInterceptor {
     } catch (Throwable t) {
       log.debug("exception thrown during intercepting server call", t);
       return next.startCall(call, headers);
+    }
+  }
+
+  /**
+   * Mapping according to https://github.com/grpc/grpc/blob/master/doc/http-grpc-status-mapping.md
+   */
+  private static Status mapHttpToGrpcStatus(int httpStatus) {
+    switch (httpStatus) {
+      case 400:
+        return Status.INTERNAL;
+      case 401:
+        return Status.UNAUTHENTICATED;
+      case 403:
+        return Status.PERMISSION_DENIED;
+      case 404:
+        return Status.UNIMPLEMENTED;
+      case 429:
+        return Status.UNAVAILABLE;
+      case 502:
+        return Status.UNAVAILABLE;
+      case 503:
+        return Status.UNAVAILABLE;
+      case 504:
+        return Status.UNAVAILABLE;
+      default:
+        return Status.UNKNOWN;
     }
   }
 
