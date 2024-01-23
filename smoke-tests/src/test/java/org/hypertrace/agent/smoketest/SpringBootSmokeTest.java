@@ -99,7 +99,7 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
         ResourceAttributes.SERVICE_NAME.getKey(),
         traces.get(0).getResourceSpans(0).getResource().getAttributes(11).getKey());
     Assertions.assertEquals(
-        ResourceAttributes.TELEMETRY_AUTO_VERSION.getKey(),
+        ResourceAttributes.TELEMETRY_DISTRO_VERSION.getKey(),
         traces.get(0).getResourceSpans(0).getResource().getAttributes(12).getKey());
     Assertions.assertEquals(
         ResourceAttributes.TELEMETRY_SDK_LANGUAGE.getKey(),
