@@ -50,8 +50,10 @@ public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapte
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) {
     Channel channel = ctx.channel();
-    Deque<ServerContext> serverContexts = ctx.channel()
-      .attr(io.opentelemetry.instrumentation.netty.v4_1.internal.AttributeKeys.SERVER_CONTEXT).get();
+    Deque<ServerContext> serverContexts =
+        ctx.channel()
+            .attr(io.opentelemetry.instrumentation.netty.v4_1.internal.AttributeKeys.SERVER_CONTEXT)
+            .get();
     ServerContext serverContext = serverContexts != null ? serverContexts.peekFirst() : null;
     Context context = serverContext != null ? serverContext.context() : null;
     if (context == null) {
