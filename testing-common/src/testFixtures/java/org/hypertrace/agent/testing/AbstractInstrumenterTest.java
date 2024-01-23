@@ -28,6 +28,8 @@ import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
+
+import io.opentelemetry.javaagent.tooling.config.EarlyInitAgentConfig;
 import net.bytebuddy.agent.ByteBuddyAgent;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -115,7 +117,7 @@ public abstract class AbstractInstrumenterTest {
       // ---------------------------------------------------------------------
       System.setProperty("otel.instrumentation.internal-reflection.enabled", "false");
       AgentInstaller.installBytebuddyAgent(
-          INSTRUMENTATION, AgentInitializer.getExtensionsClassLoader());
+          INSTRUMENTATION, AgentInitializer.getExtensionsClassLoader(), EarlyInitAgentConfig.create());
       INSTRUMENTED = true;
     }
     if (TEST_TRACER == null) {
