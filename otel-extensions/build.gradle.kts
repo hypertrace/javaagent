@@ -30,7 +30,7 @@ dependencies {
     api(project(":filter-api"))
 
     compileOnly("io.opentelemetry:opentelemetry-sdk:${versions["opentelemetry"]}")
-    compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${versions["opentelemetry"]}-alpha")
+    compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${versions["opentelemetry"]}")
     compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi:${versions["opentelemetry"]}")
 
     implementation("io.opentelemetry:opentelemetry-semconv:${versions["opentelemetry_semconv"]}")
@@ -65,6 +65,6 @@ dependencies {
         api("com.google.code.gson:gson:2.8.9")
     }
 
-    testImplementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${versions["opentelemetry"]}-alpha")
+    testImplementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${versions["opentelemetry"]}")
     testImplementation("io.opentelemetry:opentelemetry-sdk:${versions["opentelemetry"]}")
 }
