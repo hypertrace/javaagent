@@ -28,16 +28,7 @@ val versions: Map<String, String> by extra
 
 dependencies {
     api(project(":filter-api"))
-    implementation(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${versions["opentelemetry_instrumentation_bom_alpha"]}"))
-
-    compileOnly("io.opentelemetry:opentelemetry-sdk")
-    compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure")
-    compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi")
-
-    implementation("io.opentelemetry.semconv:opentelemetry-semconv")
-    implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api")
-    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
-    implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling") {
+    implementation(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${versions["opentelemetry_instrumentation_bom_alpha"]}")) {
         constraints {
             implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling-java9") {
                 attributes {
@@ -47,6 +38,16 @@ dependencies {
                 }
             }
         }
+    }
+
+    compileOnly("io.opentelemetry:opentelemetry-sdk")
+    compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure")
+    compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi")
+
+    implementation("io.opentelemetry.semconv:opentelemetry-semconv")
+    implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api")
+    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
+    implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling") {
         exclude("io.opentelemetry.javaagent", "opentelemetry-javaagent-bootstrap")
     }
 
