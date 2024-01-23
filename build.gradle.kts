@@ -54,14 +54,14 @@ subprojects {
     extra.set("versions", mapOf(
         // when updating these values, some values must also be updated in buildSrc as this map
         // cannot be accessed there
-        "opentelemetry" to "1.24.0",
-        "opentelemetry_semconv" to "1.24.0-alpha",
+        "opentelemetry" to "1.32.0",
+        "opentelemetry_semconv" to "1.32.0-alpha",
         "opentelemetry_proto" to "0.11.0-alpha",
-        "opentelemetry_java_agent" to "1.24.0-alpha",
-        "opentelemetry_java_agent_all" to "1.24.0",
-        "opentelemetry_java_agent-tooling" to "1.24.0-alpha",
+        "opentelemetry_java_agent" to "1.32.0-alpha",
+        "opentelemetry_java_agent_all" to "1.32.0",
+        "opentelemetry_java_agent-tooling" to "1.32.0-alpha",
 
-        "opentelemetry_gradle_plugin" to "1.24.0-alpha",
+        "opentelemetry_gradle_plugin" to "1.32.0-alpha",
         "byte_buddy" to "1.12.10",
         "slf4j" to "2.0.7"
     ))
