@@ -20,9 +20,9 @@ dependencies {
     testFixturesApi("com.squareup.okhttp3:logging-interceptor:4.9.0")
     testFixturesImplementation("io.opentelemetry:opentelemetry-exporter-logging")
     testFixturesImplementation("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap")
-    testFixturesImplementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${versions["opentelemetry_java_agent-tooling"]}") {
+    testFixturesImplementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling") {
         constraints {
-            implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling-java9:1.7.2-alpha") {
+            implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling-java9") {
                 attributes {
                     // this transitive dependency creates classes compatible with Java 9 and up, but is only referenced in safe ways for
                     // java 8 by the javaagent-tooling dependency
