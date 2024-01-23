@@ -11,7 +11,8 @@ dependencies {
     // update the dependencies also in the instrumentations sub-projects
     // https://oss.jfrog.org/artifactory/oss-snapshot-local/io/opentelemetry/instrumentation/auto/
     // https://dl.bintray.com/open-telemetry/maven/
-    implementation("io.opentelemetry.javaagent", "opentelemetry-javaagent", version = "${versions["opentelemetry_java_agent_all"]}")
+    implementation(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${versions["opentelemetry_instrumentation_bom_alpha"]}"))
+    implementation("io.opentelemetry.javaagent:opentelemetry-javaagent")
     implementation(project(":filter-api"))
 }
 
@@ -62,7 +63,7 @@ tasks {
         manifest {
             attributes.put("Implementation-Title", "javaagent")
             attributes.put("Implementation-Version", project.version)
-            attributes.put("OpenTelemetry-Instrumentation-Version", "${versions["opentelemetry_java_agent"]}")
+            attributes.put("OpenTelemetry-Instrumentation-Version", "${versions["opentelemetry_instrumentation_bom_alpha"]}")
             attributes.put("Implementation-Vendor", "Hypertrace.org")
             attributes.put("Implementation-Url", "https://github.com/hypertrace/javaagent")
             attributes.put("Main-Class", "io.opentelemetry.javaagent.OpenTelemetryAgent")

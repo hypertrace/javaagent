@@ -60,8 +60,9 @@ val versions: Map<String, String> by extra
 val grpcVersion = "1.6.0"
 
 dependencies {
-    api("io.opentelemetry.instrumentation:opentelemetry-grpc-1.6:${versions["opentelemetry_java_agent"]}")
-    testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-grpc-1.6:${versions["opentelemetry_java_agent"]}")
+    api(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${versions["opentelemetry_instrumentation_bom_alpha"]}"))
+    api("io.opentelemetry.instrumentation:opentelemetry-grpc-1.6")
+    testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-grpc-1.6")
     implementation(project(":instrumentation:grpc-common"))
     implementation(project(":shaded-protobuf-java-util", "shadow"))
 
@@ -128,9 +129,10 @@ for (version in listOf("1.30.0")) {
         extendsFrom(configurations.runtimeClasspath.get())
     }
     dependencies {
+        versionedConfiguration(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${versions["opentelemetry_instrumentation_bom_alpha"]}"))
         versionedConfiguration(testFixtures(project(":testing-common")))
-        versionedConfiguration("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-grpc-1.6:${versions["opentelemetry_java_agent"]}")
-        versionedConfiguration("io.opentelemetry.instrumentation:opentelemetry-grpc-1.6:${versions["opentelemetry_java_agent"]}")
+        versionedConfiguration("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-grpc-1.6")
+        versionedConfiguration("io.opentelemetry.instrumentation:opentelemetry-grpc-1.6")
         versionedConfiguration(project(":instrumentation:grpc-shaded-netty-1.9"))
         versionedConfiguration(platform("io.grpc:grpc-bom:$version"))
         versionedConfiguration("io.grpc:grpc-core")

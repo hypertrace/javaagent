@@ -31,14 +31,15 @@ afterEvaluate{
 val versions: Map<String, String> by extra
 
 dependencies {
-    implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common:${versions["opentelemetry_java_agent"]}")
-    implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0:${versions["opentelemetry_java_agent"]}") // Servlet3Accessor
-    testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0:${versions["opentelemetry_java_agent"]}")
-    testImplementation("io.opentelemetry.javaagent:opentelemetry-muzzle:${versions["opentelemetry_java_agent"]}")
-    compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:${versions["opentelemetry_java_agent"]}")
+    implementation(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${versions["opentelemetry_instrumentation_bom_alpha"]}"))
+    implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common")
+    implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0") // Servlet3Accessor
+    testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0")
+    testImplementation("io.opentelemetry.javaagent:opentelemetry-muzzle")
+    compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap")
     compileOnly("javax.servlet:javax.servlet-api:3.1.0")
-    testRuntimeOnly("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common-bootstrap:${versions["opentelemetry_java_agent"]}")
-    muzzleBootstrap("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common-bootstrap:${versions["opentelemetry_java_agent"]}")
+    testRuntimeOnly("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common-bootstrap")
+    muzzleBootstrap("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common-bootstrap")
 
     testImplementation(project(":instrumentation:servlet:servlet-rw"))
     testImplementation(files(project(":instrumentation:servlet:servlet-rw").dependencyProject.sourceSets.main.map { it.output }))
@@ -47,5 +48,5 @@ dependencies {
     }
     testImplementation("org.eclipse.jetty:jetty-server:8.1.22.v20160922")
     testImplementation("org.eclipse.jetty:jetty-servlet:8.1.22.v20160922")
-    testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_semconv"]}")
+    testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv")
 }

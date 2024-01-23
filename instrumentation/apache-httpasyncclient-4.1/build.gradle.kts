@@ -31,9 +31,10 @@ dependencies {
     api(project(":instrumentation:java-streams"))
     api(project(":instrumentation:apache-httpclient-4.0"))
 
-    implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-apache-httpasyncclient-4.1:${versions["opentelemetry_java_agent"]}")
-    testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-apache-httpclient-4.0:${versions["opentelemetry_java_agent"]}")
-    testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_semconv"]}")
+    implementation(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${versions["opentelemetry_instrumentation_bom_alpha"]}"))
+    implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-apache-httpasyncclient-4.1")
+    testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-apache-httpclient-4.0")
+    testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv")
     library("org.apache.httpcomponents:httpasyncclient:4.1")
      testImplementation(testFixtures(project(":testing-common")))
 }

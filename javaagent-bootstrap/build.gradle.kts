@@ -7,9 +7,10 @@ plugins {
 val versions: Map<String, String> by extra
 
 dependencies{
-    api("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap:${versions["opentelemetry_java_agent"]}")
-    api("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:${versions["opentelemetry"]}")
-    api("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:${versions["opentelemetry_java_agent"]}")
+    api(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${versions["opentelemetry_instrumentation_bom_alpha"]}"))
+    api("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap")
+    api("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
+    api("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api")
     implementation(project(":javaagent-core"))
     implementation(project(":filter-api"))
 }

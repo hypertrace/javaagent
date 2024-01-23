@@ -11,7 +11,8 @@ val micronautTestVersion = "3.0.5"
 
 dependencies {
     implementation(project(":instrumentation:netty:netty-4.1"))
-    testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.1:${versions["opentelemetry_java_agent"]}")
+    testImplementation(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${versions["opentelemetry_instrumentation_bom_alpha"]}"))
+    testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.1")
     testImplementation(testFixtures(project(":testing-common")))
     testImplementation("io.micronaut.test:micronaut-test-junit5:${micronautTestVersion}")
     testImplementation("io.micronaut:micronaut-http-server-netty:${micronautVersion}")
@@ -22,6 +23,6 @@ dependencies {
     testImplementation("io.micronaut.rxjava2:micronaut-rxjava2:1.1.0")
     testImplementation("io.micronaut.rxjava2:micronaut-rxjava2-http-server-netty:1.1.0")
     testImplementation("io.micronaut.rxjava2:micronaut-rxjava2-http-client:1.1.0")
-    testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_semconv"]}")
-    testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.1:${versions["opentelemetry_java_agent"]}")
+    testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv")
+    testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.1")
 }

@@ -28,14 +28,15 @@ val versions: Map<String, String> by extra
 
 dependencies {
     api(project(":filter-api"))
+    implementation(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${versions["opentelemetry_instrumentation_bom_alpha"]}"))
 
-    compileOnly("io.opentelemetry:opentelemetry-sdk:${versions["opentelemetry"]}")
-    compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${versions["opentelemetry"]}-alpha")
-    compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi:${versions["opentelemetry"]}")
+    compileOnly("io.opentelemetry:opentelemetry-sdk")
+    compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure")
+    compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi")
 
-    implementation("io.opentelemetry:opentelemetry-semconv:${versions["opentelemetry"]}-alpha")
-    implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:${versions["opentelemetry_java_agent"]}")
-    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:${versions["opentelemetry"]}")
+    implementation("io.opentelemetry.semconv:opentelemetry-semconv")
+    implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api")
+    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
     implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${versions["opentelemetry_java_agent-tooling"]}") {
         constraints {
             implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling-java9:${versions["opentelemetry_java_agent-tooling"]}") {
@@ -65,6 +66,6 @@ dependencies {
         api("com.google.code.gson:gson:2.8.9")
     }
 
-    testImplementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${versions["opentelemetry"]}-alpha")
-    testImplementation("io.opentelemetry:opentelemetry-sdk:${versions["opentelemetry"]}")
+    testImplementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure")
+    testImplementation("io.opentelemetry:opentelemetry-sdk")
 }

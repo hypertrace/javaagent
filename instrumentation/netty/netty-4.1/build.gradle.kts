@@ -44,13 +44,14 @@ afterEvaluate{
 val versions: Map<String, String> by extra
 
 dependencies {
-    implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4-common:${versions["opentelemetry_java_agent"]}")
-    implementation("io.opentelemetry.instrumentation:opentelemetry-netty-common:${versions["opentelemetry_java_agent"]}")
-    implementation("io.opentelemetry.instrumentation:opentelemetry-netty-4-common:${versions["opentelemetry_java_agent"]}")
-    implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.1:${versions["opentelemetry_java_agent"]}")
-    implementation("io.opentelemetry.instrumentation:opentelemetry-netty-4.1:${versions["opentelemetry_java_agent"]}")
-    implementation("io.opentelemetry:opentelemetry-semconv:${versions["opentelemetry_semconv"]}")
-    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_semconv"]}")
+    implementation(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${versions["opentelemetry_instrumentation_bom_alpha"]}"))
+    implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4-common")
+    implementation("io.opentelemetry.instrumentation:opentelemetry-netty-common")
+    implementation("io.opentelemetry.instrumentation:opentelemetry-netty-4-common")
+    implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.1")
+    implementation("io.opentelemetry.instrumentation:opentelemetry-netty-4.1")
+    implementation("io.opentelemetry.semconv:opentelemetry-semconv")
+    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv")
     library("io.netty:netty-codec-http:4.1.0.Final")
 
      testImplementation(testFixtures(project(":testing-common")))

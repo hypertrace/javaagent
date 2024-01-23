@@ -6,7 +6,8 @@ plugins {
 val versions: Map<String, String> by extra
 
 dependencies {
-   api("io.opentelemetry:opentelemetry-api:${versions["opentelemetry"]}")
+   api(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${versions["opentelemetry_instrumentation_bom_alpha"]}"))
+   api("io.opentelemetry:opentelemetry-api")
    api(project(":javaagent-core"))
    compileOnly("com.google.auto.service:auto-service-annotations:1.0")
    implementation("org.slf4j:slf4j-api:${versions["slf4j"]}")

@@ -21,8 +21,9 @@ dependencies {
     testImplementation("org.springframework:spring-webflux:5.0.0.RELEASE")
     testImplementation("io.projectreactor.ipc:reactor-netty:0.7.0.RELEASE")
 
+    testImplementation(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${versions["opentelemetry_instrumentation_bom_alpha"]}"))
     testImplementation("org.springframework.boot:spring-boot-starter-webflux:2.0.0.RELEASE")
     testImplementation("org.springframework.boot:spring-boot-starter-test:2.0.0.RELEASE")
     testImplementation("org.springframework.boot:spring-boot-starter-reactor-netty:2.0.0.RELEASE")
-    testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_semconv"]}")
+    testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv")
 }
