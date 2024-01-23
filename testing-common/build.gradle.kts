@@ -22,7 +22,7 @@ dependencies {
     testFixturesImplementation("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap")
     testFixturesImplementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling") {
         constraints {
-            implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling-java9") {
+            implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling-java9:1.7.2-alpha") {// TODO: change
                 attributes {
                     // this transitive dependency creates classes compatible with Java 9 and up, but is only referenced in safe ways for
                     // java 8 by the javaagent-tooling dependency

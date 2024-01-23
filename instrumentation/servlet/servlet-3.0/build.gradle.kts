@@ -31,7 +31,7 @@ afterEvaluate{
 val versions: Map<String, String> by extra
 
 dependencies {
-    api(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${versions["opentelemetry_instrumentation_bom_alpha"]}"))
+    implementation(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${versions["opentelemetry_instrumentation_bom_alpha"]}"))
     implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common")
     implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0") // Servlet3Accessor
     testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0")
