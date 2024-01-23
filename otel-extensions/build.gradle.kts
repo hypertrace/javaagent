@@ -28,17 +28,7 @@ val versions: Map<String, String> by extra
 
 dependencies {
     api(project(":filter-api"))
-    implementation(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${versions["opentelemetry_instrumentation_bom_alpha"]}")) {
-        constraints {
-            implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling-java9") {
-                attributes {
-                    // this transitive dependency creates classes compatible with Java 9 and up, but is only referenced in safe ways for
-                    // java 8 by the javaagent-tooling dependency
-                    attribute(Attribute.of("org.gradle.jvm.version", Integer::class.java), 9 as Integer)
-                }
-            }
-        }
-    }
+    implementation(platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:${versions["opentelemetry_instrumentation_bom_alpha"]}"))
 
     compileOnly("io.opentelemetry:opentelemetry-sdk")
     compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure")
@@ -48,6 +38,15 @@ dependencies {
     implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api")
     implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
     implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling") {
+        constraints {
+            implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling-java9") {
+                attributes {
+                    // this transitive dependency creates classes compatible with Java 9 and up, but is only referenced in safe ways for
+                    // java 8 by the javaagent-tooling dependency
+                    attribute(Attribute.of("org.gradle.jvm.version", Integer::class.java), 9 as Integer)
+                }
+            }
+        }
         exclude("io.opentelemetry.javaagent", "opentelemetry-javaagent-bootstrap")
     }
 
