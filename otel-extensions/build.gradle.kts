@@ -33,7 +33,7 @@ dependencies {
     compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${versions["opentelemetry"]}-alpha")
     compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi:${versions["opentelemetry"]}")
 
-    implementation("io.opentelemetry:opentelemetry-semconv:${versions["opentelemetry"]}-alpha")
+    implementation("io.opentelemetry:opentelemetry-semconv:${versions["opentelemetry_semconv"]}")
     implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:${versions["opentelemetry_java_agent"]}")
     implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:${versions["opentelemetry"]}")
     implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${versions["opentelemetry_java_agent-tooling"]}") {
