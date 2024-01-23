@@ -21,5 +21,5 @@ dependencies {
     testImplementation("org.eclipse.jetty:jetty-servlet:8.0.0.v20110901")
     testImplementation("javax.servlet:javax.servlet-api:3.0.1")
     testImplementation("javax.servlet:jsp-api:2.0")
-    testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_semconv"]}")
+    testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_java_agent"]}")
 }

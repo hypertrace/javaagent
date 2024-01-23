@@ -24,5 +24,5 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-webflux:2.0.0.RELEASE")
     testImplementation("org.springframework.boot:spring-boot-starter-test:2.0.0.RELEASE")
     testImplementation("org.springframework.boot:spring-boot-starter-reactor-netty:2.0.0.RELEASE")
-    testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_semconv"]}")
+    testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_java_agent"]}")
 }

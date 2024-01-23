@@ -40,7 +40,7 @@ dependencies {
     testImplementation(testFixtures(project(":testing-common")))
     testImplementation("org.glassfish.jersey.core:jersey-client:2.27")
     testImplementation("org.glassfish.jersey.inject:jersey-hk2:2.27")
-    testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_semconv"]}")
+    testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_java_agent"]}")
 
     testImplementation(project(":instrumentation:apache-httpclient-4.0"))
     testImplementation(files(project(":instrumentation:apache-httpclient-4.0").dependencyProject.sourceSets.main.map { it.output }))

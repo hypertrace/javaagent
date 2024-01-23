@@ -22,6 +22,6 @@ dependencies {
     testImplementation("io.micronaut.rxjava2:micronaut-rxjava2:1.1.0")
     testImplementation("io.micronaut.rxjava2:micronaut-rxjava2-http-server-netty:1.1.0")
     testImplementation("io.micronaut.rxjava2:micronaut-rxjava2-http-client:1.1.0")
-    testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_semconv"]}")
+    testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_java_agent"]}")
     testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.1:${versions["opentelemetry_java_agent"]}")
 }
