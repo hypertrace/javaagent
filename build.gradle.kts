@@ -55,7 +55,6 @@ subprojects {
         // when updating these values, some values must also be updated in buildSrc as this map
         // cannot be accessed there
         "opentelemetry_proto" to "0.11.0-alpha",
-        "opentelemetry_java_agent-tooling" to "1.32.0-alpha",
         "opentelemetry_instrumentation_bom_alpha" to "1.32.0-alpha",
 
         "opentelemetry_gradle_plugin" to "1.32.0-alpha",
