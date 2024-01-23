@@ -27,9 +27,11 @@ import io.netty.util.Attribute;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.instrumentation.netty.v4_1.internal.ServerContext;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.AttributeKeys;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.DataCaptureUtils;
 import java.nio.charset.Charset;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
 import org.hypertrace.agent.core.config.InstrumentationConfig;
@@ -48,10 +50,10 @@ public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapte
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) {
     Channel channel = ctx.channel();
-    Context context =
-        channel
-            .attr(io.opentelemetry.instrumentation.netty.v4_1.internal.AttributeKeys.SERVER_CONTEXT)
-            .get();
+    Deque<ServerContext> serverContexts = ctx.channel()
+      .attr(io.opentelemetry.instrumentation.netty.v4_1.internal.AttributeKeys.SERVER_CONTEXT).get();
+    ServerContext serverContext = serverContexts != null ? serverContexts.peekFirst() : null;
+    Context context = serverContext != null ? serverContext.context() : null;
     if (context == null) {
       ctx.fireChannelRead(msg);
       return;

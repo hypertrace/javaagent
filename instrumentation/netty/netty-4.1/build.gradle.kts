@@ -49,7 +49,7 @@ dependencies {
     implementation("io.opentelemetry.instrumentation:opentelemetry-netty-4-common:${versions["opentelemetry_java_agent"]}")
     implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.1:${versions["opentelemetry_java_agent"]}")
     implementation("io.opentelemetry.instrumentation:opentelemetry-netty-4.1:${versions["opentelemetry_java_agent"]}")
-    implementation("io.opentelemetry:opentelemetry-semconv:${versions["opentelemetry_semconv"]}")
+    implementation("io.opentelemetry.semconv:opentelemetry-semconv:${versions["opentelemetry_semconv"]}")
     implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_semconv"]}")
     library("io.netty:netty-codec-http:4.1.0.Final")
 

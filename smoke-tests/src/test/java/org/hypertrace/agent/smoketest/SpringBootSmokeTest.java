@@ -18,7 +18,7 @@ package org.hypertrace.agent.smoketest;
 
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import io.opentelemetry.semconv.ResourceAttributes;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;

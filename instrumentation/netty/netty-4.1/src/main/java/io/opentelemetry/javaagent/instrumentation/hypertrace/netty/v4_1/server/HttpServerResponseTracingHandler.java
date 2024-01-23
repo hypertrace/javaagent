@@ -29,11 +29,13 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.instrumentation.netty.v4_1.internal.ServerContext;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.AttributeKeys;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.DataCaptureUtils;
 import io.opentelemetry.javaagent.instrumentation.netty.v4_1.NettyServerSingletons;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.semconv.SemanticAttributes;
 import java.nio.charset.Charset;
+import java.util.Deque;
 import java.util.Map;
 import org.hypertrace.agent.core.config.InstrumentationConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
@@ -50,10 +52,11 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
 
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise prm) {
-    Context context =
-        ctx.channel()
-            .attr(io.opentelemetry.instrumentation.netty.v4_1.internal.AttributeKeys.SERVER_CONTEXT)
-            .get();
+    Deque<ServerContext> serverContexts = ctx.channel()
+      .attr(io.opentelemetry.instrumentation.netty.v4_1.internal.AttributeKeys.SERVER_CONTEXT).get();
+    ServerContext serverContext = serverContexts != null ? serverContexts.peekFirst() : null;
+    Context context = serverContext != null ? serverContext.context() : null;
+    
     if (context == null) {
       ctx.write(msg, prm);
       return;
@@ -99,7 +102,7 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
     if (msg instanceof HttpResponse) {
       HttpResponse httpResponse = (HttpResponse) msg;
       int code = httpResponse.status().code();
-      span.setAttribute(SemanticAttributes.HTTP_STATUS_CODE, code);
+      span.setAttribute(SemanticAttributes.HTTP_RESPONSE_STATUS_CODE, code);
       span.setStatus(code >= 100 && code < 500 ? StatusCode.UNSET : StatusCode.ERROR);
     }
     if (msg instanceof LastHttpContent) {
