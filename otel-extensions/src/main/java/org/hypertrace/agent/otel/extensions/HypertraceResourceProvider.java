@@ -49,7 +49,7 @@ public class HypertraceResourceProvider implements ResourceProvider {
     builder.put(ResourceAttributes.TELEMETRY_SDK_LANGUAGE, "java");
     String agentVersion = getAgentVersion();
     builder.put(ResourceAttributes.TELEMETRY_SDK_VERSION, agentVersion);
-    builder.put(ResourceAttributes.TELEMETRY_DISTRO_VERSION, agentVersion);
+    builder.put(ResourceAttributes.TELEMETRY_AUTO_VERSION, agentVersion);
     return Resource.create(builder.build());
   }
 
