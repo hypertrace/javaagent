@@ -14,7 +14,7 @@ dependencies {
     testFixturesImplementation("org.junit-pioneer:junit-pioneer:1.0.0")
     testFixturesApi("io.opentelemetry:opentelemetry-api:${versions["opentelemetry"]}")
     testFixturesApi("io.opentelemetry:opentelemetry-sdk:${versions["opentelemetry"]}")
-    testFixturesCompileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${versions["opentelemetry"]}-alpha")
+    testFixturesCompileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${versions["opentelemetry"]}")
     testFixturesApi("com.squareup.okhttp3:okhttp:4.9.0")
     testFixturesApi("com.squareup.okhttp3:logging-interceptor:4.9.0")
     testFixturesImplementation("io.opentelemetry:opentelemetry-exporter-logging:${versions["opentelemetry"]}")

@@ -32,7 +32,7 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.AttributeKeys;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.DataCaptureUtils;
 import io.opentelemetry.javaagent.instrumentation.netty.v4_1.NettyClientSingletons;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.semconv.SemanticAttributes;
 import java.nio.charset.Charset;
 import java.util.Map;
 import org.hypertrace.agent.core.config.InstrumentationConfig;
@@ -100,7 +100,7 @@ public class HttpClientResponseTracingHandler extends ChannelInboundHandlerAdapt
     if (msg instanceof HttpResponse) {
       HttpResponse httpResponse = (HttpResponse) msg;
       int code = httpResponse.status().code();
-      span.setAttribute(SemanticAttributes.HTTP_STATUS_CODE, code);
+      span.setAttribute(SemanticAttributes.HTTP_RESPONSE_STATUS_CODE, code);
       span.setStatus(code >= 100 && code < 400 ? StatusCode.UNSET : StatusCode.ERROR);
     }
     if (msg instanceof LastHttpContent) {

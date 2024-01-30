@@ -30,10 +30,10 @@ dependencies {
     api(project(":filter-api"))
 
     compileOnly("io.opentelemetry:opentelemetry-sdk:${versions["opentelemetry"]}")
-    compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${versions["opentelemetry"]}-alpha")
+    compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${versions["opentelemetry"]}")
     compileOnly("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi:${versions["opentelemetry"]}")
 
-    implementation("io.opentelemetry:opentelemetry-semconv:${versions["opentelemetry"]}-alpha")
+    implementation("io.opentelemetry.semconv:opentelemetry-semconv:${versions["opentelemetry_semconv"]}")
     implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:${versions["opentelemetry_java_agent"]}")
     implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:${versions["opentelemetry"]}")
     implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${versions["opentelemetry_java_agent-tooling"]}") {
@@ -65,6 +65,6 @@ dependencies {
         api("com.google.code.gson:gson:2.8.9")
     }
 
-    testImplementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${versions["opentelemetry"]}-alpha")
+    testImplementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${versions["opentelemetry"]}")
     testImplementation("io.opentelemetry:opentelemetry-sdk:${versions["opentelemetry"]}")
 }

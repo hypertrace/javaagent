@@ -19,7 +19,7 @@ dependencies {
     testImplementation("io.micronaut:micronaut-inject:${micronautVersion}")
     testImplementation("io.micronaut:micronaut-http-client:${micronautVersion}")
     testAnnotationProcessor("io.micronaut:micronaut-inject-java:${micronautVersion}")
-    testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_semconv"]}")
+    testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_api_semconv"]}")
     testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.1:${versions["opentelemetry_java_agent"]}")
 }
 
