@@ -16,8 +16,7 @@
 
 package org.hypertrace.agent.testing;
 
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.proto.trace.v1.Span;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
-import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -42,7 +40,7 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
   private static final String GET_NO_CONTENT_PATH_FORMAT = "http://localhost:%d/get_no_content";
   private static final String GET_JSON_PATH_FORMAT = "http://localhost:%d/get_json";
 
-  private static final String HEADER_NAME = "headerName";
+  private static final String HEADER_NAME = "headername";
   private static final String HEADER_VALUE = "headerValue";
   private static final Map<String, String> headers;
 
@@ -55,9 +53,6 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
   }
 
   private final boolean hasResponseBodySpan;
-
-  private FakeTransformer fakeTransformer;
-  private String transformedClassDirName;
 
   public AbstractHttpClientTest(boolean hasResponseBodySpan) {
     this.hasResponseBodySpan = hasResponseBodySpan;
@@ -108,43 +103,24 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
     Assertions.assertEquals(body, response.body);
 
     TEST_WRITER.waitForTraces(1);
+    List<List<Span>> traces;
     if (hasResponseBodySpan) {
-      TEST_WRITER.waitForSpans(2);
+      traces = TEST_WRITER.waitForSpans(2);
+    } else {
+      traces = TEST_WRITER.waitForSpans(1);
     }
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
     Assertions.assertEquals(1, traces.size());
-    SpanData clientSpan = traces.get(0).get(0);
+    Span clientSpan = traces.get(0).get(0);
 
     if (hasResponseBodySpan) {
       Assertions.assertEquals(2, traces.get(0).size());
-      SpanData responseBodySpan = traces.get(0).get(1);
+      Span responseBodySpan = traces.get(0).get(1);
       assertBodies(clientSpan, responseBodySpan, body, body);
       Assertions.assertNotNull(
-          responseBodySpan
-              .getAttributes()
-              .get(AttributeKey.stringKey("http.response.header.content-type")));
+          TEST_WRITER.getAttributesMap(responseBodySpan).get("http.response.header.content-type"));
     } else {
       Assertions.assertEquals(1, traces.get(0).size());
       assertRequestAndResponseBody(clientSpan, body, body);
-    }
-  }
-
-  /**
-   * For debugging unit tests, this function can be called to pass the class back through the OTEL
-   * Transformer, and write the resulting class bytes to an external file.
-   *
-   * @param className
-   */
-  private void writeTransformedClass(String className) {
-    if (fakeTransformer == null) {
-      transformedClassDirName = System.getenv("TRANSFORMED_CLASS_DIR");
-      if (transformedClassDirName != null && transformedClassDirName.length() > 0) {
-        fakeTransformer = new FakeTransformer();
-      }
-    }
-
-    if (fakeTransformer != null) {
-      fakeTransformer.writeTransformedClass(className, transformedClassDirName);
     }
   }
 
@@ -160,16 +136,18 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
     Assertions.assertEquals(body, response.body);
 
     TEST_WRITER.waitForTraces(1);
+    List<List<Span>> traces;
     if (hasResponseBodySpan) {
-      TEST_WRITER.waitForSpans(2);
+      traces = TEST_WRITER.waitForSpans(2);
+    } else {
+      traces = TEST_WRITER.waitForSpans(1);
     }
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
     Assertions.assertEquals(1, traces.size());
-    SpanData clientSpan = traces.get(0).get(0);
+    Span clientSpan = traces.get(0).get(0);
 
     if (hasResponseBodySpan) {
       Assertions.assertEquals(2, traces.get(0).size());
-      SpanData responseBodySpan = traces.get(0).get(1);
+      Span responseBodySpan = traces.get(0).get(1);
       assertBodies(clientSpan, responseBodySpan, body, body);
     } else {
       Assertions.assertEquals(1, traces.get(0).size());
@@ -189,10 +167,10 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
     Assertions.assertEquals(body, response.body);
 
     TEST_WRITER.waitForTraces(1);
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    List<List<Span>> traces = TEST_WRITER.waitForSpans(1);
     Assertions.assertEquals(1, traces.size());
     Assertions.assertEquals(1, traces.get(0).size());
-    SpanData clientSpan = traces.get(0).get(0);
+    Span clientSpan = traces.get(0).get(0);
 
     assertHeaders(clientSpan);
     assertNoBodies(clientSpan);
@@ -209,10 +187,10 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
     Assertions.assertNull(response.body);
 
     TEST_WRITER.waitForTraces(1);
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    List<List<Span>> traces = TEST_WRITER.waitForSpans(1);
     Assertions.assertEquals(1, traces.size());
     Assertions.assertEquals(1, traces.get(0).size());
-    SpanData clientSpan = traces.get(0).get(0);
+    Span clientSpan = traces.get(0).get(0);
 
     assertHeaders(clientSpan);
     assertNoBodies(clientSpan);
@@ -229,66 +207,95 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
     Assertions.assertEquals(TestHttpServer.GetJsonHandler.RESPONSE_BODY, response.body);
 
     TEST_WRITER.waitForTraces(1);
+    List<List<Span>> traces;
     if (hasResponseBodySpan) {
-      TEST_WRITER.waitForSpans(2);
+      traces = TEST_WRITER.waitForSpans(2);
+    } else {
+      traces = TEST_WRITER.waitForSpans(1);
     }
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+
     Assertions.assertEquals(1, traces.size());
-    SpanData clientSpan = traces.get(0).get(0);
+    Span clientSpan = traces.get(0).get(0);
     Assertions.assertNull(
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+        TEST_WRITER
+            .getAttributesMap(clientSpan)
+            .get("http.request.body"));
 
     if (hasResponseBodySpan) {
       Assertions.assertEquals(2, traces.get(0).size());
-      SpanData responseBodySpan = traces.get(0).get(1);
+      Span responseBodySpan = traces.get(0).get(1);
       Assertions.assertEquals(
           TestHttpServer.GetJsonHandler.RESPONSE_BODY,
-          responseBodySpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+          TEST_WRITER
+              .getAttributesMap(responseBodySpan)
+              .get("http.response.body")
+              .getStringValue());
     } else {
       Assertions.assertEquals(1, traces.get(0).size());
       Assertions.assertEquals(
           TestHttpServer.GetJsonHandler.RESPONSE_BODY,
-          clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+          TEST_WRITER
+              .getAttributesMap(clientSpan)
+              .get("http.response.body")
+              .getStringValue());
     }
   }
 
-  private void assertHeaders(SpanData spanData) {
+  private void assertHeaders(Span span) {
     Assertions.assertEquals(
         TestHttpServer.RESPONSE_HEADER_VALUE,
-        spanData
-            .getAttributes()
-            .get(
-                HypertraceSemanticAttributes.httpResponseHeader(
-                    TestHttpServer.RESPONSE_HEADER_NAME)));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.response.header." + TestHttpServer.RESPONSE_HEADER_NAME)
+            .getStringValue());
     Assertions.assertEquals(
         HEADER_VALUE,
-        spanData.getAttributes().get(HypertraceSemanticAttributes.httpRequestHeader(HEADER_NAME)));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.request.header." + HEADER_NAME)
+            .getStringValue());
   }
 
-  private void assertRequestAndResponseBody(
-      SpanData spanData, String requestBody, String responseBody) {
+  private void assertRequestAndResponseBody(Span span, String requestBody, String responseBody) {
     Assertions.assertEquals(
-        requestBody, spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+        requestBody,
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.request.body")
+            .getStringValue());
     Assertions.assertEquals(
         responseBody,
-        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.response.body")
+            .getStringValue());
   }
 
   private void assertBodies(
-      SpanData clientSpan, SpanData responseBodySpan, String requestBody, String responseBody) {
+      Span clientSpan, Span responseBodySpan, String requestBody, String responseBody) {
     Assertions.assertEquals(
         requestBody,
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+        TEST_WRITER
+            .getAttributesMap(clientSpan)
+            .get("http.request.body")
+            .getStringValue());
     Assertions.assertEquals(
         responseBody,
-        responseBodySpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+        TEST_WRITER
+            .getAttributesMap(responseBodySpan)
+            .get("http.response.body")
+            .getStringValue());
   }
 
-  private void assertNoBodies(SpanData spanData) {
+  private void assertNoBodies(Span span) {
     Assertions.assertNull(
-        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.response.body"));
     Assertions.assertNull(
-        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.request.body"));
   }
 
   public static String readInputStream(InputStream inputStream) throws IOException {

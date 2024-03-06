@@ -1,3 +1,7 @@
-[submodule "javaagent-core/src/main/proto"]
+[submodule "otel-extensions/src/main/proto"]
 	path = otel-extensions/src/main/proto
 	url = https://github.com/hypertrace/agent-config.git
+
+[submodule "testing-common/src/main/proto"]
+	path = testing-common/src/main/proto
+	url = https://github.com/open-telemetry/opentelemetry-proto.git

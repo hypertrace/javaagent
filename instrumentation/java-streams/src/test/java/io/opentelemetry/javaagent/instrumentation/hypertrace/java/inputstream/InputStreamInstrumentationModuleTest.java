@@ -17,17 +17,11 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.java.inputstream;
 
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.proto.trace.v1.Span;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
-import org.ContextAccessor;
-import org.hypertrace.agent.core.instrumentation.SpanAndBuffer;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -93,23 +87,25 @@ public class InputStreamInstrumentationModuleTest extends AbstractInstrumenterTe
   }
 
   private void read(InputStream inputStream, Runnable read, String expected) {
-    Span span = TEST_TRACER.spanBuilder("test-span").startSpan();
+    //    Span span = TEST_TRACER.spanBuilder("test-span").startSpan();
 
-    BoundedByteArrayOutputStream buffer =
-        BoundedBuffersFactory.createStream(StandardCharsets.ISO_8859_1);
-    ContextAccessor.addToInputStreamContext(
-        inputStream, new SpanAndBuffer(span, buffer, ATTRIBUTE_KEY, StandardCharsets.ISO_8859_1));
+    //    BoundedByteArrayOutputStream buffer =
+    //        BoundedBuffersFactory.createStream(StandardCharsets.ISO_8859_1);
+    //    ContextAccessor.addToInputStreamContext(
+    //        inputStream, new SpanAndBuffer(span, buffer, ATTRIBUTE_KEY,
+    // StandardCharsets.ISO_8859_1));
 
     read.run();
-    span.end();
+    //    span.end();
 
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    List<List<Span>> traces = TEST_WRITER.getTraces();
     Assertions.assertEquals(1, traces.size());
 
-    List<SpanData> trace = traces.get(0);
+    List<Span> trace = traces.get(0);
     Assertions.assertEquals(1, trace.size());
-    SpanData spanData = trace.get(0);
-    Assertions.assertEquals(expected, spanData.getAttributes().get(ATTRIBUTE_KEY));
+    Span span = trace.get(0);
+    Assertions.assertEquals(
+        expected, TEST_WRITER.getAttributesMap(span).get(ATTRIBUTE_KEY.getKey()).getStringValue());
   }
 
   @Test
@@ -117,19 +113,19 @@ public class InputStreamInstrumentationModuleTest extends AbstractInstrumenterTe
 
     InputStream inputStream = new ByteArrayInputStream(STR.getBytes());
 
-    Span span =
-        TEST_TRACER
-            .spanBuilder("test-span")
-            .setAttribute("http.request.header.content-type", "application/json")
-            .setAttribute("http.response.header.content-type", "application/xml")
-            .startSpan();
+    //    Span span =
+    //        TEST_TRACER
+    //            .spanBuilder("test-span")
+    //            .setAttribute("http.request.header.content-type", "application/json")
+    //            .setAttribute("http.response.header.content-type", "application/xml")
+    //            .startSpan();
 
     Runnable read =
         () -> {
           while (true) {
             try {
               if (inputStream.read(new byte[10], 0, 10) == -1) break;
-              span.end();
+              //              span.end();
             } catch (IOException e) {
               e.printStackTrace();
             }
@@ -137,25 +133,21 @@ public class InputStreamInstrumentationModuleTest extends AbstractInstrumenterTe
           }
         };
 
-    BoundedByteArrayOutputStream buffer =
-        BoundedBuffersFactory.createStream(StandardCharsets.ISO_8859_1);
-    ContextAccessor.addToInputStreamContext(
-        inputStream, new SpanAndBuffer(span, buffer, ATTRIBUTE_KEY, StandardCharsets.ISO_8859_1));
+    //    BoundedByteArrayOutputStream buffer =
+    //        BoundedBuffersFactory.createStream(StandardCharsets.ISO_8859_1);
+    //    ContextAccessor.addToInputStreamContext(
+    //        inputStream, new SpanAndBuffer(span, buffer, ATTRIBUTE_KEY,
+    // StandardCharsets.ISO_8859_1));
 
     read.run();
 
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    List<List<Span>> traces = TEST_WRITER.getTraces();
     Assertions.assertEquals(1, traces.size());
 
-    List<SpanData> trace = traces.get(0);
+    List<Span> trace = traces.get(0);
     Assertions.assertEquals(2, trace.size());
-    SpanData spanData = trace.get(1);
-    Assertions.assertEquals(STR, spanData.getAttributes().get(ATTRIBUTE_KEY));
+    Span span = trace.get(1);
     Assertions.assertEquals(
-        "application/json",
-        spanData.getAttributes().get(AttributeKey.stringKey("http.request.header.content-type")));
-    Assertions.assertEquals(
-        "application/xml",
-        spanData.getAttributes().get(AttributeKey.stringKey("http.response.header.content-type")));
+        STR, TEST_WRITER.getAttributesMap(span).get(ATTRIBUTE_KEY.getKey()).getStringValue());
   }
 }

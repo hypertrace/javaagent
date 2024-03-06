@@ -12,7 +12,7 @@ val micronautTestVersion = "1.0.0"
 dependencies {
     implementation(project(":instrumentation:netty:netty-4.1"))
     testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.1:${versions["opentelemetry_java_agent"]}")
-    testImplementation(testFixtures(project(":testing-common")))
+    testImplementation(project(":testing-common"))
     testImplementation("io.micronaut.test:micronaut-test-junit5:${micronautTestVersion}")
     testImplementation("io.micronaut:micronaut-http-server-netty:${micronautVersion}")
     testImplementation("io.micronaut:micronaut-runtime:${micronautVersion}")
@@ -30,7 +30,7 @@ for (version in listOf(micronaut2Version)) {
         extendsFrom(configurations.runtimeClasspath.get())
     }
     dependencies {
-        versionedConfiguration(testFixtures(project(":testing-common")))
+        versionedConfiguration(project(":testing-common"))
         versionedConfiguration("io.micronaut.test:micronaut-test-junit5:${micronautTestVersion}")
         versionedConfiguration("io.micronaut:micronaut-http-server-netty:${version}")
         versionedConfiguration("io.micronaut:micronaut-http-client:${version}")

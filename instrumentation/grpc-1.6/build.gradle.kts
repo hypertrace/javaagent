@@ -74,7 +74,7 @@ dependencies {
 
     implementation("javax.annotation:javax.annotation-api:1.3.2")
 
-    testImplementation(testFixtures(project(":testing-common")))
+    testImplementation(project(":testing-common"))
 
     testImplementation(files(project(":instrumentation:grpc-shaded-netty-1.9").artifacts))
 
@@ -128,7 +128,7 @@ for (version in listOf("1.30.0")) {
         extendsFrom(configurations.runtimeClasspath.get())
     }
     dependencies {
-        versionedConfiguration(testFixtures(project(":testing-common")))
+        versionedConfiguration(project(":testing-common"))
         versionedConfiguration("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-grpc-1.6:${versions["opentelemetry_java_agent"]}")
         versionedConfiguration("io.opentelemetry.instrumentation:opentelemetry-grpc-1.6:${versions["opentelemetry_java_agent"]}")
         versionedConfiguration(project(":instrumentation:grpc-shaded-netty-1.9"))

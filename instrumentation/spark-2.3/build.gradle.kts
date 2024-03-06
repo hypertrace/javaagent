@@ -36,7 +36,7 @@ dependencies {
 
     testImplementation(project(":instrumentation:servlet:servlet-rw"))
     testImplementation(files(project(":instrumentation:servlet:servlet-rw").dependencyProject.sourceSets.main.map { it.output }))
-    testImplementation(testFixtures(project(":testing-common")))
+    testImplementation(project(":testing-common"))
     testImplementation("com.sparkjava:spark-core:2.3")
     testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_api_semconv"]}")
 }

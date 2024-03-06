@@ -10,7 +10,7 @@ dependencies {
     testImplementation(files(project(":instrumentation:servlet:servlet-rw").dependencyProject.sourceSets.main.map { it.output }))
     testImplementation(project(":instrumentation:servlet:servlet-3.0"))
     testImplementation(files(project(":instrumentation:servlet:servlet-3.0").dependencyProject.sourceSets.main.map { it.output }))
-    testImplementation(testFixtures(project(":testing-common")) as ProjectDependency) {
+    testImplementation(project(":testing-common") as ProjectDependency) {
         exclude(group = "org.eclipse.jetty", module = "jetty-server")
     }
     testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-3.0:${versions["opentelemetry_java_agent"]}")

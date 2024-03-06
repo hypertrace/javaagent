@@ -42,7 +42,7 @@ dependencies {
 
     testImplementation(project(":instrumentation:servlet:servlet-rw"))
     testImplementation(files(project(":instrumentation:servlet:servlet-rw").dependencyProject.sourceSets.main.map { it.output }))
-    testImplementation(testFixtures(project(":testing-common")) as ProjectDependency) {
+    testImplementation(project(":testing-common") as ProjectDependency) {
         exclude(group = "org.eclipse.jetty", module = "jetty-server")
     }
     testImplementation("org.eclipse.jetty:jetty-server:8.1.22.v20160922")

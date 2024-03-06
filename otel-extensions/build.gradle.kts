@@ -51,7 +51,6 @@ dependencies {
 
     implementation("org.slf4j:slf4j-api:${versions["slf4j"]}")
     compileOnly("com.google.auto.service:auto-service-annotations:1.0")
-    implementation("net.bytebuddy:byte-buddy-dep:${versions["byte_buddy"]}")
     annotationProcessor("com.google.auto.service:auto-service:1.0")
 
 

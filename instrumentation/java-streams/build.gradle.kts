@@ -25,6 +25,6 @@ val versions: Map<String, String> by extra
 
 dependencies {
     implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:${versions["opentelemetry"]}")
-    testImplementation(testFixtures(project(":testing-common")))
+    testImplementation(project(":testing-common"))
     testImplementation("io.opentelemetry.javaagent:opentelemetry-muzzle:${versions["opentelemetry_java_agent"]}")
 }

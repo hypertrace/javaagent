@@ -32,7 +32,7 @@ dependencies {
     implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-vertx-http-client-common:${versions["opentelemetry_java_agent"]}")
     library("io.vertx:vertx-web:3.0.0")
 
-    testImplementation(testFixtures(project(":testing-common")))
+    testImplementation(project(":testing-common"))
     testImplementation(project(":instrumentation:netty:netty-4.0"))
     testImplementation(files(project(":instrumentation:netty:netty-4.0").dependencyProject.sourceSets.main.map { it.output }))
 

@@ -62,3 +62,94 @@ tasks {
         relocate("io.opentelemetry.extension.aws", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.aws")
     }
 }
+
+subprojects {
+    class JavaagentTestArgumentsProvider(
+        @InputFile
+        @PathSensitive(org.gradle.api.tasks.PathSensitivity.RELATIVE)
+        val agentShadowJar: File,
+
+        @InputFile
+        @PathSensitive(org.gradle.api.tasks.PathSensitivity.RELATIVE)
+        val shadowJar: File,
+    ) : CommandLineArgumentProvider {
+        override fun asArguments(): Iterable<String> = listOf(
+            "-Dotel.javaagent.debug=true",
+            "-javaagent:${agentShadowJar.absolutePath}",
+            "-Dotel.exporter.otlp.protocol=http/protobuf",
+            "-Dotel.exporter.otlp.traces.endpoint=http://localhost:4318/v1/traces",
+            // make the path to the javaagent available to tests
+            "-Dotel.javaagent.testing.javaagent-jar-path=${agentShadowJar.absolutePath}",
+            "-Dotel.javaagent.experimental.initializer.jar=${shadowJar.absolutePath}",
+            "-Dotel.javaagent.testing.additional-library-ignores.enabled=false",
+            "-Dotel.javaagent.testing.fail-on-context-leak=${findProperty("failOnContextLeak") != false}",
+            // prevent sporadic gradle deadlocks, see SafeLogger for more details
+            "-Dotel.javaagent.testing.transform-safe-logging.enabled=true",
+            // Reduce noise in assertion messages since we don't need to verify this in most tests. We check
+            // in smoke tests instead.
+            "-Dotel.javaagent.add-thread-details=false",
+            "-Dotel.metrics.exporter=none",
+            "-Dotel.javaagent.experimental.indy=${findProperty("testIndy") == "true"}",
+            // suppress repeated logging of "No metric data to export - skipping export."
+            // since PeriodicMetricReader is configured with a short interval
+            "-Dio.opentelemetry.javaagent.slf4j.simpleLogger.log.io.opentelemetry.sdk.metrics.export.PeriodicMetricReader=INFO",
+            // suppress a couple of verbose ClassNotFoundException stack traces logged at debug level
+            "-Dio.opentelemetry.javaagent.slf4j.simpleLogger.log.io.grpc.internal.ServerImplBuilder=INFO",
+            "-Dio.opentelemetry.javaagent.slf4j.simpleLogger.log.io.grpc.internal.ManagedChannelImplBuilder=INFO",
+            "-Dio.opentelemetry.javaagent.slf4j.simpleLogger.log.io.perfmark.PerfMark=INFO",
+            "-Dio.opentelemetry.javaagent.slf4j.simpleLogger.log.io.grpc.Context=INFO"
+        )
+    }
+
+    tasks.withType<Test>().configureEach {
+        val instShadowTask : Jar = project(":instrumentation").tasks.named<Jar>("shadowJar").get()
+        inputs.files(layout.files(instShadowTask))
+        val instShadowJar = instShadowTask.archiveFile.get().asFile
+
+        val shadowTask : Jar = project(":javaagent").tasks.named<Jar>("shadowJar").get()
+        inputs.files(layout.files(shadowTask))
+        val agentShadowJar = shadowTask.archiveFile.get().asFile
+
+        dependsOn(":instrumentation:shadowJar")
+
+        dependsOn(":javaagent:shadowJar")
+
+        jvmArgumentProviders.add(JavaagentTestArgumentsProvider(agentShadowJar, instShadowJar))
+
+        // We do fine-grained filtering of the classpath of this codebase's sources since Gradle's
+        // configurations will include transitive dependencies as well, which tests do often need.
+        classpath = classpath.filter {
+            if (file(layout.buildDirectory.dir("resources/main")).equals(it) || file(layout.buildDirectory.dir("classes/java/main")).equals(it)) {
+                // The sources are packaged into the testing jar, so we need to exclude them from the test
+                // classpath, which automatically inherits them, to ensure our shaded versions are used.
+                return@filter false
+            }
+
+            val lib = it.absoluteFile
+            if (lib.name.startsWith("opentelemetry-javaagent-")) {
+                // These dependencies are packaged into the testing jar, so we need to exclude them from the test
+                // classpath, which automatically inherits them, to ensure our shaded versions are used.
+                return@filter false
+            }
+            if (lib.name.startsWith("javaagent-core")) {
+                // These dependencies are packaged into the testing jar, so we need to exclude them from the test
+                // classpath, which automatically inherits them, to ensure our shaded versions are used.
+                return@filter false
+            }
+            if (lib.name.startsWith("opentelemetry-") && lib.name.contains("-autoconfigure-")) {
+                // These dependencies should not be on the test classpath, because they will auto-instrument
+                // the library and the tests could pass even if the javaagent instrumentation fails to apply
+                return@filter false
+            }
+            return@filter true
+        }
+    }
+
+    configurations.configureEach {
+        if (name.endsWith("testruntimeclasspath", ignoreCase = true)) {
+            // Added by agent, don't let Gradle bring it in when running tests.
+            exclude("io.opentelemetry.javaagent", "opentelemetry-javaagent-bootstrap")
+        }
+    }
+
+}

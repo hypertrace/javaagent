@@ -10,7 +10,7 @@ apply {
 val versions: Map<String, String> by extra
 
 dependencies{
-    testImplementation(testFixtures(project(":testing-common")))
+    testImplementation(project(":testing-common"))
     testImplementation(project(":javaagent-core"))
     testImplementation("org.testcontainers:testcontainers:1.15.2")
     testImplementation("com.squareup.okhttp3:okhttp:4.9.0")
