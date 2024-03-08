@@ -72,7 +72,7 @@ public class OkHttp3BodyInstrumentationModule extends InstrumentationModule {
         }
       }
       OkHttpTracingInterceptor interceptor = new OkHttpTracingInterceptor();
-      builder.addInterceptor(interceptor);
+      builder.addNetworkInterceptor(interceptor);
     }
   }
 }

@@ -82,7 +82,8 @@ class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTes
     Assertions.assertEquals(GetJsonHandler.RESPONSE_BODY, responseBody);
 
     TEST_WRITER.waitForTraces(1);
-    List<List<Span>> traces = TEST_WRITER.waitForSpans(2);
+    // exclude server spans
+    List<List<Span>> traces = TEST_WRITER.waitForSpans(2, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
     Assertions.assertEquals(1, traces.size());
     Assertions.assertEquals(2, traces.get(0).size());
     Span clientSpan = traces.get(0).get(1);
@@ -136,7 +137,8 @@ class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTes
     Assertions.assertEquals(204, response.getStatusLine().getStatusCode());
 
     TEST_WRITER.waitForTraces(1);
-    List<List<Span>> traces = TEST_WRITER.waitForSpans(1);
+    // exclude server spans
+    List<List<Span>> traces = TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
     Assertions.assertEquals(1, traces.size());
     Assertions.assertEquals(1, traces.get(0).size());
     Span clientSpan = traces.get(0).get(0);
