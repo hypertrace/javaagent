@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.testing.mockfilter;
+package org.hypertrace.javaagent.mockfilter;
 
 import com.google.auto.service.AutoService;
 import org.hypertrace.agent.filter.api.Filter;
@@ -23,6 +23,13 @@ import org.hypertrace.agent.filter.spi.FilterProviderConfig;
 
 @AutoService(FilterProvider.class)
 public class MockFilterProvider implements FilterProvider {
+
+  /**
+   * This no-args constructor must be available for instantiation by the
+   * {@link java.util.ServiceLoader} API
+   */
+  @SuppressWarnings("unused")
+  public MockFilterProvider() {}
 
   @Override
   public Filter create(FilterProviderConfig config) {

@@ -72,10 +72,15 @@ subprojects {
         @InputFile
         @PathSensitive(org.gradle.api.tasks.PathSensitivity.RELATIVE)
         val shadowJar: File,
+
+        @InputFile
+        @PathSensitive(org.gradle.api.tasks.PathSensitivity.RELATIVE)
+        val extensionJar: File,
     ) : CommandLineArgumentProvider {
         override fun asArguments(): Iterable<String> = listOf(
             "-Dotel.javaagent.debug=true",
             "-javaagent:${agentShadowJar.absolutePath}",
+            "-Dht.javaagent.filter.jar.paths=${extensionJar.absolutePath}",
             "-Dotel.exporter.otlp.protocol=http/protobuf",
             "-Dotel.exporter.otlp.traces.endpoint=http://localhost:4318/v1/traces",
             // make the path to the javaagent available to tests
@@ -110,11 +115,17 @@ subprojects {
         inputs.files(layout.files(shadowTask))
         val agentShadowJar = shadowTask.archiveFile.get().asFile
 
+        val extensionBuild : Jar = project(":tests-extension").tasks.named<Jar>("shadowJar").get()
+        inputs.files(layout.files(extensionBuild))
+        val extensionJar = extensionBuild.archiveFile.get().asFile
+
         dependsOn(":instrumentation:shadowJar")
 
         dependsOn(":javaagent:shadowJar")
 
-        jvmArgumentProviders.add(JavaagentTestArgumentsProvider(agentShadowJar, instShadowJar))
+        dependsOn(":tests-extension:shadowJar")
+
+        jvmArgumentProviders.add(JavaagentTestArgumentsProvider(agentShadowJar, instShadowJar, extensionJar))
 
         // We do fine-grained filtering of the classpath of this codebase's sources since Gradle's
         // configurations will include transitive dependencies as well, which tests do often need.
@@ -132,6 +143,11 @@ subprojects {
                 return@filter false
             }
             if (lib.name.startsWith("javaagent-core")) {
+                // These dependencies are packaged into the testing jar, so we need to exclude them from the test
+                // classpath, which automatically inherits them, to ensure our shaded versions are used.
+                return@filter false
+            }
+            if (lib.name.startsWith("filter-api")) {
                 // These dependencies are packaged into the testing jar, so we need to exclude them from the test
                 // classpath, which automatically inherits them, to ensure our shaded versions are used.
                 return@filter false

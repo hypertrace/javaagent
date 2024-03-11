@@ -88,7 +88,7 @@ dependencies {
         }
     }
 
-     testImplementation(project(":testing-common"))
+    testImplementation(project(":testing-common"))
     testImplementation("org.asynchttpclient:async-http-client:2.0.9")
 }
 
