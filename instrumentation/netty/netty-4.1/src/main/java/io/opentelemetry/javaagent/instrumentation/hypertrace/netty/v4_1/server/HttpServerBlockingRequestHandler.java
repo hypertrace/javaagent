@@ -28,10 +28,10 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.Attribute;
 import io.netty.util.ReferenceCountUtil;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.instrumentation.netty.v4.common.HttpRequestAndChannel;
+import io.opentelemetry.instrumentation.netty.v4_1.internal.ServerContext;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.AttributeKeys;
 import java.nio.charset.StandardCharsets;
+import java.util.Deque;
 import java.util.Map;
 import org.hypertrace.agent.core.filter.FilterResult;
 import org.hypertrace.agent.filter.FilterRegistry;
@@ -41,18 +41,17 @@ public class HttpServerBlockingRequestHandler extends ChannelInboundHandlerAdapt
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) {
     Channel channel = ctx.channel();
-    Context context =
-        (Context)
+    Deque<ServerContext> serverContexts =
             channel
                 .attr(
                     io.opentelemetry.instrumentation.netty.v4_1.internal.AttributeKeys
                         .SERVER_CONTEXT)
                 .get();
-    if (context == null) {
+    if (serverContexts == null || serverContexts.isEmpty()) {
       ctx.fireChannelRead(msg);
       return;
     }
-    Span span = Span.fromContext(context);
+    Span span = Span.fromContext(serverContexts.element().context());
 
     if (msg instanceof HttpRequest) {
       Attribute<Map<String, String>> headersAttr = channel.attr(AttributeKeys.REQUEST_HEADERS);
@@ -69,8 +68,7 @@ public class HttpServerBlockingRequestHandler extends ChannelInboundHandlerAdapt
     if (msg instanceof HttpContent) {
       FilterResult filterResult = FilterRegistry.getFilter().evaluateRequestBody(span, null, null);
       if (filterResult.shouldBlock()) {
-        Attribute<?> requestAttr = channel.attr(AttributeKeys.REQUEST);
-        HttpRequest req = ((HttpRequestAndChannel) (requestAttr.get())).request();
+        HttpRequest req = serverContexts.element().request().request();
         forbidden(ctx, req, filterResult);
         return;
       }

@@ -18,12 +18,13 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.server;
 
 import io.netty.handler.codec.http.HttpServerCodec;
 import java.util.Arrays;
+import java.util.Collections;
 
 public class Netty41HttpServerCodecInstrumentationTest
     extends AbstractNetty41ServerInstrumentationTest {
 
   @Override
   protected NettyTestServer createNetty() {
-    return new NettyTestServer(Arrays.asList(HttpServerCodec.class));
+    return new NettyTestServer(Collections.singletonList(HttpServerCodec.class));
   }
 }

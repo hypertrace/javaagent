@@ -27,13 +27,14 @@ import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.Attribute;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
-import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.instrumentation.netty.v4_1.internal.ServerContext;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.AttributeKeys;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.DataCaptureUtils;
 import io.opentelemetry.javaagent.instrumentation.netty.v4_1.NettyServerSingletons;
 import io.opentelemetry.semconv.SemanticAttributes;
 import java.nio.charset.Charset;
+import java.util.Deque;
 import java.util.Map;
 import org.hypertrace.agent.core.config.InstrumentationConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
@@ -50,18 +51,16 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
 
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise prm) {
-    Context context =
-        (Context)
-            ctx.channel()
+    Deque<ServerContext> serverContexts = ctx.channel()
                 .attr(
                     io.opentelemetry.instrumentation.netty.v4_1.internal.AttributeKeys
                         .SERVER_CONTEXT)
                 .get();
-    if (context == null) {
+    if (serverContexts == null || serverContexts.isEmpty()) {
       ctx.write(msg, prm);
       return;
     }
-    Span span = Span.fromContext(context);
+    Span span = Span.fromContext(serverContexts.element().context());
 
     if (msg instanceof HttpResponse) {
       HttpResponse httpResponse = (HttpResponse) msg;
@@ -93,10 +92,10 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
       DataCaptureUtils.captureBody(span, ctx.channel(), AttributeKeys.RESPONSE_BODY_BUFFER, msg);
     }
 
-    try (Scope ignored = context.makeCurrent()) {
+    try (Scope ignored = serverContexts.element().context().makeCurrent()) {
       ctx.write(msg, prm);
     } catch (Throwable throwable) {
-      NettyServerSingletons.instrumenter().end(context, null, null, throwable);
+      NettyServerSingletons.instrumenter().end(serverContexts.element().context(), serverContexts.element().request(), null, throwable);
       throw throwable;
     }
     if (msg instanceof HttpResponse) {
