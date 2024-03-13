@@ -56,6 +56,7 @@ public class TestOtlpReceiver implements AutoCloseable {
 
   public void start() throws Exception {
     HandlerList handlerList = new HandlerList();
+    server.stop();
     handlerList.addHandler(new OtlpTracesHandler());
     server.setHandler(handlerList);
     server.start();
