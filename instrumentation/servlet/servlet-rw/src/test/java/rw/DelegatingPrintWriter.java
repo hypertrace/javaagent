@@ -14,20 +14,27 @@
  * limitations under the License.
  */
 
-package org;
+package rw;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.Reader;
+import java.io.PrintWriter;
+import java.io.Writer;
 
-public class TestBufferedReader extends BufferedReader {
+public class DelegatingPrintWriter extends PrintWriter {
 
-  public TestBufferedReader(Reader in) {
-    super(in);
+  private final Writer delegate;
+
+  public DelegatingPrintWriter(Writer delegate) {
+    super(delegate);
+    this.delegate = delegate;
   }
 
   @Override
-  public String readLine() throws IOException {
-    return super.readLine();
+  public void write(char[] buf) {
+    try {
+      this.delegate.write(buf);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 }

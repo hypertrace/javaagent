@@ -14,20 +14,9 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping;
+package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.rw;
 
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoAsyncResponse_stream;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoAsyncResponse_writer;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoReader_read_large_array;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoStream_arr;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoStream_arr_offset;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoStream_readLine_print;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoStream_read_large_array;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoStream_single_byte;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.EchoWriter_single_char;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowrapping.TestServlets.GetHello;
 import io.opentelemetry.proto.trace.v1.Span;
-import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
 import okhttp3.FormBody;
@@ -35,7 +24,7 @@ import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.WrappingFilter;
+import rw.WrappingFilter;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
@@ -44,14 +33,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import javax.servlet.DispatcherType;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 
-public class Servlet30InstrumentationTest extends AbstractInstrumenterTest {
+public class ServletRWInstrumentationTest extends AbstractInstrumenterTest {
   private static final String REQUEST_BODY = "hello";
   private static final String REQUEST_HEADER = "requestheader";
   private static final String REQUEST_HEADER_VALUE = "requestvalue";
@@ -59,45 +42,14 @@ public class Servlet30InstrumentationTest extends AbstractInstrumenterTest {
   private static Server server = new Server(0);
   private static int serverPort;
 
-  /*
-   * Filter that mimics the spring framework. It will catch and wrap our blocking exception
-   */
-  public static class WrapExceptionFilter implements Filter {
-    @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-        throws IOException, ServletException {
-      System.out.print("hello from filter");
-      try {
-        chain.doFilter(request, response);
-      } catch (Throwable t) {
-        if (t.getClass().getName().contains("HypertraceEvaluationException")) {
-          throw new RuntimeException("wrapped exception", t);
-        }
-        throw t;
-      }
-    }
-
-    @Override
-    public void init(FilterConfig arg0) throws ServletException {}
-
-    @Override
-    public void destroy() {}
-  }
-
   @BeforeAll
   public static void startServer() throws Exception {
     ServletContextHandler handler = new ServletContextHandler();
 
     handler.addFilter(WrappingFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
 
-    handler.addServlet(GetHello.class, "/hello");
-    handler.addServlet(EchoStream_single_byte.class, "/echo_stream_single_byte");
-    handler.addServlet(EchoStream_arr.class, "/echo_stream_arr");
-    handler.addFilter(
-        WrapExceptionFilter.class, "/echo_stream_arr", EnumSet.of(DispatcherType.REQUEST));
-    handler.addServlet(EchoStream_arr_offset.class, "/echo_stream_arr_offset");
-    handler.addServlet(EchoStream_readLine_print.class, "/echo_stream_readLine_print");
-    handler.addServlet(EchoWriter_single_char.class, "/echo_writer_single_char");
+    handler.addServlet(TestServlets.GetHello.class, "/hello");
+    handler.addServlet(TestServlets.EchoWriter_single_char.class, "/echo_writer_single_char");
     handler.addServlet(TestServlets.EchoWriter_arr.class, "/echo_writer_arr");
     handler.addServlet(TestServlets.EchoWriter_arr_offset.class, "/echo_writer_arr_offset");
     handler.addServlet(TestServlets.EchoWriter_readLine_write.class, "/echo_writer_readLine_write");
@@ -106,11 +58,9 @@ public class Servlet30InstrumentationTest extends AbstractInstrumenterTest {
         TestServlets.EchoWriter_readLine_print_str.class, "/echo_writer_readLine_print_str");
     handler.addServlet(
         TestServlets.EchoWriter_readLine_print_arr.class, "/echo_writer_readLine_print_arr");
-    handler.addServlet(TestServlets.Forward_to_post.class, "/forward_to_echo");
-    handler.addServlet(EchoAsyncResponse_stream.class, "/echo_async_response_stream");
-    handler.addServlet(EchoAsyncResponse_writer.class, "/echo_async_response_writer");
-    handler.addServlet(EchoStream_read_large_array.class, "/echo_stream_read_large_array");
-    handler.addServlet(EchoReader_read_large_array.class, "/echo_reader_read_large_array");
+    handler.addServlet(TestServlets.EchoAsyncResponse_writer.class, "/echo_async_response_writer");
+    handler.addServlet(TestServlets.EchoStream_read_large_array.class, "/echo_stream_read_large_array");
+    handler.addServlet(TestServlets.EchoReader_read_large_array.class, "/echo_reader_read_large_array");
     server.setHandler(handler);
     server.start();
     serverPort = server.getConnectors()[0].getLocalPort();
@@ -122,23 +72,8 @@ public class Servlet30InstrumentationTest extends AbstractInstrumenterTest {
   }
 
   @Test
-  public void forward_to_post() throws Exception {
-    postJson(String.format("http://localhost:%d/forward_to_echo", serverPort));
-  }
-
-  @Test
-  public void echo_async_response_stream() throws Exception {
-    postJson(String.format("http://localhost:%d/echo_async_response_stream", serverPort));
-  }
-
-  @Test
   public void echo_async_response_writer() throws Exception {
     postJson(String.format("http://localhost:%d/echo_async_response_writer", serverPort));
-  }
-
-  @Test
-  public void postJson_stream_single_byte() throws Exception {
-    postJson(String.format("http://localhost:%d/echo_stream_single_byte", serverPort));
   }
 
   @Test
@@ -149,21 +84,6 @@ public class Servlet30InstrumentationTest extends AbstractInstrumenterTest {
   @Test
   public void postJson_reader_read_large_array() throws Exception {
     postJson(String.format("http://localhost:%d/echo_reader_read_large_array", serverPort));
-  }
-
-  @Test
-  public void postJson_stream_arr() throws Exception {
-    postJson(String.format("http://localhost:%d/echo_stream_arr", serverPort));
-  }
-
-  @Test
-  public void postJson_stream_arr_offset() throws Exception {
-    postJson(String.format("http://localhost:%d/echo_stream_arr_offset", serverPort));
-  }
-
-  @Test
-  public void postJson_stream_readLine_print() throws Exception {
-    postJson(String.format("http://localhost:%d/echo_stream_readLine_print", serverPort));
   }
 
   @Test
@@ -206,7 +126,7 @@ public class Servlet30InstrumentationTest extends AbstractInstrumenterTest {
     FormBody formBody = new FormBody.Builder().add("key1", "value1").add("key2", "value2").build();
     Request request =
         new Request.Builder()
-            .url(String.format("http://localhost:%d/echo_stream_single_byte", serverPort))
+            .url(String.format("http://localhost:%d/echo_writer_single_char", serverPort))
             .post(formBody)
             .header(REQUEST_HEADER, REQUEST_HEADER_VALUE)
             .build();
@@ -301,7 +221,7 @@ public class Servlet30InstrumentationTest extends AbstractInstrumenterTest {
     FormBody formBody = new FormBody.Builder().add("block", "true").build();
     Request request =
         new Request.Builder()
-            .url(String.format("http://localhost:%d/echo_stream_single_byte", serverPort))
+            .url(String.format("http://localhost:%d/echo_writer_single_char", serverPort))
             .post(formBody)
             .header(REQUEST_HEADER, REQUEST_HEADER_VALUE)
             .build();
@@ -330,7 +250,7 @@ public class Servlet30InstrumentationTest extends AbstractInstrumenterTest {
     FormBody formBody = new FormBody.Builder().add("block", "true").build();
     Request request =
         new Request.Builder()
-            .url(String.format("http://localhost:%d/echo_stream_arr", serverPort))
+            .url(String.format("http://localhost:%d/echo_writer_single_char", serverPort))
             .post(formBody)
             .header(REQUEST_HEADER, REQUEST_HEADER_VALUE)
             .build();

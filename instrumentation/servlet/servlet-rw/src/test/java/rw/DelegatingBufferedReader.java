@@ -14,20 +14,23 @@
  * limitations under the License.
  */
 
-package org;
+package rw;
 
 import java.io.BufferedReader;
-import java.io.PrintWriter;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
-import org.hypertrace.agent.core.instrumentation.buffer.CharBufferSpanPair;
+import java.io.IOException;
+import java.io.Reader;
 
-public class BufferedReaderPrintWriterContextAccess {
+public class DelegatingBufferedReader extends BufferedReader {
 
-  private BufferedReaderPrintWriterContextAccess() {}
+  private final Reader delegate;
 
-  public static void addToBufferedReaderContext(
-      BufferedReader bufferedReader, CharBufferSpanPair buffer) {}
+  public DelegatingBufferedReader(Reader delegate) {
+    super(delegate);
+    this.delegate = delegate;
+  }
 
-  public static void addToPrintWriterContext(
-      PrintWriter printWriter, BoundedCharArrayWriter buffer) {}
+  @Override
+  public int read(char[] cbuf) throws IOException {
+    return delegate.read(cbuf);
+  }
 }
