@@ -38,21 +38,7 @@ public class ResponseBodyWrappingHandler implements Handler<Buffer> {
   private static final Logger log = LoggerFactory.getLogger(ResponseBodyWrappingHandler.class);
 
   private static Method getAttribute = null;
-
-  static {
-    try {
-      getAttribute =
-          Class.forName("io.opentelemetry.sdk.trace.SdkSpan")
-              .getDeclaredMethod("getAttribute", AttributeKey.class);
-    } catch (NoSuchMethodException e) {
-      log.error("getAttribute method not found in SdkSpan class", e);
-    } catch (ClassNotFoundException e) {
-      log.error("SdkSpan class not found", e);
-    }
-    if (getAttribute != null) {
-      getAttribute.setAccessible(true);
-    }
-  }
+  private static boolean shouldCallGetAttribute = true;
 
   private final Handler<Buffer> wrapped;
   private final Span span;
@@ -75,8 +61,23 @@ public class ResponseBodyWrappingHandler implements Handler<Buffer> {
               .setAttribute(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, responseBody);
 
       // Also add content type if present
+      if (shouldCallGetAttribute && getAttribute == null) {
+        try {
+          getAttribute =
+                  span.getClass()
+                          .getDeclaredMethod("getAttribute", AttributeKey.class);
+        } catch (NoSuchMethodException e) {
+          log.error("getAttribute method not found in SdkSpan class", e);
+        }
+        if (getAttribute != null) {
+          getAttribute.setAccessible(true);
+        }
+        // only try once and set the value,
+        // if not found, do not attempt to try again
+        shouldCallGetAttribute = false;
+      }
       if (getAttribute != null
-          && span.getClass().getName().equals("io.opentelemetry.sdk.trace.SdkSpan")) {
+          && span.getClass().getName().contains("io.opentelemetry.sdk.trace.SdkSpan")) {
         try {
           Object resContentType =
               getAttribute.invoke(

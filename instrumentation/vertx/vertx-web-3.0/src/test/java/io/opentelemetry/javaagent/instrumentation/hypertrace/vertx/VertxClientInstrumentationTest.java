@@ -16,7 +16,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.vertx;
 
-import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.proto.trace.v1.Span;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeoutException;
-import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractHttpClientTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -141,12 +140,12 @@ public class VertxClientInstrumentationTest extends AbstractHttpClientTest {
     countDownLatch.await();
 
     TEST_WRITER.waitForTraces(1);
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    List<List<Span>> traces = TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER) || span.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
     Assertions.assertEquals(1, traces.size());
-    SpanData clientSpan = traces.get(0).get(0);
+    Span clientSpan = traces.get(0).get(0);
     Assertions.assertEquals(
         "write buffer str_encoding ",
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+        TEST_WRITER.getAttributesMap(clientSpan).get("http.request.body").getStringValue());
   }
 
   @Test
@@ -169,12 +168,12 @@ public class VertxClientInstrumentationTest extends AbstractHttpClientTest {
     countDownLatch.await();
 
     TEST_WRITER.waitForTraces(1);
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    List<List<Span>> traces = TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER) || span.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
     Assertions.assertEquals(1, traces.size(), String.format("was: %d", traces.size()));
-    SpanData clientSpan = traces.get(0).get(0);
+    Span clientSpan = traces.get(0).get(0);
     Assertions.assertEquals(
         "write buffer str_encoding end",
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+        TEST_WRITER.getAttributesMap(clientSpan).get("http.request.body").getStringValue());
   }
 
   @Test
@@ -197,11 +196,11 @@ public class VertxClientInstrumentationTest extends AbstractHttpClientTest {
     countDownLatch.await();
 
     TEST_WRITER.waitForTraces(1);
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    List<List<Span>> traces = TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER) || span.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
     Assertions.assertEquals(1, traces.size(), String.format("was: %d", traces.size()));
-    SpanData clientSpan = traces.get(0).get(0);
+    Span clientSpan = traces.get(0).get(0);
     Assertions.assertEquals(
         "write buffer str_encoding end",
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+        TEST_WRITER.getAttributesMap(clientSpan).get("http.request.body").getStringValue());
   }
 }
