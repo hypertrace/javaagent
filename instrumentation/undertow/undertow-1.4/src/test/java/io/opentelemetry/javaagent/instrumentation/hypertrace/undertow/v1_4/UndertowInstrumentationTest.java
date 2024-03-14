@@ -19,7 +19,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.undertow.v1_4;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.proto.trace.v1.Span;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
@@ -44,7 +44,6 @@ import okhttp3.MediaType;
 import okhttp3.Request.Builder;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -109,16 +108,16 @@ final class UndertowInstrumentationTest extends AbstractInstrumenterTest {
     }
 
     TEST_WRITER.waitForTraces(1);
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    List<List<Span>> traces = TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT) || span.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
     Assertions.assertEquals(1, traces.size());
-    List<SpanData> trace = traces.get(0);
+    List<Span> trace = traces.get(0);
     Assertions.assertEquals(1, trace.size());
-    SpanData spanData = trace.get(0);
+    Span span = trace.get(0);
     assertEquals(
         "{\"echo\": \"bar\"}",
-        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+        TEST_WRITER.getAttributesMap(span).get("http.response.body").getStringValue());
     assertEquals(
-        requestBody, spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+        requestBody, TEST_WRITER.getAttributesMap(span).get("http.request.body").getStringValue());
 
     // make a second request to an endpoint that should leverage servlet instrumentation
     try (Response response =
@@ -135,17 +134,17 @@ final class UndertowInstrumentationTest extends AbstractInstrumenterTest {
     }
 
     TEST_WRITER.waitForTraces(2);
-    List<List<SpanData>> putTraces = TEST_WRITER.getTraces();
+    List<List<Span>> putTraces = TEST_WRITER.waitForSpans(2, span1 -> span1.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT) || span1.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
     Assertions.assertEquals(2, putTraces.size());
-    List<SpanData> putTrace = putTraces.get(1);
+    List<Span> putTrace = putTraces.get(1);
     Assertions.assertEquals(1, putTrace.size());
-    SpanData putSpanData = putTrace.get(0);
+    Span putSpan = putTrace.get(0);
     assertEquals(
         "echo=bar&append=true",
-        putSpanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+            TEST_WRITER.getAttributesMap(putSpan).get("http.response.body").getStringValue());
     assertEquals(
         requestBody,
-        putSpanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+            TEST_WRITER.getAttributesMap(putSpan).get("http.request.body").getStringValue());
 
     // make a third request to an endpoint that should return JSON
     try (Response response =
@@ -160,16 +159,16 @@ final class UndertowInstrumentationTest extends AbstractInstrumenterTest {
     }
 
     TEST_WRITER.waitForTraces(3);
-    final List<List<SpanData>> getJsonTraces = TEST_WRITER.getTraces();
+    final List<List<Span>> getJsonTraces = TEST_WRITER.waitForSpans(3, span1 -> span1.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT) || span1.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
     Assertions.assertEquals(3, getJsonTraces.size());
-    final List<SpanData> getJsonTrace = getJsonTraces.get(2);
+    final List<Span> getJsonTrace = getJsonTraces.get(2);
     Assertions.assertEquals(1, getJsonTrace.size());
-    final SpanData getJsonSpanData = getJsonTrace.get(0);
+    final Span getJsonSpan = getJsonTrace.get(0);
     assertEquals(
         "{\"message\": \"Hello World\"}",
-        getJsonSpanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+            TEST_WRITER.getAttributesMap(getJsonSpan).get("http.response.body").getStringValue());
     // empty request body should not be captured
-    assertNull(getJsonSpanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+    assertNull(TEST_WRITER.getAttributesMap(getJsonSpan).get("http.request.body"));
 
     // make a four request to an endpoint that should return HTML
     try (Response response =
@@ -181,16 +180,16 @@ final class UndertowInstrumentationTest extends AbstractInstrumenterTest {
     }
 
     TEST_WRITER.waitForTraces(4);
-    final List<List<SpanData>> getHtmlTraces = TEST_WRITER.getTraces();
+    final List<List<Span>> getHtmlTraces = TEST_WRITER.waitForSpans(4, span1 -> span1.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT) || span1.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
     Assertions.assertEquals(4, getHtmlTraces.size());
-    final List<SpanData> getHtmlTrace = getHtmlTraces.get(3);
+    final List<Span> getHtmlTrace = getHtmlTraces.get(3);
     Assertions.assertEquals(1, getHtmlTrace.size());
-    final SpanData getHtmlSpanData = getHtmlTrace.get(0);
+    final Span getHtmlSpan = getHtmlTrace.get(0);
     // HTML body should not be captured
     assertNull(
-        getHtmlSpanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+            TEST_WRITER.getAttributesMap(getHtmlSpan).get("http.response.body"));
     // request body should not be captured
-    assertNull(getJsonSpanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+    assertNull(TEST_WRITER.getAttributesMap(getHtmlSpan).get("http.request.body"));
   }
 
   public static final class TestServlet extends HttpServlet {
