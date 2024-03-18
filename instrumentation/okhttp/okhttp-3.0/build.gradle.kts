@@ -27,6 +27,5 @@ val versions: Map<String, String> by extra
 
 dependencies {
     compileOnly("com.squareup.okhttp3:okhttp:3.0.0")
-    testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-okhttp-3.0:${versions["opentelemetry_java_agent"]}")
     testImplementation(project(":testing-common"))
 }

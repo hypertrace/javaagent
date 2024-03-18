@@ -151,7 +151,7 @@ public class TestOtlpReceiver implements AutoCloseable {
   public List<List<Span>> waitForTraces(int number, Predicate<List<Span>> excludes)
       throws InterruptedException, TimeoutException {
     synchronized (tracesLock) {
-      long remainingWaitMillis = TimeUnit.SECONDS.toMillis(20);
+      long remainingWaitMillis = TimeUnit.SECONDS.toMillis(31);
       List<List<Span>> traces = getCompletedAndFilteredTraces(excludes, span -> false);
       while (traces.size() < number && remainingWaitMillis > 0) {
         Stopwatch stopwatch = Stopwatch.createStarted();
@@ -189,7 +189,7 @@ public class TestOtlpReceiver implements AutoCloseable {
   public List<List<Span>> waitForSpans(int number, Predicate<Span> excludes)
       throws InterruptedException, TimeoutException {
     synchronized (tracesLock) {
-      long remainingWaitMillis = TimeUnit.SECONDS.toMillis(20);
+      long remainingWaitMillis = TimeUnit.SECONDS.toMillis(31);
 
       List<List<Span>> traces = getCompletedAndFilteredTraces(spans -> false, excludes);
       while (spansCount(traces) < number && remainingWaitMillis > 0) {

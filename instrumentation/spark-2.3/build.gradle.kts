@@ -29,14 +29,10 @@ val versions: Map<String, String> by extra
 dependencies {
     api(project(":instrumentation:servlet:servlet-3.0"))
 
-    testRuntimeOnly("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common-bootstrap:${versions["opentelemetry_java_agent"]}")
     muzzleBootstrap("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common-bootstrap:${versions["opentelemetry_java_agent"]}")
 
     compileOnly("com.sparkjava:spark-core:2.3")
 
-    testImplementation(project(":instrumentation:servlet:servlet-rw"))
-    testImplementation(files(project(":instrumentation:servlet:servlet-rw").dependencyProject.sourceSets.main.map { it.output }))
     testImplementation(project(":testing-common"))
     testImplementation("com.sparkjava:spark-core:2.3")
-    testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_api_semconv"]}")
 }

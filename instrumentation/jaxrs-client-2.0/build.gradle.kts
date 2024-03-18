@@ -40,11 +40,7 @@ dependencies {
     testImplementation(project(":testing-common"))
     testImplementation("org.glassfish.jersey.core:jersey-client:2.27")
     testImplementation("org.glassfish.jersey.inject:jersey-hk2:2.27")
-    testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_api_semconv"]}")
 
-    testImplementation(project(":instrumentation:apache-httpclient-4.0"))
-    testImplementation(files(project(":instrumentation:apache-httpclient-4.0").dependencyProject.sourceSets.main.map { it.output }))
-    testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-apache-httpclient-4.0:${versions["opentelemetry_java_agent"]}")
     testImplementation("org.jboss.resteasy:resteasy-client:3.0.5.Final")
     // ^ This version has timeouts https://issues.redhat.com/browse/RESTEASY-975
     testImplementation("org.apache.cxf:cxf-rt-rs-client:3.1.0")

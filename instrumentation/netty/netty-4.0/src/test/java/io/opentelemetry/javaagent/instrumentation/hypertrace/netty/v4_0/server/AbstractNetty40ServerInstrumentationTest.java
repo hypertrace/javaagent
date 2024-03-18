@@ -30,11 +30,13 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okio.Buffer;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class AbstractNetty40ServerInstrumentationTest extends AbstractInstrumenterTest {
 
   public static final String REQUEST_HEADER_NAME = "reqheader";
@@ -43,13 +45,13 @@ public abstract class AbstractNetty40ServerInstrumentationTest extends AbstractI
   private static int port;
   private static NettyTestServer nettyTestServer;
 
-  @BeforeEach
+  @BeforeAll
   private void startServer() throws IOException, InterruptedException {
     nettyTestServer = createNetty();
     port = nettyTestServer.create();
   }
 
-  @AfterEach
+  @AfterAll
   private void stopServer() throws ExecutionException, InterruptedException {
     nettyTestServer.stopServer();
   }

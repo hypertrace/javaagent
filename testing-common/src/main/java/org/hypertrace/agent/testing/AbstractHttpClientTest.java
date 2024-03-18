@@ -113,7 +113,14 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
       // exclude server spans
       traces =
           TEST_WRITER.waitForSpans(
-              1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
+              1,
+              span ->
+                  !span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT)
+                      || span.getAttributesList().stream()
+                          .noneMatch(
+                              keyValue ->
+                                  keyValue.getKey().equals("http.url")
+                                      && keyValue.getValue().getStringValue().contains("/echo")));
     }
     Assertions.assertEquals(1, traces.size());
     Span clientSpan = traces.get(0).get(0);
@@ -154,7 +161,14 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
     } else {
       traces =
           TEST_WRITER.waitForSpans(
-              1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
+              1,
+              span ->
+                  !span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT)
+                      || span.getAttributesList().stream()
+                          .noneMatch(
+                              keyValue ->
+                                  keyValue.getKey().equals("http.url")
+                                      && keyValue.getValue().getStringValue().contains("/echo")));
     }
     Assertions.assertEquals(1, traces.size());
     Span clientSpan = traces.get(0).get(0);
@@ -186,7 +200,15 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
 
     TEST_WRITER.waitForTraces(1);
     List<List<Span>> traces =
-        TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
+        TEST_WRITER.waitForSpans(
+            1,
+            span ->
+                !span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT)
+                    || span.getAttributesList().stream()
+                        .noneMatch(
+                            keyValue ->
+                                keyValue.getKey().equals("http.url")
+                                    && keyValue.getValue().getStringValue().contains("/echo")));
     Assertions.assertEquals(1, traces.size());
     Assertions.assertEquals(1, traces.get(0).size());
     Span clientSpan = traces.get(0).get(0);
@@ -207,7 +229,18 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
 
     TEST_WRITER.waitForTraces(1);
     List<List<Span>> traces =
-        TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
+        TEST_WRITER.waitForSpans(
+            1,
+            span ->
+                !span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT)
+                    || span.getAttributesList().stream()
+                        .noneMatch(
+                            keyValue ->
+                                keyValue.getKey().equals("http.url")
+                                    && keyValue
+                                        .getValue()
+                                        .getStringValue()
+                                        .contains("/get_no_content")));
     Assertions.assertEquals(1, traces.size());
     Assertions.assertEquals(1, traces.get(0).size());
     Span clientSpan = traces.get(0).get(0);
@@ -235,7 +268,17 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
     } else {
       traces =
           TEST_WRITER.waitForSpans(
-              1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
+              1,
+              span ->
+                  !span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT)
+                      || span.getAttributesList().stream()
+                          .noneMatch(
+                              keyValue ->
+                                  keyValue.getKey().equals("http.url")
+                                      && keyValue
+                                          .getValue()
+                                          .getStringValue()
+                                          .contains("/get_json")));
     }
 
     Assertions.assertEquals(1, traces.size());

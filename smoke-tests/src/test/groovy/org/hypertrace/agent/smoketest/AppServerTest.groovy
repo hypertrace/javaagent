@@ -5,15 +5,9 @@
 
 package org.hypertrace.agent.smoketest
 
-import io.opentelemetry.proto.common.v1.KeyValue
 import okhttp3.MediaType
 import okhttp3.RequestBody
-import spock.lang.Ignore
 import spock.lang.IgnoreIf
-
-import java.util.function.Function
-import java.util.function.Predicate
-import java.util.stream.Stream
 
 import static org.junit.Assume.assumeTrue
 
