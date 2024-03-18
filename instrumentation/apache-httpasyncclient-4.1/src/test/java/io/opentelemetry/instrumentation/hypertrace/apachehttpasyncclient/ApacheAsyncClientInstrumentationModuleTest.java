@@ -16,6 +16,7 @@
 
 package io.opentelemetry.instrumentation.hypertrace.apachehttpasyncclient;
 
+import io.opentelemetry.proto.trace.v1.Span;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -29,8 +30,6 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
-
-import io.opentelemetry.proto.trace.v1.Span;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -83,7 +82,8 @@ class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTes
 
     TEST_WRITER.waitForTraces(1);
     // exclude server spans
-    List<List<Span>> traces = TEST_WRITER.waitForSpans(2, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(2, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
     Assertions.assertEquals(1, traces.size());
     Assertions.assertEquals(2, traces.get(0).size());
     Span clientSpan = traces.get(0).get(1);
@@ -95,13 +95,14 @@ class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTes
 
     Assertions.assertEquals(
         "test-value",
-        TEST_WRITER.getAttributesMap(clientSpan)
-            .get("http.response.header.test-response-header").getStringValue());
+        TEST_WRITER
+            .getAttributesMap(clientSpan)
+            .get("http.response.header.test-response-header")
+            .getStringValue());
     Assertions.assertEquals(
         "bar",
         TEST_WRITER.getAttributesMap(clientSpan).get("http.request.header.foo").getStringValue());
-    Assertions.assertNull(
-        TEST_WRITER.getAttributesMap(clientSpan).get("http.request.body"));
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(clientSpan).get("http.request.body"));
 
     Assertions.assertEquals(
         GetJsonHandler.RESPONSE_BODY,
@@ -138,7 +139,8 @@ class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTes
 
     TEST_WRITER.waitForTraces(1);
     // exclude server spans
-    List<List<Span>> traces = TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
     Assertions.assertEquals(1, traces.size());
     Assertions.assertEquals(1, traces.get(0).size());
     Span clientSpan = traces.get(0).get(0);
@@ -146,13 +148,14 @@ class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTes
     String requestBody = readInputStream(entity.getContent());
     Assertions.assertEquals(
         "test-value",
-        TEST_WRITER.getAttributesMap(clientSpan)
-            .get("http.response.header.test-response-header").getStringValue());
+        TEST_WRITER
+            .getAttributesMap(clientSpan)
+            .get("http.response.header.test-response-header")
+            .getStringValue());
     Assertions.assertEquals(
         requestBody,
         TEST_WRITER.getAttributesMap(clientSpan).get("http.request.body").getStringValue());
-    Assertions.assertNull(
-        TEST_WRITER.getAttributesMap(clientSpan).get("http.response.body"));
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(clientSpan).get("http.response.body"));
   }
 
   private static String readInputStream(InputStream inputStream) throws IOException {

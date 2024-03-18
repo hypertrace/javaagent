@@ -63,9 +63,7 @@ public class ResponseBodyWrappingHandler implements Handler<Buffer> {
       // Also add content type if present
       if (shouldCallGetAttribute && getAttribute == null) {
         try {
-          getAttribute =
-                  span.getClass()
-                          .getDeclaredMethod("getAttribute", AttributeKey.class);
+          getAttribute = span.getClass().getDeclaredMethod("getAttribute", AttributeKey.class);
         } catch (NoSuchMethodException e) {
           log.error("getAttribute method not found in SdkSpan class", e);
         }

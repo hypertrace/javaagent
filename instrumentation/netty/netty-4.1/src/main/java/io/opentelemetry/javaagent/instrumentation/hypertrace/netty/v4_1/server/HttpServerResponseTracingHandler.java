@@ -51,11 +51,10 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
 
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise prm) {
-    Deque<ServerContext> serverContexts = ctx.channel()
-                .attr(
-                    io.opentelemetry.instrumentation.netty.v4_1.internal.AttributeKeys
-                        .SERVER_CONTEXT)
-                .get();
+    Deque<ServerContext> serverContexts =
+        ctx.channel()
+            .attr(io.opentelemetry.instrumentation.netty.v4_1.internal.AttributeKeys.SERVER_CONTEXT)
+            .get();
     if (serverContexts == null || serverContexts.isEmpty()) {
       ctx.write(msg, prm);
       return;
@@ -95,7 +94,12 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
     try (Scope ignored = serverContexts.element().context().makeCurrent()) {
       ctx.write(msg, prm);
     } catch (Throwable throwable) {
-      NettyServerSingletons.instrumenter().end(serverContexts.element().context(), serverContexts.element().request(), null, throwable);
+      NettyServerSingletons.instrumenter()
+          .end(
+              serverContexts.element().context(),
+              serverContexts.element().request(),
+              null,
+              throwable);
       throw throwable;
     }
     if (msg instanceof HttpResponse) {

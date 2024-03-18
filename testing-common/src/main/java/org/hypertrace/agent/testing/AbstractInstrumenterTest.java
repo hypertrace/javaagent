@@ -18,7 +18,6 @@ package org.hypertrace.agent.testing;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import io.opentelemetry.api.trace.Tracer;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;

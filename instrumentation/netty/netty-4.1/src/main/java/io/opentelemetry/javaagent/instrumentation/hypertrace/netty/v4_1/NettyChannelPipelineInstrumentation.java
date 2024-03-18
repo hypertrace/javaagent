@@ -39,7 +39,6 @@ import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.client.H
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.server.HttpServerBlockingRequestHandler;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.server.HttpServerRequestTracingHandler;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.server.HttpServerResponseTracingHandler;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.server.HttpServerTracingHandler;
 import io.opentelemetry.javaagent.instrumentation.netty.v4_1.NettyClientSingletons;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
@@ -102,14 +101,14 @@ public class NettyChannelPipelineInstrumentation implements TypeInstrumentation 
         if (handler instanceof HttpServerCodec) {
 
           pipeline.addLast(
-                  HttpServerRequestTracingHandler.class.getName(),
-                  new HttpServerRequestTracingHandler());
+              HttpServerRequestTracingHandler.class.getName(),
+              new HttpServerRequestTracingHandler());
           pipeline.addLast(
               HttpServerBlockingRequestHandler.class.getName(),
               new HttpServerBlockingRequestHandler());
           pipeline.addLast(
-                  HttpServerResponseTracingHandler.class.getName(),
-                  new HttpServerResponseTracingHandler());
+              HttpServerResponseTracingHandler.class.getName(),
+              new HttpServerResponseTracingHandler());
         } else if (handler instanceof HttpRequestDecoder) {
           pipeline.addLast(
               HttpServerRequestTracingHandler.class.getName(),

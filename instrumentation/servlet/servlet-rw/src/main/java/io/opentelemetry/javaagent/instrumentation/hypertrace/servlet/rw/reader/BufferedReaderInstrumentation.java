@@ -210,7 +210,8 @@ public class BufferedReaderInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void exit(
-        @Advice.Return String line, @Advice.Enter CharBufferSpanPair bufferSpanPair) throws IOException {
+        @Advice.Return String line, @Advice.Enter CharBufferSpanPair bufferSpanPair)
+        throws IOException {
       try {
         if (bufferSpanPair == null) {
           return;

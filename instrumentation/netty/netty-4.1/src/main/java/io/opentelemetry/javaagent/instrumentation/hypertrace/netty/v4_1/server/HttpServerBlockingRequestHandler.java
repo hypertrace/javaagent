@@ -42,11 +42,9 @@ public class HttpServerBlockingRequestHandler extends ChannelInboundHandlerAdapt
   public void channelRead(ChannelHandlerContext ctx, Object msg) {
     Channel channel = ctx.channel();
     Deque<ServerContext> serverContexts =
-            channel
-                .attr(
-                    io.opentelemetry.instrumentation.netty.v4_1.internal.AttributeKeys
-                        .SERVER_CONTEXT)
-                .get();
+        channel
+            .attr(io.opentelemetry.instrumentation.netty.v4_1.internal.AttributeKeys.SERVER_CONTEXT)
+            .get();
     if (serverContexts == null || serverContexts.isEmpty()) {
       ctx.fireChannelRead(msg);
       return;

@@ -106,10 +106,14 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
     List<List<Span>> traces;
     if (hasResponseBodySpan) {
       // exclude server spans
-      traces = TEST_WRITER.waitForSpans(2, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
+      traces =
+          TEST_WRITER.waitForSpans(
+              2, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
     } else {
       // exclude server spans
-      traces = TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
+      traces =
+          TEST_WRITER.waitForSpans(
+              1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
     }
     Assertions.assertEquals(1, traces.size());
     Span clientSpan = traces.get(0).get(0);
@@ -144,9 +148,13 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
     TEST_WRITER.waitForTraces(1);
     List<List<Span>> traces;
     if (hasResponseBodySpan) {
-      traces = TEST_WRITER.waitForSpans(2, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
+      traces =
+          TEST_WRITER.waitForSpans(
+              2, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
     } else {
-      traces = TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
+      traces =
+          TEST_WRITER.waitForSpans(
+              1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
     }
     Assertions.assertEquals(1, traces.size());
     Span clientSpan = traces.get(0).get(0);
@@ -177,7 +185,8 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
     Assertions.assertEquals(body, response.body);
 
     TEST_WRITER.waitForTraces(1);
-    List<List<Span>> traces = TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
     Assertions.assertEquals(1, traces.size());
     Assertions.assertEquals(1, traces.get(0).size());
     Span clientSpan = traces.get(0).get(0);
@@ -197,7 +206,8 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
     Assertions.assertNull(response.body);
 
     TEST_WRITER.waitForTraces(1);
-    List<List<Span>> traces = TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
     Assertions.assertEquals(1, traces.size());
     Assertions.assertEquals(1, traces.get(0).size());
     Span clientSpan = traces.get(0).get(0);
@@ -219,9 +229,13 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
     TEST_WRITER.waitForTraces(1);
     List<List<Span>> traces;
     if (hasResponseBodySpan) {
-      traces = TEST_WRITER.waitForSpans(2, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
+      traces =
+          TEST_WRITER.waitForSpans(
+              2, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
     } else {
-      traces = TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
+      traces =
+          TEST_WRITER.waitForSpans(
+              1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
     }
 
     Assertions.assertEquals(1, traces.size());
@@ -233,10 +247,7 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
         clientSpan = traces.get(0).get(1);
         responseBodySpan = traces.get(0).get(0);
       }
-      Assertions.assertNull(
-              TEST_WRITER
-                      .getAttributesMap(clientSpan)
-                      .get("http.request.body"));
+      Assertions.assertNull(TEST_WRITER.getAttributesMap(clientSpan).get("http.request.body"));
 
       Assertions.assertEquals(
           TestHttpServer.GetJsonHandler.RESPONSE_BODY,
@@ -245,18 +256,12 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
               .get("http.response.body")
               .getStringValue());
     } else {
-      Assertions.assertNull(
-              TEST_WRITER
-                      .getAttributesMap(clientSpan)
-                      .get("http.request.body"));
+      Assertions.assertNull(TEST_WRITER.getAttributesMap(clientSpan).get("http.request.body"));
 
       Assertions.assertEquals(1, traces.get(0).size());
       Assertions.assertEquals(
           TestHttpServer.GetJsonHandler.RESPONSE_BODY,
-          TEST_WRITER
-              .getAttributesMap(clientSpan)
-              .get("http.response.body")
-              .getStringValue());
+          TEST_WRITER.getAttributesMap(clientSpan).get("http.response.body").getStringValue());
     }
   }
 
@@ -277,44 +282,25 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
 
   private void assertRequestAndResponseBody(Span span, String requestBody, String responseBody) {
     Assertions.assertEquals(
-        requestBody,
-        TEST_WRITER
-            .getAttributesMap(span)
-            .get("http.request.body")
-            .getStringValue());
+        requestBody, TEST_WRITER.getAttributesMap(span).get("http.request.body").getStringValue());
     Assertions.assertEquals(
         responseBody,
-        TEST_WRITER
-            .getAttributesMap(span)
-            .get("http.response.body")
-            .getStringValue());
+        TEST_WRITER.getAttributesMap(span).get("http.response.body").getStringValue());
   }
 
   private void assertBodies(
       Span clientSpan, Span responseBodySpan, String requestBody, String responseBody) {
     Assertions.assertEquals(
         requestBody,
-        TEST_WRITER
-            .getAttributesMap(clientSpan)
-            .get("http.request.body")
-            .getStringValue());
+        TEST_WRITER.getAttributesMap(clientSpan).get("http.request.body").getStringValue());
     Assertions.assertEquals(
         responseBody,
-        TEST_WRITER
-            .getAttributesMap(responseBodySpan)
-            .get("http.response.body")
-            .getStringValue());
+        TEST_WRITER.getAttributesMap(responseBodySpan).get("http.response.body").getStringValue());
   }
 
   private void assertNoBodies(Span span) {
-    Assertions.assertNull(
-        TEST_WRITER
-            .getAttributesMap(span)
-            .get("http.response.body"));
-    Assertions.assertNull(
-        TEST_WRITER
-            .getAttributesMap(span)
-            .get("http.request.body"));
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span).get("http.response.body"));
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span).get("http.request.body"));
   }
 
   public static String readInputStream(InputStream inputStream) throws IOException {

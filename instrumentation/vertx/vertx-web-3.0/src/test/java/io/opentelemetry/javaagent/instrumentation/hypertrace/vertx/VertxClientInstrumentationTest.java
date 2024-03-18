@@ -140,7 +140,12 @@ public class VertxClientInstrumentationTest extends AbstractHttpClientTest {
     countDownLatch.await();
 
     TEST_WRITER.waitForTraces(1);
-    List<List<Span>> traces = TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER) || span.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(
+            1,
+            span ->
+                span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER)
+                    || span.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
     Assertions.assertEquals(1, traces.size());
     Span clientSpan = traces.get(0).get(0);
     Assertions.assertEquals(
@@ -168,7 +173,12 @@ public class VertxClientInstrumentationTest extends AbstractHttpClientTest {
     countDownLatch.await();
 
     TEST_WRITER.waitForTraces(1);
-    List<List<Span>> traces = TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER) || span.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(
+            1,
+            span ->
+                span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER)
+                    || span.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
     Assertions.assertEquals(1, traces.size(), String.format("was: %d", traces.size()));
     Span clientSpan = traces.get(0).get(0);
     Assertions.assertEquals(
@@ -196,7 +206,12 @@ public class VertxClientInstrumentationTest extends AbstractHttpClientTest {
     countDownLatch.await();
 
     TEST_WRITER.waitForTraces(1);
-    List<List<Span>> traces = TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER) || span.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(
+            1,
+            span ->
+                span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER)
+                    || span.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
     Assertions.assertEquals(1, traces.size(), String.format("was: %d", traces.size()));
     Span clientSpan = traces.get(0).get(0);
     Assertions.assertEquals(

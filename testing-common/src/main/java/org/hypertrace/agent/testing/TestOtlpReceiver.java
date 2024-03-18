@@ -26,15 +26,6 @@ import io.opentelemetry.proto.common.v1.KeyValue;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.ScopeSpans;
 import io.opentelemetry.proto.trace.v1.Span;
-import org.eclipse.jetty.server.Handler;
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.handler.AbstractHandler;
-import org.eclipse.jetty.server.handler.HandlerList;
-
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -45,6 +36,14 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
+import javax.servlet.ServletInputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.eclipse.jetty.server.handler.HandlerList;
 
 public class TestOtlpReceiver implements AutoCloseable {
 
@@ -149,8 +148,7 @@ public class TestOtlpReceiver implements AutoCloseable {
     waitForTraces(number, spans -> false);
   }
 
-  public List<List<Span>> waitForTraces(
-      int number, Predicate<List<Span>> excludes)
+  public List<List<Span>> waitForTraces(int number, Predicate<List<Span>> excludes)
       throws InterruptedException, TimeoutException {
     synchronized (tracesLock) {
       long remainingWaitMillis = TimeUnit.SECONDS.toMillis(20);
@@ -188,7 +186,8 @@ public class TestOtlpReceiver implements AutoCloseable {
     return waitForSpans(number, span -> false);
   }
 
-  public List<List<Span>> waitForSpans(int number, Predicate<Span> excludes) throws InterruptedException, TimeoutException {
+  public List<List<Span>> waitForSpans(int number, Predicate<Span> excludes)
+      throws InterruptedException, TimeoutException {
     synchronized (tracesLock) {
       long remainingWaitMillis = TimeUnit.SECONDS.toMillis(20);
 
@@ -237,7 +236,7 @@ public class TestOtlpReceiver implements AutoCloseable {
   }
 
   private List<List<Span>> getCompletedAndFilteredTraces(
-          Predicate<List<Span>> excludeTrace, Predicate<Span> excludeSpan) {
+      Predicate<List<Span>> excludeTrace, Predicate<Span> excludeSpan) {
     List<List<Span>> traces = new ArrayList<>();
     for (List<Span> trace : getTraces()) {
       if (isCompleted(trace) && !excludeTrace.test(trace)) {

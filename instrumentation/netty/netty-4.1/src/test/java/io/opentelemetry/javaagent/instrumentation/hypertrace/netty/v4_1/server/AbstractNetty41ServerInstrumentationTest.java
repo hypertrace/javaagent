@@ -70,7 +70,8 @@ public abstract class AbstractNetty41ServerInstrumentationTest extends AbstractI
     }
 
     TEST_WRITER.waitForTraces(1);
-    List<List<Span>> traces = TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
     Assertions.assertEquals(1, traces.size());
     List<Span> trace = traces.get(0);
     Assertions.assertEquals(1, trace.size());
@@ -78,16 +79,18 @@ public abstract class AbstractNetty41ServerInstrumentationTest extends AbstractI
 
     Assertions.assertEquals(
         REQUEST_HEADER_VALUE,
-        TEST_WRITER.getAttributesMap(span)
-            .get("http.request.header." + REQUEST_HEADER_NAME).getStringValue());
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.request.header." + REQUEST_HEADER_NAME)
+            .getStringValue());
     Assertions.assertEquals(
         RESPONSE_HEADER_VALUE,
-        TEST_WRITER.getAttributesMap(span)
-            .get("http.response.header." + RESPONSE_HEADER_NAME).getStringValue());
-    Assertions.assertNull(
-        TEST_WRITER.getAttributesMap(span).get("http.request.body"));
-    Assertions.assertNull(
-        TEST_WRITER.getAttributesMap(span).get("http.response.body"));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.response.header." + RESPONSE_HEADER_NAME)
+            .getStringValue());
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span).get("http.request.body"));
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span).get("http.response.body"));
   }
 
   @Test
@@ -107,7 +110,8 @@ public abstract class AbstractNetty41ServerInstrumentationTest extends AbstractI
     }
 
     TEST_WRITER.waitForTraces(1);
-    List<List<Span>> traces = TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
     Assertions.assertEquals(1, traces.size());
     List<Span> trace = traces.get(0);
     Assertions.assertEquals(1, trace.size());
@@ -115,12 +119,16 @@ public abstract class AbstractNetty41ServerInstrumentationTest extends AbstractI
 
     Assertions.assertEquals(
         REQUEST_HEADER_VALUE,
-        TEST_WRITER.getAttributesMap(span)
-            .get("http.request.header." + REQUEST_HEADER_NAME).getStringValue());
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.request.header." + REQUEST_HEADER_NAME)
+            .getStringValue());
     Assertions.assertEquals(
         RESPONSE_HEADER_VALUE,
-        TEST_WRITER.getAttributesMap(span)
-            .get("http.response.header." + RESPONSE_HEADER_NAME).getStringValue());
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.response.header." + RESPONSE_HEADER_NAME)
+            .getStringValue());
     Buffer requestBodyBuffer = new Buffer();
     requestBody.writeTo(requestBodyBuffer);
     Assertions.assertEquals(
@@ -147,7 +155,8 @@ public abstract class AbstractNetty41ServerInstrumentationTest extends AbstractI
     }
 
     TEST_WRITER.waitForTraces(1);
-    List<List<Span>> traces = TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
     Assertions.assertEquals(1, traces.size());
     List<Span> trace = traces.get(0);
     Assertions.assertEquals(1, trace.size());
@@ -155,13 +164,13 @@ public abstract class AbstractNetty41ServerInstrumentationTest extends AbstractI
 
     Assertions.assertEquals(
         REQUEST_HEADER_VALUE,
-        TEST_WRITER.getAttributesMap(span)
-            .get("http.request.header." + REQUEST_HEADER_NAME).getStringValue());
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.request.header." + REQUEST_HEADER_NAME)
+            .getStringValue());
     Assertions.assertNull(
-        TEST_WRITER.getAttributesMap(span)
-            .get("http.response.header." + RESPONSE_HEADER_NAME));
-    Assertions.assertNull(
-        TEST_WRITER.getAttributesMap(span).get("http.response.body"));
+        TEST_WRITER.getAttributesMap(span).get("http.response.header." + RESPONSE_HEADER_NAME));
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span).get("http.response.body"));
 
     RequestBody requestBody = blockedRequestBody(true, 3000, 75);
     Request request2 =
@@ -177,7 +186,9 @@ public abstract class AbstractNetty41ServerInstrumentationTest extends AbstractI
     }
 
     TEST_WRITER.waitForTraces(2);
-    List<List<Span>> traces2 = TEST_WRITER.waitForSpans(2, span1 -> span1.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
+    List<List<Span>> traces2 =
+        TEST_WRITER.waitForSpans(
+            2, span1 -> span1.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
     Assertions.assertEquals(2, traces2.size());
     List<Span> trace2 = traces2.get(1);
     Assertions.assertEquals(1, trace2.size());
@@ -185,13 +196,13 @@ public abstract class AbstractNetty41ServerInstrumentationTest extends AbstractI
 
     Assertions.assertEquals(
         REQUEST_HEADER_VALUE,
-        TEST_WRITER.getAttributesMap(span2)
-            .get("http.request.header." + REQUEST_HEADER_NAME).getStringValue());
+        TEST_WRITER
+            .getAttributesMap(span2)
+            .get("http.request.header." + REQUEST_HEADER_NAME)
+            .getStringValue());
     Assertions.assertNull(
-        TEST_WRITER.getAttributesMap(span2)
-            .get("http.response.header." + RESPONSE_HEADER_NAME));
-    Assertions.assertNull(
-        TEST_WRITER.getAttributesMap(span2).get("http.response.body"));
+        TEST_WRITER.getAttributesMap(span2).get("http.response.header." + RESPONSE_HEADER_NAME));
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span2).get("http.response.body"));
   }
 
   @Test
@@ -211,7 +222,8 @@ public abstract class AbstractNetty41ServerInstrumentationTest extends AbstractI
     }
 
     TEST_WRITER.waitForTraces(1);
-    List<List<Span>> traces = TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
     Assertions.assertEquals(1, traces.size());
     List<Span> trace = traces.get(0);
     Assertions.assertEquals(1, trace.size());
@@ -219,8 +231,10 @@ public abstract class AbstractNetty41ServerInstrumentationTest extends AbstractI
 
     Assertions.assertEquals(
         REQUEST_HEADER_VALUE,
-        TEST_WRITER.getAttributesMap(span)
-            .get("http.request.header." + REQUEST_HEADER_NAME).getStringValue());
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.request.header." + REQUEST_HEADER_NAME)
+            .getStringValue());
     Assertions.assertEquals(
         "1st",
         TEST_WRITER.getAttributesMap(span).get("http.request.header.first").getStringValue());
@@ -229,10 +243,11 @@ public abstract class AbstractNetty41ServerInstrumentationTest extends AbstractI
         TEST_WRITER.getAttributesMap(span).get("http.request.header.connection").getStringValue());
     Assertions.assertEquals(
         RESPONSE_HEADER_VALUE,
-        TEST_WRITER.getAttributesMap(span)
-            .get("http.response.header." + RESPONSE_HEADER_NAME).getStringValue());
-    Assertions.assertNull(
-        TEST_WRITER.getAttributesMap(span).get("http.request.body"));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.response.header." + RESPONSE_HEADER_NAME)
+            .getStringValue());
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span).get("http.request.body"));
     Assertions.assertEquals(
         RESPONSE_BODY,
         TEST_WRITER.getAttributesMap(span).get("http.response.body").getStringValue());
@@ -253,7 +268,9 @@ public abstract class AbstractNetty41ServerInstrumentationTest extends AbstractI
     }
 
     TEST_WRITER.waitForTraces(2);
-    List<List<Span>> traces2 = TEST_WRITER.waitForSpans(2, span1 -> span1.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
+    List<List<Span>> traces2 =
+        TEST_WRITER.waitForSpans(
+            2, span1 -> span1.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
     Assertions.assertEquals(2, traces2.size());
     List<Span> trace2 = traces2.get(1);
     Assertions.assertEquals(1, trace2.size());
@@ -261,22 +278,19 @@ public abstract class AbstractNetty41ServerInstrumentationTest extends AbstractI
 
     Assertions.assertEquals(
         "REQUEST_HEADER_VALUE",
-        TEST_WRITER.getAttributesMap(span2)
-            .get("http.request.header." + REQUEST_HEADER_NAME).getStringValue());
+        TEST_WRITER
+            .getAttributesMap(span2)
+            .get("http.request.header." + REQUEST_HEADER_NAME)
+            .getStringValue());
     Assertions.assertEquals(
         "2nd",
         TEST_WRITER.getAttributesMap(span2).get("http.request.header.second").getStringValue());
     Assertions.assertEquals(
         "keep-alive",
-        TEST_WRITER.getAttributesMap(span2)
-            .get("http.request.header.connection").getStringValue());
+        TEST_WRITER.getAttributesMap(span2).get("http.request.header.connection").getStringValue());
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span2).get("http.request.header.first"));
     Assertions.assertNull(
-        TEST_WRITER.getAttributesMap(span2).get("http.request.header.first"));
-    Assertions.assertNull(
-        TEST_WRITER.getAttributesMap(span2)
-            .get("http.response.header." + RESPONSE_HEADER_NAME));
-    Assertions.assertNull(
-        TEST_WRITER.getAttributesMap(span2)
-            .get("http.response.body"));
+        TEST_WRITER.getAttributesMap(span2).get("http.response.header." + RESPONSE_HEADER_NAME));
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span2).get("http.response.body"));
   }
 }

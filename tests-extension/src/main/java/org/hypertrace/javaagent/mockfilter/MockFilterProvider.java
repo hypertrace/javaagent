@@ -25,8 +25,8 @@ import org.hypertrace.agent.filter.spi.FilterProviderConfig;
 public class MockFilterProvider implements FilterProvider {
 
   /**
-   * This no-args constructor must be available for instantiation by the
-   * {@link java.util.ServiceLoader} API
+   * This no-args constructor must be available for instantiation by the {@link
+   * java.util.ServiceLoader} API
    */
   @SuppressWarnings("unused")
   public MockFilterProvider() {}

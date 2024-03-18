@@ -108,24 +108,26 @@ class VertxServerInstrumentationTest extends AbstractInstrumenterTest {
     }
 
     TEST_WRITER.waitForTraces(1);
-    List<List<Span>> traces = TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
     Assertions.assertEquals(1, traces.size());
     List<Span> trace = traces.get(0);
     Assertions.assertEquals(1, trace.size());
     Span span = trace.get(0);
-    Assertions.assertNull(
-        TEST_WRITER.getAttributesMap(span).get("http.request.body"));
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span).get("http.request.body"));
     Assertions.assertEquals(
         REQUEST_HEADER_VALUE,
-        TEST_WRITER.getAttributesMap(span)
-            .get("http.request.header." + REQUEST_HEADER_NAME).getStringValue());
-    Assertions.assertNull(
-        TEST_WRITER.getAttributesMap(span).get("http.response.body"));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.request.header." + REQUEST_HEADER_NAME)
+            .getStringValue());
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span).get("http.response.body"));
     Assertions.assertEquals(
         VertxWebServer.RESPONSE_HEADER_VALUE,
-        TEST_WRITER.getAttributesMap(span)
-            .get(
-                "http.response.header." + VertxWebServer.RESPONSE_HEADER_NAME).getStringValue());
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.response.header." + VertxWebServer.RESPONSE_HEADER_NAME)
+            .getStringValue());
   }
 
   @Test
@@ -144,7 +146,8 @@ class VertxServerInstrumentationTest extends AbstractInstrumenterTest {
     }
 
     TEST_WRITER.waitForTraces(1);
-    List<List<Span>> traces = TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
     Assertions.assertEquals(1, traces.size());
     List<Span> trace = traces.get(0);
     Assertions.assertEquals(1, trace.size());
@@ -152,15 +155,15 @@ class VertxServerInstrumentationTest extends AbstractInstrumenterTest {
 
     Assertions.assertEquals(
         REQUEST_HEADER_VALUE,
-        TEST_WRITER.getAttributesMap(span)
-            .get("http.request.header." + REQUEST_HEADER_NAME).getStringValue());
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.request.header." + REQUEST_HEADER_NAME)
+            .getStringValue());
     Assertions.assertNull(
-        TEST_WRITER.getAttributesMap(span)
-            .get(
-                "http.response.header." + VertxWebServer.RESPONSE_HEADER_NAME));
-    Assertions.assertNull(
-        TEST_WRITER.getAttributesMap(span)
-            .get("http.response.body"));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.response.header." + VertxWebServer.RESPONSE_HEADER_NAME));
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span).get("http.response.body"));
   }
 
   public void postJson(String url) throws IOException, TimeoutException, InterruptedException {
@@ -175,7 +178,8 @@ class VertxServerInstrumentationTest extends AbstractInstrumenterTest {
       Assertions.assertEquals(VertxWebServer.RESPONSE_BODY, response.body().string());
     }
 
-    List<List<Span>> traces = TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
     TEST_WRITER.waitForTraces(1);
     Assertions.assertEquals(1, traces.size());
     List<Span> trace = traces.get(0);
@@ -185,15 +189,18 @@ class VertxServerInstrumentationTest extends AbstractInstrumenterTest {
         REQUEST_BODY, TEST_WRITER.getAttributesMap(span).get("http.request.body").getStringValue());
     Assertions.assertEquals(
         REQUEST_HEADER_VALUE,
-        TEST_WRITER.getAttributesMap(span)
-            .get("http.request.header." + REQUEST_HEADER_NAME).getStringValue());
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.request.header." + REQUEST_HEADER_NAME)
+            .getStringValue());
     Assertions.assertEquals(
         VertxWebServer.RESPONSE_BODY,
         TEST_WRITER.getAttributesMap(span).get("http.response.body").getStringValue());
     Assertions.assertEquals(
         VertxWebServer.RESPONSE_HEADER_VALUE,
-        TEST_WRITER.getAttributesMap(span)
-            .get(
-                "http.response.header." + VertxWebServer.RESPONSE_HEADER_NAME).getStringValue());
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.response.header." + VertxWebServer.RESPONSE_HEADER_NAME)
+            .getStringValue());
   }
 }

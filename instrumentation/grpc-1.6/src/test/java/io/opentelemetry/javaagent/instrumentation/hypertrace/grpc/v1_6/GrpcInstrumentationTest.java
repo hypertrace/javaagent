@@ -29,11 +29,10 @@ import io.grpc.ServerInterceptor;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.MetadataUtils;
+import io.opentelemetry.proto.trace.v1.Span;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
-
-import io.opentelemetry.proto.trace.v1.Span;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.hypertrace.example.GreeterGrpc;
 import org.hypertrace.example.GreeterGrpc.GreeterBlockingStub;
@@ -162,14 +161,14 @@ public class GrpcInstrumentationTest extends AbstractInstrumenterTest {
     if (spans.get(0).getKind().equals(Span.SpanKind.SPAN_KIND_SERVER)) {
       serverSpan = spans.get(0);
     }
-    Assertions.assertNull(
-        TEST_WRITER.getAttributesMap(serverSpan).get("rpc.request.body"));
-    Assertions.assertNull(
-            TEST_WRITER.getAttributesMap(serverSpan).get("rpc.response.body"));
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(serverSpan).get("rpc.request.body"));
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(serverSpan).get("rpc.response.body"));
     Assertions.assertEquals(
         "true",
-            TEST_WRITER.getAttributesMap(serverSpan)
-            .get("rpc.request.metadata.mockblock").getStringValue());
+        TEST_WRITER
+            .getAttributesMap(serverSpan)
+            .get("rpc.request.metadata.mockblock")
+            .getStringValue());
     assertHttp2HeadersForSayHelloMethod(serverSpan);
   }
 
@@ -180,30 +179,30 @@ public class GrpcInstrumentationTest extends AbstractInstrumenterTest {
         responseJson, TEST_WRITER.getAttributesMap(span).get("rpc.response.body").getStringValue());
     Assertions.assertEquals(
         "clientheader",
-        TEST_WRITER.getAttributesMap(span)
-            .get("rpc.request.metadata." + CLIENT_STRING_METADATA_KEY.name()).getStringValue());
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("rpc.request.metadata." + CLIENT_STRING_METADATA_KEY.name())
+            .getStringValue());
     Assertions.assertEquals(
         "serverheader",
-        TEST_WRITER.getAttributesMap(span)
-            .get("rpc.response.metadata." + SERVER_STRING_METADATA_KEY.name()).getStringValue());
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("rpc.response.metadata." + SERVER_STRING_METADATA_KEY.name())
+            .getStringValue());
   }
 
   private void assertHttp2HeadersForSayHelloMethod(Span span) {
     Assertions.assertEquals(
         "http",
-        TEST_WRITER.getAttributesMap(span)
-            .get("rpc.request.metadata.:scheme").getStringValue());
+        TEST_WRITER.getAttributesMap(span).get("rpc.request.metadata.:scheme").getStringValue());
     Assertions.assertEquals(
         "POST",
-        TEST_WRITER.getAttributesMap(span)
-            .get("rpc.request.metadata.:method").getStringValue());
+        TEST_WRITER.getAttributesMap(span).get("rpc.request.metadata.:method").getStringValue());
     Assertions.assertEquals(
         String.format("localhost:%d", SERVER.getPort()),
-        TEST_WRITER.getAttributesMap(span)
-            .get("rpc.request.metadata.:authority").getStringValue());
+        TEST_WRITER.getAttributesMap(span).get("rpc.request.metadata.:authority").getStringValue());
     Assertions.assertEquals(
         "/org.hypertrace.example.Greeter/SayHello",
-        TEST_WRITER.getAttributesMap(span)
-            .get("rpc.request.metadata.:path").getStringValue());
+        TEST_WRITER.getAttributesMap(span).get("rpc.request.metadata.:path").getStringValue());
   }
 }

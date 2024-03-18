@@ -84,7 +84,8 @@ public class SparkJavaInstrumentationTest extends AbstractInstrumenterTest {
     }
 
     TEST_WRITER.waitForTraces(1);
-    List<List<Span>> traces = TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
     Assertions.assertEquals(1, traces.size());
     List<Span> spans = traces.get(0);
     Assertions.assertEquals(1, spans.size());
@@ -93,16 +94,20 @@ public class SparkJavaInstrumentationTest extends AbstractInstrumenterTest {
         REQUEST_BODY, TEST_WRITER.getAttributesMap(span).get("http.request.body").getStringValue());
     Assertions.assertEquals(
         REQUEST_HEADER_VALUE,
-        TEST_WRITER.getAttributesMap(span)
-            .get("http.request.header." + REQUEST_HEADER).getStringValue());
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.request.header." + REQUEST_HEADER)
+            .getStringValue());
 
     Assertions.assertEquals(
         RESPONSE_BODY,
         TEST_WRITER.getAttributesMap(span).get("http.response.body").getStringValue());
     Assertions.assertEquals(
         RESPONSE_HEADER_VALUE,
-        TEST_WRITER.getAttributesMap(span)
-            .get("http.response.header." + RESPONSE_HEADER).getStringValue());
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.response.header." + RESPONSE_HEADER)
+            .getStringValue());
   }
 
   @Test
@@ -116,22 +121,27 @@ public class SparkJavaInstrumentationTest extends AbstractInstrumenterTest {
     try (Response response = httpClient.newCall(request).execute()) {}
 
     TEST_WRITER.waitForTraces(1);
-    List<List<Span>> traces = TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
     Assertions.assertEquals(1, traces.size());
     List<Span> spans = traces.get(0);
     Assertions.assertEquals(1, spans.size());
     Span span = spans.get(0);
     Assertions.assertEquals(
         REQUEST_HEADER_VALUE,
-        TEST_WRITER.getAttributesMap(span)
-            .get("http.request.header." + REQUEST_HEADER).getStringValue());
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.request.header." + REQUEST_HEADER)
+            .getStringValue());
 
     Assertions.assertEquals(
         "<html><body><h2>500 Internal Error</h2></body></html>",
         TEST_WRITER.getAttributesMap(span).get("http.response.body").getStringValue());
     Assertions.assertEquals(
         RESPONSE_HEADER_VALUE,
-        TEST_WRITER.getAttributesMap(span)
-            .get("http.response.header." + RESPONSE_HEADER).getStringValue());
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.response.header." + RESPONSE_HEADER)
+            .getStringValue());
   }
 }

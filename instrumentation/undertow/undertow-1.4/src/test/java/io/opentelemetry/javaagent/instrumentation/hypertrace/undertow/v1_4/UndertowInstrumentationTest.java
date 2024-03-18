@@ -108,7 +108,12 @@ final class UndertowInstrumentationTest extends AbstractInstrumenterTest {
     }
 
     TEST_WRITER.waitForTraces(1);
-    List<List<Span>> traces = TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT) || span.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(
+            1,
+            span ->
+                span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT)
+                    || span.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
     Assertions.assertEquals(1, traces.size());
     List<Span> trace = traces.get(0);
     Assertions.assertEquals(1, trace.size());
@@ -134,17 +139,22 @@ final class UndertowInstrumentationTest extends AbstractInstrumenterTest {
     }
 
     TEST_WRITER.waitForTraces(2);
-    List<List<Span>> putTraces = TEST_WRITER.waitForSpans(2, span1 -> span1.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT) || span1.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
+    List<List<Span>> putTraces =
+        TEST_WRITER.waitForSpans(
+            2,
+            span1 ->
+                span1.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT)
+                    || span1.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
     Assertions.assertEquals(2, putTraces.size());
     List<Span> putTrace = putTraces.get(1);
     Assertions.assertEquals(1, putTrace.size());
     Span putSpan = putTrace.get(0);
     assertEquals(
         "echo=bar&append=true",
-            TEST_WRITER.getAttributesMap(putSpan).get("http.response.body").getStringValue());
+        TEST_WRITER.getAttributesMap(putSpan).get("http.response.body").getStringValue());
     assertEquals(
         requestBody,
-            TEST_WRITER.getAttributesMap(putSpan).get("http.request.body").getStringValue());
+        TEST_WRITER.getAttributesMap(putSpan).get("http.request.body").getStringValue());
 
     // make a third request to an endpoint that should return JSON
     try (Response response =
@@ -159,14 +169,19 @@ final class UndertowInstrumentationTest extends AbstractInstrumenterTest {
     }
 
     TEST_WRITER.waitForTraces(3);
-    final List<List<Span>> getJsonTraces = TEST_WRITER.waitForSpans(3, span1 -> span1.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT) || span1.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
+    final List<List<Span>> getJsonTraces =
+        TEST_WRITER.waitForSpans(
+            3,
+            span1 ->
+                span1.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT)
+                    || span1.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
     Assertions.assertEquals(3, getJsonTraces.size());
     final List<Span> getJsonTrace = getJsonTraces.get(2);
     Assertions.assertEquals(1, getJsonTrace.size());
     final Span getJsonSpan = getJsonTrace.get(0);
     assertEquals(
         "{\"message\": \"Hello World\"}",
-            TEST_WRITER.getAttributesMap(getJsonSpan).get("http.response.body").getStringValue());
+        TEST_WRITER.getAttributesMap(getJsonSpan).get("http.response.body").getStringValue());
     // empty request body should not be captured
     assertNull(TEST_WRITER.getAttributesMap(getJsonSpan).get("http.request.body"));
 
@@ -180,14 +195,18 @@ final class UndertowInstrumentationTest extends AbstractInstrumenterTest {
     }
 
     TEST_WRITER.waitForTraces(4);
-    final List<List<Span>> getHtmlTraces = TEST_WRITER.waitForSpans(4, span1 -> span1.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT) || span1.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
+    final List<List<Span>> getHtmlTraces =
+        TEST_WRITER.waitForSpans(
+            4,
+            span1 ->
+                span1.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT)
+                    || span1.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
     Assertions.assertEquals(4, getHtmlTraces.size());
     final List<Span> getHtmlTrace = getHtmlTraces.get(3);
     Assertions.assertEquals(1, getHtmlTrace.size());
     final Span getHtmlSpan = getHtmlTrace.get(0);
     // HTML body should not be captured
-    assertNull(
-            TEST_WRITER.getAttributesMap(getHtmlSpan).get("http.response.body"));
+    assertNull(TEST_WRITER.getAttributesMap(getHtmlSpan).get("http.response.body"));
     // request body should not be captured
     assertNull(TEST_WRITER.getAttributesMap(getHtmlSpan).get("http.request.body"));
   }

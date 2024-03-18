@@ -19,12 +19,12 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.rw;
 import io.opentelemetry.proto.trace.v1.Span;
 import java.util.EnumSet;
 import java.util.List;
+import javax.servlet.DispatcherType;
 import okhttp3.FormBody;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import rw.WrappingFilter;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
@@ -32,7 +32,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import javax.servlet.DispatcherType;
+import rw.WrappingFilter;
 
 public class ServletRWInstrumentationTest extends AbstractInstrumenterTest {
   private static final String REQUEST_BODY = "hello";
@@ -59,8 +59,10 @@ public class ServletRWInstrumentationTest extends AbstractInstrumenterTest {
     handler.addServlet(
         TestServlets.EchoWriter_readLine_print_arr.class, "/echo_writer_readLine_print_arr");
     handler.addServlet(TestServlets.EchoAsyncResponse_writer.class, "/echo_async_response_writer");
-    handler.addServlet(TestServlets.EchoStream_read_large_array.class, "/echo_stream_read_large_array");
-    handler.addServlet(TestServlets.EchoReader_read_large_array.class, "/echo_reader_read_large_array");
+    handler.addServlet(
+        TestServlets.EchoStream_read_large_array.class, "/echo_stream_read_large_array");
+    handler.addServlet(
+        TestServlets.EchoReader_read_large_array.class, "/echo_reader_read_large_array");
     server.setHandler(handler);
     server.start();
     serverPort = server.getConnectors()[0].getLocalPort();
@@ -135,19 +137,24 @@ public class ServletRWInstrumentationTest extends AbstractInstrumenterTest {
     }
 
     TEST_WRITER.waitForTraces(1);
-    List<List<Span>> traces = TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
     Assertions.assertEquals(1, traces.size());
     List<Span> spans = traces.get(0);
     Assertions.assertEquals(1, spans.size());
     Span span = spans.get(0);
     Assertions.assertEquals(
         REQUEST_HEADER_VALUE,
-        TEST_WRITER.getAttributesMap(span)
-            .get("http.request.header." + REQUEST_HEADER).getStringValue());
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.request.header." + REQUEST_HEADER)
+            .getStringValue());
     Assertions.assertEquals(
         TestServlets.RESPONSE_HEADER_VALUE,
-        TEST_WRITER.getAttributesMap(span)
-            .get("http.response.header." + TestServlets.RESPONSE_HEADER).getStringValue());
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.response.header." + TestServlets.RESPONSE_HEADER)
+            .getStringValue());
     Assertions.assertEquals(
         "key1=value1&key2=value2",
         TEST_WRITER.getAttributesMap(span).get("http.request.body").getStringValue());
@@ -169,23 +176,26 @@ public class ServletRWInstrumentationTest extends AbstractInstrumenterTest {
     }
 
     TEST_WRITER.waitForTraces(1);
-    List<List<Span>> traces = TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
     Assertions.assertEquals(1, traces.size());
     List<Span> spans = traces.get(0);
     Assertions.assertEquals(1, spans.size());
     Span span = spans.get(0);
     Assertions.assertEquals(
         REQUEST_HEADER_VALUE,
-        TEST_WRITER.getAttributesMap(span)
-            .get("http.request.header." + REQUEST_HEADER).getStringValue());
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.request.header." + REQUEST_HEADER)
+            .getStringValue());
     Assertions.assertEquals(
         TestServlets.RESPONSE_HEADER_VALUE,
-        TEST_WRITER.getAttributesMap(span)
-            .get("http.response.header." + TestServlets.RESPONSE_HEADER).getStringValue());
-    Assertions.assertNull(
-        TEST_WRITER.getAttributesMap(span).get("http.request.body"));
-    Assertions.assertNull(
-        TEST_WRITER.getAttributesMap(span).get("http.response.body"));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.response.header." + TestServlets.RESPONSE_HEADER)
+            .getStringValue());
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span).get("http.request.body"));
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span).get("http.response.body"));
   }
 
   @Test
@@ -202,18 +212,18 @@ public class ServletRWInstrumentationTest extends AbstractInstrumenterTest {
     }
 
     TEST_WRITER.waitForTraces(1);
-    List<List<Span>> traces = TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
     Assertions.assertEquals(1, traces.size());
     List<Span> spans = traces.get(0);
     Assertions.assertEquals(1, spans.size());
     Span span = spans.get(0);
     Assertions.assertNull(
-        TEST_WRITER.getAttributesMap(span)
+        TEST_WRITER
+            .getAttributesMap(span)
             .get("http.response.header." + TestServlets.RESPONSE_HEADER));
-    Assertions.assertNull(
-        TEST_WRITER.getAttributesMap(span).get("http.request.body"));
-    Assertions.assertNull(
-        TEST_WRITER.getAttributesMap(span).get("http.response.body"));
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span).get("http.request.body"));
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span).get("http.response.body"));
   }
 
   @Test
@@ -231,18 +241,19 @@ public class ServletRWInstrumentationTest extends AbstractInstrumenterTest {
     }
 
     TEST_WRITER.waitForTraces(1);
-    List<List<Span>> traces = TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
     Assertions.assertEquals(1, traces.size());
     List<Span> spans = traces.get(0);
     Assertions.assertEquals(1, spans.size());
     Span span = spans.get(0);
     Assertions.assertNull(
-        TEST_WRITER.getAttributesMap(span)
+        TEST_WRITER
+            .getAttributesMap(span)
             .get("http.response.header." + TestServlets.RESPONSE_HEADER));
     Assertions.assertEquals(
         "block=true", TEST_WRITER.getAttributesMap(span).get("http.request.body").getStringValue());
-    Assertions.assertNull(
-        TEST_WRITER.getAttributesMap(span).get("http.response.body"));
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span).get("http.response.body"));
   }
 
   @Test
@@ -260,18 +271,19 @@ public class ServletRWInstrumentationTest extends AbstractInstrumenterTest {
     }
 
     TEST_WRITER.waitForTraces(1);
-    List<List<Span>> traces = TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
     Assertions.assertEquals(1, traces.size());
     List<Span> spans = traces.get(0);
     Assertions.assertEquals(1, spans.size());
     Span span = spans.get(0);
     Assertions.assertNull(
-        TEST_WRITER.getAttributesMap(span)
+        TEST_WRITER
+            .getAttributesMap(span)
             .get("http.response.header." + TestServlets.RESPONSE_HEADER));
     Assertions.assertEquals(
         "block=true", TEST_WRITER.getAttributesMap(span).get("http.request.body").getStringValue());
-    Assertions.assertNull(
-        TEST_WRITER.getAttributesMap(span).get("http.response.body"));
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span).get("http.response.body"));
   }
 
   public void postJson(String url) throws Exception {
@@ -287,19 +299,24 @@ public class ServletRWInstrumentationTest extends AbstractInstrumenterTest {
     }
 
     TEST_WRITER.waitForTraces(1);
-    List<List<Span>> traces = TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
     Assertions.assertEquals(1, traces.size());
     List<Span> spans = traces.get(0);
     Assertions.assertEquals(1, spans.size());
     Span span = spans.get(0);
     Assertions.assertEquals(
         REQUEST_HEADER_VALUE,
-        TEST_WRITER.getAttributesMap(span)
-            .get("http.request.header." + REQUEST_HEADER).getStringValue());
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.request.header." + REQUEST_HEADER)
+            .getStringValue());
     Assertions.assertEquals(
         TestServlets.RESPONSE_HEADER_VALUE,
-        TEST_WRITER.getAttributesMap(span)
-            .get("http.response.header." + TestServlets.RESPONSE_HEADER).getStringValue());
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.response.header." + TestServlets.RESPONSE_HEADER)
+            .getStringValue());
     Assertions.assertEquals(
         REQUEST_BODY, TEST_WRITER.getAttributesMap(span).get("http.request.body").getStringValue());
     Assertions.assertEquals(
