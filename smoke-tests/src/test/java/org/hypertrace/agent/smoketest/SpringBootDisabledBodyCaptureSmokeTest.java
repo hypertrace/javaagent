@@ -82,11 +82,7 @@ public class SpringBootDisabledBodyCaptureSmokeTest extends AbstractSmokeTest {
     Assertions.assertTrue(
         getInstrumentationLibSpanStream(traces)
             .anyMatch(
-                instLibSpan ->
-                    instLibSpan
-                        .getInstrumentationLibrary()
-                        .getVersion()
-                        .equals(currentAgentVersion)));
+                instLibSpan -> instLibSpan.getScope().getVersion().equals(currentAgentVersion)));
     Assertions.assertEquals(
         0,
         getSpanStream(traces)

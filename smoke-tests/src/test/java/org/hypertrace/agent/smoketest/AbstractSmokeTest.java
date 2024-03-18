@@ -20,7 +20,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
-import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
+import io.opentelemetry.proto.trace.v1.ScopeSpans;
 import io.opentelemetry.proto.trace.v1.Span;
 import java.io.IOException;
 import java.time.Duration;
@@ -160,11 +160,11 @@ public abstract class AbstractSmokeTest {
         .flatMap(librarySpans -> librarySpans.getSpansList().stream());
   }
 
-  protected static Stream<InstrumentationLibrarySpans> getInstrumentationLibSpanStream(
+  protected static Stream<ScopeSpans> getInstrumentationLibSpanStream(
       Collection<ExportTraceServiceRequest> traceRequest) {
     return traceRequest.stream()
         .flatMap(request -> request.getResourceSpansList().stream())
-        .flatMap(resourceSpans -> resourceSpans.getInstrumentationLibrarySpansList().stream());
+        .flatMap(resourceSpans -> resourceSpans.getScopeSpansList().stream());
   }
 
   protected Collection<ExportTraceServiceRequest> waitForTraces(final int count) {
@@ -237,7 +237,7 @@ public abstract class AbstractSmokeTest {
       String metricName, Collection<ExportMetricsServiceRequest> metricRequests) {
     return metricRequests.stream()
         .flatMap(metricRequest -> metricRequest.getResourceMetricsList().stream())
-        .flatMap(resourceMetrics -> resourceMetrics.getInstrumentationLibraryMetricsList().stream())
+        .flatMap(resourceMetrics -> resourceMetrics.getScopeMetricsList().stream())
         .flatMap(
             instrumentationLibraryMetrics ->
                 instrumentationLibraryMetrics.getMetricsList().stream())
