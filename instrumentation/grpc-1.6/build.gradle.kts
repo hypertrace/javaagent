@@ -35,8 +35,6 @@ idea {
     }
 }
 
-val testGrpcVersion = "1.30.0"
-
 protobuf {
   protoc {
     // The artifact spec for the Protobuf Compiler
@@ -61,7 +59,6 @@ val grpcVersion = "1.6.0"
 
 dependencies {
     api("io.opentelemetry.instrumentation:opentelemetry-grpc-1.6:${versions["opentelemetry_java_agent"]}")
-    testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-grpc-1.6:${versions["opentelemetry_java_agent"]}")
     implementation(project(":instrumentation:grpc-common"))
     implementation(project(":shaded-protobuf-java-util", "shadow"))
 
@@ -129,15 +126,12 @@ for (version in listOf("1.30.0")) {
     }
     dependencies {
         versionedConfiguration(project(":testing-common"))
-        versionedConfiguration("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-grpc-1.6:${versions["opentelemetry_java_agent"]}")
-        versionedConfiguration("io.opentelemetry.instrumentation:opentelemetry-grpc-1.6:${versions["opentelemetry_java_agent"]}")
         versionedConfiguration(project(":instrumentation:grpc-shaded-netty-1.9"))
         versionedConfiguration(platform("io.grpc:grpc-bom:$version"))
         versionedConfiguration("io.grpc:grpc-core")
         versionedConfiguration("io.grpc:grpc-protobuf")
         versionedConfiguration("io.grpc:grpc-stub")
         versionedConfiguration("io.grpc:grpc-netty")
-
     }
     val versionedTest = task<Test>("test_${version}") {
         group = "verification"
