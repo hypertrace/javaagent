@@ -33,20 +33,6 @@ public class AutoInstrumentationPlugin implements Plugin<Project> {
     project.getPlugins().apply(JavaLibraryPlugin.class);
     createLibraryConfiguration(project);
     addDependencies(project);
-    project
-        .getTasks()
-        .withType(
-            Test.class,
-            task -> {
-              task.dependsOn(":testing-bootstrap:shadowJar");
-              File testingBootstrapJar =
-                  new File(
-                      project.project(":testing-bootstrap").getBuildDir(),
-                      "libs/testing-bootstrap.jar");
-              // Make sure tests get rerun if the contents of the testing-bootstrap.jar change
-              task.getInputs().property("testing-bootstrap-jar", testingBootstrapJar);
-              task.getJvmArgumentProviders().add(new InstrumentationTestArgs(testingBootstrapJar));
-            });
   }
 
   private void addDependencies(Project project) {
