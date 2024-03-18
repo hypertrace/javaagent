@@ -11,7 +11,6 @@ val micronautTestVersion = "1.0.0"
 
 dependencies {
     implementation(project(":instrumentation:netty:netty-4.1"))
-    testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.1:${versions["opentelemetry_java_agent"]}")
     testImplementation(project(":testing-common"))
     testImplementation("io.micronaut.test:micronaut-test-junit5:${micronautTestVersion}")
     testImplementation("io.micronaut:micronaut-http-server-netty:${micronautVersion}")
@@ -19,8 +18,6 @@ dependencies {
     testImplementation("io.micronaut:micronaut-inject:${micronautVersion}")
     testImplementation("io.micronaut:micronaut-http-client:${micronautVersion}")
     testAnnotationProcessor("io.micronaut:micronaut-inject-java:${micronautVersion}")
-    testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_api_semconv"]}")
-    testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.1:${versions["opentelemetry_java_agent"]}")
 }
 
 val micronaut2Version = "2.2.3"
@@ -42,6 +39,41 @@ for (version in listOf(micronaut2Version)) {
     val versionedTest = task<Test>("test_${version}") {
         group = "verification"
         classpath = versionedConfiguration + sourceSets.test.get().output
+        // We do fine-grained filtering of the classpath of this codebase's sources since Gradle's
+        // configurations will include transitive dependencies as well, which tests do often need.
+        classpath = classpath.filter {
+            if (file(layout.buildDirectory.dir("resources/main")).equals(it) || file(layout.buildDirectory.dir("classes/java/main")).equals(
+                    it
+                )
+            ) {
+                // The sources are packaged into the testing jar, so we need to exclude them from the test
+                // classpath, which automatically inherits them, to ensure our shaded versions are used.
+                return@filter false
+            }
+
+            val lib = it.absoluteFile
+            if (lib.name.startsWith("opentelemetry-javaagent-")) {
+                // These dependencies are packaged into the testing jar, so we need to exclude them from the test
+                // classpath, which automatically inherits them, to ensure our shaded versions are used.
+                return@filter false
+            }
+            if (lib.name.startsWith("javaagent-core")) {
+                // These dependencies are packaged into the testing jar, so we need to exclude them from the test
+                // classpath, which automatically inherits them, to ensure our shaded versions are used.
+                return@filter false
+            }
+            if (lib.name.startsWith("filter-api")) {
+                // These dependencies are packaged into the testing jar, so we need to exclude them from the test
+                // classpath, which automatically inherits them, to ensure our shaded versions are used.
+                return@filter false
+            }
+            if (lib.name.startsWith("opentelemetry-") && lib.name.contains("-autoconfigure-")) {
+                // These dependencies should not be on the test classpath, because they will auto-instrument
+                // the library and the tests could pass even if the javaagent instrumentation fails to apply
+                return@filter false
+            }
+            return@filter true
+        }
         useJUnitPlatform()
     }
     tasks.check { dependsOn(versionedTest) }
