@@ -57,7 +57,7 @@ subprojects {
         "opentelemetry" to "1.33.0",
         "opentelemetry_semconv" to "1.21.0-alpha",
         "opentelemetry_api_semconv" to "1.33.0-alpha",
-        "opentelemetry_proto" to "0.11.0-alpha",
+        "opentelemetry_proto" to "0.20.0-alpha",
         "opentelemetry_java_agent" to "1.33.0-alpha",
         "opentelemetry_java_agent_all" to "1.33.0",
         "opentelemetry_java_agent-tooling" to "1.33.0-alpha",

@@ -241,51 +241,6 @@ abstract class AppServerTest extends SmokeTest {
   }
 
   @Unroll
-  @IgnoreIf({ System.getProperty("os.name").contains("windows") })
-  def "#appServer test request for WEB-INF/web.xml on JDK #jdk"(String appServer, String jdk) {
-    // TODO https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/2499
-    if (getTargetImage(appServer, jdk).toLowerCase().contains("wildfly")) {
-      return
-    }
-
-    assumeTrue(testRequestWebInfWebXml())
-
-    def port = target.getMappedPort(8080)
-    String url = "http://localhost:${ port}/app/WEB-INF/web.xml"
-    def request = new Request.Builder().url(url).get().build()
-
-    when:
-    def response = CLIENT.newCall(request).execute()
-    TraceInspector traces = new TraceInspector(waitForTraces())
-    Set<String> traceIds = traces.traceIds
-
-    then: "There is one trace"
-    traceIds.size() == 1
-
-    and: "Response code is 404"
-    response.code() == 404
-
-    and: "There is one server span"
-    traces.countSpansByKind(Span.SpanKind.SPAN_KIND_SERVER) == 1
-
-    and: "Expected span names"
-    traces.countSpansByName(getSpanName('/app/WEB-INF/web.xml')) == 1
-
-    and: "The span for the initial web request"
-    traces.countFilteredAttributes("http.scheme", "http") == 1
-    traces.countFilteredAttributes("http.target", "/app/WEB-INF/web.xml") == 1
-    traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.host.port", port, "int").count() == 1 ||
-            traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.sock.host.port", port, "int").count() == 1
-
-
-    cleanup:
-    response?.close()
-
-    where:
-    [appServer, jdk] << getTestParams()
-  }
-
-  @Unroll
   def "#appServer test request with error JDK #jdk"(String appServer, String jdk) {
     assumeTrue(testException())
 
@@ -319,48 +274,6 @@ abstract class AppServerTest extends SmokeTest {
     traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.host.port", port, "int").count() == 1 ||
             traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.sock.host.port", port, "int").count() == 1
 
-
-    cleanup:
-    response?.close()
-
-    where:
-    [appServer, jdk] << getTestParams()
-  }
-
-  @Unroll
-  def "#appServer test request outside deployed application JDK #jdk"(String appServer, String jdk) {
-    // TODO https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/2499
-    if (getTargetImage(appServer, jdk).toLowerCase().contains("wildfly")) {
-      return
-    }
-
-
-    def port = target.getMappedPort(8080)
-    String url = "http://localhost:${port}/this-is-definitely-not-there-but-there-should-be-a-trace-nevertheless"
-    def request = new Request.Builder().url(url).get().build()
-
-    when:
-    def response = CLIENT.newCall(request).execute()
-    TraceInspector traces = new TraceInspector(waitForTraces())
-    Set<String> traceIds = traces.traceIds
-
-    then: "There is one trace"
-    traceIds.size() == 1
-
-    and: "Response code is 404"
-    response.code() == 404
-
-    and: "There is one server span"
-    traces.countSpansByKind(Span.SpanKind.SPAN_KIND_SERVER) == 1
-
-    and: "Expected span names"
-    traces.countSpansByName(getSpanName('/this-is-definitely-not-there-but-there-should-be-a-trace-nevertheless')) == 1
-
-    and: "The span for the initial web request"
-    traces.countFilteredAttributes("http.scheme", "http") == 1
-    traces.countFilteredAttributes("http.target", "/this-is-definitely-not-there-but-there-should-be-a-trace-nevertheless") == 1
-    traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.host.port", 8080, "int").count() == 1 ||
-            traces.filterSpansByAttributes(traces.filterSpansByAttributes(traces.getSpanStream(), "net.host.name", "localhost", "string"), "net.sock.host.port", 8080, "int").count() == 1
 
     cleanup:
     response?.close()

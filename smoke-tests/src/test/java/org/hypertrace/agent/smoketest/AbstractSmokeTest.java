@@ -54,9 +54,9 @@ import org.testcontainers.utility.MountableFile;
 public abstract class AbstractSmokeTest {
 
   private static final Logger log = LoggerFactory.getLogger(OpenTelemetryStorage.class);
-  private static final String OTEL_COLLECTOR_IMAGE = "otel/opentelemetry-collector:0.21.0";
+  private static final String OTEL_COLLECTOR_IMAGE = "otel/opentelemetry-collector:0.96.0";
   private static final String MOCK_BACKEND_IMAGE =
-      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-fake-backend:20210918.1248928123";
+      "ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-fake-backend:20221127.3559314891";
   private static final String NETWORK_ALIAS_OTEL_COLLECTOR = "collector";
   private static final String NETWORK_ALIAS_OTEL_MOCK_STORAGE = "backend";
   private static final String OTEL_EXPORTER_ENDPOINT =

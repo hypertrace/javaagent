@@ -105,7 +105,7 @@ abstract class SmokeTest extends Specification {
 
   def cleanup() {
     CLIENT.newCall(new Request.Builder()
-            .url("http://localhost:${backend.getMappedPort(8080)}/clear-requests")
+            .url("http://localhost:${backend.getMappedPort(8080)}/clear")
             .build())
             .execute()
             .close()
@@ -135,13 +135,13 @@ abstract class SmokeTest extends Specification {
   protected static Stream<Span> getSpanStream(Collection<ExportTraceServiceRequest> traces) {
     return traces.stream()
             .flatMap { it.getResourceSpansList().stream() }
-            .flatMap { it.getInstrumentationLibrarySpansList().stream() }
+            .flatMap { it.getScopeSpansList().stream() }
             .flatMap { it.getSpansList().stream() }
   }
 
   protected Collection<ExportTraceServiceRequest> waitForTraces() {
     def content = waitForContent()
-
+    println(content);
     return OBJECT_MAPPER.readTree(content).collect {
       def builder = ExportTraceServiceRequest.newBuilder()
       // TODO(anuraaga): Register parser into object mapper to avoid de -> re -> deserialize.
@@ -156,7 +156,7 @@ abstract class SmokeTest extends Specification {
     String content = "[]"
     while (System.currentTimeMillis() < deadline) {
       def body = content = CLIENT.newCall(new Request.Builder()
-              .url("http://localhost:${backend.getMappedPort(8080)}/get-requests")
+              .url("http://localhost:${backend.getMappedPort(8080)}/get-traces")
               .build())
               .execute()
               .body()
@@ -246,7 +246,7 @@ abstract class SmokeTest extends Specification {
       started = true
       Runtime.addShutdownHook { stop() }
 
-      backend = new GenericContainer<>("ghcr.io/open-telemetry/java-test-containers:smoke-fake-backend-20201128.1734635")
+      backend = new GenericContainer<>("ghcr.io/open-telemetry/opentelemetry-java-instrumentation/smoke-test-fake-backend:20221127.3559314891")
               .withExposedPorts(8080)
               .waitingFor(Wait.forHttp("/health").forPort(8080))
               .withNetwork(network)
@@ -255,7 +255,7 @@ abstract class SmokeTest extends Specification {
               .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("smoke.tests.backend")))
       backend.start()
 
-      collector = new GenericContainer<>("otel/opentelemetry-collector:0.21.0")
+      collector = new GenericContainer<>("otel/opentelemetry-collector:0.96.0")
               .dependsOn(backend)
               .withNetwork(network)
               .withNetworkAliases("collector")
