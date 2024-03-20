@@ -58,6 +58,7 @@ public class TestOtlpReceiver implements AutoCloseable {
     server.stop();
     handlerList.addHandler(new OtlpTracesHandler());
     server.setHandler(handlerList);
+    System.out.println("Starting OTLP receiver");
     server.start();
   }
 
@@ -95,6 +96,8 @@ public class TestOtlpReceiver implements AutoCloseable {
 
         ExportTraceServiceRequest traceServiceRequest =
             ExportTraceServiceRequest.newBuilder().mergeFrom(buffer.toByteArray()).build();
+
+        System.out.println("Received traces in OTLP Receiver:\n" + traceServiceRequest);
 
         for (ResourceSpans resourceSpans : traceServiceRequest.getResourceSpansList()) {
           for (ScopeSpans scopeSpans : resourceSpans.getScopeSpansList()) {
@@ -160,6 +163,15 @@ public class TestOtlpReceiver implements AutoCloseable {
         traces = getCompletedAndFilteredTraces(excludes, span -> false);
       }
       if (traces.size() < number) {
+        System.out.println(
+            "Timeout waiting for "
+                + number
+                + " completed/filtered trace(s), found "
+                + traces.size()
+                + " completed/filtered trace(s) and "
+                + traces.size()
+                + " total trace(s): "
+                + traces);
         throw new TimeoutException(
             "Timeout waiting for "
                 + number
@@ -199,6 +211,13 @@ public class TestOtlpReceiver implements AutoCloseable {
         traces = getCompletedAndFilteredTraces(spans -> false, excludes);
       }
       if (spansCount(traces) < number) {
+        System.out.println(
+            "Timeout waiting for "
+                + number
+                + " completed/filtered spans(s), found "
+                + spansCount(traces)
+                + " total spans(s): "
+                + traces);
         throw new TimeoutException(
             "Timeout waiting for "
                 + number
