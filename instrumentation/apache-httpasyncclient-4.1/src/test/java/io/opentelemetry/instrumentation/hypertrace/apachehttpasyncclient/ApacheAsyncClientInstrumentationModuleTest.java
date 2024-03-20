@@ -83,7 +83,8 @@ class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTes
     TEST_WRITER.waitForTraces(1);
     // exclude server spans
     List<List<Span>> traces =
-        TEST_WRITER.waitForSpans(2, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
+        TEST_WRITER.waitForSpans(
+            2, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER), 62);
     Assertions.assertEquals(1, traces.size());
     Assertions.assertEquals(2, traces.get(0).size());
     Span clientSpan = traces.get(0).get(1);

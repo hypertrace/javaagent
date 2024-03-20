@@ -200,8 +200,13 @@ public class TestOtlpReceiver implements AutoCloseable {
 
   public List<List<Span>> waitForSpans(int number, Predicate<Span> excludes)
       throws InterruptedException, TimeoutException {
+    return waitForSpans(number, excludes, 20);
+  }
+
+  public List<List<Span>> waitForSpans(int number, Predicate<Span> excludes, int timeoutSeconds)
+      throws InterruptedException, TimeoutException {
     synchronized (tracesLock) {
-      long remainingWaitMillis = TimeUnit.SECONDS.toMillis(31);
+      long remainingWaitMillis = TimeUnit.SECONDS.toMillis(timeoutSeconds);
 
       List<List<Span>> traces = getCompletedAndFilteredTraces(spans -> false, excludes);
       while (spansCount(traces) < number && remainingWaitMillis > 0) {
