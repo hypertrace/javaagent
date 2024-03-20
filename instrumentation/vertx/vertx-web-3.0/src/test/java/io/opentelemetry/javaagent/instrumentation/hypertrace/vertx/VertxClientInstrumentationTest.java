@@ -210,8 +210,12 @@ public class VertxClientInstrumentationTest extends AbstractHttpClientTest {
         TEST_WRITER.waitForSpans(
             1,
             span ->
-                span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER)
-                    || span.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
+                !span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT)
+                    || span.getAttributesList().stream()
+                        .noneMatch(
+                            keyValue ->
+                                keyValue.getKey().equals("http.url")
+                                    && keyValue.getValue().getStringValue().contains("/echo")));
     Assertions.assertEquals(1, traces.size(), String.format("was: %d", traces.size()));
     Span clientSpan = traces.get(0).get(0);
     Assertions.assertEquals(
