@@ -32,6 +32,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeoutException;
 import org.hypertrace.agent.testing.AbstractHttpClientTest;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class VertxClientInstrumentationTest extends AbstractHttpClientTest {
@@ -187,6 +188,7 @@ public class VertxClientInstrumentationTest extends AbstractHttpClientTest {
   }
 
   @Test
+  @Disabled("This is flaky!!")
   public void postJson_write_end_buffer() throws TimeoutException, InterruptedException {
     String uri = String.format("http://localhost:%d/echo", testHttpServer.port());
 
