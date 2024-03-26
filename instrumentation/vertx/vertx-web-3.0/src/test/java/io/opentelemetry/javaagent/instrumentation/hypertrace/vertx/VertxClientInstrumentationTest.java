@@ -188,7 +188,7 @@ public class VertxClientInstrumentationTest extends AbstractHttpClientTest {
   }
 
   @Test
-  @Disabled("This is flaky!!")
+  @Disabled("This is flaky on github actions!!")
   public void postJson_write_end_buffer() throws TimeoutException, InterruptedException {
     String uri = String.format("http://localhost:%d/echo", testHttpServer.port());
 
