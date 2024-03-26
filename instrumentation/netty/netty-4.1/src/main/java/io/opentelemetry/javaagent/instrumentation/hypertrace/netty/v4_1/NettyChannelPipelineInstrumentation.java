@@ -39,7 +39,6 @@ import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.client.H
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.server.HttpServerBlockingRequestHandler;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.server.HttpServerRequestTracingHandler;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.server.HttpServerResponseTracingHandler;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.server.HttpServerTracingHandler;
 import io.opentelemetry.javaagent.instrumentation.netty.v4_1.NettyClientSingletons;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
@@ -100,26 +99,16 @@ public class NettyChannelPipelineInstrumentation implements TypeInstrumentation 
       try {
         // Server pipeline handlers
         if (handler instanceof HttpServerCodec) {
-          // replace OTEL response handler because it closes request span before body (especially
-          // chunked) is captured
-          pipeline.replace(
-              io.opentelemetry.instrumentation.netty.v4_1.internal.server.HttpServerTracingHandler
-                  .class
-                  .getName(),
-              HttpServerTracingHandler.class.getName(),
-              new HttpServerTracingHandler());
 
-          pipeline.addBefore(
-              HttpServerTracingHandler.class.getName(),
-              io.opentelemetry.instrumentation.netty.v4_1.internal.server
-                  .HttpServerRequestTracingHandler.class
-                  .getName(),
-              new io.opentelemetry.instrumentation.netty.v4_1.internal.server
-                  .HttpServerRequestTracingHandler(NettyClientSingletons.instrumenter()));
-
+          pipeline.addLast(
+              HttpServerRequestTracingHandler.class.getName(),
+              new HttpServerRequestTracingHandler());
           pipeline.addLast(
               HttpServerBlockingRequestHandler.class.getName(),
               new HttpServerBlockingRequestHandler());
+          pipeline.addLast(
+              HttpServerResponseTracingHandler.class.getName(),
+              new HttpServerResponseTracingHandler());
         } else if (handler instanceof HttpRequestDecoder) {
           pipeline.addLast(
               HttpServerRequestTracingHandler.class.getName(),

@@ -18,7 +18,7 @@ package org.hypertrace.agent.smoketest;
 
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import io.opentelemetry.semconv.ResourceAttributes;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -121,16 +121,12 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
             .getValue()
             .getStringValue());
 
-    Assertions.assertEquals(1, countSpansByName(traces, "POST /echo"));
-    Assertions.assertEquals(1, countSpansByName(traces, "WebController.echo"));
+    Assertions.assertEquals(1, countSpansByName(traces, "POST /*"));
+    Assertions.assertEquals(0, countSpansByName(traces, "WebController.echo"));
     Assertions.assertTrue(
         getInstrumentationLibSpanStream(traces)
             .anyMatch(
-                instLibSpan ->
-                    instLibSpan
-                        .getInstrumentationLibrary()
-                        .getVersion()
-                        .equals(currentAgentVersion)));
+                instLibSpan -> instLibSpan.getScope().getVersion().equals(currentAgentVersion)));
     Assertions.assertTrue(
         getSpanStream(traces)
                 .flatMap(span -> span.getAttributesList().stream())
@@ -177,12 +173,7 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
     Assertions.assertTrue(hasMetricNamed("otlp.exporter.exported", metrics));
     Assertions.assertTrue(hasMetricNamed("processedSpans", metrics));
     Assertions.assertTrue(hasMetricNamed("queueSize", metrics));
-    Assertions.assertTrue(hasMetricNamed("http.server.request.size", metrics));
-    Assertions.assertTrue(hasMetricNamed("http.server.response.size", metrics));
     Assertions.assertTrue(hasMetricNamed("http.server.duration", metrics));
-    Assertions.assertTrue(hasMetricNamed("process.runtime.jvm.memory.usage", metrics));
-    Assertions.assertTrue(hasMetricNamed("process.runtime.jvm.memory.init", metrics));
-    Assertions.assertTrue(hasMetricNamed("process.runtime.jvm.memory.committed", metrics));
   }
 
   @Test

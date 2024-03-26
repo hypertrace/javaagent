@@ -29,12 +29,7 @@ dependencies {
     implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-undertow-1.4:${versions["opentelemetry_java_agent"]}")
     library("io.undertow:undertow-core:1.4.0.Final")
     implementation(project(":instrumentation:undertow:undertow-common"))
-    testImplementation(testFixtures(project(":testing-common")))
+    testImplementation(project(":testing-common"))
     testImplementation("javax.servlet:javax.servlet-api:3.1.0")
     testImplementation("io.undertow:undertow-servlet:2.0.0.Final")
-    testImplementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_semconv"]}")
-    testRuntimeOnly(project(":instrumentation:servlet:servlet-3.0"))
-    testRuntimeOnly(project(":instrumentation:undertow:undertow-servlet-1.4"))
-    testRuntimeOnly("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-servlet-common-bootstrap:${versions["opentelemetry_java_agent"]}")
 }
-

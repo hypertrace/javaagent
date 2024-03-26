@@ -22,7 +22,7 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.ResourceProvider;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import io.opentelemetry.semconv.ResourceAttributes;
 import org.hypertrace.agent.config.v1.Config.AgentConfig;
 import org.hypertrace.agent.otel.extensions.config.HypertraceConfig;
 import org.slf4j.Logger;

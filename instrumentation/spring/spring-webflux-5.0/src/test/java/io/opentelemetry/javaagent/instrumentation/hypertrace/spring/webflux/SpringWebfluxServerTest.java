@@ -18,7 +18,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.spring.webflux;
 
 import io.opentelemetry.javaagent.instrumentation.hypertrace.spring.webflux.SpringWebFluxTestApplication.GreetingHandler;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.spring.webflux.SpringWebfluxServerTest.ForceNettyAutoConfiguration;
-import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.proto.trace.v1.Span;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
@@ -26,7 +26,6 @@ import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -73,29 +72,32 @@ public class SpringWebfluxServerTest extends AbstractInstrumenterTest {
       Assertions.assertEquals(200, response.code());
     }
 
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(
+            1,
+            span ->
+                span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT)
+                    || span.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
     TEST_WRITER.waitForTraces(1);
     Assertions.assertEquals(1, traces.size());
-    List<SpanData> trace = traces.get(0);
+    List<Span> trace = traces.get(0);
     Assertions.assertEquals(1, trace.size());
-    SpanData spanData = trace.get(0);
+    Span span = trace.get(0);
 
     Assertions.assertEquals(
         REQUEST_HEADER_VALUE,
-        spanData
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.request.header." + REQUEST_HEADER_NAME)
+            .getStringValue());
     Assertions.assertEquals(
         SpringWebFluxTestApplication.RESPONSE_HEADER_VALUE,
-        spanData
-            .getAttributes()
-            .get(
-                HypertraceSemanticAttributes.httpResponseHeader(
-                    SpringWebFluxTestApplication.RESPONSE_HEADER_NAME)));
-    Assertions.assertNull(
-        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
-    Assertions.assertNull(
-        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.response.header." + SpringWebFluxTestApplication.RESPONSE_HEADER_NAME)
+            .getStringValue());
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span).get("http.request.body"));
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span).get("http.response.body"));
   }
 
   @Test
@@ -124,15 +126,20 @@ public class SpringWebfluxServerTest extends AbstractInstrumenterTest {
       Assertions.assertEquals(responseBodyStr.toString(), response.body().string());
     }
 
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(
+            1,
+            span ->
+                span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT)
+                    || span.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
     TEST_WRITER.waitForTraces(1);
     Assertions.assertEquals(1, traces.size());
-    List<SpanData> trace = traces.get(0);
+    List<Span> trace = traces.get(0);
     Assertions.assertEquals(1, trace.size());
-    SpanData spanData = trace.get(0);
+    Span span = trace.get(0);
     Assertions.assertEquals(
         responseBodyStr.toString(),
-        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+        TEST_WRITER.getAttributesMap(span).get("http.response.body").getStringValue());
   }
 
   @Test
@@ -149,30 +156,35 @@ public class SpringWebfluxServerTest extends AbstractInstrumenterTest {
       Assertions.assertEquals(REQUEST_BODY, response.body().string());
     }
 
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(
+            1,
+            span ->
+                span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT)
+                    || span.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
     TEST_WRITER.waitForTraces(1);
     Assertions.assertEquals(1, traces.size());
-    List<SpanData> trace = traces.get(0);
+    List<Span> trace = traces.get(0);
     Assertions.assertEquals(1, trace.size());
-    SpanData spanData = trace.get(0);
+    Span span = trace.get(0);
 
     Assertions.assertEquals(
         REQUEST_HEADER_VALUE,
-        spanData
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.request.header." + REQUEST_HEADER_NAME)
+            .getStringValue());
     Assertions.assertEquals(
         SpringWebFluxTestApplication.RESPONSE_HEADER_VALUE,
-        spanData
-            .getAttributes()
-            .get(
-                HypertraceSemanticAttributes.httpResponseHeader(
-                    SpringWebFluxTestApplication.RESPONSE_HEADER_NAME)));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.response.header." + SpringWebFluxTestApplication.RESPONSE_HEADER_NAME)
+            .getStringValue());
     Assertions.assertEquals(
-        REQUEST_BODY, spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+        REQUEST_BODY, TEST_WRITER.getAttributesMap(span).get("http.request.body").getStringValue());
     Assertions.assertEquals(
         REQUEST_BODY,
-        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+        TEST_WRITER.getAttributesMap(span).get("http.response.body").getStringValue());
   }
 
   @Test
@@ -190,28 +202,31 @@ public class SpringWebfluxServerTest extends AbstractInstrumenterTest {
       Assertions.assertEquals("Hypertrace Blocked Request", response.body().string());
     }
 
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(
+            1,
+            span ->
+                span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT)
+                    || span.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
     TEST_WRITER.waitForTraces(1);
     Assertions.assertEquals(1, traces.size());
-    List<SpanData> trace = traces.get(0);
+    List<Span> trace = traces.get(0);
     Assertions.assertEquals(1, trace.size());
-    SpanData spanData = trace.get(0);
+    Span span = trace.get(0);
 
     Assertions.assertEquals(
         REQUEST_HEADER_VALUE,
-        spanData
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.request.header." + REQUEST_HEADER_NAME)
+            .getStringValue());
     Assertions.assertNull(
-        spanData
-            .getAttributes()
-            .get(
-                HypertraceSemanticAttributes.httpResponseHeader(
-                    SpringWebFluxTestApplication.RESPONSE_HEADER_NAME)));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.response.header." + SpringWebFluxTestApplication.RESPONSE_HEADER_NAME));
     Assertions.assertNull(
-        spanData
-            .getAttributes()
-            .get(
-                HypertraceSemanticAttributes.httpResponseHeader(GreetingHandler.DEFAULT_RESPONSE)));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.response.header." + GreetingHandler.DEFAULT_RESPONSE));
   }
 }

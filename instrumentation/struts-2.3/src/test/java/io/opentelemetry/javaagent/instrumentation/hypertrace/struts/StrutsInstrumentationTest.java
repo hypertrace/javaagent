@@ -18,7 +18,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.struts;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.proto.trace.v1.Span;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
@@ -33,7 +33,6 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.util.resource.FileResource;
-import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -44,8 +43,8 @@ public class StrutsInstrumentationTest extends AbstractInstrumenterTest {
 
   private static final String REQUEST_BODY = "hello";
   private static final String REQUEST_HEADER = "requestheader";
-  private static final String REQUEST_HEADER_VALUE = "requestvalue";
-  private static final String RESPONSE_HEADER = "headerName";
+  private static final String REQUEST_HEADER_VALUE = "requestValue";
+  private static final String RESPONSE_HEADER = "headername";
   private static final String RESPONSE_HEADER_VALUE = "headerValue";
 
   private static Server server = new Server(0);
@@ -84,16 +83,21 @@ public class StrutsInstrumentationTest extends AbstractInstrumenterTest {
     }
 
     TEST_WRITER.waitForTraces(1);
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(
+            1,
+            span ->
+                span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT)
+                    || span.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
     assertEquals(1, traces.size());
-    List<SpanData> spans = traces.get(0);
+    List<Span> spans = traces.get(0);
     assertEquals(1, spans.size());
-    SpanData spanData = spans.get(0);
+    Span span = spans.get(0);
     assertEquals(
         "\"" + new Struts2Action().getJsonString() + "\"",
-        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+        TEST_WRITER.getAttributesMap(span).get("http.response.body").getStringValue());
     assertEquals(
-        REQUEST_BODY, spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+        REQUEST_BODY, TEST_WRITER.getAttributesMap(span).get("http.request.body").getStringValue());
   }
 
   @Test
@@ -109,21 +113,28 @@ public class StrutsInstrumentationTest extends AbstractInstrumenterTest {
     }
 
     TEST_WRITER.waitForTraces(1);
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(
+            1,
+            span ->
+                span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT)
+                    || span.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
     assertEquals(1, traces.size());
-    List<SpanData> spans = traces.get(0);
+    List<Span> spans = traces.get(0);
     assertEquals(1, spans.size());
-    SpanData spanData = spans.get(0);
+    Span span = spans.get(0);
     assertEquals(
         RESPONSE_HEADER_VALUE,
-        spanData
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_HEADER)));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.response.header." + RESPONSE_HEADER)
+            .getStringValue());
     assertEquals(
         REQUEST_HEADER_VALUE,
-        spanData
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER)));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.request.header." + REQUEST_HEADER)
+            .getStringValue());
   }
 
   @Test
@@ -139,18 +150,19 @@ public class StrutsInstrumentationTest extends AbstractInstrumenterTest {
     }
 
     TEST_WRITER.waitForTraces(1);
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(
+            1,
+            span ->
+                span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT)
+                    || span.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
     Assertions.assertEquals(1, traces.size());
-    List<SpanData> spans = traces.get(0);
+    List<Span> spans = traces.get(0);
     Assertions.assertEquals(1, spans.size());
-    SpanData spanData = spans.get(0);
+    Span span = spans.get(0);
     Assertions.assertNull(
-        spanData
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_HEADER)));
-    Assertions.assertNull(
-        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
-    Assertions.assertNull(
-        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+        TEST_WRITER.getAttributesMap(span).get("http.response.header." + RESPONSE_HEADER));
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span).get("http.request.body"));
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span).get("http.response.body"));
   }
 }

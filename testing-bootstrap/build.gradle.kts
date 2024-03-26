@@ -19,16 +19,3 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:1.4.6")
     implementation("org.slf4j:slf4j-api:${versions["slf4j"]}")
 }
-
-tasks {
-    shadowJar {
-        archiveFileName.set("testing-bootstrap.jar")
-
-        // need to exclude these logback classes from the bootstrap jar, otherwise tomcat will find them
-        // and try to load them from the bootstrap class loader, which will fail with NoClassDefFoundError
-        // since their super classes are servlet classes which are not in the bootstrap class loader
-        exclude("ch/qos/logback/classic/servlet/LogbackServletContainerInitializer.class")
-        exclude("ch/qos/logback/classic/servlet/LogbackServletContextListener.class")
-        exclude("META-INF/services/javax.servlet.ServletContainerInitializer")
-    }
-}

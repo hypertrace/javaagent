@@ -35,8 +35,6 @@ idea {
     }
 }
 
-val testGrpcVersion = "1.30.0"
-
 protobuf {
   protoc {
     // The artifact spec for the Protobuf Compiler
@@ -61,7 +59,6 @@ val grpcVersion = "1.6.0"
 
 dependencies {
     api("io.opentelemetry.instrumentation:opentelemetry-grpc-1.6:${versions["opentelemetry_java_agent"]}")
-    testImplementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-grpc-1.6:${versions["opentelemetry_java_agent"]}")
     implementation(project(":instrumentation:grpc-common"))
     implementation(project(":shaded-protobuf-java-util", "shadow"))
 
@@ -74,7 +71,7 @@ dependencies {
 
     implementation("javax.annotation:javax.annotation-api:1.3.2")
 
-    testImplementation(testFixtures(project(":testing-common")))
+    testImplementation(project(":testing-common"))
 
     testImplementation(files(project(":instrumentation:grpc-shaded-netty-1.9").artifacts))
 
@@ -128,20 +125,52 @@ for (version in listOf("1.30.0")) {
         extendsFrom(configurations.runtimeClasspath.get())
     }
     dependencies {
-        versionedConfiguration(testFixtures(project(":testing-common")))
-        versionedConfiguration("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-grpc-1.6:${versions["opentelemetry_java_agent"]}")
-        versionedConfiguration("io.opentelemetry.instrumentation:opentelemetry-grpc-1.6:${versions["opentelemetry_java_agent"]}")
+        versionedConfiguration(project(":testing-common"))
         versionedConfiguration(project(":instrumentation:grpc-shaded-netty-1.9"))
         versionedConfiguration(platform("io.grpc:grpc-bom:$version"))
         versionedConfiguration("io.grpc:grpc-core")
         versionedConfiguration("io.grpc:grpc-protobuf")
         versionedConfiguration("io.grpc:grpc-stub")
         versionedConfiguration("io.grpc:grpc-netty")
-
     }
     val versionedTest = task<Test>("test_${version}") {
         group = "verification"
         classpath = versionedConfiguration + sourceSets.main.get().output + sourceSets.test.get().output + sourceSets.named(computeSourceSetNameForVersion(version)).get().output
+        // We do fine-grained filtering of the classpath of this codebase's sources since Gradle's
+        // configurations will include transitive dependencies as well, which tests do often need.
+        classpath = classpath.filter {
+            if (file(layout.buildDirectory.dir("resources/main")).equals(it) || file(layout.buildDirectory.dir("classes/java/main")).equals(
+                    it
+                )
+            ) {
+                // The sources are packaged into the testing jar, so we need to exclude them from the test
+                // classpath, which automatically inherits them, to ensure our shaded versions are used.
+                return@filter false
+            }
+
+            val lib = it.absoluteFile
+            if (lib.name.startsWith("opentelemetry-javaagent-")) {
+                // These dependencies are packaged into the testing jar, so we need to exclude them from the test
+                // classpath, which automatically inherits them, to ensure our shaded versions are used.
+                return@filter false
+            }
+            if (lib.name.startsWith("javaagent-core")) {
+                // These dependencies are packaged into the testing jar, so we need to exclude them from the test
+                // classpath, which automatically inherits them, to ensure our shaded versions are used.
+                return@filter false
+            }
+            if (lib.name.startsWith("filter-api")) {
+                // These dependencies are packaged into the testing jar, so we need to exclude them from the test
+                // classpath, which automatically inherits them, to ensure our shaded versions are used.
+                return@filter false
+            }
+            if (lib.name.startsWith("opentelemetry-") && lib.name.contains("-autoconfigure-")) {
+                // These dependencies should not be on the test classpath, because they will auto-instrument
+                // the library and the tests could pass even if the javaagent instrumentation fails to apply
+                return@filter false
+            }
+            return@filter true
+        }
         useJUnitPlatform()
     }
     tasks.check { dependsOn(versionedTest) }

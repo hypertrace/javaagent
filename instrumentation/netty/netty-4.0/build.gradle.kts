@@ -49,8 +49,8 @@ dependencies {
     implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4.0:${versions["opentelemetry_java_agent"]}")
     implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-netty-4-common:${versions["opentelemetry_java_agent"]}")
     implementation("io.opentelemetry.instrumentation:opentelemetry-netty-4-common:${versions["opentelemetry_java_agent"]}")
-    implementation("io.opentelemetry:opentelemetry-semconv:${versions["opentelemetry_semconv"]}")
-    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_semconv"]}")
+    implementation("io.opentelemetry.semconv:opentelemetry-semconv:${versions["opentelemetry_semconv"]}")
+    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv:${versions["opentelemetry_api_semconv"]}")
     compileOnly("io.netty:netty-codec-http:${nettyVersion}") {
         version {
             strictly(nettyVersion)
@@ -88,7 +88,7 @@ dependencies {
         }
     }
 
-     testImplementation(testFixtures(project(":testing-common")))
+    testImplementation(project(":testing-common"))
     testImplementation("org.asynchttpclient:async-http-client:2.0.9")
 }
 

@@ -16,7 +16,7 @@
 
 package io.opentelemetry.instrumentation.hypertrace.apachehttpasyncclient;
 
-import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.proto.trace.v1.Span;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -41,7 +41,6 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.message.BasicHeader;
-import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.hypertrace.agent.testing.TestHttpServer;
 import org.hypertrace.agent.testing.TestHttpServer.GetJsonHandler;
@@ -84,27 +83,33 @@ class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTes
     Assertions.assertEquals(GetJsonHandler.RESPONSE_BODY, responseBody);
 
     TEST_WRITER.waitForTraces(1);
-    // TODO : It needs some time to create second span for responseBody
-    TEST_WRITER.waitForSpans(2);
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    // exclude server spans
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(
+            2, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER), 123);
     Assertions.assertEquals(1, traces.size());
     Assertions.assertEquals(2, traces.get(0).size());
-    SpanData clientSpan = traces.get(0).get(0);
+    Span clientSpan = traces.get(0).get(1);
+    Span responseBodySpan = traces.get(0).get(0);
+    if (traces.get(0).get(0).getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT)) {
+      clientSpan = traces.get(0).get(0);
+      responseBodySpan = traces.get(0).get(1);
+    }
 
     Assertions.assertEquals(
         "test-value",
-        clientSpan
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
+        TEST_WRITER
+            .getAttributesMap(clientSpan)
+            .get("http.response.header.test-response-header")
+            .getStringValue());
     Assertions.assertEquals(
         "bar",
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.httpRequestHeader("foo")));
-    Assertions.assertNull(
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
-    SpanData responseBodySpan = traces.get(0).get(1);
+        TEST_WRITER.getAttributesMap(clientSpan).get("http.request.header.foo").getStringValue());
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(clientSpan).get("http.request.body"));
+
     Assertions.assertEquals(
         GetJsonHandler.RESPONSE_BODY,
-        responseBodySpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+        TEST_WRITER.getAttributesMap(responseBodySpan).get("http.response.body").getStringValue());
   }
 
   @Test
@@ -136,22 +141,24 @@ class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTes
     Assertions.assertEquals(204, response.getStatusLine().getStatusCode());
 
     TEST_WRITER.waitForTraces(1);
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    // exclude server spans
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
     Assertions.assertEquals(1, traces.size());
     Assertions.assertEquals(1, traces.get(0).size());
-    SpanData clientSpan = traces.get(0).get(0);
+    Span clientSpan = traces.get(0).get(0);
 
     String requestBody = readInputStream(entity.getContent());
     Assertions.assertEquals(
         "test-value",
-        clientSpan
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader("test-response-header")));
+        TEST_WRITER
+            .getAttributesMap(clientSpan)
+            .get("http.response.header.test-response-header")
+            .getStringValue());
     Assertions.assertEquals(
         requestBody,
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
-    Assertions.assertNull(
-        clientSpan.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+        TEST_WRITER.getAttributesMap(clientSpan).get("http.request.body").getStringValue());
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(clientSpan).get("http.response.body"));
   }
 
   private static String readInputStream(InputStream inputStream) throws IOException {
@@ -168,7 +175,7 @@ class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTes
     return textBuilder.toString();
   }
 
-  class NonRepeatableStringEntity extends StringEntity {
+  static class NonRepeatableStringEntity extends StringEntity {
 
     public NonRepeatableStringEntity(String s) throws UnsupportedEncodingException {
       super(s);

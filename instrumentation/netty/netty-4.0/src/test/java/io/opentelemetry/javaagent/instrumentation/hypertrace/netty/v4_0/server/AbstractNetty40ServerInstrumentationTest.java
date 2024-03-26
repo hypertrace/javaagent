@@ -20,7 +20,7 @@ import static io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.s
 import static io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.server.NettyTestServer.RESPONSE_HEADER_NAME;
 import static io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.server.NettyTestServer.RESPONSE_HEADER_VALUE;
 
-import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.proto.trace.v1.Span;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -29,13 +29,14 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okio.Buffer;
-import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class AbstractNetty40ServerInstrumentationTest extends AbstractInstrumenterTest {
 
   public static final String REQUEST_HEADER_NAME = "reqheader";
@@ -44,13 +45,13 @@ public abstract class AbstractNetty40ServerInstrumentationTest extends AbstractI
   private static int port;
   private static NettyTestServer nettyTestServer;
 
-  @BeforeEach
+  @BeforeAll
   private void startServer() throws IOException, InterruptedException {
     nettyTestServer = createNetty();
     port = nettyTestServer.create();
   }
 
-  @AfterEach
+  @AfterAll
   private void stopServer() throws ExecutionException, InterruptedException {
     nettyTestServer.stopServer();
   }
@@ -70,27 +71,28 @@ public abstract class AbstractNetty40ServerInstrumentationTest extends AbstractI
       Assertions.assertEquals(204, response.code());
     }
 
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
     TEST_WRITER.waitForTraces(1);
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
     Assertions.assertEquals(1, traces.size());
-    List<SpanData> trace = traces.get(0);
+    List<Span> trace = traces.get(0);
     Assertions.assertEquals(1, trace.size());
-    SpanData spanData = trace.get(0);
+    Span span = trace.get(0);
 
     Assertions.assertEquals(
         REQUEST_HEADER_VALUE,
-        spanData
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.request.header." + REQUEST_HEADER_NAME)
+            .getStringValue());
     Assertions.assertEquals(
         RESPONSE_HEADER_VALUE,
-        spanData
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_HEADER_NAME)));
-    Assertions.assertNull(
-        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
-    Assertions.assertNull(
-        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.response.header." + RESPONSE_HEADER_NAME)
+            .getStringValue());
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span).get("http.request.body"));
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span).get("http.response.body"));
   }
 
   @Test
@@ -109,31 +111,34 @@ public abstract class AbstractNetty40ServerInstrumentationTest extends AbstractI
       Assertions.assertEquals(RESPONSE_BODY, response.body().string());
     }
 
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
     TEST_WRITER.waitForTraces(1);
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
     Assertions.assertEquals(1, traces.size());
-    List<SpanData> trace = traces.get(0);
+    List<Span> trace = traces.get(0);
     Assertions.assertEquals(1, trace.size());
-    SpanData spanData = trace.get(0);
+    Span span = trace.get(0);
 
     Assertions.assertEquals(
         REQUEST_HEADER_VALUE,
-        spanData
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.request.header." + REQUEST_HEADER_NAME)
+            .getStringValue());
     Assertions.assertEquals(
         RESPONSE_HEADER_VALUE,
-        spanData
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_HEADER_NAME)));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.response.header." + RESPONSE_HEADER_NAME)
+            .getStringValue());
     Buffer requestBodyBuffer = new Buffer();
     requestBody.writeTo(requestBodyBuffer);
     Assertions.assertEquals(
         new String(requestBodyBuffer.readByteArray()),
-        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+        TEST_WRITER.getAttributesMap(span).get("http.request.body").getStringValue());
     Assertions.assertEquals(
         RESPONSE_BODY,
-        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+        TEST_WRITER.getAttributesMap(span).get("http.response.body").getStringValue());
   }
 
   @Test
@@ -151,24 +156,23 @@ public abstract class AbstractNetty40ServerInstrumentationTest extends AbstractI
       Assertions.assertEquals("Hypertrace Blocked Request", response.body().string());
     }
 
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
     TEST_WRITER.waitForTraces(1);
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
     Assertions.assertEquals(1, traces.size());
-    List<SpanData> trace = traces.get(0);
+    List<Span> trace = traces.get(0);
     Assertions.assertEquals(1, trace.size());
-    SpanData spanData = trace.get(0);
+    Span span = trace.get(0);
 
     Assertions.assertEquals(
         REQUEST_HEADER_VALUE,
-        spanData
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.request.header." + REQUEST_HEADER_NAME)
+            .getStringValue());
     Assertions.assertNull(
-        spanData
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_HEADER_NAME)));
-    Assertions.assertNull(
-        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+        TEST_WRITER.getAttributesMap(span).get("http.response.header." + RESPONSE_HEADER_NAME));
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span).get("http.response.body"));
 
     RequestBody requestBody = blockedRequestBody(true, 3000, 75);
     Request request2 =
@@ -183,24 +187,24 @@ public abstract class AbstractNetty40ServerInstrumentationTest extends AbstractI
       Assertions.assertEquals("Hypertrace Blocked Request", response.body().string());
     }
 
-    List<List<SpanData>> traces2 = TEST_WRITER.getTraces();
     TEST_WRITER.waitForTraces(2);
+    List<List<Span>> traces2 =
+        TEST_WRITER.waitForSpans(
+            2, span1 -> span1.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
     Assertions.assertEquals(2, traces2.size());
-    List<SpanData> trace2 = traces2.get(1);
+    List<Span> trace2 = traces2.get(1);
     Assertions.assertEquals(1, trace2.size());
-    SpanData spanData2 = trace2.get(0);
+    Span span2 = trace2.get(0);
 
     Assertions.assertEquals(
         REQUEST_HEADER_VALUE,
-        spanData2
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
+        TEST_WRITER
+            .getAttributesMap(span2)
+            .get("http.request.header." + REQUEST_HEADER_NAME)
+            .getStringValue());
     Assertions.assertNull(
-        spanData2
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_HEADER_NAME)));
-    Assertions.assertNull(
-        spanData2.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+        TEST_WRITER.getAttributesMap(span2).get("http.response.header." + RESPONSE_HEADER_NAME));
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span2).get("http.response.body"));
   }
 
   @Test
@@ -219,34 +223,36 @@ public abstract class AbstractNetty40ServerInstrumentationTest extends AbstractI
       Assertions.assertEquals(RESPONSE_BODY, response.body().string());
     }
 
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
     TEST_WRITER.waitForTraces(1);
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
     Assertions.assertEquals(1, traces.size());
-    List<SpanData> trace = traces.get(0);
+    List<Span> trace = traces.get(0);
     Assertions.assertEquals(1, trace.size());
-    SpanData spanData = trace.get(0);
+    Span span = trace.get(0);
 
     Assertions.assertEquals(
         REQUEST_HEADER_VALUE,
-        spanData
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.request.header." + REQUEST_HEADER_NAME)
+            .getStringValue());
     Assertions.assertEquals(
         "1st",
-        spanData.getAttributes().get(HypertraceSemanticAttributes.httpRequestHeader("first")));
+        TEST_WRITER.getAttributesMap(span).get("http.request.header.first").getStringValue());
     Assertions.assertEquals(
         "keep-alive",
-        spanData.getAttributes().get(HypertraceSemanticAttributes.httpRequestHeader("connection")));
+        TEST_WRITER.getAttributesMap(span).get("http.request.header.connection").getStringValue());
     Assertions.assertEquals(
         RESPONSE_HEADER_VALUE,
-        spanData
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_HEADER_NAME)));
-    Assertions.assertNull(
-        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.response.header." + RESPONSE_HEADER_NAME)
+            .getStringValue());
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span).get("http.request.body"));
     Assertions.assertEquals(
         RESPONSE_BODY,
-        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+        TEST_WRITER.getAttributesMap(span).get("http.response.body").getStringValue());
 
     RequestBody requestBody = blockedRequestBody(true, 3000, 75);
     Request request2 =
@@ -263,35 +269,30 @@ public abstract class AbstractNetty40ServerInstrumentationTest extends AbstractI
       Assertions.assertEquals("Hypertrace Blocked Request", response.body().string());
     }
 
-    List<List<SpanData>> traces2 = TEST_WRITER.getTraces();
     TEST_WRITER.waitForTraces(2);
+    List<List<Span>> traces2 =
+        TEST_WRITER.waitForSpans(
+            2, span1 -> span1.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
     Assertions.assertEquals(2, traces2.size());
-    List<SpanData> trace2 = traces2.get(1);
+    List<Span> trace2 = traces2.get(1);
     Assertions.assertEquals(1, trace2.size());
-    SpanData spanData2 = trace2.get(0);
+    Span span2 = trace2.get(0);
 
     Assertions.assertEquals(
         "REQUEST_HEADER_VALUE",
-        spanData2
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
+        TEST_WRITER
+            .getAttributesMap(span2)
+            .get("http.request.header." + REQUEST_HEADER_NAME)
+            .getStringValue());
     Assertions.assertEquals(
         "2nd",
-        spanData2.getAttributes().get(HypertraceSemanticAttributes.httpRequestHeader("second")));
+        TEST_WRITER.getAttributesMap(span2).get("http.request.header.second").getStringValue());
     Assertions.assertEquals(
         "keep-alive",
-        spanData2
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpRequestHeader("connection")));
+        TEST_WRITER.getAttributesMap(span2).get("http.request.header.connection").getStringValue());
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span2).get("http.request.header.first"));
     Assertions.assertNull(
-        spanData2.getAttributes().get(HypertraceSemanticAttributes.httpRequestHeader("first")));
-    Assertions.assertNull(
-        spanData2
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_HEADER_NAME)));
-    Assertions.assertNull(
-        spanData2
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader(RESPONSE_BODY)));
+        TEST_WRITER.getAttributesMap(span2).get("http.response.header." + RESPONSE_HEADER_NAME));
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span2).get("http.response.body"));
   }
 }

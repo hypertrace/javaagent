@@ -16,7 +16,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.vertx;
 
-import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.proto.trace.v1.Span;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -32,7 +32,6 @@ import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.testing.AbstractInstrumenterTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -108,28 +107,27 @@ class VertxServerInstrumentationTest extends AbstractInstrumenterTest {
       Assertions.assertEquals(200, response.code());
     }
 
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
     TEST_WRITER.waitForTraces(1);
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
     Assertions.assertEquals(1, traces.size());
-    List<SpanData> trace = traces.get(0);
+    List<Span> trace = traces.get(0);
     Assertions.assertEquals(1, trace.size());
-    SpanData spanData = trace.get(0);
-    Assertions.assertNull(
-        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+    Span span = trace.get(0);
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span).get("http.request.body"));
     Assertions.assertEquals(
         REQUEST_HEADER_VALUE,
-        spanData
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
-    Assertions.assertNull(
-        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.request.header." + REQUEST_HEADER_NAME)
+            .getStringValue());
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span).get("http.response.body"));
     Assertions.assertEquals(
         VertxWebServer.RESPONSE_HEADER_VALUE,
-        spanData
-            .getAttributes()
-            .get(
-                HypertraceSemanticAttributes.httpResponseHeader(
-                    VertxWebServer.RESPONSE_HEADER_NAME)));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.response.header." + VertxWebServer.RESPONSE_HEADER_NAME)
+            .getStringValue());
   }
 
   @Test
@@ -147,28 +145,25 @@ class VertxServerInstrumentationTest extends AbstractInstrumenterTest {
       Assertions.assertEquals("Hypertrace Blocked Request", response.body().string());
     }
 
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
     TEST_WRITER.waitForTraces(1);
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
     Assertions.assertEquals(1, traces.size());
-    List<SpanData> trace = traces.get(0);
+    List<Span> trace = traces.get(0);
     Assertions.assertEquals(1, trace.size());
-    SpanData spanData = trace.get(0);
+    Span span = trace.get(0);
 
     Assertions.assertEquals(
         REQUEST_HEADER_VALUE,
-        spanData
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.request.header." + REQUEST_HEADER_NAME)
+            .getStringValue());
     Assertions.assertNull(
-        spanData
-            .getAttributes()
-            .get(
-                HypertraceSemanticAttributes.httpResponseHeader(
-                    VertxWebServer.RESPONSE_HEADER_NAME)));
-    Assertions.assertNull(
-        spanData
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpResponseHeader(VertxWebServer.RESPONSE_BODY)));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.response.header." + VertxWebServer.RESPONSE_HEADER_NAME));
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(span).get("http.response.body"));
   }
 
   public void postJson(String url) throws IOException, TimeoutException, InterruptedException {
@@ -183,28 +178,29 @@ class VertxServerInstrumentationTest extends AbstractInstrumenterTest {
       Assertions.assertEquals(VertxWebServer.RESPONSE_BODY, response.body().string());
     }
 
-    List<List<SpanData>> traces = TEST_WRITER.getTraces();
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
     TEST_WRITER.waitForTraces(1);
     Assertions.assertEquals(1, traces.size());
-    List<SpanData> trace = traces.get(0);
+    List<Span> trace = traces.get(0);
     Assertions.assertEquals(1, trace.size());
-    SpanData spanData = trace.get(0);
+    Span span = trace.get(0);
     Assertions.assertEquals(
-        REQUEST_BODY, spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_REQUEST_BODY));
+        REQUEST_BODY, TEST_WRITER.getAttributesMap(span).get("http.request.body").getStringValue());
     Assertions.assertEquals(
         REQUEST_HEADER_VALUE,
-        spanData
-            .getAttributes()
-            .get(HypertraceSemanticAttributes.httpRequestHeader(REQUEST_HEADER_NAME)));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.request.header." + REQUEST_HEADER_NAME)
+            .getStringValue());
     Assertions.assertEquals(
         VertxWebServer.RESPONSE_BODY,
-        spanData.getAttributes().get(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY));
+        TEST_WRITER.getAttributesMap(span).get("http.response.body").getStringValue());
     Assertions.assertEquals(
         VertxWebServer.RESPONSE_HEADER_VALUE,
-        spanData
-            .getAttributes()
-            .get(
-                HypertraceSemanticAttributes.httpResponseHeader(
-                    VertxWebServer.RESPONSE_HEADER_NAME)));
+        TEST_WRITER
+            .getAttributesMap(span)
+            .get("http.response.header." + VertxWebServer.RESPONSE_HEADER_NAME)
+            .getStringValue());
   }
 }

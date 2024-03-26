@@ -10,7 +10,7 @@ apply {
 val versions: Map<String, String> by extra
 
 dependencies{
-    testImplementation(testFixtures(project(":testing-common")))
+    testImplementation(project(":testing-common"))
     testImplementation(project(":javaagent-core"))
     testImplementation("org.testcontainers:testcontainers:1.15.2")
     testImplementation("com.squareup.okhttp3:okhttp:4.9.0")
@@ -26,7 +26,7 @@ dependencies{
     testImplementation("info.solidsoft.spock:spock-global-unroll:0.5.1")
     testImplementation("com.fasterxml.jackson.core:jackson-databind:2.16.0")
     testImplementation("org.codehaus.groovy:groovy-all:2.5.11")
-    testImplementation("io.opentelemetry:opentelemetry-semconv:${versions["opentelemetry"]}-alpha")
+    testImplementation("io.opentelemetry.semconv:opentelemetry-semconv:${versions["opentelemetry_semconv"]}")
 }
 
 tasks.test {
