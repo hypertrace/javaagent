@@ -1,6 +1,7 @@
 import com.google.protobuf.gradle.*
 
 plugins {
+    id("com.github.johnrengelman.shadow")
     `java-library`
     idea
     id("com.google.protobuf") version "0.9.4"
@@ -46,4 +47,22 @@ dependencies {
     compileOnly("com.google.auto.service:auto-service-annotations:1.0")
     annotationProcessor("com.google.auto.service:auto-service:1.0")
     implementation("org.eclipse.jetty:jetty-server:8.0.0.v20110901")
+}
+
+tasks {
+    shadowJar {
+        dependencies{
+            // exclude packages that live in the bootstrap classloader
+            exclude(project(":javaagent-core"))
+            exclude(project(":filter-api"))
+            exclude("io/opentelemetry/semconv/**")
+            exclude("io/opentelemetry/context/**")
+            exclude(dependency("io.opentelemetry:opentelemetry-api"))
+            exclude("io/opentelemetry/instrumentation/api/**")
+            // exclude bootstrap part of javaagent-extension-api
+            exclude("io/opentelemetry/javaagent/bootstrap/**")
+        }
+        // relocate jetty so that tests using jetty do not conflict with this one
+        relocate("org.eclipse.jetty", "io.opentelemetry.javaagent.shaded.org.eclipse.jetty")
+    }
 }
