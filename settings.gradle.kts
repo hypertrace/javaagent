@@ -67,3 +67,5 @@ findProject(":instrumentation:undertow:undertow-1.4")?.name = "undertow-1.4"
 include("instrumentation:undertow:undertow-servlet-1.4")
 findProject(":instrumentation:undertow:undertow-servlet-1.4")?.name = "undertow-servlet-1.4"
 include("tests-extension")
+include("instrumentation:servlet:servlet-5.0")
+findProject(":instrumentation:servlet:servlet-5.0")?.name = "servlet-5.0"
