@@ -103,7 +103,7 @@ public class OkHttpTracingInterceptor implements Interceptor {
     try {
       // Read the entire response body one-shot into a byte-array
       // responseBody.string(), this looks for the charset if available in content-type header
-      // else defaults to utf-8. So read bytes itself as done here and use when building new response
+      // else defaults to utf-8. So read bytes itself as done here and use for building new response
       // ref: https://square.github.io/okhttp/3.x/okhttp/okhttp3/ResponseBody.html
       byte[] byteArray = responseBody.source().readByteArray();
       String body;
@@ -125,9 +125,7 @@ public class OkHttpTracingInterceptor implements Interceptor {
       span.setAttribute(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, body);
 
       // Return the response with its body and encoding exactly the same as the original response
-      return response.newBuilder()
-              .body(ResponseBody.create(mediaType, byteArray))
-              .build();
+      return response.newBuilder().body(ResponseBody.create(mediaType, byteArray)).build();
     } catch (IOException e) {
       log.error("Could not read response body", e);
     }
@@ -142,7 +140,6 @@ public class OkHttpTracingInterceptor implements Interceptor {
     }
     return StandardCharsets.UTF_8; // Default charset
   }
-
 
   private static void captureHeaders(
       Span span, Headers headers, Function<String, AttributeKey<String>> headerNameProvider) {
