@@ -17,8 +17,10 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.rw;
 
 import io.opentelemetry.proto.trace.v1.Span;
+import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 import javax.servlet.DispatcherType;
 import okhttp3.FormBody;
 import okhttp3.MediaType;
@@ -63,6 +65,8 @@ public class ServletRWInstrumentationTest extends AbstractInstrumenterTest {
         TestServlets.EchoStream_read_large_array.class, "/echo_stream_read_large_array");
     handler.addServlet(
         TestServlets.EchoReader_read_large_array.class, "/echo_reader_read_large_array");
+    handler.addServlet(TestServlets.GetGzip.class, "/get_gzip");
+
     server.setHandler(handler);
     server.start();
     serverPort = server.getConnectors()[0].getLocalPort();
@@ -322,5 +326,47 @@ public class ServletRWInstrumentationTest extends AbstractInstrumenterTest {
     Assertions.assertEquals(
         TestServlets.RESPONSE_BODY,
         TEST_WRITER.getAttributesMap(span).get("http.response.body").getStringValue());
+  }
+
+  @Test
+  public void getGzipResponse() throws TimeoutException, InterruptedException, IOException {
+    Request request =
+        new Request.Builder()
+            .url(String.format("http://localhost:%d/get_gzip", serverPort))
+            .header(REQUEST_HEADER, REQUEST_HEADER_VALUE)
+            .get()
+            .build();
+
+    Response response = httpClient.newCall(request).execute();
+    Assertions.assertEquals(200, response.code());
+
+    String responseBody = response.body().string();
+    Assertions.assertEquals("{\"message\": \"hello\"}", responseBody);
+
+    TEST_WRITER.waitForTraces(1);
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(
+            1,
+            span ->
+                !span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT)
+                    || span.getAttributesList().stream()
+                        .noneMatch(
+                            keyValue ->
+                                keyValue.getKey().equals("http.url")
+                                    && keyValue.getValue().getStringValue().contains("/get_gzip")));
+    Assertions.assertEquals(1, traces.size());
+    Assertions.assertEquals(1, traces.get(0).size());
+    Span clientSpan = traces.get(0).get(0);
+    Assertions.assertEquals(
+        REQUEST_HEADER_VALUE,
+        TEST_WRITER
+            .getAttributesMap(clientSpan)
+            .get("http.request.header." + REQUEST_HEADER)
+            .getStringValue());
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(clientSpan).get("http.request.body"));
+
+    String respBodyCapturedInSpan =
+        TEST_WRITER.getAttributesMap(clientSpan).get("http.response.body").getStringValue();
+    Assertions.assertEquals("{\"message\": \"hello\"}", respBodyCapturedInSpan);
   }
 }

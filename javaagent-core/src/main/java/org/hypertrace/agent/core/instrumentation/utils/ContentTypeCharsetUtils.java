@@ -41,4 +41,8 @@ public class ContentTypeCharsetUtils {
     }
     return DEFAULT_CHARSET;
   }
+
+  public static Charset getDefaultCharset() {
+    return DEFAULT_CHARSET;
+  }
 }

@@ -268,7 +268,8 @@ public class InputStreamInstrumentationModule extends InstrumentationModule {
             spanAndBuffer.span,
             spanAndBuffer.attributeKey,
             spanAndBuffer.byteArrayBuffer,
-            spanAndBuffer.charset);
+            spanAndBuffer.charset,
+            spanAndBuffer.contentEncoding);
         contextStore.set(thizz, null);
       }
     }

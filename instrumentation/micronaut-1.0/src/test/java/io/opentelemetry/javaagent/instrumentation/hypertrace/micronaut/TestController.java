@@ -24,9 +24,12 @@ import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
 import io.reactivex.Flowable;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.GZIPOutputStream;
 
 @Controller("/")
 public class TestController {
@@ -54,6 +57,21 @@ public class TestController {
   @Get(value = "/stream", produces = MediaType.APPLICATION_JSON_STREAM)
   public Flowable<String> stream() {
     return Flowable.fromIterable(streamBody());
+  }
+
+  @Get(uri = "/get_gzip")
+  public HttpResponse<byte[]> getGzip() throws IOException {
+    String jsonResponse = "{\"message\": \"hello\"}";
+
+    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+    try (GZIPOutputStream gzipOut = new GZIPOutputStream(byteArrayOutputStream)) {
+      gzipOut.write(jsonResponse.getBytes(StandardCharsets.UTF_8));
+      gzipOut.finish();
+    }
+    byte[] gzipData = byteArrayOutputStream.toByteArray();
+    return HttpResponse.<byte[]>ok(gzipData)
+        .contentType("application/json")
+        .header("Content-Encoding", "gzip");
   }
 
   static List<String> streamBody() {

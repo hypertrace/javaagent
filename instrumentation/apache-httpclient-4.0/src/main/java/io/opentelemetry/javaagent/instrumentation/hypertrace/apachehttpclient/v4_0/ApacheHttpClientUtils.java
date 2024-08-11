@@ -20,9 +20,12 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v4_0.ApacheHttpClientObjectRegistry.SpanAndAttributeKey;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.util.function.Function;
+import java.util.zip.GZIPInputStream;
 import org.apache.http.Header;
 import org.apache.http.HeaderIterator;
 import org.apache.http.HttpEntity;
@@ -100,26 +103,32 @@ public class ApacheHttpClientUtils {
     if (contentType == null || !ContentTypeUtils.shouldCapture(contentType.getValue())) {
       return;
     }
-
     String charsetStr = ContentTypeUtils.parseCharset(contentType.getValue());
     Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
-
+    // Get the content encoding header and check if it's gzip
+    Header contentEncoding = entity.getContentEncoding();
+    boolean isGzipEncoded =
+        contentEncoding != null
+            && contentEncoding.getValue() != null
+            && contentEncoding.getValue().toLowerCase().contains("gzip");
     if (entity.isRepeatable()) {
       try {
-        BoundedByteArrayOutputStream byteArrayOutputStream =
-            BoundedBuffersFactory.createStream(charset);
-        entity.writeTo(byteArrayOutputStream);
-
-        try {
-          String body = byteArrayOutputStream.toStringWithSuppliedCharset();
-          span.setAttribute(bodyAttributeKey, body);
-        } catch (UnsupportedEncodingException e) {
-          log.error("Could not parse charset from encoding {}", charsetStr, e);
+        InputStream contentStream = entity.getContent();
+        if (isGzipEncoded) {
+          try {
+            contentStream = new GZIPInputStream(contentStream);
+          } catch (IOException e) {
+            log.error("Failed to create GZIPInputStream", e);
+            return;
+          }
         }
-      } catch (IOException e) {
-        log.error("Could not read request input stream from repeatable request entity/body", e);
-      }
 
+        String body = readInputStream(contentStream, charset);
+        span.setAttribute(bodyAttributeKey, body);
+
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
       return;
     }
 
@@ -132,5 +141,19 @@ public class ApacheHttpClientUtils {
     // instrumentation
     ApacheHttpClientObjectRegistry.entityToSpan.put(
         entity, new SpanAndAttributeKey(span, bodyAttributeKey));
+  }
+
+  public static String readInputStream(InputStream inputStream, Charset charset)
+      throws IOException {
+    BoundedByteArrayOutputStream outputStream = BoundedBuffersFactory.createStream(charset);
+    try (InputStreamReader reader = new InputStreamReader(inputStream, charset);
+        OutputStreamWriter writer = new OutputStreamWriter(outputStream, charset)) {
+      int c;
+      while ((c = reader.read()) != -1) {
+        writer.write(c);
+      }
+      writer.flush();
+    }
+    return outputStream.toStringWithSuppliedCharset();
   }
 }

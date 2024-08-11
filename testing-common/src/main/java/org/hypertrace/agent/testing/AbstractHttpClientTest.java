@@ -39,7 +39,7 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
   private static final String ECHO_PATH_FORMAT = "http://localhost:%d/echo";
   private static final String GET_NO_CONTENT_PATH_FORMAT = "http://localhost:%d/get_no_content";
   private static final String GET_JSON_PATH_FORMAT = "http://localhost:%d/get_json";
-
+  private static final String GET_GZIP_FORMAT = "http://localhost:%d/gzip";
   private static final String HEADER_NAME = "headername";
   private static final String HEADER_VALUE = "headerValue";
   private static final Map<String, String> headers;
@@ -311,16 +311,10 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
   @Test
   public void getGzipResponse()
       throws IOException, TimeoutException, InterruptedException, ExecutionException {
-
-    Response response = doGetRequest("http://httpbin.org/gzip", headers);
+    String uri = String.format(GET_GZIP_FORMAT, testHttpServer.port());
+    Response response = doGetRequest(uri, headers);
 
     Assertions.assertEquals(200, response.statusCode);
-
-    // Verify that the response contains the expected structure received from httpbin server gzip
-    // response
-    Assertions.assertTrue(response.body.contains("\"gzipped\": true"));
-    Assertions.assertTrue(response.body.contains("\"method\": \"GET\""));
-    Assertions.assertTrue(response.body.contains("\"Host\": \"httpbin.org\""));
 
     TEST_WRITER.waitForTraces(1);
     List<List<Span>> traces;
@@ -353,18 +347,14 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
 
       String respBodyCapturedInSpan =
           TEST_WRITER.getAttributesMap(responseBodySpan).get("http.response.body").getStringValue();
-      Assertions.assertTrue(respBodyCapturedInSpan.contains("\"gzipped\": true"));
-      Assertions.assertTrue(respBodyCapturedInSpan.contains("\"method\": \"GET\""));
-      Assertions.assertTrue(respBodyCapturedInSpan.contains("\"Host\": \"httpbin.org\""));
+      Assertions.assertEquals(TestHttpServer.GzipHandler.RESPONSE_BODY, respBodyCapturedInSpan);
     } else {
       Assertions.assertNull(TEST_WRITER.getAttributesMap(clientSpan).get("http.request.body"));
 
       Assertions.assertEquals(1, traces.get(0).size());
       String respBodyCapturedInSpan =
           TEST_WRITER.getAttributesMap(clientSpan).get("http.response.body").getStringValue();
-      Assertions.assertTrue(respBodyCapturedInSpan.contains("\"gzipped\": true"));
-      Assertions.assertTrue(respBodyCapturedInSpan.contains("\"method\": \"GET\""));
-      Assertions.assertTrue(respBodyCapturedInSpan.contains("\"Host\": \"httpbin.org\""));
+      Assertions.assertEquals(TestHttpServer.GzipHandler.RESPONSE_BODY, respBodyCapturedInSpan);
     }
   }
 

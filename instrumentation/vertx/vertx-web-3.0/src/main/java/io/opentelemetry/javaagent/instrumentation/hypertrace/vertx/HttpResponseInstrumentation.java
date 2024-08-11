@@ -65,7 +65,11 @@ public class HttpResponseInstrumentation implements TypeInstrumentation {
       }
       VirtualField.find(HttpClientResponse.class, Span.class).set(response, null);
 
-      handler = new ResponseBodyWrappingHandler(handler, span);
+      // Extract content encoding from the response headers
+      String contentEncoding = response.getHeader("Content-Encoding");
+      String contentType = response.getHeader("Content-Type");
+
+      handler = new ResponseBodyWrappingHandler(handler, span, contentEncoding, contentType);
     }
   }
 }

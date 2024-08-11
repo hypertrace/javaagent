@@ -31,17 +31,19 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.handler.codec.*;
+import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpHeaders.Names.*;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.util.CharsetUtil;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.zip.GZIPOutputStream;
 
 public class NettyTestServer {
 
@@ -109,6 +111,31 @@ public class NettyTestServer {
                             response.headers().add(RESPONSE_HEADER_NAME, RESPONSE_HEADER_VALUE);
                             response.headers().add("Content-Type", "application-json");
                             response.headers().set(CONTENT_LENGTH, responseBody.readableBytes());
+                            ctx.write(response);
+                          } else if (httpRequest.getUri().contains("get_gzip")) {
+                            // Prepare GZIP-compressed response
+                            ByteArrayOutputStream byteArrayOutputStream =
+                                new ByteArrayOutputStream();
+                            try (GZIPOutputStream gzipOut =
+                                new GZIPOutputStream(byteArrayOutputStream)) {
+                              gzipOut.write(RESPONSE_BODY.getBytes(CharsetUtil.UTF_8));
+                            } catch (IOException e) {
+                              throw new RuntimeException(e);
+                            }
+                            ByteBuf responseBody =
+                                Unpooled.wrappedBuffer(byteArrayOutputStream.toByteArray());
+                            HttpResponse response =
+                                new DefaultFullHttpResponse(
+                                    HTTP_1_1, HttpResponseStatus.OK, responseBody);
+                            response.headers().add(RESPONSE_HEADER_NAME, RESPONSE_HEADER_VALUE);
+                            response
+                                .headers()
+                                .set(HttpHeaders.Names.CONTENT_TYPE, "application/json");
+                            response.headers().set(HttpHeaders.Names.CONTENT_ENCODING, "gzip");
+                            response
+                                .headers()
+                                .set(
+                                    HttpHeaders.Names.CONTENT_LENGTH, responseBody.readableBytes());
                             ctx.write(response);
                           }
                         }
