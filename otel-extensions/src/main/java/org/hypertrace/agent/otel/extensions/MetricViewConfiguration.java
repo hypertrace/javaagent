@@ -32,7 +32,10 @@ public class MetricViewConfiguration {
                 "net.sock.peer.port",
                 "http.user_agent",
                 "enduser.id",
-                "http.client_ip"));
+                "http.client_ip",
+                "http.request_content_length",
+                "http.response_content_length",
+                "user_agent.original"));
 
     // Build the view
     return View.builder()
