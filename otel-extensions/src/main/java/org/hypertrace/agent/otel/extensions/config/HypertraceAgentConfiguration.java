@@ -118,7 +118,7 @@ public class HypertraceAgentConfiguration implements AutoConfigurationCustomizer
     autoConfigurationCustomizer.addPropertiesSupplier(this::getProperties);
     autoConfigurationCustomizer.addMeterProviderCustomizer(
         (builder, config) -> {
-          View httpServerDurationView = MetricViewConfiguration.createHttpServerDurationView();
+          View httpServerDurationView = MetricViewConfiguration.createView();
           builder.registerView(
               InstrumentSelector.builder().setName("*").build(), httpServerDurationView);
           return builder;
