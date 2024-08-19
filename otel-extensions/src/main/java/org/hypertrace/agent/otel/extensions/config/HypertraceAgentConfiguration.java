@@ -20,6 +20,8 @@ import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
+import io.opentelemetry.sdk.metrics.InstrumentSelector;
+import io.opentelemetry.sdk.metrics.View;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +30,7 @@ import org.hypertrace.agent.config.v1.Config.AgentConfig;
 import org.hypertrace.agent.config.v1.Config.MetricReporterType;
 import org.hypertrace.agent.config.v1.Config.PropagationFormat;
 import org.hypertrace.agent.config.v1.Config.TraceReporterType;
+import org.hypertrace.agent.otel.extensions.MetricViewConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,5 +116,12 @@ public class HypertraceAgentConfiguration implements AutoConfigurationCustomizer
   @Override
   public void customize(AutoConfigurationCustomizer autoConfigurationCustomizer) {
     autoConfigurationCustomizer.addPropertiesSupplier(this::getProperties);
+    autoConfigurationCustomizer.addMeterProviderCustomizer(
+        (builder, config) -> {
+          View httpServerDurationView = MetricViewConfiguration.createHttpServerDurationView();
+          builder.registerView(
+              InstrumentSelector.builder().setName("*").build(), httpServerDurationView);
+          return builder;
+        });
   }
 }
