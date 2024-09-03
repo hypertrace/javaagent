@@ -112,22 +112,7 @@ class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTes
         TEST_WRITER.getAttributesMap(responseBodySpan).get("http.response.body").getStringValue());
   }
 
-  @Test
-  public void postJson()
-      throws IOException, TimeoutException, InterruptedException, ExecutionException {
-    StringEntity entity =
-        new StringEntity(JSON, ContentType.create(ContentType.APPLICATION_JSON.getMimeType()));
-    postJsonEntity(entity);
-  }
-
-  @Test
-  public void postJsonNonRepeatableEntity()
-      throws IOException, TimeoutException, InterruptedException, ExecutionException {
-    StringEntity entity = new NonRepeatableStringEntity(JSON);
-    postJsonEntity(entity);
-  }
-
-  @Disabled("This is flaky !!")
+  @Disabled("This is flaky!!")
   @Test
   public void getGzipResponse()
       throws ExecutionException, InterruptedException, TimeoutException, IOException {
@@ -170,6 +155,21 @@ class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTes
     Assertions.assertEquals(
         TestHttpServer.GzipHandler.RESPONSE_BODY,
         TEST_WRITER.getAttributesMap(responseBodySpan).get("http.response.body").getStringValue());
+  }
+
+  @Test
+  public void postJson()
+      throws IOException, TimeoutException, InterruptedException, ExecutionException {
+    StringEntity entity =
+        new StringEntity(JSON, ContentType.create(ContentType.APPLICATION_JSON.getMimeType()));
+    postJsonEntity(entity);
+  }
+
+  @Test
+  public void postJsonNonRepeatableEntity()
+      throws IOException, TimeoutException, InterruptedException, ExecutionException {
+    StringEntity entity = new NonRepeatableStringEntity(JSON);
+    postJsonEntity(entity);
   }
 
   public void postJsonEntity(HttpEntity entity)
