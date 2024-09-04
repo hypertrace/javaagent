@@ -24,12 +24,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
-import java.util.zip.GZIPInputStream;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -112,51 +112,6 @@ class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTes
         TEST_WRITER.getAttributesMap(responseBodySpan).get("http.response.body").getStringValue());
   }
 
-  @Disabled("This is flaky!!")
-  @Test
-  public void getGzipResponse()
-      throws ExecutionException, InterruptedException, TimeoutException, IOException {
-    HttpGet getRequest =
-        new HttpGet(String.format("http://localhost:%s/gzip", testHttpServer.port()));
-    getRequest.addHeader("foo", "bar");
-    Future<HttpResponse> futureResponse = client.execute(getRequest, new NoopFutureCallback());
-
-    HttpResponse response = futureResponse.get();
-    Assertions.assertEquals(200, response.getStatusLine().getStatusCode());
-    try (InputStream gzipStream = new GZIPInputStream(response.getEntity().getContent())) {
-      String responseBody = readInputStream(gzipStream);
-      Assertions.assertEquals(TestHttpServer.GzipHandler.RESPONSE_BODY, responseBody);
-    }
-
-    TEST_WRITER.waitForTraces(1);
-    // exclude server spans
-    List<List<Span>> traces =
-        TEST_WRITER.waitForSpans(2, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
-    Assertions.assertEquals(1, traces.size());
-    Assertions.assertEquals(2, traces.get(0).size());
-    Span clientSpan = traces.get(0).get(1);
-    Span responseBodySpan = traces.get(0).get(0);
-    if (traces.get(0).get(0).getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT)) {
-      clientSpan = traces.get(0).get(0);
-      responseBodySpan = traces.get(0).get(1);
-    }
-
-    Assertions.assertEquals(
-        "test-value",
-        TEST_WRITER
-            .getAttributesMap(clientSpan)
-            .get("http.response.header.test-response-header")
-            .getStringValue());
-    Assertions.assertEquals(
-        "bar",
-        TEST_WRITER.getAttributesMap(clientSpan).get("http.request.header.foo").getStringValue());
-    Assertions.assertNull(TEST_WRITER.getAttributesMap(clientSpan).get("http.request.body"));
-
-    Assertions.assertEquals(
-        TestHttpServer.GzipHandler.RESPONSE_BODY,
-        TEST_WRITER.getAttributesMap(responseBodySpan).get("http.response.body").getStringValue());
-  }
-
   @Test
   public void postJson()
       throws IOException, TimeoutException, InterruptedException, ExecutionException {
@@ -210,7 +165,8 @@ class ApacheAsyncClientInstrumentationModuleTest extends AbstractInstrumenterTes
     StringBuilder textBuilder = new StringBuilder();
 
     try (BufferedReader reader =
-        new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+        new BufferedReader(
+            new InputStreamReader(inputStream, Charset.forName(StandardCharsets.UTF_8.name())))) {
       int c;
       while ((c = reader.read()) != -1) {
         textBuilder.append((char) c);
