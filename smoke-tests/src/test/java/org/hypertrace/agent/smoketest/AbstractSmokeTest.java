@@ -20,11 +20,14 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
+import io.opentelemetry.proto.common.v1.KeyValue;
+import io.opentelemetry.proto.metrics.v1.Metric;
 import io.opentelemetry.proto.trace.v1.ScopeSpans;
 import io.opentelemetry.proto.trace.v1.Span;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.jar.Attributes;
@@ -242,6 +245,46 @@ public abstract class AbstractSmokeTest {
             instrumentationLibraryMetrics ->
                 instrumentationLibraryMetrics.getMetricsList().stream())
         .anyMatch(metric -> metric.getName().equals(metricName));
+  }
+
+  // Checks if a metric with the given name contains the specified attribute
+  protected boolean hasMetricWithAttribute(
+      String metricName,
+      String attributeName,
+      Collection<ExportMetricsServiceRequest> metricRequests) {
+
+    return metricRequests.stream()
+        .flatMap(metricRequest -> metricRequest.getResourceMetricsList().stream())
+        .flatMap(resourceMetrics -> resourceMetrics.getScopeMetricsList().stream())
+        .flatMap(scopeMetrics -> scopeMetrics.getMetricsList().stream())
+        .filter(metric -> metric.getName().equals(metricName))
+        .anyMatch(metric -> metricHasAttribute(metric, attributeName));
+  }
+
+  private boolean metricHasAttribute(Metric metric, String attributeName) {
+    switch (metric.getDataCase()) {
+      case GAUGE:
+        return metric.getGauge().getDataPointsList().stream()
+            .anyMatch(dataPoint -> hasAttribute(dataPoint.getAttributesList(), attributeName));
+      case SUM:
+        return metric.getSum().getDataPointsList().stream()
+            .anyMatch(dataPoint -> hasAttribute(dataPoint.getAttributesList(), attributeName));
+      case HISTOGRAM:
+        return metric.getHistogram().getDataPointsList().stream()
+            .anyMatch(dataPoint -> hasAttribute(dataPoint.getAttributesList(), attributeName));
+      case EXPONENTIAL_HISTOGRAM:
+        return metric.getExponentialHistogram().getDataPointsList().stream()
+            .anyMatch(dataPoint -> hasAttribute(dataPoint.getAttributesList(), attributeName));
+      case SUMMARY:
+        return metric.getSummary().getDataPointsList().stream()
+            .anyMatch(dataPoint -> hasAttribute(dataPoint.getAttributesList(), attributeName));
+      default:
+        return false;
+    }
+  }
+
+  private boolean hasAttribute(List<KeyValue> attributes, String attributeName) {
+    return attributes.stream().anyMatch(attribute -> attribute.getKey().equals(attributeName));
   }
 
   public static String getPropertyOrEnv(String propName) {
