@@ -32,6 +32,7 @@ import org.hypertrace.agent.testing.TestHttpServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class VertxClientInstrumentationPostTests extends AbstractInstrumenterTest {
@@ -86,6 +87,9 @@ public class VertxClientInstrumentationPostTests extends AbstractInstrumenterTes
         TEST_WRITER.getAttributesMap(clientSpan).get("http.request.body").getStringValue());
   }
 
+  // Reason: The test OTLP receiver is getting spans from previous tests when tests are run in batch
+  // TODO: Need to make the otlp receiver to be independent for each test
+  @Disabled("This is flaky on GHA")
   @Test
   public void postJson_write_end_string() throws TimeoutException, InterruptedException {
     String uri = String.format("http://localhost:%d/echo", testHttpServer.port());
@@ -125,6 +129,7 @@ public class VertxClientInstrumentationPostTests extends AbstractInstrumenterTes
         TEST_WRITER.getAttributesMap(clientSpan).get("http.request.body").getStringValue());
   }
 
+  @Disabled("This is flaky on GHA")
   @Test
   public void postJson_write_end_buffer() throws TimeoutException, InterruptedException {
     String uri = String.format("http://localhost:%d/echo", testHttpServer.port());
