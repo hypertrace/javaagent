@@ -18,6 +18,8 @@ package org.hypertrace.agent.testing;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.zip.GZIPOutputStream;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -42,6 +44,7 @@ public class TestHttpServer implements AutoCloseable {
     handlerList.addHandler(new PostHandler());
     handlerList.addHandler(new PostRedirect());
     handlerList.addHandler(new EchoHandler());
+    handlerList.addHandler(new GzipHandler());
     server.setHandler(handlerList);
     server.start();
   }
@@ -175,6 +178,39 @@ public class TestHttpServer implements AutoCloseable {
         response.setStatus(200);
         response.setContentType(request.getContentType());
         response.getWriter().print(buffer.toString());
+        baseRequest.setHandled(true);
+      }
+    }
+  }
+
+  public static class GzipHandler extends ResponseTestHeadersHandler {
+    public static final String RESPONSE_BODY = "{\"message\": \"hello\"}";
+
+    @Override
+    public void handle(
+        String target,
+        Request baseRequest,
+        HttpServletRequest request,
+        HttpServletResponse response)
+        throws IOException {
+      super.handle(target, baseRequest, request, response);
+
+      if (target.equals("/gzip") && "get".equalsIgnoreCase(request.getMethod())) {
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setHeader("Content-Encoding", "gzip");
+        response.setContentType("application/json");
+
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        try (GZIPOutputStream gzipOut = new GZIPOutputStream(byteArrayOutputStream)) {
+          gzipOut.write(RESPONSE_BODY.getBytes(StandardCharsets.UTF_8));
+          gzipOut.finish();
+        }
+
+        byte[] gzipData = byteArrayOutputStream.toByteArray();
+        response.setContentLength(gzipData.length);
+        response.getOutputStream().write(gzipData);
+        response.getOutputStream().flush();
+
         baseRequest.setHandled(true);
       }
     }

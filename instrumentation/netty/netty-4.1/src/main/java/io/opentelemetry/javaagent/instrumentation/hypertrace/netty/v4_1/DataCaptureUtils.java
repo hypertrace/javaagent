@@ -25,9 +25,16 @@ import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 import io.opentelemetry.api.trace.Span;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
+import java.util.zip.GZIPInputStream;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
+import org.hypertrace.agent.core.instrumentation.utils.ContentTypeCharsetUtils;
 
 public class DataCaptureUtils {
 
@@ -37,7 +44,9 @@ public class DataCaptureUtils {
       Span span,
       Channel channel,
       AttributeKey<BoundedByteArrayOutputStream> attributeKey,
-      Object httpContentOrBuffer) {
+      Object httpContentOrBuffer,
+      String contentEncoding,
+      Charset charset) {
 
     Attribute<BoundedByteArrayOutputStream> bufferAttr = channel.attr(attributeKey);
     BoundedByteArrayOutputStream buffer = bufferAttr.get();
@@ -59,9 +68,23 @@ public class DataCaptureUtils {
     if (httpContentOrBuffer instanceof LastHttpContent) {
       bufferAttr.remove();
       try {
-        span.setAttribute(attributeKey.name(), buffer.toStringWithSuppliedCharset());
-      } catch (UnsupportedEncodingException e) {
-        // ignore charset was parsed before
+        byte[] data = buffer.toByteArray();
+
+        String body;
+        if (charset == null) {
+          charset = ContentTypeCharsetUtils.getDefaultCharset();
+        }
+        if (contentEncoding != null && contentEncoding.toLowerCase().contains("gzip")) {
+          try (GZIPInputStream gzipStream = new GZIPInputStream(new ByteArrayInputStream(data))) {
+            InputStreamReader reader = new InputStreamReader(gzipStream, charset);
+            body = readInputStream(reader, charset);
+          }
+        } else {
+          body = new String(data, charset);
+        }
+        span.setAttribute(attributeKey.name(), body);
+      } catch (IOException e) {
+        // eg: unsupported charset
       }
     }
   }
@@ -83,5 +106,22 @@ public class DataCaptureUtils {
 
   public static CharSequence getContentLength(HttpMessage message) {
     return message.headers().get(HttpHeaderNames.CONTENT_LENGTH);
+  }
+
+  public static CharSequence getContentEncoding(HttpMessage message) {
+    return message.headers().get(HttpHeaderNames.CONTENT_ENCODING);
+  }
+
+  public static String readInputStream(InputStreamReader inputReader, Charset charset)
+      throws IOException {
+    BoundedByteArrayOutputStream outputStream = BoundedBuffersFactory.createStream(charset);
+    try (OutputStreamWriter writer = new OutputStreamWriter(outputStream, charset)) {
+      int c;
+      while ((c = inputReader.read()) != -1) {
+        writer.write(c);
+      }
+      writer.flush();
+    }
+    return outputStream.toStringWithSuppliedCharset();
   }
 }

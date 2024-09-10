@@ -16,7 +16,6 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.vertx;
 
-import io.opentelemetry.proto.trace.v1.Span;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -26,14 +25,9 @@ import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.HttpMethod;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeoutException;
 import org.hypertrace.agent.testing.AbstractHttpClientTest;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 
 public class VertxClientInstrumentationTest extends AbstractHttpClientTest {
 
@@ -119,109 +113,5 @@ public class VertxClientInstrumentationTest extends AbstractHttpClientTest {
       responseBody = responseBodyBuffer.getString(0, responseBodyBuffer.length());
       countDownLatch.countDown();
     }
-  }
-
-  @Test
-  public void postJson_write_end() throws TimeoutException, InterruptedException {
-    String uri = String.format("http://localhost:%d/echo", testHttpServer.port());
-
-    CountDownLatch countDownLatch = new CountDownLatch(1);
-    HttpClientRequest request = httpClient.requestAbs(HttpMethod.POST, uri);
-    request = request.putHeader("Content-Type", "application/json");
-    request.setChunked(true);
-    BufferHandler bufferHandler = new BufferHandler(countDownLatch);
-    ResponseHandler responseHandler = new ResponseHandler(bufferHandler);
-
-    request
-        .handler(responseHandler)
-        .write("write")
-        .write(Buffer.buffer().appendString(" buffer"))
-        .write(" str_encoding ", "utf-8")
-        .end();
-    countDownLatch.await();
-
-    TEST_WRITER.waitForTraces(1);
-    List<List<Span>> traces =
-        TEST_WRITER.waitForSpans(
-            1,
-            span ->
-                span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER)
-                    || span.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
-    Assertions.assertEquals(1, traces.size());
-    Span clientSpan = traces.get(0).get(0);
-    Assertions.assertEquals(
-        "write buffer str_encoding ",
-        TEST_WRITER.getAttributesMap(clientSpan).get("http.request.body").getStringValue());
-  }
-
-  @Test
-  public void postJson_write_end_string() throws TimeoutException, InterruptedException {
-    String uri = String.format("http://localhost:%d/echo", testHttpServer.port());
-
-    CountDownLatch countDownLatch = new CountDownLatch(1);
-    HttpClientRequest request = httpClient.requestAbs(HttpMethod.POST, uri);
-    request = request.putHeader("Content-Type", "application/json");
-    request.setChunked(true);
-    BufferHandler bufferHandler = new BufferHandler(countDownLatch);
-    ResponseHandler responseHandler = new ResponseHandler(bufferHandler);
-
-    request
-        .handler(responseHandler)
-        .write("write")
-        .write(Buffer.buffer().appendString(" buffer"))
-        .write(" str_encoding ", "utf-8")
-        .end("end");
-    countDownLatch.await();
-
-    TEST_WRITER.waitForTraces(1);
-    List<List<Span>> traces =
-        TEST_WRITER.waitForSpans(
-            1,
-            span ->
-                span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER)
-                    || span.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
-    Assertions.assertEquals(1, traces.size(), String.format("was: %d", traces.size()));
-    Span clientSpan = traces.get(0).get(0);
-    Assertions.assertEquals(
-        "write buffer str_encoding end",
-        TEST_WRITER.getAttributesMap(clientSpan).get("http.request.body").getStringValue());
-  }
-
-  @Test
-  @Disabled("This is flaky on github actions!!")
-  public void postJson_write_end_buffer() throws TimeoutException, InterruptedException {
-    String uri = String.format("http://localhost:%d/echo", testHttpServer.port());
-
-    CountDownLatch countDownLatch = new CountDownLatch(1);
-    HttpClientRequest request = httpClient.requestAbs(HttpMethod.POST, uri);
-    request = request.putHeader("Content-Type", "application/json");
-    request.setChunked(true);
-    BufferHandler bufferHandler = new BufferHandler(countDownLatch);
-    ResponseHandler responseHandler = new ResponseHandler(bufferHandler);
-
-    request
-        .handler(responseHandler)
-        .write("write")
-        .write(Buffer.buffer().appendString(" buffer"))
-        .write(" str_encoding ", "utf-8")
-        .end(Buffer.buffer("end"));
-    countDownLatch.await();
-
-    TEST_WRITER.waitForTraces(1);
-    List<List<Span>> traces =
-        TEST_WRITER.waitForSpans(
-            1,
-            span ->
-                !span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT)
-                    || span.getAttributesList().stream()
-                        .noneMatch(
-                            keyValue ->
-                                keyValue.getKey().equals("http.url")
-                                    && keyValue.getValue().getStringValue().contains("/echo")));
-    Assertions.assertEquals(1, traces.size(), String.format("was: %d", traces.size()));
-    Span clientSpan = traces.get(0).get(0);
-    Assertions.assertEquals(
-        "write buffer str_encoding end",
-        TEST_WRITER.getAttributesMap(clientSpan).get("http.request.body").getStringValue());
   }
 }

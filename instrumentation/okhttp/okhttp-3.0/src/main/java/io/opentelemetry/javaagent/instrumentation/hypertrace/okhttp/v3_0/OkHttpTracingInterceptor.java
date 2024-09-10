@@ -19,6 +19,8 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.okhttp.v3_0;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.function.Function;
 import okhttp3.Headers;
 import okhttp3.Interceptor;
@@ -28,6 +30,9 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okio.Buffer;
+import okio.BufferedSource;
+import okio.GzipSource;
+import okio.Okio;
 import org.hypertrace.agent.core.config.InstrumentationConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
@@ -88,6 +93,7 @@ public class OkHttpTracingInterceptor implements Interceptor {
     if (response.body() == null) {
       return response;
     }
+
     ResponseBody responseBody = response.body();
     MediaType mediaType = responseBody.contentType();
     if (mediaType == null || !ContentTypeUtils.shouldCapture(mediaType.toString())) {
@@ -95,16 +101,44 @@ public class OkHttpTracingInterceptor implements Interceptor {
     }
 
     try {
-      String body = responseBody.string();
+      // Read the entire response body one-shot into a byte-array
+      // responseBody.string(), this looks for the charset if available in content-type header
+      // else defaults to utf-8. So read bytes itself as done here and use for building new response
+      // ref: https://square.github.io/okhttp/3.x/okhttp/okhttp3/ResponseBody.html
+      byte[] byteArray = responseBody.source().readByteArray();
+      String body;
+
+      // Determine the content encoding
+      String contentEncoding = response.header("Content-Encoding");
+      if (contentEncoding != null && contentEncoding.toLowerCase().contains("gzip")) {
+        // Decompress the response body if it is GZIP encoded using GzipSource
+        GzipSource gzipSource = new GzipSource(new Buffer().write(byteArray));
+        BufferedSource bufferedGzipSource = Okio.buffer(gzipSource);
+
+        // capture the decompressed content from gzip source to set as response body in span
+        body = bufferedGzipSource.readString(getCharset(mediaType));
+      } else {
+        // capture the response body for other cases
+        body = new String(byteArray, getCharset(mediaType));
+      }
+
       span.setAttribute(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, body);
-      return response
-          .newBuilder()
-          .body(ResponseBody.create(responseBody.contentType(), body))
-          .build();
+
+      // Return the response with its body and encoding exactly the same as the original response
+      return response.newBuilder().body(ResponseBody.create(mediaType, byteArray)).build();
     } catch (IOException e) {
       log.error("Could not read response body", e);
     }
+
     return response;
+  }
+
+  // Helper method to determine charset from MediaType if available else default to UTF-8
+  private static Charset getCharset(MediaType mediaType) {
+    if (mediaType != null && mediaType.charset() != null) {
+      return mediaType.charset();
+    }
+    return StandardCharsets.UTF_8; // Default charset
   }
 
   private static void captureHeaders(

@@ -17,6 +17,7 @@
 package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.server;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
@@ -51,6 +52,7 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
 
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise prm) {
+    Channel channel = ctx.channel();
     Deque<ServerContext> serverContexts =
         ctx.channel()
             .attr(io.opentelemetry.instrumentation.netty.v4_1.internal.AttributeKeys.SERVER_CONTEXT)
@@ -83,12 +85,28 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
         Attribute<BoundedByteArrayOutputStream> bufferAttr =
             ctx.channel().attr(AttributeKeys.RESPONSE_BODY_BUFFER);
         bufferAttr.set(BoundedBuffersFactory.createStream(contentLength, charset));
+
+        channel.attr(AttributeKeys.PROVIDED_CHARSET).set(charset);
+        // Store content encoding in a channel attribute
+        CharSequence contentEncodingSeq = DataCaptureUtils.getContentEncoding(httpResponse);
+        String contentEncoding = null;
+        if (contentEncodingSeq != null) {
+          contentEncoding = contentEncodingSeq.toString();
+        }
+        channel.attr(AttributeKeys.RESPONSE_HEADER_CONTENT_ENCODING).set(contentEncoding);
       }
     }
 
     if ((msg instanceof HttpContent || msg instanceof ByteBuf)
         && instrumentationConfig.httpBody().response()) {
-      DataCaptureUtils.captureBody(span, ctx.channel(), AttributeKeys.RESPONSE_BODY_BUFFER, msg);
+      // Retrieve content encoding from the channel attribute
+      Charset charset = channel.attr(AttributeKeys.PROVIDED_CHARSET).get();
+      if (charset == null) {
+        charset = ContentTypeCharsetUtils.getDefaultCharset();
+      }
+      String contentEncoding = channel.attr(AttributeKeys.RESPONSE_HEADER_CONTENT_ENCODING).get();
+      DataCaptureUtils.captureBody(
+          span, ctx.channel(), AttributeKeys.RESPONSE_BODY_BUFFER, msg, contentEncoding, charset);
     }
 
     try (Scope ignored = serverContexts.element().context().makeCurrent()) {

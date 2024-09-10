@@ -16,7 +16,9 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0;
 
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.util.AttributeKey;
+import java.nio.charset.Charset;
 import java.util.Map;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
@@ -33,6 +35,14 @@ public class AttributeKeys {
   public static final AttributeKey<Map<String, String>> REQUEST_HEADERS =
       io.opentelemetry.javaagent.instrumentation.netty.v4_0.AttributeKeys.attributeKey(
           AttributeKeys.class.getName() + ".request-headers");
+
+  public static final AttributeKey<String> RESPONSE_HEADER_CONTENT_ENCODING =
+      io.opentelemetry.javaagent.instrumentation.netty.v4_0.AttributeKeys.attributeKey(
+          HypertraceSemanticAttributes.HTTP_RESPONSE_HEADER_CONTENT_ENCODING.getKey());
+
+  public static final AttributeKey<Charset> CHARSET =
+      io.opentelemetry.javaagent.instrumentation.netty.v4_0.AttributeKeys.attributeKey(
+          HttpHeaders.Values.CHARSET);
 
   public static final AttributeKey<?> REQUEST =
       io.opentelemetry.javaagent.instrumentation.netty.v4_0.AttributeKeys.attributeKey(

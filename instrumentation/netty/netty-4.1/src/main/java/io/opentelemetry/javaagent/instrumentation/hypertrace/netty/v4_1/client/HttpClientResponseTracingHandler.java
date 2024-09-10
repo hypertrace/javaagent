@@ -83,12 +83,28 @@ public class HttpClientResponseTracingHandler extends ChannelInboundHandlerAdapt
         Attribute<BoundedByteArrayOutputStream> bufferAttr =
             ctx.channel().attr(AttributeKeys.RESPONSE_BODY_BUFFER);
         bufferAttr.set(BoundedBuffersFactory.createStream(contentLength, charset));
+
+        channel.attr(AttributeKeys.PROVIDED_CHARSET).set(charset);
+        // Store content encoding in a channel attribute
+        CharSequence contentEncodingSeq = DataCaptureUtils.getContentEncoding(httpResponse);
+        String contentEncoding = null;
+        if (contentEncodingSeq != null) {
+          contentEncoding = contentEncodingSeq.toString();
+        }
+        channel.attr(AttributeKeys.RESPONSE_HEADER_CONTENT_ENCODING).set(contentEncoding);
       }
     }
 
     if ((msg instanceof HttpContent || msg instanceof ByteBuf)
         && instrumentationConfig.httpBody().response()) {
-      DataCaptureUtils.captureBody(span, ctx.channel(), AttributeKeys.RESPONSE_BODY_BUFFER, msg);
+      // Retrieve content encoding from the channel attribute
+      Charset charset = channel.attr(AttributeKeys.PROVIDED_CHARSET).get();
+      if (charset == null) {
+        charset = ContentTypeCharsetUtils.getDefaultCharset();
+      }
+      String contentEncoding = channel.attr(AttributeKeys.RESPONSE_HEADER_CONTENT_ENCODING).get();
+      DataCaptureUtils.captureBody(
+          span, ctx.channel(), AttributeKeys.RESPONSE_BODY_BUFFER, msg, contentEncoding, charset);
     }
 
     try (Scope ignored = context.makeCurrent()) {

@@ -23,16 +23,22 @@ import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.util.VirtualField;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
+import java.util.zip.GZIPInputStream;
 import org.hypertrace.agent.core.instrumentation.HypertraceCallDepthThreadLocalMap;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.SpanAndBuffer;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,6 +91,13 @@ public class InputStreamUtils {
               spanBuilder.setAttribute(
                   "http.response.header.content-type", (String) resContentType);
             }
+            Object resContentEncoding =
+                getAttribute.invoke(
+                    span, HypertraceSemanticAttributes.HTTP_RESPONSE_HEADER_CONTENT_ENCODING);
+            if (resContentEncoding != null) {
+              spanBuilder.setAttribute(
+                  "http.response.header.content-encoding", (String) resContentEncoding);
+            }
           }
         } catch (IllegalAccessException | InvocationTargetException e) {
           // ignore and continue
@@ -100,12 +113,31 @@ public class InputStreamUtils {
   }
 
   public static void addBody(
-      Span span, AttributeKey<String> attributeKey, ByteArrayOutputStream buffer, Charset charset) {
+      Span span,
+      AttributeKey<String> attributeKey,
+      ByteArrayOutputStream buffer,
+      Charset charset,
+      String contentEncoding) {
     try {
-      String body = buffer.toString(charset.name());
-      InputStreamUtils.addAttribute(span, attributeKey, body);
+      byte[] data = buffer.toByteArray();
+
+      // if content-encoding is gzip,
+      if (contentEncoding != null && contentEncoding.toLowerCase().contains("gzip")) {
+        try (GZIPInputStream gzipInputStream =
+            new GZIPInputStream(new ByteArrayInputStream(data))) {
+          InputStreamReader reader = new InputStreamReader(gzipInputStream, charset);
+          String body = readInputStream(reader, charset);
+          InputStreamUtils.addAttribute(span, attributeKey, body);
+        }
+      } else {
+        // No decompression needed, convert directly to string
+        String body = new String(data, charset);
+        InputStreamUtils.addAttribute(span, attributeKey, body);
+      }
     } catch (UnsupportedEncodingException e) {
-      log.error("Failed to parse encofing from charset {}", charset, e);
+      log.error("Failed to parse encoding from charset {}", charset, e);
+    } catch (IOException e) {
+      log.error("Failed to read or decompress data", e);
     }
   }
 
@@ -132,7 +164,8 @@ public class InputStreamUtils {
           spanAndBuffer.span,
           spanAndBuffer.attributeKey,
           spanAndBuffer.byteArrayBuffer,
-          spanAndBuffer.charset);
+          spanAndBuffer.charset,
+          spanAndBuffer.contentEncoding);
       contextStore.set(inputStream, null);
     }
   }
@@ -146,7 +179,8 @@ public class InputStreamUtils {
           spanAndBuffer.span,
           spanAndBuffer.attributeKey,
           spanAndBuffer.byteArrayBuffer,
-          spanAndBuffer.charset);
+          spanAndBuffer.charset,
+          spanAndBuffer.contentEncoding);
       VirtualField.find(InputStream.class, SpanAndBuffer.class).set(inputStream, null);
     }
   }
@@ -166,7 +200,8 @@ public class InputStreamUtils {
           spanAndBuffer.span,
           spanAndBuffer.attributeKey,
           spanAndBuffer.byteArrayBuffer,
-          spanAndBuffer.charset);
+          spanAndBuffer.charset,
+          spanAndBuffer.contentEncoding);
       contextStore.set(inputStream, null);
     }
   }
@@ -194,10 +229,24 @@ public class InputStreamUtils {
           spanAndBuffer.span,
           spanAndBuffer.attributeKey,
           spanAndBuffer.byteArrayBuffer,
-          spanAndBuffer.charset);
+          spanAndBuffer.charset,
+          spanAndBuffer.contentEncoding);
       contextStore.set(inputStream, null);
     } else {
       spanAndBuffer.byteArrayBuffer.write(b, off, read);
     }
+  }
+
+  public static String readInputStream(InputStreamReader inputReader, Charset charset)
+      throws IOException {
+    BoundedByteArrayOutputStream outputStream = BoundedBuffersFactory.createStream(charset);
+    try (OutputStreamWriter writer = new OutputStreamWriter(outputStream, charset)) {
+      int c;
+      while ((c = inputReader.read()) != -1) {
+        writer.write(c);
+      }
+      writer.flush();
+    }
+    return outputStream.toStringWithSuppliedCharset();
   }
 }

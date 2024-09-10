@@ -39,7 +39,7 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
   private static final String ECHO_PATH_FORMAT = "http://localhost:%d/echo";
   private static final String GET_NO_CONTENT_PATH_FORMAT = "http://localhost:%d/get_no_content";
   private static final String GET_JSON_PATH_FORMAT = "http://localhost:%d/get_json";
-
+  private static final String GET_GZIP_FORMAT = "http://localhost:%d/gzip";
   private static final String HEADER_NAME = "headername";
   private static final String HEADER_VALUE = "headerValue";
   private static final Map<String, String> headers;
@@ -305,6 +305,56 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
       Assertions.assertEquals(
           TestHttpServer.GetJsonHandler.RESPONSE_BODY,
           TEST_WRITER.getAttributesMap(clientSpan).get("http.response.body").getStringValue());
+    }
+  }
+
+  @Test
+  public void getGzipResponse()
+      throws IOException, TimeoutException, InterruptedException, ExecutionException {
+    String uri = String.format(GET_GZIP_FORMAT, testHttpServer.port());
+    Response response = doGetRequest(uri, headers);
+
+    Assertions.assertEquals(200, response.statusCode);
+
+    TEST_WRITER.waitForTraces(1);
+    List<List<Span>> traces;
+    if (hasResponseBodySpan) {
+      traces =
+          TEST_WRITER.waitForSpans(
+              2, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
+    } else {
+      traces =
+          TEST_WRITER.waitForSpans(
+              1,
+              span ->
+                  !span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT)
+                      || span.getAttributesList().stream()
+                          .noneMatch(
+                              keyValue ->
+                                  keyValue.getKey().equals("http.url")
+                                      && keyValue.getValue().getStringValue().contains("/gzip")));
+    }
+
+    Assertions.assertEquals(1, traces.size());
+    Span clientSpan = traces.get(0).get(0);
+    if (hasResponseBodySpan) {
+      Assertions.assertEquals(2, traces.get(0).size());
+      Span responseBodySpan = traces.get(0).get(1);
+      if (traces.get(0).get(1).getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT)) {
+        responseBodySpan = traces.get(0).get(0);
+      }
+      Assertions.assertNull(TEST_WRITER.getAttributesMap(clientSpan).get("http.request.body"));
+
+      String respBodyCapturedInSpan =
+          TEST_WRITER.getAttributesMap(responseBodySpan).get("http.response.body").getStringValue();
+      Assertions.assertEquals(TestHttpServer.GzipHandler.RESPONSE_BODY, respBodyCapturedInSpan);
+    } else {
+      Assertions.assertNull(TEST_WRITER.getAttributesMap(clientSpan).get("http.request.body"));
+
+      Assertions.assertEquals(1, traces.get(0).size());
+      String respBodyCapturedInSpan =
+          TEST_WRITER.getAttributesMap(clientSpan).get("http.response.body").getStringValue();
+      Assertions.assertEquals(TestHttpServer.GzipHandler.RESPONSE_BODY, respBodyCapturedInSpan);
     }
   }
 

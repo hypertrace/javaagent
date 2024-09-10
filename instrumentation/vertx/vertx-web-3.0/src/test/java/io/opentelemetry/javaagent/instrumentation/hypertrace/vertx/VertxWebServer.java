@@ -18,7 +18,13 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.vertx;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.zip.GZIPOutputStream;
 import org.junit.jupiter.api.Assertions;
 
 public class VertxWebServer extends AbstractVerticle {
@@ -78,6 +84,33 @@ public class VertxWebServer extends AbstractVerticle {
               ctx.response().setStatusCode(200);
               ctx.response().putHeader(RESPONSE_HEADER_NAME, RESPONSE_HEADER_VALUE);
               ctx.response().end();
+            });
+    router
+        .route("/gzip")
+        .handler(
+            ctx -> {
+              JsonObject jsonResponse =
+                  new JsonObject().put("message", "Hello").put("status", "success");
+
+              byte[] jsonBytes = jsonResponse.encode().getBytes(StandardCharsets.UTF_8);
+
+              // Compress the bytes using GZIP
+              ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+              try (GZIPOutputStream gzipOutputStream =
+                  new GZIPOutputStream(byteArrayOutputStream)) {
+                gzipOutputStream.write(jsonBytes);
+              } catch (IOException e) {
+                ctx.fail(500);
+                return;
+              }
+
+              // Convert the compressed bytes to a Vert.x Buffer
+              Buffer gzipBuffer = Buffer.buffer(byteArrayOutputStream.toByteArray());
+              ctx.response().setStatusCode(200);
+              ctx.response().putHeader("Content-Encoding", "gzip");
+              ctx.response().putHeader("Content-Type", "application/json");
+              ctx.response().putHeader(RESPONSE_HEADER_NAME, RESPONSE_HEADER_VALUE);
+              ctx.response().end(gzipBuffer);
             });
 
     vertx

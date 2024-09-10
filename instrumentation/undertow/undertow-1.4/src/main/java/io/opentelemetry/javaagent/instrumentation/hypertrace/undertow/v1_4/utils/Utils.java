@@ -59,12 +59,15 @@ public final class Utils {
     final BoundedByteArrayOutputStream boundedByteArrayOutputStream =
         BoundedBuffersFactory.createStream(
             (int) httpServerExchange.getRequestContentLength(), charset);
+    final String contentEncoding =
+        httpServerExchange.getRequestHeaders().getFirst(Headers.CONTENT_ENCODING);
     final SpanAndBuffer spanAndBuffer =
         new SpanAndBuffer(
             span,
             boundedByteArrayOutputStream,
             HypertraceSemanticAttributes.HTTP_REQUEST_BODY,
-            charset);
+            charset,
+            contentEncoding);
     contextStore.set(returnedChannel, spanAndBuffer);
     httpServerExchange.addExchangeCompleteListener(
         new BodyCapturingExchangeCompletionListener(spanAndBuffer));

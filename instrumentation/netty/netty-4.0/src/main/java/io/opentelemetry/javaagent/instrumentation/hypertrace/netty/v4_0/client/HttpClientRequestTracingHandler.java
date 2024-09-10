@@ -84,12 +84,19 @@ public class HttpClientRequestTracingHandler extends ChannelOutboundHandlerAdapt
         Attribute<BoundedByteArrayOutputStream> bufferAttr =
             ctx.channel().attr(AttributeKeys.REQUEST_BODY_BUFFER);
         bufferAttr.set(BoundedBuffersFactory.createStream(contentLength, charset));
+
+        channel.attr(AttributeKeys.CHARSET).set(charset);
       }
     }
 
     if ((msg instanceof HttpContent || msg instanceof ByteBuf)
         && instrumentationConfig.httpBody().request()) {
-      DataCaptureUtils.captureBody(span, channel, AttributeKeys.REQUEST_BODY_BUFFER, msg);
+      Charset charset = channel.attr(AttributeKeys.CHARSET).get();
+      if (charset == null) {
+        charset = ContentTypeCharsetUtils.getDefaultCharset();
+      }
+      DataCaptureUtils.captureBody(
+          span, channel, AttributeKeys.REQUEST_BODY_BUFFER, msg, null, charset);
     }
 
     ctx.write(msg, prm);

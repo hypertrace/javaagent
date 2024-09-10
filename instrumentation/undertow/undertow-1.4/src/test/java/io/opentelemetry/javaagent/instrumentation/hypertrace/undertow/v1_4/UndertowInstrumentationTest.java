@@ -27,13 +27,22 @@ import io.undertow.server.handlers.PathHandler;
 import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
+import io.undertow.util.Headers;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.net.ServerSocket;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
@@ -54,6 +63,7 @@ final class UndertowInstrumentationTest extends AbstractInstrumenterTest {
 
   private static Undertow server;
   private static int availablePort;
+  private static final String RESPONSE_BODY = "{\"message\": \"Hello World\"}";
 
   @BeforeAll
   static void startServer() throws ServletException {
@@ -211,6 +221,58 @@ final class UndertowInstrumentationTest extends AbstractInstrumenterTest {
     assertNull(TEST_WRITER.getAttributesMap(getHtmlSpan).get("http.request.body"));
   }
 
+  @Test
+  void getGzipResponse() throws IOException {
+    // This Builder is from okhttp client, which by default adds accept-encoding as gzip
+    // For testing, setting this as gzipw which test server recognises to send gzip response.
+    try (Response response =
+        httpClient
+            .newCall(
+                new Builder()
+                    .url("http://localhost:" + availablePort + "/myapp/?format=json")
+                    .addHeader(Headers.ACCEPT_ENCODING_STRING, "gzipw")
+                    .get()
+                    .build())
+            .execute()) {
+      assertEquals(200, response.code());
+      assertEquals("gzip", response.header(Headers.CONTENT_ENCODING_STRING));
+
+      String responseBody = decompressGzip(response.body().bytes(), StandardCharsets.UTF_8);
+      assertEquals(RESPONSE_BODY, responseBody);
+
+      TEST_WRITER.waitForTraces(1);
+      List<List<Span>> traces =
+          TEST_WRITER.waitForSpans(
+              1,
+              span ->
+                  span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER)
+                      || span.getKind().equals(Span.SpanKind.SPAN_KIND_INTERNAL));
+      Assertions.assertEquals(1, traces.size());
+      List<Span> trace = traces.get(0);
+      Assertions.assertEquals(1, trace.size());
+      Span span = trace.get(0);
+      assertEquals(
+          RESPONSE_BODY,
+          TEST_WRITER.getAttributesMap(span).get("http.response.body").getStringValue());
+    } catch (InterruptedException | TimeoutException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private String decompressGzip(byte[] compressed, Charset charset) throws IOException {
+    try (InputStream byteStream = new ByteArrayInputStream(compressed);
+        GZIPInputStream gzipStream = new GZIPInputStream(byteStream);
+        InputStreamReader reader = new InputStreamReader(gzipStream, charset);
+        StringWriter writer = new StringWriter()) {
+
+      int character;
+      while ((character = reader.read()) != -1) {
+        writer.write(character);
+      }
+      return writer.toString();
+    }
+  }
+
   public static final class TestServlet extends HttpServlet {
 
     @Override
@@ -225,10 +287,30 @@ final class UndertowInstrumentationTest extends AbstractInstrumenterTest {
         responseBody = "<h1>Hello World</h1>".getBytes(StandardCharsets.UTF_8);
         resp.setContentType("text/html; charset=UTF-8");
       }
-      resp.setStatus(200);
-      resp.setContentLength(responseBody.length);
-      try (ServletOutputStream servletOutputStream = resp.getOutputStream()) {
-        servletOutputStream.write(responseBody);
+      // Check if the request supports GZIP encoding
+      // For Building request we are using OkHttp Builder, which by defaults adds Accept-Encoding as
+      // gzip.
+      // So for testing purposes, the test case server sees for gzipw instead to send gzip
+      // responses.
+      if (req.getHeader("Accept-Encoding") != null
+          && req.getHeader("Accept-Encoding").contains("gzipw")) {
+        resp.setHeader("Content-Encoding", "gzip");
+        resp.setStatus(HttpServletResponse.SC_OK);
+        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream)) {
+          gzipOutputStream.write(responseBody);
+          gzipOutputStream.finish();
+          resp.setContentLength(byteArrayOutputStream.size());
+          try (ServletOutputStream servletOutputStream = resp.getOutputStream()) {
+            servletOutputStream.write(byteArrayOutputStream.toByteArray());
+          }
+        }
+      } else {
+        resp.setStatus(HttpServletResponse.SC_OK);
+        resp.setContentLength(responseBody.length);
+        try (ServletOutputStream servletOutputStream = resp.getOutputStream()) {
+          servletOutputStream.write(responseBody);
+        }
       }
     }
 

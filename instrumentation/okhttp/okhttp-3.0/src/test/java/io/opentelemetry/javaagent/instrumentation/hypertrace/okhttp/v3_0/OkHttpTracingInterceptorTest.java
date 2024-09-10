@@ -67,10 +67,10 @@ public class OkHttpTracingInterceptorTest extends AbstractHttpClientTest {
 
     okhttp3.Response response = client.newCall(request).execute();
 
-    String responseBody =
-        (response.body() != null && response.body().contentLength() > 0)
-            ? response.body().string()
-            : null;
-    return new Response(responseBody, response.code());
+    if (response.body() != null) {
+      String responseBody = response.body().string();
+      return new Response(!responseBody.isEmpty() ? responseBody : null, response.code());
+    }
+    return new Response(null, response.code());
   }
 }

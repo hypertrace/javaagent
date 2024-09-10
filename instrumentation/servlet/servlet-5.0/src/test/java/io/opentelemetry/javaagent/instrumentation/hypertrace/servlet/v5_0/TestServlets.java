@@ -22,7 +22,9 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.stream.Stream;
+import java.util.zip.GZIPOutputStream;
 
 public class TestServlets {
 
@@ -289,6 +291,22 @@ public class TestServlets {
       resp.setHeader(RESPONSE_HEADER, RESPONSE_HEADER_VALUE);
 
       resp.getWriter().print(RESPONSE_BODY.toCharArray());
+    }
+  }
+
+  public static class GetGzip extends HttpServlet {
+    @Override
+    protected void service(HttpServletRequest req, HttpServletResponse resp)
+        throws ServletException, IOException {
+      while (req.getInputStream().read() != -1) {}
+      resp.setStatus(javax.servlet.http.HttpServletResponse.SC_OK);
+      resp.setHeader("Content-Encoding", "gzip");
+      resp.setHeader("Content-Type", "application/json");
+      try (OutputStream out = resp.getOutputStream();
+          GZIPOutputStream gzipOut = new GZIPOutputStream(out)) {
+        String jsonResponse = "{\"message\": \"hello\"}";
+        gzipOut.write(jsonResponse.getBytes());
+      }
     }
   }
 }

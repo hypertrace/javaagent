@@ -198,4 +198,38 @@ public class MicronautInstrumentationTest extends AbstractInstrumenterTest {
             .get("http.response.header." + TestController.RESPONSE_HEADER_NAME));
     Assertions.assertNull(TEST_WRITER.getAttributesMap(span).get("http.response.body"));
   }
+
+  @Test
+  public void getGzipResponse() throws TimeoutException, InterruptedException, IOException {
+    Request request =
+        new Request.Builder()
+            .url(String.format("http://localhost:%d/get_gzip", server.getPort()))
+            .header(REQUEST_HEADER_NAME, REQUEST_HEADER_VALUE)
+            .get()
+            .build();
+
+    Response response = httpClient.newCall(request).execute();
+    Assertions.assertEquals(200, response.code());
+
+    String responseBody = response.body().string();
+    Assertions.assertEquals("{\"message\": \"hello\"}", responseBody);
+
+    TEST_WRITER.waitForTraces(1);
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(1, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT));
+    Assertions.assertEquals(1, traces.size());
+    Assertions.assertEquals(1, traces.get(0).size());
+    Span clientSpan = traces.get(0).get(0);
+    Assertions.assertEquals(
+        REQUEST_HEADER_VALUE,
+        TEST_WRITER
+            .getAttributesMap(clientSpan)
+            .get("http.request.header." + REQUEST_HEADER_NAME)
+            .getStringValue());
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(clientSpan).get("http.request.body"));
+
+    String respBodyCapturedInSpan =
+        TEST_WRITER.getAttributesMap(clientSpan).get("http.response.body").getStringValue();
+    Assertions.assertEquals("{\"message\": \"hello\"}", respBodyCapturedInSpan);
+  }
 }

@@ -26,15 +26,18 @@ public class SpanAndBuffer {
   public final BoundedByteArrayOutputStream byteArrayBuffer;
   public final AttributeKey<String> attributeKey;
   public final Charset charset;
+  public final String contentEncoding;
 
   public SpanAndBuffer(
       Span span,
       BoundedByteArrayOutputStream byteArrayBuffer,
       AttributeKey<String> attributeKey,
-      Charset charset) {
+      Charset charset,
+      String contentEncoding) {
     this.span = span;
     this.byteArrayBuffer = byteArrayBuffer;
     this.attributeKey = attributeKey;
     this.charset = charset;
+    this.contentEncoding = contentEncoding;
   }
 }

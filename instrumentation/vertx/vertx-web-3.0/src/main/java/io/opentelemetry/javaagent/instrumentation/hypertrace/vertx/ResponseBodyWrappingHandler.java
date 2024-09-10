@@ -24,9 +24,17 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.zip.GZIPInputStream;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.instrumentation.utils.ContentTypeCharsetUtils;
+import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,15 +50,30 @@ public class ResponseBodyWrappingHandler implements Handler<Buffer> {
 
   private final Handler<Buffer> wrapped;
   private final Span span;
+  private final String encoding;
+  private final String contentType;
 
-  public ResponseBodyWrappingHandler(Handler<Buffer> wrapped, Span span) {
+  public ResponseBodyWrappingHandler(
+      Handler<Buffer> wrapped, Span span, String encoding, String contentType) {
     this.wrapped = wrapped;
     this.span = span;
+    this.encoding = encoding;
+    this.contentType = contentType;
   }
 
   @Override
   public void handle(Buffer event) {
-    String responseBody = event.getString(0, event.length());
+    String responseBody;
+    try {
+      if (encoding != null && encoding.toLowerCase().contains("gzip")) {
+        responseBody = decompressGzip(event.getBytes());
+      } else {
+        responseBody = event.getString(0, event.length());
+      }
+    } catch (IOException e) {
+      responseBody = event.getString(0, event.length());
+    }
+
     if (span.isRecording()) {
       span.setAttribute(HypertraceSemanticAttributes.HTTP_RESPONSE_BODY, responseBody);
     } else {
@@ -93,5 +116,21 @@ public class ResponseBodyWrappingHandler implements Handler<Buffer> {
     }
 
     wrapped.handle(event);
+  }
+
+  private String decompressGzip(byte[] compressed) throws IOException {
+    String charset = ContentTypeUtils.parseCharset(contentType);
+    charset = ContentTypeCharsetUtils.toCharset(charset).name();
+    try (InputStream byteStream = new ByteArrayInputStream(compressed);
+        GZIPInputStream gzipStream = new GZIPInputStream(byteStream);
+        InputStreamReader reader = new InputStreamReader(gzipStream, charset);
+        StringWriter writer = new StringWriter()) {
+
+      int character;
+      while ((character = reader.read()) != -1) {
+        writer.write(character);
+      }
+      return writer.toString();
+    }
   }
 }

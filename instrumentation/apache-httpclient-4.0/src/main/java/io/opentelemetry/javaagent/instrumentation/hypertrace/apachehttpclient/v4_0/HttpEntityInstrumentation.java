@@ -92,12 +92,18 @@ public class HttpEntityInstrumentation implements TypeInstrumentation {
       }
       Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
 
+      String contentEncoding = null;
+      Header contentEncodingHeader = thizz.getContentEncoding();
+      if (contentEncodingHeader != null) {
+        contentEncoding = contentEncodingHeader.getValue();
+      }
       SpanAndBuffer spanAndBuffer =
           new SpanAndBuffer(
               clientSpan.span,
               BoundedBuffersFactory.createStream((int) contentSize, charset),
               clientSpan.attributeKey,
-              charset);
+              charset,
+              contentEncoding);
       VirtualField.find(InputStream.class, SpanAndBuffer.class).set(inputStream, spanAndBuffer);
     }
   }

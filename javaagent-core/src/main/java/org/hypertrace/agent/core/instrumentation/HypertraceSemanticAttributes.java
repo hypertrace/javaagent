@@ -51,6 +51,9 @@ public class HypertraceSemanticAttributes {
   public static final AttributeKey<String> HTTP_RESPONSE_HEADER_CONTENT_TYPE =
       AttributeKey.stringKey("http.response.header.content-type");
 
+  public static final AttributeKey<String> HTTP_RESPONSE_HEADER_CONTENT_ENCODING =
+      AttributeKey.stringKey("http.response.header.content-encoding");
+
   public static final AttributeKey<String> RPC_REQUEST_BODY =
       AttributeKey.stringKey("rpc.request.body");
   public static final AttributeKey<String> RPC_RESPONSE_BODY =
