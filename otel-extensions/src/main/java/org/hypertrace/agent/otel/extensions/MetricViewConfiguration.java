@@ -29,10 +29,18 @@ public class MetricViewConfiguration {
         new HashSet<>(
             Arrays.asList(
                 "net.sock.peer.addr",
+                "net.sock.host.addr",
                 "net.sock.peer.port",
+                "net.sock.host.port",
+                "net.host.name",
+                "net.host.port",
+                "net.protocol.name",
+                "net.protocol.version",
                 "http.user_agent",
                 "enduser.id",
                 "http.client_ip",
+                "http.route",
+                "http.target",
                 "http.request_content_length",
                 "http.response_content_length",
                 "user_agent.original"));
