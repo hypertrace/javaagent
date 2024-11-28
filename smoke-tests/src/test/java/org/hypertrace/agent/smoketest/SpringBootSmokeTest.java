@@ -176,7 +176,7 @@ public class SpringBootSmokeTest extends AbstractSmokeTest {
     Assertions.assertTrue(hasMetricNamed("http.server.duration", metrics));
 
     Assertions.assertTrue(hasMetricWithAttribute("http.server.duration", "http.method", metrics));
-    Assertions.assertTrue(hasMetricWithAttribute("http.server.duration", "http.route", metrics));
+    Assertions.assertFalse(hasMetricWithAttribute("http.server.duration", "http.route", metrics));
     Assertions.assertFalse(
         hasMetricWithAttribute("http.server.duration", "net.sock.peer.addr", metrics));
     Assertions.assertFalse(
