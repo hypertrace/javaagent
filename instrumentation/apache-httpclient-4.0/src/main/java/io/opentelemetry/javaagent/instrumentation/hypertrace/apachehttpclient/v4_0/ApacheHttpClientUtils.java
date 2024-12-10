@@ -114,7 +114,8 @@ public class ApacheHttpClientUtils {
             && contentEncoding.getValue().toLowerCase().contains("gzip");
     if (entity.isRepeatable()) {
       try {
-        BoundedByteArrayOutputStream byteArrayOutputStream = BoundedBuffersFactory.createStream(charset);
+        BoundedByteArrayOutputStream byteArrayOutputStream =
+            BoundedBuffersFactory.createStream(charset);
         entity.writeTo(byteArrayOutputStream);
         InputStream contentStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         if (isGzipEncoded) {
