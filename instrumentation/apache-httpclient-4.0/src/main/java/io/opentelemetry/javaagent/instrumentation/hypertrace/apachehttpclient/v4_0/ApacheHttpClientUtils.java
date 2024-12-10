@@ -19,6 +19,7 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.apachehttpclient.v4_0.ApacheHttpClientObjectRegistry.SpanAndAttributeKey;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -113,7 +114,9 @@ public class ApacheHttpClientUtils {
             && contentEncoding.getValue().toLowerCase().contains("gzip");
     if (entity.isRepeatable()) {
       try {
-        InputStream contentStream = entity.getContent();
+        BoundedByteArrayOutputStream byteArrayOutputStream = BoundedBuffersFactory.createStream(charset);
+        entity.writeTo(byteArrayOutputStream);
+        InputStream contentStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         if (isGzipEncoded) {
           try {
             contentStream = new GZIPInputStream(contentStream);
