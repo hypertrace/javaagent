@@ -187,6 +187,7 @@ public class Servlet50AndFilterInstrumentation implements TypeInstrumentation {
 
         if (!request.isAsyncStarted()) {
           if (instrumentationConfig.httpHeaders().response()) {
+            httpResponse.flushBuffer();
             for (String headerName : httpResponse.getHeaderNames()) {
               String headerValue = httpResponse.getHeader(headerName);
               currentSpan.setAttribute(
@@ -216,7 +217,8 @@ public class Servlet50AndFilterInstrumentation implements TypeInstrumentation {
                 urlEncodedMapContextStore);
           }
         }
-      } finally {
+      } catch (IOException ignored) {}
+      finally {
         Throwable tmp = throwable;
         while (tmp != null) { // loop in case our exception is nested (eg. springframework)
           if (tmp instanceof HypertraceEvaluationException) {
