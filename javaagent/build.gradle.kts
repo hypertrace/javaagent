@@ -58,6 +58,9 @@ tasks {
             // exclude because it would be shaded twice and the META-INF/services/ would be io.opentelemetry.javaagent.shaded.io.grpc
             exclude("inst/META-INF/services/io.grpc*")
         }
+        // Fix CVE-2024-7254, opentelemetry-javaagent brings in io.prometheus.metrics which uses deps of high vulnerability protobuf-java version
+        // This was fixed in 2.x.x versions of opentelemetry-javaagent(which needs us to upgrade from 1.33.0)
+        exclude("inst/io/prometheus/metrics/shaded/com_google_protobuf_3_21_7/**")
         exclude("**/module-info.class")
         manifest {
             attributes.put("Implementation-Title", "javaagent")
