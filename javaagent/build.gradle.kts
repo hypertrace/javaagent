@@ -60,6 +60,7 @@ tasks {
         }
         // Fix CVE-2024-7254, opentelemetry-javaagent brings in io.prometheus.metrics which uses deps of high vulnerability protobuf-java version
         // This was fixed in 2.x.x versions of opentelemetry-javaagent(which needs us to upgrade from 1.33.0)
+        // TODO: Remove this exclusion after otel-javaagent upgrade which has CVE-2024-7254 fix
         exclude("inst/io/prometheus/metrics/shaded/com_google_protobuf_3_21_7/**")
         exclude("**/module-info.class")
         manifest {
