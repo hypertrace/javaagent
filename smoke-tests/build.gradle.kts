@@ -21,7 +21,7 @@ dependencies{
     testRuntimeOnly("io.grpc:grpc-stub:1.36.1") // needed at runtime to send gRPC requests to the gRPC app
     testRuntimeOnly("io.grpc:grpc-protobuf:1.36.1") // needed at runtime to send gRPC requests to the gRPC app
     testImplementation("io.opentelemetry:opentelemetry-sdk:${versions["opentelemetry"]}")
-    testImplementation("com.google.protobuf:protobuf-java-util:3.15.8")
+    testImplementation("com.google.protobuf:protobuf-java-util:3.25.5")
     testImplementation("org.spockframework:spock-core:1.3-groovy-2.5")
     testImplementation("info.solidsoft.spock:spock-global-unroll:0.5.1")
     testImplementation("com.fasterxml.jackson.core:jackson-databind:2.16.0")
