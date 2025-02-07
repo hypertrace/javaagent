@@ -16,20 +16,16 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.v1_6;
 
-import com.google.protobuf.Message;
 import io.grpc.Metadata;
 import io.grpc.Metadata.Key;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.GrpcSemanticAttributes;
-import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,14 +37,11 @@ public class GrpcSpanDecorator {
   private static final JsonFormat.Printer PRINTER = JsonFormat.printer();
 
   public static void addMessageAttribute(Object message, Span span, AttributeKey<String> key) {
-    if (message instanceof Message) {
-      Message mb = (Message) message;
+    if (isProtobufMessage(message)) {
       try {
-        BoundedCharArrayWriter writer = BoundedBuffersFactory.createWriter();
-        PRINTER.appendTo(mb, writer);
-        span.setAttribute(key, writer.toString());
-      } catch (IOException e) {
-        log.error("Failed to decode message to JSON", e);
+        ProtobufRoundTripConverter.addConvertedMessageAttribute(message, span, key);
+      } catch (Exception e) {
+        log.error("Failed to print message as JSON", e);
       }
     }
   }
@@ -89,5 +82,22 @@ public class GrpcSpanDecorator {
       }
     }
     return mapHeaders;
+  }
+
+  private static boolean isProtobufMessage(Object message) {
+    if (message == null) {
+      return false;
+    }
+    // Check the interfaces on the class and its superclasses
+    Class<?> cls = message.getClass();
+    while (cls != null) {
+      for (Class<?> iface : cls.getInterfaces()) {
+        if ("com.google.protobuf.Message".equals(iface.getName())) {
+          return true;
+        }
+      }
+      cls = cls.getSuperclass();
+    }
+    return false;
   }
 }

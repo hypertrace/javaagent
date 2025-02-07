@@ -15,8 +15,7 @@ muzzle {
         group = "io.grpc"
         module = "grpc-core"
         versions = "[1.6.0,)"
-        // for body capture via com.google.protobuf.Message to exist always
-        extraDependency("com.google.protobuf:protobuf-java:3.3.1")
+
         extraDependency("io.grpc:grpc-netty:1.6.0")
     }
 }
