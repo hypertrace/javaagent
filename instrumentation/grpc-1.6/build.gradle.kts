@@ -16,7 +16,7 @@ muzzle {
         module = "grpc-core"
         versions = "[1.6.0,)"
 
-        //extraDependency("com.google.protobuf:protobuf-java:3.3.1")
+        extraDependency("com.google.protobuf:protobuf-java:3.3.1")
         extraDependency("io.grpc:grpc-netty:1.6.0")
     }
 }

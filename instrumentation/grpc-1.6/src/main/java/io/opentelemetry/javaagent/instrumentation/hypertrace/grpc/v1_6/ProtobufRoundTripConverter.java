@@ -19,11 +19,11 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.v1_6;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.com.google.protobuf.DescriptorProtos.FileDescriptorProto;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.com.google.protobuf.Descriptors;
+import com.google.protobuf.Descriptors;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.com.google.protobuf.Descriptors.Descriptor;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.com.google.protobuf.Descriptors.FileDescriptor;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.com.google.protobuf.DynamicMessage;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.com.google.protobuf.Message;
+import com.google.protobuf.Message;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.com.google.protobuf.util.JsonFormat;
 
 public class ProtobufRoundTripConverter {
@@ -49,7 +49,8 @@ public class ProtobufRoundTripConverter {
 
     // 3. Get the unrelocated file descriptor and its proto representation.
     Descriptors.FileDescriptor unrelocatedFileDescriptor = originalDescriptor.getFile();
-    FileDescriptorProto unrelocatedFileProto = unrelocatedFileDescriptor.toProto();
+    com.google.protobuf.DescriptorProtos.FileDescriptorProto unrelocatedFileProto =
+            unrelocatedFileDescriptor.toProto();
     byte[] fileProtoBytes = unrelocatedFileProto.toByteArray();
 
     // 4. Parse the file descriptor proto using relocated classes.
