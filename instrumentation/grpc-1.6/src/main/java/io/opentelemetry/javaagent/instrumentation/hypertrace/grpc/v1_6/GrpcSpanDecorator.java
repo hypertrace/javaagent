@@ -16,6 +16,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.v1_6;
 
+import com.google.protobuf.Message;
 import io.grpc.Metadata;
 import io.grpc.Metadata.Key;
 import io.opentelemetry.api.common.AttributeKey;
@@ -37,12 +38,16 @@ public class GrpcSpanDecorator {
   private static final JsonFormat.Printer PRINTER = JsonFormat.printer();
 
   public static void addMessageAttribute(Object message, Span span, AttributeKey<String> key) {
-    if (isProtobufMessage(message)) {
+    if (message instanceof Message) {
+      Message mb = (Message) message;
       try {
-        ProtobufRoundTripConverter.addConvertedMessageAttribute(message, span, key);
+        String jsonOutput = ProtobufMessageConverter.getMessage(mb);
+        span.setAttribute(key, jsonOutput);
       } catch (Exception e) {
-        log.error("Failed to print message as JSON", e);
+        log.error("Failed to decode message as JSON", e);
       }
+    } else {
+      log.debug("message is not an instance of com.google.protobuf.Message");
     }
   }
 
@@ -82,22 +87,5 @@ public class GrpcSpanDecorator {
       }
     }
     return mapHeaders;
-  }
-
-  private static boolean isProtobufMessage(Object message) {
-    if (message == null) {
-      return false;
-    }
-    // Check the interfaces on the class and its superclasses
-    Class<?> cls = message.getClass();
-    while (cls != null) {
-      for (Class<?> iface : cls.getInterfaces()) {
-        if ("com.google.protobuf.Message".equals(iface.getName())) {
-          return true;
-        }
-      }
-      cls = cls.getSuperclass();
-    }
-    return false;
   }
 }
