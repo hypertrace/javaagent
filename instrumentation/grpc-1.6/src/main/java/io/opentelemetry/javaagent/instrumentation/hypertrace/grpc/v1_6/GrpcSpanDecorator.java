@@ -23,13 +23,10 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.com.google.protobuf.util.JsonFormat;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.GrpcSemanticAttributes;
-import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
-import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,12 +41,13 @@ public class GrpcSpanDecorator {
     if (message instanceof Message) {
       Message mb = (Message) message;
       try {
-        BoundedCharArrayWriter writer = BoundedBuffersFactory.createWriter();
-        PRINTER.appendTo(mb, writer);
-        span.setAttribute(key, writer.toString());
-      } catch (IOException e) {
-        log.error("Failed to decode message to JSON", e);
+        String jsonOutput = ProtobufMessageConverter.getMessage(mb);
+        span.setAttribute(key, jsonOutput);
+      } catch (Exception e) {
+        log.error("Failed to decode message as JSON", e);
       }
+    } else {
+      log.debug("message is not an instance of com.google.protobuf.Message");
     }
   }
 
