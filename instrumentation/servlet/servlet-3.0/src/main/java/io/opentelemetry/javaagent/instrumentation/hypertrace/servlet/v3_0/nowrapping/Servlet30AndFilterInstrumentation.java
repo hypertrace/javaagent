@@ -183,6 +183,9 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
 
         if (!request.isAsyncStarted()) {
           if (instrumentationConfig.httpHeaders().response()) {
+            if (!httpResponse.isCommitted()) {
+              httpResponse.flushBuffer();
+            }
             for (String headerName : httpResponse.getHeaderNames()) {
               String headerValue = httpResponse.getHeader(headerName);
               currentSpan.setAttribute(
@@ -212,6 +215,7 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
                 urlEncodedMapContextStore);
           }
         }
+      } catch (IOException e) {
       } finally {
         Throwable tmp = throwable;
         while (tmp != null) { // loop in case our exception is nested (eg. springframework)
