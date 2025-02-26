@@ -183,7 +183,7 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
 
         if (!request.isAsyncStarted()) {
           if (instrumentationConfig.httpHeaders().response()) {
-            if (!httpResponse.isCommitted()) {
+            if (throwable == null && !httpResponse.isCommitted()) {
               httpResponse.flushBuffer();
             }
             for (String headerName : httpResponse.getHeaderNames()) {
