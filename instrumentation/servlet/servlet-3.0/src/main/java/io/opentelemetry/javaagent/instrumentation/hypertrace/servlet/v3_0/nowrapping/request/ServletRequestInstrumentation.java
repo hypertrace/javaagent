@@ -53,10 +53,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
             .and(isPublic()),
         ServletRequestInstrumentation.class.getName() + "$ServletRequest_getInputStream_advice");
     transformer.applyAdviceToMethod(
-        named("getReader")
-            .and(takesArguments(0))
-            //            .and(returns(BufferedReader.class))
-            .and(isPublic()),
+        named("getReader").and(takesArguments(0)).and(isPublic()),
         ServletRequestInstrumentation.class.getName() + "$ServletRequest_getReader_advice");
     transformer.applyAdviceToMethod(
         named("getParameter")
@@ -67,6 +64,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
         ServletRequestInstrumentation.class.getName() + "$ServletRequest_getParameter_advice");
   }
 
+  @SuppressWarnings("unused")
   static class ServletRequest_getInputStream_advice {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
@@ -121,6 +119,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
     }
   }
 
+  @SuppressWarnings("unused")
   static class ServletRequest_getReader_advice {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
@@ -174,12 +173,13 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
   }
 
   /** Provides instrumentation template for ServletRequest.getParameter() method. */
+  @SuppressWarnings("unused")
   static class ServletRequest_getParameter_advice {
 
     /**
      * Instrumentation template for ServletRequest.getParameter() entry point.
      *
-     * @param servletRequest
+     * @param servletRequest the ServletRequest instance
      * @return a (possibly null) SpanAndObjectPair, which will be passed to the method exit
      *     instrumentation
      */
@@ -202,7 +202,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
      *
      * @param servletRequest the ServletRequest instance
      * @param returnValue the value that is being returned by getParameter()
-     * @param parmName the argument that was passed to getParameter()
+     * @param paramName the argument that was passed to getParameter()
      * @param throwable the Throwable object, if exiting method because of a 'throw'
      * @param spanAndObjectPair the value returned by the getParameter() method entry
      *     instrumentation
@@ -211,7 +211,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
     public static void exit(
         @Advice.This ServletRequest servletRequest,
         @Advice.Return String returnValue,
-        @Advice.Argument(0) String parmName,
+        @Advice.Argument(0) String paramName,
         @Advice.Thrown Throwable throwable,
         @Advice.Enter SpanAndObjectPair spanAndObjectPair) {
       if (spanAndObjectPair == null) {
@@ -249,7 +249,7 @@ public class ServletRequestInstrumentation implements TypeInstrumentation {
         contextStore.set(httpServletRequest, stringMapSpanPair);
       }
 
-      stringMap.put(parmName, returnValue);
+      stringMap.put(paramName, returnValue);
       spanAndObjectPair.setAssociatedObject(stringMap);
     }
   }
