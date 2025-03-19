@@ -190,6 +190,17 @@ public class Servlet50AndFilterInstrumentation implements TypeInstrumentation {
             if (throwable == null && !httpResponse.isCommitted()) {
               httpResponse.flushBuffer();
             }
+            if (httpResponse.getContentType() != null && !httpResponse.getContentType().isEmpty()) {
+              currentSpan.setAttribute(
+                  HypertraceSemanticAttributes.HTTP_RESPONSE_HEADER_CONTENT_TYPE,
+                  httpResponse.getContentType());
+            }
+            if (httpResponse.getCharacterEncoding() != null
+                && !httpResponse.getCharacterEncoding().isEmpty()) {
+              currentSpan.setAttribute(
+                  HypertraceSemanticAttributes.HTTP_RESPONSE_HEADER_CONTENT_ENCODING,
+                  httpResponse.getCharacterEncoding());
+            }
             for (String headerName : httpResponse.getHeaderNames()) {
               String headerValue = httpResponse.getHeader(headerName);
               currentSpan.setAttribute(
