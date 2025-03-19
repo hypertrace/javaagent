@@ -197,7 +197,6 @@ public class Servlet30AndFilterInstrumentation implements TypeInstrumentation {
                   HypertraceSemanticAttributes.HTTP_RESPONSE_HEADER_CONTENT_ENCODING,
                   httpResponse.getCharacterEncoding());
             }
-            currentSpan.setAttribute("http.response.header.testing-hdr", "yash");
             for (String headerName : httpResponse.getHeaderNames()) {
               String headerValue = httpResponse.getHeader(headerName);
               currentSpan.setAttribute(
