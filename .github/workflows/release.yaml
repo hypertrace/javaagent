@@ -5,7 +5,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       # Set fetch-depth: 0 to fetch commit history and tags for use in version calculation
       - name: Check out code
@@ -34,7 +34,7 @@ jobs:
           TERM: dumb
 
   smoke-test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         suite: [ "glassfish", "jetty", "liberty", "tomcat", "tomee", "wildfly", "other" ]
@@ -68,7 +68,7 @@ jobs:
 
   release:
     needs: [ test, smoke-test ]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       # Set fetch-depth: 0 to fetch commit history and tags for use in version calculation
       - name: Check out code
