@@ -165,28 +165,21 @@ public class ProtobufMessageConverter {
    * the relocated JsonFormat
    *
    * @param message The incoming (unrelocated) protobuf message.
+   * @return JSON string representation of the message
+   * @throws Exception if conversion fails
    */
-  public static String getMessage(Message message) {
+  public static String getMessage(Message message) throws Exception {
     if (message == null) {
       log.debug("Cannot convert null message to JSON");
       return "";
     }
 
-    try {
-      // Convert the unrelocated message into a relocated DynamicMessage.
-      DynamicMessage relocatedMessage = convertToRelocatedDynamicMessage(message);
+    // Convert the unrelocated message into a relocated DynamicMessage.
+    DynamicMessage relocatedMessage = convertToRelocatedDynamicMessage(message);
 
-      // Use the relocated JsonFormat to print the message as JSON.
-      JsonFormat.Printer relocatedPrinter =
-          JsonFormat.printer().includingDefaultValueFields().preservingProtoFieldNames();
-      return relocatedPrinter.print(relocatedMessage);
-    } catch (Exception e) {
-      log.error("Failed to convert message to JSON: {}", e.getMessage(), e);
-      if (log.isDebugEnabled()) {
-        log.debug("Message type: {}", message.getClass().getName());
-        log.debug("Message descriptor: {}", message.getDescriptorForType().getFullName());
-      }
-    }
-    return "";
+    // Use the relocated JsonFormat to print the message as JSON.
+    JsonFormat.Printer relocatedPrinter =
+        JsonFormat.printer().includingDefaultValueFields().preservingProtoFieldNames();
+    return relocatedPrinter.print(relocatedMessage);
   }
 }
