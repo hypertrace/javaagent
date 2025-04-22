@@ -25,11 +25,14 @@ import io.opentelemetry.javaagent.instrumentation.hypertrace.com.google.protobuf
 import io.opentelemetry.javaagent.instrumentation.hypertrace.com.google.protobuf.util.JsonFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/** Utility class to convert protobuf messages to JSON. */
 public class ProtobufMessageConverter {
   private static final Logger log = LoggerFactory.getLogger(ProtobufMessageConverter.class);
   private static final Map<String, FileDescriptor> fileDescriptorCache = new HashMap<>();
@@ -75,25 +78,73 @@ public class ProtobufMessageConverter {
     String fileKey = unrelocatedFileDescriptor.getName();
     if (fileDescriptorCache.containsKey(fileKey)) {
       FileDescriptor relocatedFileDescriptor = fileDescriptorCache.get(fileKey);
-      return relocatedFileDescriptor.findMessageTypeByName(originalDescriptor.getName());
+
+      // Check if the message type exists in the relocated descriptor
+      Descriptor messageType =
+          relocatedFileDescriptor.findMessageTypeByName(originalDescriptor.getName());
+      if (messageType == null) {
+        log.debug("Message type not found in cached descriptor: {}", originalDescriptor.getName());
+      }
+
+      return messageType;
     }
 
-    // Process all dependencies first
+    // Process all dependencies recursively, including transitive ones
+    FileDescriptor fileDescriptor =
+        processFileDescriptorWithDependencies(unrelocatedFileDescriptor, new HashSet<>());
+
+    // Find the message type in the relocated descriptor
+    Descriptor result = fileDescriptor.findMessageTypeByName(originalDescriptor.getName());
+    if (result == null) {
+      log.debug("Message type not found in new descriptor: {}", originalDescriptor.getName());
+    }
+
+    return result;
+  }
+
+  /**
+   * Process a file descriptor and all its dependencies recursively.
+   *
+   * @param unrelocatedFileDescriptor The file descriptor to process
+   * @param processedFiles Set of file names that have already been processed to avoid circular
+   *     dependencies
+   * @return The relocated file descriptor
+   */
+  private static FileDescriptor processFileDescriptorWithDependencies(
+      Descriptors.FileDescriptor unrelocatedFileDescriptor, Set<String> processedFiles)
+      throws Exception {
+    String fileKey = unrelocatedFileDescriptor.getName();
+
+    // Check if we've already processed this file
+    if (fileDescriptorCache.containsKey(fileKey)) {
+      return fileDescriptorCache.get(fileKey);
+    }
+
+    // Mark this file as processed to avoid circular dependencies
+    processedFiles.add(fileKey);
+
     List<FileDescriptor> dependencies = new ArrayList<>();
+
+    // Process all direct dependencies first
     for (Descriptors.FileDescriptor dependency : unrelocatedFileDescriptor.getDependencies()) {
       String depKey = dependency.getName();
-      if (!fileDescriptorCache.containsKey(depKey)) {
-        // Convert the dependency file descriptor
-        com.google.protobuf.DescriptorProtos.FileDescriptorProto depProto = dependency.toProto();
-        byte[] depBytes = depProto.toByteArray();
-        FileDescriptorProto relocatedDepProto = FileDescriptorProto.parseFrom(depBytes);
 
-        // Build with empty dependencies first (we'll fill them in later)
-        FileDescriptor relocatedDep =
-            FileDescriptor.buildFrom(relocatedDepProto, new FileDescriptor[] {});
-        fileDescriptorCache.put(depKey, relocatedDep);
+      // Skip if we've already processed this dependency in this call chain
+      if (processedFiles.contains(depKey)) {
+        if (fileDescriptorCache.containsKey(depKey)) {
+          dependencies.add(fileDescriptorCache.get(depKey));
+        }
+        continue;
       }
-      dependencies.add(fileDescriptorCache.get(depKey));
+
+      if (!fileDescriptorCache.containsKey(depKey)) {
+        // Process this dependency recursively
+        FileDescriptor relocatedDep =
+            processFileDescriptorWithDependencies(dependency, processedFiles);
+        dependencies.add(relocatedDep);
+      } else {
+        dependencies.add(fileDescriptorCache.get(depKey));
+      }
     }
 
     // Now build the current file descriptor with its dependencies
@@ -106,7 +157,7 @@ public class ProtobufMessageConverter {
         FileDescriptor.buildFrom(relocatedFileProto, dependencies.toArray(new FileDescriptor[0]));
     fileDescriptorCache.put(fileKey, relocatedFileDescriptor);
 
-    return relocatedFileDescriptor.findMessageTypeByName(originalDescriptor.getName());
+    return relocatedFileDescriptor;
   }
 
   /**

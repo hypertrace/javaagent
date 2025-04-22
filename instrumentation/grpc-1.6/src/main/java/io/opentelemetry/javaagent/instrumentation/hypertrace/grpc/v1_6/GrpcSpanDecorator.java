@@ -44,7 +44,7 @@ public class GrpcSpanDecorator {
         String jsonOutput = ProtobufMessageConverter.getMessage(mb);
         span.setAttribute(key, jsonOutput);
       } catch (Exception e) {
-        log.error("Failed to decode message as JSON", e);
+        log.debug("Failed to decode message as JSON", e);
       }
     } else {
       log.debug("message is not an instance of com.google.protobuf.Message");
