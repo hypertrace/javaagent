@@ -5,7 +5,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       # Set fetch-depth: 0 to fetch commit history and tags for use in version calculation
       - name: Check out code
@@ -13,6 +13,12 @@ jobs:
         with:
           fetch-depth: 0
           submodules: true
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          distribution: adopt
+          java-version: 11
 
       - name: create checksum file
         uses: hypertrace/github-actions/checksum@main
@@ -30,11 +36,11 @@ jobs:
       - name: build
         run: make build
         env:
-          JVM_OPTS: -Xmx1g
+          JVM_OPTS: -Xmx1g --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED
           TERM: dumb
 
   smoke-test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         suite: [ "glassfish", "jetty", "liberty", "tomcat", "tomee", "wildfly", "other" ]
@@ -46,6 +52,12 @@ jobs:
         with:
           fetch-depth: 0
           submodules: true
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          distribution: adopt
+          java-version: 11
 
       - name: create checksum file
         uses: hypertrace/github-actions/checksum@main
@@ -63,12 +75,12 @@ jobs:
       - name: smoke-test
         run: make smoke-test SMOKE_TEST_SUITE=${{ matrix.suite }}
         env:
-          JVM_OPTS: -Xmx1g
+          JVM_OPTS: -Xmx1g --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED
           TERM: dumb
 
   release:
     needs: [ test, smoke-test ]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       # Set fetch-depth: 0 to fetch commit history and tags for use in version calculation
       - name: Check out code
@@ -76,6 +88,12 @@ jobs:
         with:
           fetch-depth: 0
           submodules: true
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          distribution: adopt
+          java-version: 11
 
       - name: create checksum file
         uses: hypertrace/github-actions/checksum@main
@@ -96,7 +114,7 @@ jobs:
           ORG_GRADLE_PROJECT_signingKey=$(echo $SIGNING_KEY | base64 -d) ./gradlew publish
           ./gradlew closeAndReleaseRepository
         env:
-          JVM_OPTS: -Xmx1g
+          JVM_OPTS: -Xmx1g --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED
           TERM: dumb
           ORG_GRADLE_PROJECT_ossrhUsername: ${{ secrets.ORG_GRADLE_PROJECT_OSSRHUSERNAME }}
           ORG_GRADLE_PROJECT_ossrhPassword: ${{ secrets.ORG_GRADLE_PROJECT_OSSRHPASSWORD }}
