@@ -19,12 +19,6 @@ package io.opentelemetry.javaagent.instrumentation.hypertrace.servlet.v3_0.nowra
 public class Servlet30InstrumentationName {
   public static final String PRIMARY = "servlet";
   public static final String[] OTHER = {
-    "servlet-3",
-    "ht",
-    "servlet-ht",
-    "servlet-3-ht",
-    "servlet-3-no-wrapping",
-    "servlet-no-wrapping",
-    "servlet-no-wrapping"
+    "servlet-3", "ht", "servlet-ht", "servlet-3-ht", "servlet-3-no-wrapping", "servlet-no-wrapping"
   };
 }
