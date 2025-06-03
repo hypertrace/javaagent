@@ -38,7 +38,6 @@ public class MetricViewConfiguration {
               "http.method",
               "http.status_code",
               "http.scheme",
-              "http.route",
               "rpc.method",
               "rpc.grpc.status_code",
               "rpc.service"));
