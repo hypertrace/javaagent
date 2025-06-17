@@ -137,9 +137,9 @@ public class HypertraceConfigTest {
     Assertions.assertEquals(
         "/foo/bar/example.pem", agentConfig.getReporting().getCertFile().getValue());
     Assertions.assertEquals(
-        "http://localhost:4317", agentConfig.getReporting().getEndpoint().getValue());
+        "http://localhost:5442", agentConfig.getReporting().getEndpoint().getValue());
     Assertions.assertEquals(
-        "http://localhost:4317", agentConfig.getReporting().getMetricEndpoint().getValue());
+        "http://localhost:5442", agentConfig.getReporting().getMetricEndpoint().getValue());
     Assertions.assertEquals(true, agentConfig.getReporting().getSecure().getValue());
     Assertions.assertEquals(16, agentConfig.getDataCapture().getBodyMaxSizeBytes().getValue());
     Assertions.assertEquals(
@@ -172,7 +172,7 @@ public class HypertraceConfigTest {
   }
 
   @Test
-  @SetEnvironmentVariable(key = "HT_REPORTING_ENDPOINT", value = "http://oltp.hypertrace.org:4317")
+  @SetEnvironmentVariable(key = "HT_REPORTING_ENDPOINT", value = "http://oltp.hypertrace.org:5442")
   public void complexConfig() throws IOException {
     // GIVEN a config file with a non-default reporting endpoint and an env-var with a different
     // non-default otlp reporting endpoint
@@ -180,7 +180,7 @@ public class HypertraceConfigTest {
     // WHEN we load the config
     AgentConfig agentConfig = HypertraceConfig.load(resource.getPath());
     // VERIFY the trace and metric endpoints are the both the value of the env var
-    String expectedEndpoint = "http://oltp.hypertrace.org:4317";
+    String expectedEndpoint = "http://oltp.hypertrace.org:5442";
     Assertions.assertEquals(expectedEndpoint, agentConfig.getReporting().getEndpoint().getValue());
     Assertions.assertEquals(
         expectedEndpoint, agentConfig.getReporting().getMetricEndpoint().getValue());
@@ -238,7 +238,7 @@ public class HypertraceConfigTest {
     // VERIFY the trace reporting type is OTLP
     Assertions.assertEquals(
         TraceReporterType.OTLP, agentConfig.getReporting().getTraceReporterType());
-    String expectedReportingEndpoint = "http://example.com:4317";
+    String expectedReportingEndpoint = "http://example.com:5442";
     // VERIFY the trace reporting and metric reporting endpoints are both the specified value
     Assertions.assertEquals(
         expectedReportingEndpoint, agentConfig.getReporting().getEndpoint().getValue());
@@ -257,10 +257,10 @@ public class HypertraceConfigTest {
         TraceReporterType.OTLP, agentConfig.getReporting().getTraceReporterType());
     // VERIFY the trace reporting endpoint is still the default value
     Assertions.assertEquals(
-        "http://localhost:4317", agentConfig.getReporting().getEndpoint().getValue());
+        "http://localhost:5442", agentConfig.getReporting().getEndpoint().getValue());
     // VERIFY the metric reporting endpoint is the specified value
     Assertions.assertEquals(
-        "http://example.com:4317", agentConfig.getReporting().getMetricEndpoint().getValue());
+        "http://example.com:5442", agentConfig.getReporting().getMetricEndpoint().getValue());
   }
 
   @Test

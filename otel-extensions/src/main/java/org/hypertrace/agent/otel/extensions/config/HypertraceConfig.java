@@ -78,7 +78,7 @@ public class HypertraceConfig {
 
   static final String DEFAULT_SERVICE_NAME = "unknown";
   // Default reporting endpoint for traces and metrics
-  static final String DEFAULT_REPORTING_ENDPOINT = "http://localhost:4317";
+  static final String DEFAULT_REPORTING_ENDPOINT = "http://localhost:5442";
   // 128 KiB
   static final int DEFAULT_BODY_MAX_SIZE_BYTES = 128 * 1024;
 
