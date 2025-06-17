@@ -1,6 +1,6 @@
 service_name: app_under_test
 reporting:
-  endpoint: http://localhost:4317
+  endpoint: http://localhost:5442
   trace_reporter_type: OTLP
   secure: true
 data_capture:
