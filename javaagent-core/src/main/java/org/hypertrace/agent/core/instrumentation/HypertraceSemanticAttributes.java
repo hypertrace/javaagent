@@ -37,6 +37,10 @@ public class HypertraceSemanticAttributes {
     return AttributeKey.stringKey("http.response.header." + header.toLowerCase());
   }
 
+  public static AttributeKey<Long> httpResponseHeaderLong(String header) {
+    return AttributeKey.longKey("http.response.header." + header.toLowerCase());
+  }
+
   public static final AttributeKey<String> HTTP_REQUEST_BODY =
       AttributeKey.stringKey("http.request.body");
   public static final AttributeKey<String> HTTP_RESPONSE_BODY =
@@ -44,6 +48,10 @@ public class HypertraceSemanticAttributes {
 
   public static final AttributeKey<String> HTTP_REQUEST_SESSION_ID =
       AttributeKey.stringKey("http.request.session_id");
+  public static final AttributeKey<String> HTTP_RESPONSE_CONTENT_TYPE =
+      AttributeKey.stringKey("http.response.header.content-type");
+  public static final AttributeKey<Long> HTTP_RESPONSE_CONTENT_LENGTH =
+      AttributeKey.longKey("http.response.header.content-length");
 
   public static final AttributeKey<String> HTTP_REQUEST_HEADER_CONTENT_TYPE =
       AttributeKey.stringKey("http.request.header.content-type");
@@ -59,11 +67,11 @@ public class HypertraceSemanticAttributes {
   public static final AttributeKey<String> RPC_RESPONSE_BODY =
       AttributeKey.stringKey("rpc.response.body");
 
-  public static final AttributeKey<String> rpcRequestMetadata(String key) {
+  public static AttributeKey<String> rpcRequestMetadata(String key) {
     return AttributeKey.stringKey("rpc.request.metadata." + key.toLowerCase());
   }
 
-  public static final AttributeKey<String> rpcResponseMetadata(String key) {
+  public static AttributeKey<String> rpcResponseMetadata(String key) {
     return AttributeKey.stringKey("rpc.response.metadata." + key.toLowerCase());
   }
 }

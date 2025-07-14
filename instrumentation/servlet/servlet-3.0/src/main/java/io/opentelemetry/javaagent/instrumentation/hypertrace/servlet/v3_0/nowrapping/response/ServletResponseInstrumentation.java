@@ -63,6 +63,7 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
         ServletResponseInstrumentation.class.getName() + "$ServletResponse_getWriter_advice");
   }
 
+  @SuppressWarnings("unused")
   static class ServletResponse_getOutputStream {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
@@ -127,6 +128,7 @@ public class ServletResponseInstrumentation implements TypeInstrumentation {
     }
   }
 
+  @SuppressWarnings("unused")
   static class ServletResponse_getWriter_advice {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
