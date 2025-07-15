@@ -9,6 +9,7 @@ receivers:
   otlp:
     protocols:
       grpc:
+        endpoint: 0.0.0.0:5442
   zipkin:
   jaeger:
     protocols:

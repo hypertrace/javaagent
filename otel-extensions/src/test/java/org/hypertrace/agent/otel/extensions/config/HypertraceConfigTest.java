@@ -199,7 +199,7 @@ public class HypertraceConfigTest {
     AgentConfig agentConfig = HypertraceConfig.load(resource.getPath());
     // VERIFY the trace reporting endpoint is the zipkin endpoint
     Assertions.assertEquals(
-        "http://example.com:9411/api/v2/spans",
+        "http://example.com:5442/api/v2/spans",
         agentConfig.getReporting().getEndpoint().getValue());
     // VERIFY the trace reporting type is ZIPKIN
     Assertions.assertEquals(

@@ -6,6 +6,19 @@ plugins {
     id("com.google.protobuf") version "0.9.4"
 }
 
+sourceSets {
+    main {
+        proto {
+            srcDir("src/main/proto")
+            exclude("gen/go/**")
+        }
+    }
+}
+
+tasks.named<Copy>("processResources") {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
 
 val protobufVersion = "3.25.5"
 
