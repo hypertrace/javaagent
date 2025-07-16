@@ -25,10 +25,10 @@ import org.testcontainers.utility.DockerImageName;
 public class OpenTelemetryCollector extends GenericContainer<OpenTelemetryCollector> {
 
   public static final int JAEGER_COLLECTOR_THRIFT_PORT = 14268;
-  public static final int JAEGER_COLLECTOR_GRPC_PORT   = 14250;
-  public static final int HTTP_REVERSE_PROXY_PORT      = 5442;
-  public static final int HTTPS_REVERSE_PROXY_PORT     = 5443;
-  public static final int HEALTH_CHECK_PORT            = 13133;
+  public static final int JAEGER_COLLECTOR_GRPC_PORT = 14250;
+  public static final int HTTP_REVERSE_PROXY_PORT = 5442;
+  public static final int HTTPS_REVERSE_PROXY_PORT = 5443;
+  public static final int HEALTH_CHECK_PORT = 13133;
 
   public OpenTelemetryCollector(String dockerImage) {
     super(DockerImageName.parse(dockerImage));
@@ -42,8 +42,7 @@ public class OpenTelemetryCollector extends GenericContainer<OpenTelemetryCollec
         JAEGER_COLLECTOR_THRIFT_PORT,
         JAEGER_COLLECTOR_GRPC_PORT,
         HTTP_REVERSE_PROXY_PORT,
-        HTTPS_REVERSE_PROXY_PORT
-        );
+        HTTPS_REVERSE_PROXY_PORT);
   }
 
   public static class BoundPortHttpWaitStrategy extends HttpWaitStrategy {
