@@ -26,6 +26,7 @@ afterEvaluate{
 val versions: Map<String, String> by extra
 
 dependencies {
+    api(project(":otel-extensions"))
     compileOnly("com.squareup.okhttp3:okhttp:3.0.0")
     testImplementation(project(":testing-common"))
 }

@@ -19,6 +19,9 @@ package org.hypertrace.agent.testing;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.zip.GZIPOutputStream;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -45,6 +48,7 @@ public class TestHttpServer implements AutoCloseable {
     handlerList.addHandler(new PostRedirect());
     handlerList.addHandler(new EchoHandler());
     handlerList.addHandler(new GzipHandler());
+    handlerList.addHandler(new HeaderVerificationHandler());
     server.setHandler(handlerList);
     server.start();
   }
@@ -210,6 +214,57 @@ public class TestHttpServer implements AutoCloseable {
         response.setContentLength(gzipData.length);
         response.getOutputStream().write(gzipData);
         response.getOutputStream().flush();
+
+        baseRequest.setHandled(true);
+      }
+    }
+  }
+
+  public static class HeaderVerificationHandler extends ResponseTestHeadersHandler {
+
+    public static final String VERIFY_HEADER_PATH = "/verify_headers";
+    public static final String HEADER_ECHO_PREFIX = "echo-header-";
+    public static final String SERVICE_NAME_HEADER_KEY = "ta-client-servicename";
+    public static final String RECEIVED_HEADER_JSON_FORMAT =
+        "{\"received_header\":\"%s\",\"header_value\":\"%s\"}";
+
+    @Override
+    public void handle(
+        String target,
+        Request baseRequest,
+        HttpServletRequest request,
+        HttpServletResponse response)
+        throws IOException {
+
+      if (target.equals(VERIFY_HEADER_PATH)) {
+        response.setStatus(200);
+        response.setContentType("application/json");
+
+        // Get all headers from the request
+        Map<String, String> headers = new HashMap<>();
+        Enumeration<String> headerNames = request.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+          String headerName = headerNames.nextElement();
+          String headerValue = request.getHeader(headerName);
+          headers.put(headerName, headerValue);
+
+          // Echo back the headers in the response with a prefix
+          response.setHeader(HEADER_ECHO_PREFIX + headerName, headerValue);
+        }
+
+        // Check specifically for our service name header
+        String serviceNameHeaderValue = request.getHeader(SERVICE_NAME_HEADER_KEY);
+        if (serviceNameHeaderValue != null) {
+          response
+              .getWriter()
+              .print(
+                  String.format(
+                      RECEIVED_HEADER_JSON_FORMAT,
+                      SERVICE_NAME_HEADER_KEY,
+                      serviceNameHeaderValue));
+        } else {
+          response.getWriter().print("{\"received_header\":\"none\"}");
+        }
 
         baseRequest.setHandled(true);
       }
