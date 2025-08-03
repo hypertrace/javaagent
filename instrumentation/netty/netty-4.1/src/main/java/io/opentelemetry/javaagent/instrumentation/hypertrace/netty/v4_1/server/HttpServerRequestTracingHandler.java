@@ -111,8 +111,8 @@ public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapte
             span, channel, AttributeKeys.REQUEST_BODY_BUFFER, msg, null, charset);
       }
 
-      ctx.fireChannelRead(msg);
     }
+    ctx.fireChannelRead(msg);
   }
 
   private static Map<String, String> headersToMap(HttpMessage httpMessage) {
