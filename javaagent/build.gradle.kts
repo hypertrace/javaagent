@@ -30,28 +30,30 @@ tasks {
     }
 
     shadowJar {
-        relocate("com.blogspot.mydailyjava.weaklockfree", "io.opentelemetry.instrumentation.api.internal.shaded.weaklockfree")
+        relocate("com.blogspot.mydailyjava.weaklockfree", "ai.traceable.io.opentelemetry.instrumentation.api.internal.shaded.weaklockfree")
 
         dependencies {
             exclude(dependency("org.codehaus.mojo:animal-sniffer-annotations"))
             exclude(dependency("javax.annotation:javax.annotation-api"))
         }
 
-        relocate("org.slf4j", "io.opentelemetry.javaagent.slf4j")
-        relocate("java.util.logging.Logger", "io.opentelemetry.javaagent.bootstrap.PatchLogger")
-        relocate("com.fasterxml.jackson", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.com.fasterxml.jackson")
-        relocate("org.yaml", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.org.yaml")
+        relocate("org.slf4j", "ai.traceable.io.opentelemetry.javaagent.slf4j")
+        relocate("java.util.logging.Logger", "ai.traceable.io.opentelemetry.javaagent.bootstrap.PatchLogger")
+        relocate("com.fasterxml.jackson", "ai.traceable.io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.com.fasterxml.jackson")
+        relocate("org.yaml", "ai.traceable.io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.org.yaml")
+
+        relocate("io.opentelemetry", "ai.traceable.io.opentelemetry")
 
         // prevents conflict with library instrumentation
-        relocate("io.opentelemetry.instrumentation.api", "io.opentelemetry.javaagent.shaded.instrumentation.api")
+        // relocate("io.opentelemetry.instrumentation.api", "io.opentelemetry.javaagent.shaded.instrumentation.api")
 
         // relocate OpenTelemetry API
-        relocate("io.opentelemetry.api", "io.opentelemetry.javaagent.shaded.io.opentelemetry.api")
-        relocate("io.opentelemetry.semconv", "io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv")
-        relocate("io.opentelemetry.spi", "io.opentelemetry.javaagent.shaded.io.opentelemetry.spi")
-        relocate("io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context")
-        relocate("io.opentelemetry.extension.kotlin", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.kotlin")
-        relocate("io.opentelemetry.extension.aws", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.aws")
+//        relocate("io.opentelemetry.api", "io.opentelemetry.javaagent.shaded.io.opentelemetry.api")
+//        relocate("io.opentelemetry.semconv", "io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv")
+//        relocate("io.opentelemetry.spi", "io.opentelemetry.javaagent.shaded.io.opentelemetry.spi")
+//        relocate("io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context")
+//        relocate("io.opentelemetry.extension.kotlin", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.kotlin")
+//        relocate("io.opentelemetry.extension.aws", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.aws")
 
         mergeServiceFiles {
             include("inst/META-INF/services/*")
@@ -69,7 +71,7 @@ tasks {
             attributes.put("OpenTelemetry-Instrumentation-Version", "${versions["opentelemetry_java_agent"]}")
             attributes.put("Implementation-Vendor", "Hypertrace.org")
             attributes.put("Implementation-Url", "https://github.com/hypertrace/javaagent")
-            attributes.put("Main-Class", "io.opentelemetry.javaagent.OpenTelemetryAgent")
+            attributes.put("Main-Class", "ai.traceable.io.opentelemetry.javaagent.OpenTelemetryAgent")
             attributes.put("Agent-Class",   "org.hypertrace.agent.instrument.HypertraceAgent")
             attributes.put("Premain-Class", "org.hypertrace.agent.instrument.HypertraceAgent")
             attributes.put("Can-Redefine-Classes", true)

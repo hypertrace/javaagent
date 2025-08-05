@@ -40,27 +40,30 @@ tasks {
 
         mergeServiceFiles()
 
-        relocate("com.blogspot.mydailyjava.weaklockfree", "io.opentelemetry.instrumentation.api.internal.shaded.weaklockfree")
+        relocate("com.blogspot.mydailyjava.weaklockfree", "ai.traceable.io.opentelemetry.instrumentation.api.internal.shaded.weaklockfree")
 
         exclude("**/module-info.class")
 
-        relocate("org.slf4j", "io.opentelemetry.javaagent.slf4j")
-        relocate("java.util.logging.Logger", "io.opentelemetry.javaagent.bootstrap.PatchLogger")
+        relocate("org.slf4j", "ai.traceable.io.opentelemetry.javaagent.slf4j")
+        relocate("java.util.logging.Logger", "ai.traceable.io.opentelemetry.javaagent.bootstrap.PatchLogger")
+
+        relocate("io.opentelemetry", "ai.traceable.io.opentelemetry")
 
 //        // prevents conflict with library instrumentation
-        relocate("io.opentelemetry.instrumentation.api", "io.opentelemetry.javaagent.shaded.instrumentation.api")
-        //opentelemetry rewrite library instrumentation dependencies
-        relocate("io.opentelemetry.instrumentation", "io.opentelemetry.javaagent.shaded.instrumentation") {
-            exclude("io.opentelemetry.javaagent.instrumentation.**")
-        }
+//        relocate("io.opentelemetry.instrumentation.api", "io.opentelemetry.javaagent.shaded.instrumentation.api")
+//        //opentelemetry rewrite library instrumentation dependencies
+//        relocate("io.opentelemetry.instrumentation", "io.opentelemetry.javaagent.shaded.instrumentation") {
+//            exclude("io.opentelemetry.javaagent.instrumentation.**")
+//        }
+//
+//        // relocate OpenTelemetry API
+//        relocate("io.opentelemetry.api", "io.opentelemetry.javaagent.shaded.io.opentelemetry.api")
+//        relocate("io.opentelemetry.semconv", "io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv")
+//        relocate("io.opentelemetry.spi", "io.opentelemetry.javaagent.shaded.io.opentelemetry.spi")
+//        relocate("io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context")
+//        relocate("io.opentelemetry.extension.kotlin", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.kotlin")
+//        relocate("io.opentelemetry.extension.aws", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.aws")
 
-        // relocate OpenTelemetry API
-        relocate("io.opentelemetry.api", "io.opentelemetry.javaagent.shaded.io.opentelemetry.api")
-        relocate("io.opentelemetry.semconv", "io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv")
-        relocate("io.opentelemetry.spi", "io.opentelemetry.javaagent.shaded.io.opentelemetry.spi")
-        relocate("io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context")
-        relocate("io.opentelemetry.extension.kotlin", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.kotlin")
-        relocate("io.opentelemetry.extension.aws", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.aws")
     }
 }
 
