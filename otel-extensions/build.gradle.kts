@@ -48,8 +48,6 @@ dependencies {
 
     implementation("io.opentelemetry.semconv:opentelemetry-semconv:${versions["opentelemetry_semconv"]}")
     implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api:${versions["opentelemetry_java_agent"]}")
-    implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-internal-logging-simple:${versions["opentelemetry_java_agent"]}")
-    implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-internal-logging-application:${versions["opentelemetry_java_agent"]}")
     implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api:${versions["opentelemetry"]}")
     implementation("io.opentelemetry.javaagent:opentelemetry-javaagent-tooling:${versions["opentelemetry_java_agent-tooling"]}") {
         constraints {
