@@ -84,8 +84,7 @@ tasks.register<Copy>("extractRelocatedOtelClasses") {
     into("$buildDir/tmp/relocated-otel-classes")
 }
 
-// task to clean up empty directories
-tasks.register("cleanEmptyDirs") {
+tasks.register("extractOtelInstrumentationToInst") {
     description = "Removes empty directories from the relocated classes directory"
 
     dependsOn("extractRelocatedOtelClasses")
@@ -118,7 +117,7 @@ fun deleteEmptyDirs(dir: File) {
 tasks.register<Copy>("combineAndConvertToClassdata") {
     description = "Combines all classes and converts to .classdata"
 
-    dependsOn("extractCustomInstrumentationToInst", "cleanEmptyDirs")
+    dependsOn("extractCustomInstrumentationToInst", "extractOtelInstrumentationToInst")
 
     // include the relocated OpenTelemetry classes
     from("$buildDir/tmp/relocated-otel-classes") {
