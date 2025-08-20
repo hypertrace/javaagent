@@ -87,7 +87,6 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
   public static class EndRequestAdvice {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static void enter(@Advice.This HttpClientRequest request) {
-
       int callDepth = HypertraceCallDepthThreadLocalMap.incrementCallDepth(HttpClientRequest.class);
       if (callDepth > 0) {
         return;
@@ -117,7 +116,6 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
     public static void enter(
         @Advice.This HttpClientRequest request, @Advice.Argument(0) String chunk)
         throws IOException {
-
       int callDepth = HypertraceCallDepthThreadLocalMap.incrementCallDepth(HttpClientRequest.class);
       if (callDepth > 0) {
         return;

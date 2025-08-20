@@ -23,8 +23,6 @@ import org.hypertrace.agent.core.filter.FilterResult;
  * opportunity for middleware to look at the contents of an HTTP request and determine if it should
  * be processed before handing it off to application code for execution.
  *
- * <p>
- *
  * <p>Framework-specific instrumentation of middlewares (e.g. {@code javax.servlet.Filter}) or
  * implementations of framework-specific middlewares (e.g. {@code
  * io.netty.channel.ChannelInboundHandlerAdapter} and {@code io.grpc.ServerInterceptor}) should

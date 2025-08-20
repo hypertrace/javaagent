@@ -30,6 +30,7 @@ public interface Filter {
   /**
    * Evaluate the execution.
    *
+   * @param span span
    * @param headers are used for blocking evaluation.
    * @return filter result
    */

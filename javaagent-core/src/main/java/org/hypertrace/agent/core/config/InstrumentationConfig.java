@@ -24,19 +24,19 @@ import org.slf4j.LoggerFactory;
 /** Instrumentation config holds configuration for the instrumentation. */
 public interface InstrumentationConfig {
 
-  /** Maximum capture body size in bytes. */
+  /** @return Maximum capture body size in bytes. */
   int maxBodySizeBytes();
 
-  /** Data capture for HTTP headers. */
+  /** @return Data capture for HTTP headers. */
   Message httpHeaders();
 
-  /** Data capture for HTTP body. */
+  /** @return Data capture for HTTP body. */
   Message httpBody();
 
-  /** Data capture for RPC metadata. */
+  /** @return Data capture for RPC metadata. */
   Message rpcMetadata();
 
-  /** Data capture for RPC body */
+  /** @return Data capture for RPC body */
   Message rpcBody();
 
   /** Message holds data capture configuration for various entities. */

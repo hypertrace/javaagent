@@ -65,9 +65,10 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
     transformer.applyAdviceToMethod(
         named("readAllBytes").and(takesArguments(0)).and(isPublic()),
         ServletInputStreamInstrumentation.class.getName() + "$InputStream_ReadAllBytes");
+    // TODO: readNBytes(int len) is not transformed
     transformer.applyAdviceToMethod(
         named("readNBytes")
-            .and(takesArguments(0))
+            .and(takesArguments(3))
             .and(takesArgument(0, is(byte[].class)))
             .and(takesArgument(1, is(int.class)))
             .and(takesArgument(2, is(int.class)))
@@ -85,6 +86,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         ServletInputStreamInstrumentation.class.getName() + "$InputStream_ReadByteArrayOffset");
   }
 
+  @SuppressWarnings("unused")
   static class InputStream_ReadNoArgs {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
@@ -127,6 +129,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
     }
   }
 
+  @SuppressWarnings("unused")
   public static class InputStream_ReadByteArray {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
@@ -145,7 +148,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
     public static void exit(
         @Advice.This ServletInputStream thizz,
         @Advice.Return int read,
-        @Advice.Argument(0) byte b[],
+        @Advice.Argument(0) byte[] b,
         @Advice.Enter ByteBufferSpanPair bufferSpanPair)
         throws Throwable {
       try {
@@ -176,6 +179,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
     }
   }
 
+  @SuppressWarnings("unused")
   public static class InputStream_ReadByteArrayOffset {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
@@ -194,7 +198,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
     public static void exit(
         @Advice.This ServletInputStream thizz,
         @Advice.Return int read,
-        @Advice.Argument(0) byte b[],
+        @Advice.Argument(0) byte[] b,
         @Advice.Argument(1) int off,
         @Advice.Argument(2) int len,
         @Advice.Enter ByteBufferSpanPair bufferSpanPair)
@@ -228,6 +232,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
     }
   }
 
+  @SuppressWarnings("unused")
   public static class InputStream_ReadAllBytes {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
@@ -267,6 +272,7 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
     }
   }
 
+  @SuppressWarnings("unused")
   public static class InputStream_ReadNBytes {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
@@ -287,7 +293,6 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
         @Advice.Return int read,
         @Advice.Argument(0) byte[] b,
         @Advice.Argument(1) int off,
-        @Advice.Argument(2) int len,
         @Advice.Enter ByteBufferSpanPair bufferSpanPair)
         throws Throwable {
       try {
@@ -317,9 +322,4 @@ public class ServletInputStreamInstrumentation implements TypeInstrumentation {
       }
     }
   }
-
-  private static final String HANDLER_NAME =
-      "io.opentelemetry.javaagent.bootstrap.ExceptionLogger".replace('.', '/');
-  private static final String LOGGER_NAME = "org.slf4j.Logger".replace('.', '/');
-  private static final String LOG_FACTORY_NAME = "org.slf4j.LoggerFactory".replace('.', '/');
 }
