@@ -36,6 +36,7 @@ import okio.Okio;
 import org.hypertrace.agent.core.config.InstrumentationConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
+import org.hypertrace.agent.core.instrumentation.utils.ServiceNameHeaderUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,6 +58,10 @@ public class OkHttpTracingInterceptor implements Interceptor {
     if (instrumentationConfig.httpHeaders().request()) {
       captureHeaders(span, request.headers(), HypertraceSemanticAttributes::httpRequestHeader);
     }
+
+    // Add service name header to outgoing requests
+    request = addClientSeriveNameHeader(request);
+
     captureRequestBody(span, request.body());
 
     Response response = chain.proceed(request);
@@ -148,5 +153,17 @@ public class OkHttpTracingInterceptor implements Interceptor {
         span.setAttribute(headerNameProvider.apply(name), value);
       }
     }
+  }
+
+  private static Request addClientSeriveNameHeader(Request request) {
+    // Add service name header to outgoing requests
+    request =
+        request
+            .newBuilder()
+            .addHeader(
+                ServiceNameHeaderUtils.getClientServiceKey(),
+                ServiceNameHeaderUtils.getClientServiceName())
+            .build();
+    return request;
   }
 }

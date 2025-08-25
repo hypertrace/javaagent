@@ -40,6 +40,7 @@ import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeCharsetUtils;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
+import org.hypertrace.agent.core.instrumentation.utils.ServiceNameHeaderUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,6 +59,12 @@ public class ApacheHttpClientUtils {
     addHeaders(span, headerIterator, HypertraceSemanticAttributes::httpRequestHeader);
   }
 
+  public static void addClientServiceNameHeader(HttpMessage request) {
+    request.addHeader(
+        ServiceNameHeaderUtils.getClientServiceKey(),
+        ServiceNameHeaderUtils.getClientServiceName());
+  }
+
   private static void addHeaders(
       Span span,
       HeaderIterator headerIterator,
@@ -72,6 +79,9 @@ public class ApacheHttpClientUtils {
     if (instrumentationConfig.httpHeaders().request()) {
       ApacheHttpClientUtils.addRequestHeaders(span, request.headerIterator());
     }
+
+    // Add service name header to outgoing requests
+    ApacheHttpClientUtils.addClientServiceNameHeader(request);
 
     if (instrumentationConfig.httpBody().request()
         && request instanceof HttpEntityEnclosingRequest) {

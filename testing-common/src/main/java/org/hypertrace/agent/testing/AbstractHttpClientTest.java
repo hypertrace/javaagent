@@ -40,6 +40,7 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
   private static final String GET_NO_CONTENT_PATH_FORMAT = "http://localhost:%d/get_no_content";
   private static final String GET_JSON_PATH_FORMAT = "http://localhost:%d/get_json";
   private static final String GET_GZIP_FORMAT = "http://localhost:%d/gzip";
+  private static final String VERIFY_HEADERS_FORMAT = "http://localhost:%d/verify_headers";
   private static final String HEADER_NAME = "headername";
   private static final String HEADER_VALUE = "headerValue";
   private static final Map<String, String> headers;
@@ -355,6 +356,82 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
       String respBodyCapturedInSpan =
           TEST_WRITER.getAttributesMap(clientSpan).get("http.response.body").getStringValue();
       Assertions.assertEquals(TestHttpServer.GzipHandler.RESPONSE_BODY, respBodyCapturedInSpan);
+    }
+  }
+
+  @Test
+  public void verifyServiceNameHeader()
+      throws IOException, TimeoutException, InterruptedException, ExecutionException {
+    String uri = String.format(VERIFY_HEADERS_FORMAT, testHttpServer.port());
+
+    Response response = doGetRequest(uri, headers);
+
+    Assertions.assertEquals(200, response.statusCode);
+    Assertions.assertTrue(
+        response.body.contains(TestHttpServer.HeaderVerificationHandler.SERVICE_NAME_HEADER_KEY),
+        "Response should indicate that the service name header was received");
+    // The response format is
+    // {"received_header":"ta-client-servicename","header_value":"ACTUAL_VALUE"}
+    Assertions.assertTrue(
+        response.body.contains("received_header"),
+        "Response should confirm that headers were processed");
+    Assertions.assertTrue(
+        response.body.contains("header_value"),
+        "Response should include the header value that was sent");
+
+    TEST_WRITER.waitForTraces(1);
+    List<List<Span>> traces;
+    if (hasResponseBodySpan) {
+      traces =
+          TEST_WRITER.waitForSpans(
+              2, span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER));
+    } else {
+      traces =
+          TEST_WRITER.waitForSpans(
+              1,
+              span ->
+                  !span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT)
+                      || span.getAttributesList().stream()
+                          .noneMatch(
+                              keyValue ->
+                                  keyValue.getKey().equals("http.url")
+                                      && keyValue
+                                          .getValue()
+                                          .getStringValue()
+                                          .contains("/verify_headers")));
+    }
+
+    Assertions.assertEquals(1, traces.size());
+    Span clientSpan = traces.get(0).get(0);
+    if (hasResponseBodySpan) {
+      Assertions.assertEquals(2, traces.get(0).size());
+      Span responseBodySpan = traces.get(0).get(1);
+      if (traces.get(0).get(1).getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT)) {
+        responseBodySpan = traces.get(0).get(0);
+        clientSpan = traces.get(0).get(1);
+      }
+
+      Assertions.assertNull(TEST_WRITER.getAttributesMap(clientSpan).get("http.response.body"));
+
+      Assertions.assertTrue(
+          TEST_WRITER
+              .getAttributesMap(responseBodySpan)
+              .get("http.response.body")
+              .getStringValue()
+              .contains("received_header"),
+          "Response body should confirm that echo headers reached server");
+
+    } else {
+      String clientServiceNameResponseHeaderKey =
+          "http.response.header."
+              + TestHttpServer.HeaderVerificationHandler.HEADER_ECHO_PREFIX
+              + TestHttpServer.HeaderVerificationHandler.SERVICE_NAME_HEADER_KEY;
+      Assertions.assertEquals(
+          TEST_WRITER
+              .getAttributesMap(clientSpan)
+              .get(clientServiceNameResponseHeaderKey)
+              .getStringValue(),
+          "unknown");
     }
   }
 
