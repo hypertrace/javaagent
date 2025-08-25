@@ -40,6 +40,7 @@ import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputSt
 import org.hypertrace.agent.core.instrumentation.utils.ContentLengthUtils;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeCharsetUtils;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
+import org.hypertrace.agent.core.instrumentation.utils.ServiceNameHeaderUtils;
 
 public class HttpClientRequestTracingHandler extends ChannelOutboundHandlerAdapter {
 
@@ -66,6 +67,13 @@ public class HttpClientRequestTracingHandler extends ChannelOutboundHandlerAdapt
       if (instrumentationConfig.httpHeaders().request()) {
         headersMap.forEach(span::setAttribute);
       }
+
+      // Add service name header to outgoing requests
+      httpRequest
+          .headers()
+          .add(
+              ServiceNameHeaderUtils.getClientServiceKey(),
+              ServiceNameHeaderUtils.getClientServiceName());
 
       CharSequence contentType = DataCaptureUtils.getContentType(httpRequest);
       if (instrumentationConfig.httpBody().request()

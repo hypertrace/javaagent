@@ -47,6 +47,11 @@ public class InstrumentationConfigImpl implements InstrumentationConfig {
   }
 
   @Override
+  public String getServiceName() {
+    return agentConfig.getServiceName().getValue();
+  }
+
+  @Override
   public Message httpHeaders() {
     return this.httpHeaders;
   }
