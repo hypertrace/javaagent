@@ -4,7 +4,7 @@ plugins {
   id("com.diffplug.spotless") version "5.2.0" apply false
   id("org.hypertrace.publish-maven-central-plugin") version "1.1.1"
   id("org.hypertrace.ci-utils-plugin") version "0.4.0"
-  id("org.gradle.test-retry") version "1.2.0" apply false
+  id("org.gradle.test-retry") version "1.5.0" apply false
   id("org.owasp.dependencycheck") version "7.1.1"
 }
 
