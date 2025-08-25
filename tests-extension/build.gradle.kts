@@ -36,14 +36,14 @@ tasks{
 
         // relocate these in sync with
         // https://github.com/hypertrace/javaagent/blob/main/instrumentation/build.gradle.kts#L56-L82
-        relocate("com.fasterxml.jackson", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.com.fasterxml.jackson")
-        relocate("com.google", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.com.google")
-        relocate("google.protobuf", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.google.protobuf")
-        relocate("org.checkerframework", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.com.checkerframework") // transitive dependency form ht-filter-api
-        relocate("org.yaml", "io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.org.yaml") // transitive dependency form ht-filter-api
-        relocate("com.blogspot.mydailyjava.weaklockfree", "io.opentelemetry.instrumentation.api.internal.shaded.weaklockfree") // transitive dependency from ht-filter-api
-        relocate("org.slf4j", "io.opentelemetry.javaagent.slf4j")
-        relocate("java.util.logging.Logger", "io.opentelemetry.javaagent.bootstrap.PatchLogger")
+        relocate("com.fasterxml.jackson", "org.hypertrace.io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.com.fasterxml.jackson")
+        relocate("com.google", "org.hypertrace.io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.com.google")
+        relocate("google.protobuf", "org.hypertrace.io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.google.protobuf")
+        relocate("org.checkerframework", "org.hypertrace.io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.com.checkerframework") // transitive dependency form ht-filter-api
+        relocate("org.yaml", "org.hypertrace.io.opentelemetry.javaagent.shaded.org.hypertrace.shaded.org.yaml") // transitive dependency form ht-filter-api
+        relocate("com.blogspot.mydailyjava.weaklockfree", "org.hypertrace.io.opentelemetry.instrumentation.api.internal.shaded.weaklockfree") // transitive dependency from ht-filter-api
+        relocate("org.slf4j", "org.hypertrace.io.opentelemetry.javaagent.slf4j")
+        relocate("java.util.logging.Logger", "org.hypertrace.io.opentelemetry.javaagent.bootstrap.PatchLogger")
 
         relocate("okhttp3", "org.hypertrace.javaagent.filter.com.squareup.okhttp3")
         relocate("okio", "org.hypertrace.javaagent.filter.com.squareup.okio") // transitive dependency from okhttp
@@ -51,13 +51,14 @@ tasks{
 
         // relocate OpenTelemetry API in sync with
         // https://github.com/hypertrace/javaagent/blob/main/javaagent/build.gradle.kts#L58-L63
-        relocate("io.opentelemetry.api", "io.opentelemetry.javaagent.shaded.io.opentelemetry.api")
-        relocate("io.opentelemetry.semconv", "io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv")
-        relocate("io.opentelemetry.spi", "io.opentelemetry.javaagent.shaded.io.opentelemetry.spi")
-        relocate("io.opentelemetry.context", "io.opentelemetry.javaagent.shaded.io.opentelemetry.context")
-        relocate("io.opentelemetry.extension.kotlin", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.kotlin")
-        relocate("io.opentelemetry.extension.aws", "io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.aws")
+        relocate("io.opentelemetry.api", "org.hypertrace.io.opentelemetry.javaagent.shaded.io.opentelemetry.api")
+        relocate("io.opentelemetry.semconv", "org.hypertrace.io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv")
+        relocate("io.opentelemetry.spi", "org.hypertrace.io.opentelemetry.javaagent.shaded.io.opentelemetry.spi")
+        relocate("io.opentelemetry.context", "org.hypertrace.io.opentelemetry.javaagent.shaded.io.opentelemetry.context")
+        relocate("io.opentelemetry.extension.kotlin", "org.hypertrace.io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.kotlin")
+        relocate("io.opentelemetry.extension.aws", "org.hypertrace.io.opentelemetry.javaagent.shaded.io.opentelemetry.extension.aws")
 
+        relocate("io.opentelemetry", "org.hypertrace.io.opentelemetry")
 
         manifest {
             attributes.put("Implementation-Title", "test-filter-impl")
