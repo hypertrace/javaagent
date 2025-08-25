@@ -110,7 +110,6 @@ public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapte
         DataCaptureUtils.captureBody(
             span, channel, AttributeKeys.REQUEST_BODY_BUFFER, msg, null, charset);
       }
-
     }
     ctx.fireChannelRead(msg);
   }

@@ -30,11 +30,10 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.AttributeKeys;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.DataCaptureUtils;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.client.OtelHttpClientRequestTracingHandler;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
-
-import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_0.client.OtelHttpClientRequestTracingHandler;
 import org.hypertrace.agent.core.config.InstrumentationConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
@@ -61,7 +60,6 @@ public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapte
       return;
     }
 
-
     // Store the server context in our ThreadLocal for later use by client handlers
     // This is CRITICAL for proper context propagation to client spans
     OtelHttpClientRequestTracingHandler.storeServerContext(context);
@@ -81,8 +79,8 @@ public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapte
 
         CharSequence contentType = DataCaptureUtils.getContentType(httpRequest);
         if (instrumentationConfig.httpBody().request()
-                && contentType != null
-                && ContentTypeUtils.shouldCapture(contentType.toString())) {
+            && contentType != null
+            && ContentTypeUtils.shouldCapture(contentType.toString())) {
 
           CharSequence contentLengthHeader = DataCaptureUtils.getContentLength(httpRequest);
           int contentLength = ContentLengthUtils.parseLength(contentLengthHeader);
@@ -93,7 +91,7 @@ public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapte
           // set the buffer to capture response body
           // the buffer is used byt captureBody method
           Attribute<BoundedByteArrayOutputStream> bufferAttr =
-                  ctx.channel().attr(AttributeKeys.REQUEST_BODY_BUFFER);
+              ctx.channel().attr(AttributeKeys.REQUEST_BODY_BUFFER);
           bufferAttr.set(BoundedBuffersFactory.createStream(contentLength, charset));
 
           channel.attr(AttributeKeys.CHARSET).set(charset);
@@ -101,13 +99,13 @@ public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapte
       }
 
       if ((msg instanceof HttpContent || msg instanceof ByteBuf)
-              && instrumentationConfig.httpBody().request()) {
+          && instrumentationConfig.httpBody().request()) {
         Charset charset = channel.attr(AttributeKeys.CHARSET).get();
         if (charset == null) {
           charset = ContentTypeCharsetUtils.getDefaultCharset();
         }
         DataCaptureUtils.captureBody(
-                span, channel, AttributeKeys.REQUEST_BODY_BUFFER, msg, null, charset);
+            span, channel, AttributeKeys.REQUEST_BODY_BUFFER, msg, null, charset);
       }
     }
 

@@ -142,7 +142,7 @@ public class NettyChannelPipelineInstrumentation implements TypeInstrumentation 
               io.opentelemetry.javaagent.instrumentation.netty.v4_0.client
                   .HttpClientRequestTracingHandler.class
                   .getName(),
-                  new OtelHttpClientRequestTracingHandler());
+              new OtelHttpClientRequestTracingHandler());
         } else if (handler instanceof HttpRequestEncoder) {
           pipeline.addLast(
               HttpClientRequestTracingHandler.class.getName(),
