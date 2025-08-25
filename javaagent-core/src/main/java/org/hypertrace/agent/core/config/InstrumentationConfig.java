@@ -27,6 +27,9 @@ public interface InstrumentationConfig {
   /** Maximum capture body size in bytes. */
   int maxBodySizeBytes();
 
+  /** Service name. */
+  String getServiceName();
+
   /** Data capture for HTTP headers. */
   Message httpHeaders();
 

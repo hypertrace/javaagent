@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-package org.hypertrace.agent.otel.extensions.config;
+package org.hypertrace.agent.core.instrumentation.utils;
+
+import org.hypertrace.agent.core.config.InstrumentationConfig;
 
 /** Utility class for adding service name header to outgoing requests (exit calls). */
 public class ServiceNameHeaderUtils {
 
   private static final String SERVICE_NAME_HEADER = "ta-client-servicename";
+
+  private static final String serviceName = InstrumentationConfig.ConfigProvider.get().getServiceName();
 
   private ServiceNameHeaderUtils() {}
 
@@ -33,6 +37,6 @@ public class ServiceNameHeaderUtils {
    * @return the service name configured in the agent
    */
   public static String getClientServiceName() {
-    return HypertraceConfig.get().getServiceName().getValue();
+    return serviceName;
   }
 }

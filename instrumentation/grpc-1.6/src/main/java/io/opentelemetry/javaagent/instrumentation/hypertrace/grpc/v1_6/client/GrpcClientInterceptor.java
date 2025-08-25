@@ -30,7 +30,7 @@ import io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.v1_6.GrpcInstr
 import io.opentelemetry.javaagent.instrumentation.hypertrace.grpc.v1_6.GrpcSpanDecorator;
 import org.hypertrace.agent.core.config.InstrumentationConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
-import org.hypertrace.agent.otel.extensions.config.ServiceNameHeaderUtils;
+import org.hypertrace.agent.core.instrumentation.utils.ServiceNameHeaderUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

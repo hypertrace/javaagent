@@ -27,7 +27,6 @@ val versions: Map<String, String> by extra
 val nettyVersion = "4.0.28.Final"
 
 dependencies {
-    api(project(":otel-extensions"))
     implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-vertx-web-3.0:${versions["opentelemetry_java_agent"]}")
     implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-vertx-http-client-3.0:${versions["opentelemetry_java_agent"]}")
     implementation("io.opentelemetry.javaagent.instrumentation:opentelemetry-javaagent-vertx-http-client-common:${versions["opentelemetry_java_agent"]}")

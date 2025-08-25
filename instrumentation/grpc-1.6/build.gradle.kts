@@ -59,7 +59,6 @@ val grpcVersion = "1.6.0"
 
 dependencies {
     api("io.opentelemetry.instrumentation:opentelemetry-grpc-1.6:${versions["opentelemetry_java_agent"]}")
-    api(project(":otel-extensions"))
     implementation(project(":instrumentation:grpc-common"))
     implementation(project(":shaded-protobuf-java-util", "shadow"))
 

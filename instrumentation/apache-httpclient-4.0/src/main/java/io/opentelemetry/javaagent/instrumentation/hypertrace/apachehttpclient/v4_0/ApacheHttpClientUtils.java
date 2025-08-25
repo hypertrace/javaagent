@@ -40,7 +40,7 @@ import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeCharsetUtils;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
-import org.hypertrace.agent.otel.extensions.config.ServiceNameHeaderUtils;
+import org.hypertrace.agent.core.instrumentation.utils.ServiceNameHeaderUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

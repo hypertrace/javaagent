@@ -43,7 +43,7 @@ import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
-import org.hypertrace.agent.otel.extensions.config.ServiceNameHeaderUtils;
+import org.hypertrace.agent.core.instrumentation.utils.ServiceNameHeaderUtils;
 
 public class HttpRequestInstrumentation implements TypeInstrumentation {
 

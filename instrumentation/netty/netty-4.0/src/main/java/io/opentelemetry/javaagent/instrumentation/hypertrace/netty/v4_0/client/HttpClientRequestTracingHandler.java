@@ -40,7 +40,7 @@ import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputSt
 import org.hypertrace.agent.core.instrumentation.utils.ContentLengthUtils;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeCharsetUtils;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
-import org.hypertrace.agent.otel.extensions.config.ServiceNameHeaderUtils;
+import org.hypertrace.agent.core.instrumentation.utils.ServiceNameHeaderUtils;
 
 public class HttpClientRequestTracingHandler extends ChannelOutboundHandlerAdapter {
 
