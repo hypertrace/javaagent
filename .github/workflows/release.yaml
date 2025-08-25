@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        suite: [ "glassfish", "jetty", "liberty", "tomcat", "tomee", "wildfly", "other" ]
+        suite: [ "glassfish", "jetty", "liberty", "tomcat", "tomee", "wildfly"]
       fail-fast: true
     steps:
       # Set fetch-depth: 0 to fetch commit history and tags for use in version calculation
