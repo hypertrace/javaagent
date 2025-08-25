@@ -23,7 +23,8 @@ public class ServiceNameHeaderUtils {
 
   private static final String SERVICE_NAME_HEADER = "ta-client-servicename";
 
-  private static final String serviceName = InstrumentationConfig.ConfigProvider.get().getServiceName();
+  private static final String serviceName =
+      InstrumentationConfig.ConfigProvider.get().getServiceName();
 
   private ServiceNameHeaderUtils() {}
 
