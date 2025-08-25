@@ -41,6 +41,7 @@ val versions: Map<String, String> by extra
 
 dependencies {
     api(project(":instrumentation:java-streams"))
+
     library("org.apache.httpcomponents:httpclient:4.0")
     testImplementation(project(":testing-common"))
 }

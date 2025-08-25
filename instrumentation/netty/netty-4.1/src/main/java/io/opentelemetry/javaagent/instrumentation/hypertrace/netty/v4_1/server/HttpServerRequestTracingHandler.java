@@ -26,9 +26,12 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.util.Attribute;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.netty.v4_1.internal.ServerContext;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.AttributeKeys;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.DataCaptureUtils;
+import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.client.OtelHttpClientRequestTracingHandler;
 import java.nio.charset.Charset;
 import java.util.Deque;
 import java.util.HashMap;
@@ -57,49 +60,57 @@ public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapte
       ctx.fireChannelRead(msg);
       return;
     }
-    Span span = Span.fromContext(serverContexts.element().context());
 
-    if (msg instanceof HttpRequest) {
-      HttpRequest httpRequest = (HttpRequest) msg;
+    Context context = serverContexts.element().context();
 
-      Map<String, String> headersMap = headersToMap(httpRequest);
-      if (instrumentationConfig.httpHeaders().request()) {
-        headersMap.forEach(span::setAttribute);
+    // Store the server context in our ThreadLocal for later use by client handlers
+    // This is CRITICAL for proper context propagation to client spans
+    OtelHttpClientRequestTracingHandler.storeServerContext(context);
+
+    try (Scope ignored = context.makeCurrent()) {
+      Span span = Span.fromContext(context);
+
+      if (msg instanceof HttpRequest) {
+        HttpRequest httpRequest = (HttpRequest) msg;
+
+        Map<String, String> headersMap = headersToMap(httpRequest);
+        if (instrumentationConfig.httpHeaders().request()) {
+          headersMap.forEach(span::setAttribute);
+        }
+        // used by blocking handler
+        channel.attr(AttributeKeys.REQUEST_HEADERS).set(headersMap);
+
+        CharSequence contentType = DataCaptureUtils.getContentType(httpRequest);
+        if (instrumentationConfig.httpBody().request()
+            && contentType != null
+            && ContentTypeUtils.shouldCapture(contentType.toString())) {
+
+          CharSequence contentLengthHeader = DataCaptureUtils.getContentLength(httpRequest);
+          int contentLength = ContentLengthUtils.parseLength(contentLengthHeader);
+
+          String charsetString = ContentTypeUtils.parseCharset(contentType.toString());
+          Charset charset = ContentTypeCharsetUtils.toCharset(charsetString);
+
+          // set the buffer to capture response body
+          // the buffer is used byt captureBody method
+          Attribute<BoundedByteArrayOutputStream> bufferAttr =
+              ctx.channel().attr(AttributeKeys.REQUEST_BODY_BUFFER);
+          bufferAttr.set(BoundedBuffersFactory.createStream(contentLength, charset));
+
+          channel.attr(AttributeKeys.PROVIDED_CHARSET).set(charset);
+        }
       }
-      // used by blocking handler
-      channel.attr(AttributeKeys.REQUEST_HEADERS).set(headersMap);
 
-      CharSequence contentType = DataCaptureUtils.getContentType(httpRequest);
-      if (instrumentationConfig.httpBody().request()
-          && contentType != null
-          && ContentTypeUtils.shouldCapture(contentType.toString())) {
-
-        CharSequence contentLengthHeader = DataCaptureUtils.getContentLength(httpRequest);
-        int contentLength = ContentLengthUtils.parseLength(contentLengthHeader);
-
-        String charsetString = ContentTypeUtils.parseCharset(contentType.toString());
-        Charset charset = ContentTypeCharsetUtils.toCharset(charsetString);
-
-        // set the buffer to capture response body
-        // the buffer is used byt captureBody method
-        Attribute<BoundedByteArrayOutputStream> bufferAttr =
-            ctx.channel().attr(AttributeKeys.REQUEST_BODY_BUFFER);
-        bufferAttr.set(BoundedBuffersFactory.createStream(contentLength, charset));
-
-        channel.attr(AttributeKeys.PROVIDED_CHARSET).set(charset);
+      if ((msg instanceof HttpContent || msg instanceof ByteBuf)
+          && instrumentationConfig.httpBody().request()) {
+        Charset charset = channel.attr(AttributeKeys.PROVIDED_CHARSET).get();
+        if (charset == null) {
+          charset = ContentTypeCharsetUtils.getDefaultCharset();
+        }
+        DataCaptureUtils.captureBody(
+            span, channel, AttributeKeys.REQUEST_BODY_BUFFER, msg, null, charset);
       }
     }
-
-    if ((msg instanceof HttpContent || msg instanceof ByteBuf)
-        && instrumentationConfig.httpBody().request()) {
-      Charset charset = channel.attr(AttributeKeys.PROVIDED_CHARSET).get();
-      if (charset == null) {
-        charset = ContentTypeCharsetUtils.getDefaultCharset();
-      }
-      DataCaptureUtils.captureBody(
-          span, channel, AttributeKeys.REQUEST_BODY_BUFFER, msg, null, charset);
-    }
-
     ctx.fireChannelRead(msg);
   }
 

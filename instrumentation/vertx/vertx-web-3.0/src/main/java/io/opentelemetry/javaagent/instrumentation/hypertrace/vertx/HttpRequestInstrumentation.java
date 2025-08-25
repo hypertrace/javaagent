@@ -43,6 +43,7 @@ import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
 import org.hypertrace.agent.core.instrumentation.buffer.BoundedCharArrayWriter;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
+import org.hypertrace.agent.core.instrumentation.utils.ServiceNameHeaderUtils;
 
 public class HttpRequestInstrumentation implements TypeInstrumentation {
 
@@ -93,6 +94,11 @@ public class HttpRequestInstrumentation implements TypeInstrumentation {
         return;
       }
 
+      request
+          .headers()
+          .add(
+              ServiceNameHeaderUtils.getClientServiceKey(),
+              ServiceNameHeaderUtils.getClientServiceName());
       Contexts contexts = VirtualField.find(HttpClientRequest.class, Contexts.class).get(request);
       if (contexts == null) {
         return;
