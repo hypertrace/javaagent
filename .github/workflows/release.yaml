@@ -112,7 +112,7 @@ jobs:
         run: |
           echo "Releasing version:" && ./gradlew printVersion clean
           ORG_GRADLE_PROJECT_signingKey=$(echo $SIGNING_KEY | base64 -d) ./gradlew publish
-          ./gradlew closeAndReleaseRepository
+          ./gradlew publish
           auth=$(echo -n "${ORG_GRADLE_PROJECT_ossrhUsername}:${ORG_GRADLE_PROJECT_ossrhPassword}" | base64)
           curl -f -X POST -H "Authorization: Bearer ${auth}" https://ossrh-staging-api.central.sonatype.com/manual/upload/repository/org.hypertrace
         env:
