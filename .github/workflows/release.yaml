@@ -112,9 +112,10 @@ jobs:
         run: |
           echo "Releasing version:" && ./gradlew printVersion clean
           ORG_GRADLE_PROJECT_signingKey=$(echo $SIGNING_KEY | base64 -d) ./gradlew publish
-          ./gradlew publish
           auth=$(echo -n "${ORG_GRADLE_PROJECT_ossrhUsername}:${ORG_GRADLE_PROJECT_ossrhPassword}" | base64)
-          curl -f -X POST -H "Authorization: Bearer ${auth}" https://ossrh-staging-api.central.sonatype.com/manual/upload/repository/org.hypertrace
+          curl -s -f -H "Authorization: Bearer ${auth}" "https://ossrh-staging-api.central.sonatype.com/manual/search/repositories?ip=any&profile_id=org.hypertrace" |  jq
+          curl -f -X POST -H "Authorization: Bearer ${auth}" "https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/org.hypertrace?publishing_type=automatic"
+          curl -s -f -H "Authorization: Bearer ${auth}" "https://ossrh-staging-api.central.sonatype.com/manual/search/repositories?ip=any&profile_id=org.hypertrace" |  jq
         env:
           JVM_OPTS: -Xmx1g --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED
           TERM: dumb
