@@ -36,7 +36,6 @@ import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.client.HttpClientRequestTracingHandler;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.client.HttpClientResponseTracingHandler;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.client.HttpClientTracingHandler;
-import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.client.OtelHttpClientRequestTracingHandler;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.server.HttpServerBlockingRequestHandler;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.server.HttpServerRequestTracingHandler;
 import io.opentelemetry.javaagent.instrumentation.hypertrace.netty.v4_1.server.HttpServerResponseTracingHandler;
@@ -134,13 +133,14 @@ public class NettyChannelPipelineInstrumentation implements TypeInstrumentation 
               HttpClientTracingHandler.class.getName(),
               new HttpClientTracingHandler());
 
-          // add our custom request handler to start spans with proper context propagation
+          // add OTEL request handler to start spans
           pipeline.addAfter(
               HttpClientTracingHandler.class.getName(),
               io.opentelemetry.instrumentation.netty.v4_1.internal.client.HttpClientTracingHandler
                   .class
                   .getName(),
-              new OtelHttpClientRequestTracingHandler(NettyClientSingletons.instrumenter()));
+              new io.opentelemetry.instrumentation.netty.v4_1.internal.client
+                  .HttpClientRequestTracingHandler(NettyClientSingletons.instrumenter()));
         } else if (handler instanceof HttpRequestEncoder) {
           pipeline.addLast(
               HttpClientRequestTracingHandler.class.getName(),
