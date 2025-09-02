@@ -120,6 +120,16 @@ public class HttpClientResponseTracingHandler extends ChannelInboundHandlerAdapt
       span.setStatus(code >= 100 && code < 400 ? StatusCode.UNSET : StatusCode.ERROR);
     }
     if (msg instanceof LastHttpContent) {
+      // When we end the span, we should set the client context and client parent attr to null.
+      // so that for the next request a new context is made and stored in channel.
+      ctx.channel()
+          .attr(io.opentelemetry.instrumentation.netty.v4_1.internal.AttributeKeys.CLIENT_CONTEXT)
+          .set(null);
+      ctx.channel()
+          .attr(
+              io.opentelemetry.instrumentation.netty.v4_1.internal.AttributeKeys
+                  .CLIENT_PARENT_CONTEXT)
+          .set(null);
       span.end();
     }
   }
