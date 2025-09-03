@@ -45,6 +45,14 @@ jobs:
         env:
           JVM_OPTS: -Xmx1g --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED
           TERM: dumb
+
+      - name: Upload jar as pipeline artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: javaagent
+          path: javaagent/build/libs/*-all.jar
+          if-no-files-found: error
+          retention-days: 5
   muzzle:
     runs-on: ubuntu-latest
     steps:

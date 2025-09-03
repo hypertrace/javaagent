@@ -74,6 +74,7 @@ public final class HypertracePropertySource implements AutoConfigurationCustomiz
     configProperties.put(
         "otel.instrumentation.opentelemetry-instrumentation-annotations.enabled", "true");
     configProperties.put("otel.instrumentation.opentelemetry-api.enabled", "true");
+    configProperties.put("otel.instrumentation.executors.enabled", "true");
 
     return Collections.unmodifiableMap(configProperties);
   }
