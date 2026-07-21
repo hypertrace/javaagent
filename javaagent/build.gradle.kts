@@ -5,6 +5,14 @@ plugins {
 }
 
 val versions: Map<String, String> by extra
+val jacksonVersion: String = versions["jackson"]!!
+
+configurations {
+    create("otelInstJacksonOverlay") {
+        isCanBeResolved = true
+        isCanBeConsumed = false
+    }
+}
 
 dependencies {
     // pin released version or snapshot with pinned version
@@ -13,6 +21,11 @@ dependencies {
     // https://dl.bintray.com/open-telemetry/maven/
     implementation("io.opentelemetry.javaagent", "opentelemetry-javaagent", version = "${versions["opentelemetry_java_agent_all"]}")
     implementation(project(":filter-api"))
+
+    add("otelInstJacksonOverlay", "com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion")
+    add("otelInstJacksonOverlay", "com.fasterxml.jackson.core:jackson-core:$jacksonVersion")
+    add("otelInstJacksonOverlay", "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
+    add("otelInstJacksonOverlay", "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
 }
 
 base.archivesBaseName = "hypertrace-agent"
@@ -49,6 +62,14 @@ tasks.register<Copy>("extractOtelAgentJarInstClassdata") {
 
     from(zipTree(otelJavaAgentJar)) {
         include("inst/**")
+        // OTel ships Jackson 2.16.x in inst/; overlay with jacksonVersion after relocation
+        exclude("inst/com/fasterxml/**")
+        exclude("inst/org/yaml/**")
+        exclude("inst/META-INF/maven/com.fasterxml.jackson.core/**")
+        exclude("inst/META-INF/maven/com.fasterxml.jackson.dataformat/**")
+        exclude("inst/META-INF/maven/org.yaml/**")
+        exclude("inst/META-INF/versions/*/com/fasterxml/**")
+        exclude("inst/META-INF/versions/*/org/yaml/**")
         rename("(^.*)\\.classdata$", "$1.class")
     }
 
@@ -84,10 +105,35 @@ tasks.register<Copy>("extractRelocatedOtelClasses") {
     into("$buildDir/tmp/relocated-otel-classes")
 }
 
+// Step 3c: Replace OTel's embedded Jackson with jacksonVersion
+tasks.register<Copy>("overlayOtelInstJackson") {
+    description = "Replaces OTel embedded Jackson/SnakeYAML in inst/ with $jacksonVersion"
+
+    dependsOn("extractRelocatedOtelClasses")
+
+    val overlayJars = configurations["otelInstJacksonOverlay"].files
+
+    overlayJars.forEach { jar ->
+        from(zipTree(jar)) {
+            include("com/fasterxml/**")
+            include("org/yaml/**")
+            include("META-INF/maven/com.fasterxml.jackson.core/**")
+            include("META-INF/maven/com.fasterxml.jackson.dataformat/**")
+            include("META-INF/maven/org.yaml/**")
+            include("META-INF/versions/**/com/fasterxml/**")
+            include("META-INF/versions/**/org/yaml/**")
+            exclude("**/module-info.class")
+        }
+    }
+
+    into("$buildDir/tmp/relocated-otel-classes/inst/org/hypertrace")
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
 tasks.register("extractOtelInstrumentationToInst") {
     description = "Removes empty directories from the relocated classes directory"
 
-    dependsOn("extractRelocatedOtelClasses")
+    dependsOn("overlayOtelInstJackson")
 
     doLast {
         // Find and delete empty directories
