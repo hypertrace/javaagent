@@ -9,7 +9,7 @@ plugins {
 sourceSets {
     main {
         proto {
-            srcDir("src/main/proto")
+            setSrcDirs(listOf("src/main/proto/proto"))
             exclude("gen/go/**")
         }
     }
