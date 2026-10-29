@@ -75,7 +75,6 @@ dependencies {
     // fix vulnerability
     constraints {
         api("com.google.code.gson:gson:2.8.9")
-        api("com.google.guava:guava:33.7.2-jre")
     }
 
     testImplementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:${versions["opentelemetry"]}")

@@ -9,7 +9,6 @@ dependencies {
     // fix vulnerability
     constraints {
         implementation("com.google.code.gson:gson:2.8.9")
-        implementation("com.google.guava:guava:33.7.2-jre")
     }
 }
 
