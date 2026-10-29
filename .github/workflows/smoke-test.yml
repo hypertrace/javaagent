@@ -14,7 +14,7 @@ jobs:
     strategy: 
       matrix:
         suite: [ "glassfish", "jetty", "liberty", "tomcat", "tomee", "wildfly"]
-      fail-fast: true  
+      fail-fast: false
     steps:
        # Set fetch-depth: 0 to fetch commit history and tags for use in version calculation
       - name: Check out code
@@ -49,3 +49,22 @@ jobs:
         env: 
           JVM_OPTS: -Xmx1g --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED
           TERM: dumb
+
+      - name: print smoke test results
+        if: failure()
+        run: |
+          for f in smoke-tests/build/test-results/test/*.xml; do
+            echo "::group::$f"
+            cat "$f"
+            echo "::endgroup::"
+          done
+
+      - name: upload smoke test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test-reports-${{ matrix.suite }}
+          path: |
+            smoke-tests/build/reports/tests/test/
+            smoke-tests/build/test-results/test/
+          if-no-files-found: ignore

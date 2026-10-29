@@ -35,6 +35,15 @@ tasks.test {
         junitXml.isOutputPerTestCase = true
     }
 
+    testLogging {
+        events("started", "passed", "skipped", "failed", "standard_out", "standard_error")
+        showStandardStreams = true
+        showExceptions = true
+        showCauses = true
+        showStackTraces = true
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+    }
+
     maxParallelForks = 2
 
     var suites : HashMap<String, String>
