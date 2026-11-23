@@ -23,7 +23,9 @@ class ContentTypeUtilsTest {
 
   @Test
   public void shouldCapture() {
-    String[] valid = {"jSoN", "graphQL", "x-www-forM-urlencoded"};
+    String[] valid = {
+      "jSoN", "graphQL", "x-www-forM-urlencoded", "multipart/form-data; boundary=b"
+    };
     for (String contentType : valid) {
       Assertions.assertTrue(ContentTypeUtils.shouldCapture(contentType), contentType);
     }
@@ -31,11 +33,30 @@ class ContentTypeUtilsTest {
 
   @Test
   public void shouldNotCapture() {
-    String[] valid = {
-      "text/plain",
-    };
+    String[] valid = {"text/plain", "multipart/mixed; boundary=b", "application/octet-stream"};
     for (String contentType : valid) {
       Assertions.assertFalse(ContentTypeUtils.shouldCapture(contentType), contentType);
+    }
+  }
+
+  @Test
+  public void defaultContentTypesIncludeMultipartFormData() {
+    Assertions.assertTrue(
+        java.util.Arrays.asList(ContentTypeUtils.getDefaultContentTypes())
+            .contains("multipart/form-data"));
+  }
+
+  @Test
+  public void isMultipartFormData() {
+    Assertions.assertTrue(ContentTypeUtils.isMultipartFormData("multipart/form-data; boundary=b"));
+    Assertions.assertTrue(ContentTypeUtils.isMultipartFormData(" Multipart/Form-Data"));
+  }
+
+  @Test
+  public void isNotMultipartFormData() {
+    String[] values = {null, "", "multipart/mixed", "application/json", "text/multipart/form-data"};
+    for (String contentType : values) {
+      Assertions.assertFalse(ContentTypeUtils.isMultipartFormData(contentType), contentType);
     }
   }
 

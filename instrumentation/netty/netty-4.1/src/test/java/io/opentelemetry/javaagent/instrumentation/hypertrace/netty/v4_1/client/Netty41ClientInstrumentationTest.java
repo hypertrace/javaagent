@@ -38,6 +38,11 @@ public class Netty41ClientInstrumentationTest extends AbstractHttpClientTest {
   }
 
   @Override
+  protected boolean capturesMultipartAsBase64() {
+    return true;
+  }
+
+  @Override
   public Response doPostRequest(
       String uri, Map<String, String> headers, String body, String contentType)
       throws ExecutionException, InterruptedException {

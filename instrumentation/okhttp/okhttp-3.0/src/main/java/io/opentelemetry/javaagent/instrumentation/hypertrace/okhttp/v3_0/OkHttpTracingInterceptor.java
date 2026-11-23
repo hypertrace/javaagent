@@ -30,11 +30,14 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okio.Buffer;
+import okio.BufferedSink;
 import okio.BufferedSource;
 import okio.GzipSource;
 import okio.Okio;
 import org.hypertrace.agent.core.config.InstrumentationConfig;
 import org.hypertrace.agent.core.instrumentation.HypertraceSemanticAttributes;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedBuffersFactory;
+import org.hypertrace.agent.core.instrumentation.buffer.BoundedByteArrayOutputStream;
 import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 import org.hypertrace.agent.core.instrumentation.utils.ServiceNameHeaderUtils;
 import org.slf4j.Logger;
@@ -83,11 +86,33 @@ public class OkHttpTracingInterceptor implements Interceptor {
       return;
     }
     try {
+      if (ContentTypeUtils.isMultipartFormData(mediaType.toString())) {
+        captureMultipartRequestBody(span, requestBody);
+        return;
+      }
       Buffer buffer = new Buffer();
       requestBody.writeTo(buffer);
       span.setAttribute(HypertraceSemanticAttributes.HTTP_REQUEST_BODY, buffer.readUtf8());
     } catch (IOException e) {
       log.error("Could not read request requestBody", e);
+    }
+  }
+
+  /**
+   * Multipart bodies are file uploads and can be large, and carry binary parts: write straight into
+   * a bounded buffer (the rest is dropped) so memory stays capped, and capture the raw bytes as
+   * base64.
+   */
+  private static void captureMultipartRequestBody(Span span, RequestBody requestBody)
+      throws IOException {
+    BoundedByteArrayOutputStream bounded =
+        BoundedBuffersFactory.createStream(StandardCharsets.UTF_8);
+    BufferedSink sink = Okio.buffer(Okio.sink(bounded));
+    requestBody.writeTo(sink);
+    sink.flush();
+    if (bounded.size() > 0) {
+      span.setAttribute(
+          HypertraceSemanticAttributes.HTTP_REQUEST_BODY.getKey() + ".base64", bounded.toBase64());
     }
   }
 

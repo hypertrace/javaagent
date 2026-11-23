@@ -16,6 +16,7 @@
 
 package io.opentelemetry.javaagent.instrumentation.hypertrace.undertow.v1_4.utils;
 
+import io.opentelemetry.api.common.AttributeKey;
 import io.undertow.server.ExchangeCompletionListener;
 import io.undertow.server.HttpServerExchange;
 import java.io.UnsupportedEncodingException;
@@ -37,6 +38,17 @@ public final class BodyCapturingExchangeCompletionListener implements ExchangeCo
 
   @Override
   public void exchangeEvent(HttpServerExchange exchange, NextListener nextListener) {
+    if (spanAndBuffer.byteArrayBuffer.isMultipartFormData()) {
+      // multipart bodies carry binary file parts: keep the raw bytes, not the decoded text
+      if (spanAndBuffer.byteArrayBuffer.size() > 0) {
+        spanAndBuffer.span.setAttribute(
+            AttributeKey.stringKey(
+                HypertraceSemanticAttributes.HTTP_REQUEST_BODY.getKey() + ".base64"),
+            spanAndBuffer.byteArrayBuffer.toBase64());
+      }
+      nextListener.proceed();
+      return;
+    }
     final String body;
     try {
       body = spanAndBuffer.byteArrayBuffer.toStringWithSuppliedCharset();

@@ -23,6 +23,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +43,7 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
   private static final String GET_JSON_PATH_FORMAT = "http://localhost:%d/get_json";
   private static final String GET_GZIP_FORMAT = "http://localhost:%d/gzip";
   private static final String VERIFY_HEADERS_FORMAT = "http://localhost:%d/verify_headers";
+  private static final int DEFAULT_BODY_MAX_SIZE_BYTES = 131072;
   private static final String HEADER_NAME = "headername";
   private static final String HEADER_VALUE = "headerValue";
   private static final Map<String, String> headers;
@@ -57,6 +60,15 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
 
   public AbstractHttpClientTest(boolean hasResponseBodySpan) {
     this.hasResponseBodySpan = hasResponseBodySpan;
+  }
+
+  /**
+   * Whether the instrumentation under test captures multipart/form-data request bodies as base64 of
+   * the raw bytes ({@code http.request.body.base64}). Clients that do not yet are only checked for
+   * not breaking the request.
+   */
+  protected boolean capturesMultipartAsBase64() {
+    return false;
   }
 
   @BeforeAll
@@ -216,6 +228,74 @@ public abstract class AbstractHttpClientTest extends AbstractInstrumenterTest {
 
     assertHeaders(clientSpan);
     assertNoBodies(clientSpan);
+  }
+
+  @Test
+  public void postMultipartFormData_echo()
+      throws TimeoutException, InterruptedException, IOException, ExecutionException {
+    assertMultipartEcho(
+        "--b\r\nContent-Disposition: form-data; name=\"note\"\r\n\r\nhello\r\n--b--\r\n");
+  }
+
+  /** Capturing must never break or alter the application's request, whatever the body is. */
+  @Test
+  public void postMalformedMultipartFormData_echo()
+      throws TimeoutException, InterruptedException, IOException, ExecutionException {
+    assertMultipartEcho("--b\r\nContent-Disp");
+  }
+
+  /** Uploads larger than the body cap are truncated on raw bytes and must still go through. */
+  @Test
+  public void postLargeMultipartFormData_echo()
+      throws TimeoutException, InterruptedException, IOException, ExecutionException {
+    StringBuilder body =
+        new StringBuilder("--b\r\nContent-Disposition: form-data; name=\"f\"\r\n\r\n");
+    for (int i = 0; i < 2 * DEFAULT_BODY_MAX_SIZE_BYTES; i++) {
+      body.append('x');
+    }
+    body.append("\r\n--b--\r\n");
+    assertMultipartEcho(body.toString());
+  }
+
+  private void assertMultipartEcho(String body)
+      throws TimeoutException, InterruptedException, IOException, ExecutionException {
+    String uri = String.format(ECHO_PATH_FORMAT, testHttpServer.port());
+
+    Response response = doPostRequest(uri, headers, body, "multipart/form-data; boundary=b");
+
+    Assertions.assertEquals(200, response.statusCode);
+    Assertions.assertEquals(body, response.body);
+
+    if (!capturesMultipartAsBase64()) {
+      return;
+    }
+    TEST_WRITER.waitForTraces(1);
+    List<List<Span>> traces =
+        TEST_WRITER.waitForSpans(
+            hasResponseBodySpan ? 2 : 1,
+            span ->
+                hasResponseBodySpan
+                    ? span.getKind().equals(Span.SpanKind.SPAN_KIND_SERVER)
+                    : !span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT)
+                        || span.getAttributesList().stream()
+                            .noneMatch(
+                                keyValue ->
+                                    keyValue.getKey().equals("http.url")
+                                        && keyValue.getValue().getStringValue().contains("/echo")));
+    Assertions.assertEquals(1, traces.size());
+    Span clientSpan =
+        traces.get(0).stream()
+            .filter(span -> span.getKind().equals(Span.SpanKind.SPAN_KIND_CLIENT))
+            .findFirst()
+            .get();
+
+    byte[] bodyBytes = body.getBytes(StandardCharsets.UTF_8);
+    byte[] expectedCaptured =
+        Arrays.copyOf(bodyBytes, Math.min(bodyBytes.length, DEFAULT_BODY_MAX_SIZE_BYTES));
+    Assertions.assertEquals(
+        Base64.getEncoder().withoutPadding().encodeToString(expectedCaptured),
+        TEST_WRITER.getAttributesMap(clientSpan).get("http.request.body.base64").getStringValue());
+    Assertions.assertNull(TEST_WRITER.getAttributesMap(clientSpan).get("http.request.body"));
   }
 
   @Test

@@ -18,6 +18,7 @@ package org.hypertrace.agent.core.instrumentation.buffer;
 
 import java.nio.charset.Charset;
 import org.hypertrace.agent.core.config.InstrumentationConfig;
+import org.hypertrace.agent.core.instrumentation.utils.ContentTypeUtils;
 
 public class BoundedBuffersFactory {
 
@@ -34,6 +35,17 @@ public class BoundedBuffersFactory {
     return initialSize >= 0
         ? new BoundedByteArrayOutputStream(MAX_SIZE, initialSize, charset)
         : new BoundedByteArrayOutputStream(MAX_SIZE, charset);
+  }
+
+  /**
+   * Creates a stream for a body with the given content type. A multipart/form-data body is flagged
+   * so it is captured as base64 of the raw bytes.
+   */
+  public static BoundedByteArrayOutputStream createStream(
+      int initialSize, Charset charset, String contentType) {
+    BoundedByteArrayOutputStream stream = createStream(initialSize, charset);
+    stream.setMultipartFormData(ContentTypeUtils.isMultipartFormData(contentType));
+    return stream;
   }
 
   public static BoundedCharArrayWriter createWriter() {

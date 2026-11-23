@@ -70,11 +70,20 @@ public class DataCaptureUtils {
       try {
         byte[] data = buffer.toByteArray();
 
+        boolean gzip = contentEncoding != null && contentEncoding.toLowerCase().contains("gzip");
+        if (buffer.isMultipartFormData() && !gzip) {
+          // multipart bodies carry binary file parts: keep the raw bytes, not the decoded text
+          if (data.length > 0) {
+            span.setAttribute(attributeKey.name() + ".base64", buffer.toBase64());
+          }
+          return;
+        }
+
         String body;
         if (charset == null) {
           charset = ContentTypeCharsetUtils.getDefaultCharset();
         }
-        if (contentEncoding != null && contentEncoding.toLowerCase().contains("gzip")) {
+        if (gzip) {
           try (GZIPInputStream gzipStream = new GZIPInputStream(new ByteArrayInputStream(data))) {
             InputStreamReader reader = new InputStreamReader(gzipStream, charset);
             body = readInputStream(reader, charset);

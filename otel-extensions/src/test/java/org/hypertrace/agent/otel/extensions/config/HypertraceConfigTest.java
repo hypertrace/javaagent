@@ -38,7 +38,7 @@ import org.junitpioneer.jupiter.SetEnvironmentVariable;
 
 public class HypertraceConfigTest {
   private static final String[] EXPECTED_CONTENT_TYPES =
-      new String[] {"json", "graphql", "xml", "x-www-form-urlencoded"};
+      new String[] {"json", "graphql", "xml", "x-www-form-urlencoded", "multipart/form-data"};
 
   private static final String[] EXPECTED_CONTENT_TYPES_WITH_OVERRIDES = new String[] {"foo", "bar"};
 

@@ -130,7 +130,10 @@ public class HttpEntityInstrumentation implements TypeInstrumentation {
       Charset charset = ContentTypeCharsetUtils.toCharset(charsetStr);
 
       BoundedByteArrayOutputStream byteArrayOutputStream =
-          BoundedBuffersFactory.createStream((int) contentSize, charset);
+          BoundedBuffersFactory.createStream(
+              (int) contentSize,
+              charset,
+              contentTypeHeader == null ? null : contentTypeHeader.getValue());
 
       VirtualField.find(OutputStream.class, BoundedByteArrayOutputStream.class)
           .set(outputStream, byteArrayOutputStream);
@@ -151,8 +154,18 @@ public class HttpEntityInstrumentation implements TypeInstrumentation {
       BoundedByteArrayOutputStream bufferedOutStream = contextStore.get(outputStream);
       contextStore.set(outputStream, null);
       try {
-        String requestBody = bufferedOutStream.toStringWithSuppliedCharset();
-        spanAndAttributeKey.span.setAttribute(spanAndAttributeKey.attributeKey, requestBody);
+        if (bufferedOutStream.isMultipartFormData()) {
+          // multipart bodies carry binary file parts: keep the raw bytes, not the decoded text
+          if (bufferedOutStream.size() > 0) {
+            // advice is inlined into old class files: no static interface calls (AttributeKey)
+            spanAndAttributeKey.span.setAttribute(
+                spanAndAttributeKey.attributeKey.getKey() + ".base64",
+                bufferedOutStream.toBase64());
+          }
+        } else {
+          String requestBody = bufferedOutStream.toStringWithSuppliedCharset();
+          spanAndAttributeKey.span.setAttribute(spanAndAttributeKey.attributeKey, requestBody);
+        }
       } catch (UnsupportedEncodingException e) {
         // should not happen, the charset has been parsed before
       }

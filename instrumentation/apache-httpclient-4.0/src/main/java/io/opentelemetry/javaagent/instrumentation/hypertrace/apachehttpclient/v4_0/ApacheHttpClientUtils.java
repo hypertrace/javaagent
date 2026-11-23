@@ -127,6 +127,17 @@ public class ApacheHttpClientUtils {
         BoundedByteArrayOutputStream byteArrayOutputStream =
             BoundedBuffersFactory.createStream(charset);
         entity.writeTo(byteArrayOutputStream);
+        if (!isGzipEncoded
+            && HypertraceSemanticAttributes.HTTP_REQUEST_BODY.equals(bodyAttributeKey)
+            && ContentTypeUtils.isMultipartFormData(contentType.getValue())) {
+          // multipart bodies carry binary file parts: keep the raw bytes, not the decoded text
+          if (byteArrayOutputStream.size() > 0) {
+            span.setAttribute(
+                AttributeKey.stringKey(bodyAttributeKey.getKey() + ".base64"),
+                byteArrayOutputStream.toBase64());
+          }
+          return;
+        }
         InputStream contentStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         if (isGzipEncoded) {
           try {
