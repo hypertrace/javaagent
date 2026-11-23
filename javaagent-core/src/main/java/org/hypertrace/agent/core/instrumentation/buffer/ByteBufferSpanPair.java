@@ -28,6 +28,8 @@ import org.hypertrace.agent.core.instrumentation.HypertraceEvaluationException;
 
 public class ByteBufferSpanPair {
 
+  private static final String BASE64_ATTRIBUTE_SUFFIX = ".base64";
+
   public final Span span;
   private final BoundedByteArrayOutputStream buffer;
   private final Map<String, String> headers;
@@ -57,7 +59,16 @@ public class ByteBufferSpanPair {
     } catch (UnsupportedEncodingException e) {
       // ignore charset has been parsed before
     }
-    span.setAttribute(attributeKey, requestBody);
+    if (buffer.isMultipartFormData()) {
+      // multipart bodies carry binary file parts: keep the raw bytes, not the decoded text
+      if (buffer.size() > 0) {
+        span.setAttribute(
+            AttributeKey.stringKey(attributeKey.getKey() + BASE64_ATTRIBUTE_SUFFIX),
+            buffer.toBase64());
+      }
+    } else {
+      span.setAttribute(attributeKey, requestBody);
+    }
     final FilterResult filterResult;
     filterResult = filter.apply(span, requestBody, headers);
     if (filterResult.shouldBlock()) {

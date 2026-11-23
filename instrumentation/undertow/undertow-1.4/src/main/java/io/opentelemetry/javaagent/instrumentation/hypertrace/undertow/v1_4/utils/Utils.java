@@ -58,7 +58,9 @@ public final class Utils {
     final Charset charset = Charset.forName(httpServerExchange.getRequestCharset());
     final BoundedByteArrayOutputStream boundedByteArrayOutputStream =
         BoundedBuffersFactory.createStream(
-            (int) httpServerExchange.getRequestContentLength(), charset);
+            (int) httpServerExchange.getRequestContentLength(),
+            charset,
+            httpServerExchange.getRequestHeaders().getFirst(Headers.CONTENT_TYPE));
     final String contentEncoding =
         httpServerExchange.getRequestHeaders().getFirst(Headers.CONTENT_ENCODING);
     final SpanAndBuffer spanAndBuffer =

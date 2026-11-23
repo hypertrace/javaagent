@@ -34,6 +34,11 @@ public class OkHttpTracingInterceptorTest extends AbstractHttpClientTest {
   }
 
   @Override
+  protected boolean capturesMultipartAsBase64() {
+    return true;
+  }
+
+  @Override
   public Response doPostRequest(
       String uri, Map<String, String> headersMap, String body, String contentType)
       throws IOException {

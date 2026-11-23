@@ -45,7 +45,8 @@ public class Utils {
     }
     return new ByteBufferSpanPair(
         span,
-        BoundedBuffersFactory.createStream(contentLength, charset),
+        BoundedBuffersFactory.createStream(
+            contentLength, charset, httpServletRequest.getContentType()),
         filter::evaluateRequestBody,
         headers);
   }

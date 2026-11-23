@@ -84,7 +84,8 @@ public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapte
         // the buffer is used byt captureBody method
         Attribute<BoundedByteArrayOutputStream> bufferAttr =
             ctx.channel().attr(AttributeKeys.REQUEST_BODY_BUFFER);
-        bufferAttr.set(BoundedBuffersFactory.createStream(contentLength, charset));
+        bufferAttr.set(
+            BoundedBuffersFactory.createStream(contentLength, charset, contentType.toString()));
 
         channel.attr(AttributeKeys.PROVIDED_CHARSET).set(charset);
       }

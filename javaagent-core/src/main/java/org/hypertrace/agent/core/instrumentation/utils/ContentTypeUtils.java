@@ -24,7 +24,9 @@ public class ContentTypeUtils {
   private final String[] collectableContentTypes;
 
   private static final String[] DEFAULT_CONTENT_TYPES =
-      new String[] {"json", "graphql", "xml", "x-www-form-urlencoded"};
+      new String[] {"json", "graphql", "xml", "x-www-form-urlencoded", "multipart/form-data"};
+
+  private static final String MULTIPART_FORM_DATA = "multipart/form-data";
 
   public static String[] getDefaultContentTypes() {
     return DEFAULT_CONTENT_TYPES;
@@ -92,6 +94,17 @@ public class ContentTypeUtils {
    */
   public static boolean shouldCapture(String contentType) {
     return getInstance().shouldCapture_(contentType);
+  }
+
+  /**
+   * Returns true if the content type is multipart/form-data. These bodies carry binary file parts,
+   * so they are captured as base64 of the raw bytes instead of as text.
+   *
+   * @param contentType request or response content type, may be null
+   * @return whether the media type is multipart/form-data
+   */
+  public static boolean isMultipartFormData(String contentType) {
+    return contentType != null && contentType.trim().toLowerCase().startsWith(MULTIPART_FORM_DATA);
   }
 
   public static String parseCharset(String contentType) {

@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.util.Base64;
 
 /**
  * {@link ByteArrayOutputStream} with a bounded capacity. Write methods are no-op if the size
@@ -29,6 +30,7 @@ public class BoundedByteArrayOutputStream extends ByteArrayOutputStream {
 
   private final int maxCapacity;
   private final Charset charset;
+  private volatile boolean multipartFormData;
 
   BoundedByteArrayOutputStream(int maxCapacity, Charset charset) {
     this.maxCapacity = maxCapacity;
@@ -39,6 +41,23 @@ public class BoundedByteArrayOutputStream extends ByteArrayOutputStream {
     super(size);
     this.maxCapacity = maxCapacity;
     this.charset = charset;
+  }
+
+  /**
+   * Whether the buffered bytes are a multipart/form-data body. Such bodies are captured as base64
+   * of the raw bytes, not decoded to text.
+   */
+  public boolean isMultipartFormData() {
+    return multipartFormData;
+  }
+
+  public void setMultipartFormData(boolean multipartFormData) {
+    this.multipartFormData = multipartFormData;
+  }
+
+  /** Unpadded base64 of the buffered bytes. */
+  public synchronized String toBase64() {
+    return Base64.getEncoder().withoutPadding().encodeToString(super.toByteArray());
   }
 
   public synchronized String toStringWithSuppliedCharset() throws UnsupportedEncodingException {
